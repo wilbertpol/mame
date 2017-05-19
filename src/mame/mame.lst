@@ -32854,6 +32854,9 @@ seattle                         //
 @source:sega_sawatte.cpp
 sawatte                         //
 
+@source:segaai.cpp
+segaai                          //
+
 @source:segac2.cpp
 anpanman                        // (c) 1993 Sega
 bloxeedc                        // (c) 1989 Sega / Elorg

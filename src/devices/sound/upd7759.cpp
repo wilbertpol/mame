@@ -155,6 +155,8 @@ upd775x_device::upd775x_device(const machine_config &mconfig, device_type type, 
 	, m_reset(0)
 	, m_start(0)
 	, m_drq(0)
+	, m_md_pin(1)
+	, m_busy(2)
 	, m_state(0)
 	, m_clocks_left(0)
 	, m_nibbles_left(0)
@@ -168,6 +170,7 @@ upd775x_device::upd775x_device(const machine_config &mconfig, device_type type, 
 	, m_first_valid_header(0)
 	, m_offset(0)
 	, m_repeat_offset(0)
+	, m_mode(MODE_STAND_ALONE)
 	, m_adpcm_state(0)
 	, m_adpcm_data(0)
 	, m_sample(0)
@@ -176,6 +179,7 @@ upd775x_device::upd775x_device(const machine_config &mconfig, device_type type, 
 	, m_romoffset(0)
 	, m_rommask(0)
 	, m_drqcallback(*this)
+	, m_busycallback(*this)
 {
 }
 
@@ -212,6 +216,7 @@ void upd775x_device::device_start()
 void upd7759_device::device_start()
 {
 	m_drqcallback.resolve_safe();
+	m_busycallback.resolve_safe();
 
 	/* chip configuration */
 	m_sample_offset_shift = (type() == UPD7759) ? 1 : 0;
@@ -228,9 +233,10 @@ void upd7759_device::device_start()
 	/* set the intial state */
 	m_state = STATE_IDLE;
 
-	/* compute the ROM base or allocate a timer */
+	/* compute the ROM base and allocate a timer */
 	m_romoffset = 0;
 	m_rom = m_rombase;
+	m_timer = timer_alloc(TIMER_SLAVE_UPDATE);
 	if (m_rombase != nullptr)
 	{
 		uint32_t romsize = m_rombase.bytes();
@@ -242,14 +248,6 @@ void upd7759_device::device_start()
 		{
 			m_rommask = romsize - 1;
 		}
-
-		m_drqcallback.set_callback(DEVCB_NOOP);
-	}
-	else
-	{
-		assert(type() == UPD7759); // other chips do not support slave mode
-		m_timer = timer_alloc(TIMER_SLAVE_UPDATE);
-		m_rommask = 0;
 	}
 
 	/* assume /RESET and /START are both high */
@@ -397,10 +395,12 @@ void upd7759_device::device_reset()
 	m_adpcm_state        = 0;
 	m_adpcm_data         = 0;
 	m_sample             = 0;
+	m_mode               = MODE_STAND_ALONE;
 
 	/* turn off any timer */
-	if (m_timer)
-		m_timer->adjust(attotime::never);
+	m_timer->adjust(attotime::never);
+
+	update_busy();
 }
 
 void upd7756_device::device_reset()
@@ -424,6 +424,8 @@ void upd7756_device::device_reset()
 	m_adpcm_state        = 0;
 	m_adpcm_data         = 0;
 	m_sample             = 0;
+
+	update_busy();
 }
 
 
@@ -489,6 +491,9 @@ void upd775x_device::advance_state()
 	{
 		/* Idle state: we stick around here while there's nothing to do */
 		case STATE_IDLE:
+			// If we have dropped back to idle state we always switch back to stand alone mode
+			m_mode = MODE_STAND_ALONE;
+			update_busy();
 			m_clocks_left = 4;
 			break;
 
@@ -502,7 +507,7 @@ void upd775x_device::advance_state()
 
 		/* Start state: we begin here as soon as a sample is triggered */
 		case STATE_START:
-			m_req_sample = m_rom ? m_fifo_in : 0x10;
+			m_req_sample = (m_mode == MODE_STAND_ALONE) ? m_fifo_in : 0x10;
 			if (DEBUG_STATES) DEBUG_METHOD("uPD7759: req_sample = %02X\n", m_req_sample);
 
 			/* 35+ cycles after we get here, the /DRQ goes low
@@ -530,7 +535,7 @@ void upd775x_device::advance_state()
 		/* Last sample state: latch the last sample value and issue a request for the second byte */
 		/* The second byte read will be just a dummy */
 		case STATE_LAST_SAMPLE:
-			m_last_sample = m_rom ? m_rom[0] : m_fifo_in;
+			m_last_sample = (m_rom && m_mode == MODE_STAND_ALONE) ? m_rom[0] : m_fifo_in;
 			if (DEBUG_STATES) DEBUG_METHOD("uPD7759: last_sample = %02X, requesting dummy 1\n", m_last_sample);
 			m_drq = 1;
 
@@ -553,7 +558,7 @@ void upd775x_device::advance_state()
 		/* Address MSB state: latch the MSB of the sample address and issue a request for the fourth byte */
 		/* The expected response will be the LSB of the sample address */
 		case STATE_ADDR_MSB:
-			m_offset = (m_rom ? m_rom[m_req_sample * 2 + 5] : m_fifo_in) << (8 + m_sample_offset_shift);
+			m_offset = ((m_rom && m_mode == MODE_STAND_ALONE) ? m_rom[m_req_sample * 2 + 5] : m_fifo_in) << (8 + m_sample_offset_shift);
 			if (DEBUG_STATES) DEBUG_METHOD("uPD7759: offset_hi = %02X, requesting offset_lo\n", m_offset >> (8 + m_sample_offset_shift));
 			m_drq = 1;
 
@@ -565,7 +570,7 @@ void upd775x_device::advance_state()
 		/* Address LSB state: latch the LSB of the sample address and issue a request for the fifth byte */
 		/* The expected response will be just a dummy */
 		case STATE_ADDR_LSB:
-			m_offset |= (m_rom ? m_rom[m_req_sample * 2 + 6] : m_fifo_in) << m_sample_offset_shift;
+			m_offset |= ((m_rom && m_mode == MODE_STAND_ALONE) ? m_rom[m_req_sample * 2 + 6] : m_fifo_in) << m_sample_offset_shift;
 			if (DEBUG_STATES) DEBUG_METHOD("uPD7759: offset_lo = %02X, requesting dummy 2\n", (m_offset >> m_sample_offset_shift) & 0xff);
 			if (m_offset > m_rommask) logerror("uPD7759 offset %X > rommask %X\n",m_offset, m_rommask);
 			m_drq = 1;
@@ -597,7 +602,7 @@ void upd775x_device::advance_state()
 				m_repeat_count--;
 				m_offset = m_repeat_offset;
 			}
-			m_block_header = m_rom ? m_rom[m_offset++ & m_rommask] : m_fifo_in;
+			m_block_header = (m_rom && m_mode == MODE_STAND_ALONE) ? m_rom[m_offset++ & m_rommask] : m_fifo_in;
 			if (DEBUG_STATES) DEBUG_METHOD("uPD7759: header (@%05X) = %02X, requesting next byte\n", m_offset, m_block_header);
 			m_drq = 1;
 
@@ -640,7 +645,7 @@ void upd775x_device::advance_state()
 		/* Nibble count state: latch the number of nibbles to play and request another byte */
 		/* The expected response will be the first data byte */
 		case STATE_NIBBLE_COUNT:
-			m_nibbles_left = (m_rom ? m_rom[m_offset++ & m_rommask] : m_fifo_in) + 1;
+			m_nibbles_left = ((m_rom && m_mode == MODE_STAND_ALONE) ? m_rom[m_offset++ & m_rommask] : m_fifo_in) + 1;
 			if (DEBUG_STATES) DEBUG_METHOD("uPD7759: nibble_count = %u, requesting next byte\n", (unsigned)m_nibbles_left);
 			m_drq = 1;
 
@@ -652,7 +657,7 @@ void upd775x_device::advance_state()
 		/* MSN state: latch the data for this pair of samples and request another byte */
 		/* The expected response will be the next sample data or another header */
 		case STATE_NIBBLE_MSN:
-			m_adpcm_data = m_rom ? m_rom[m_offset++ & m_rommask] : m_fifo_in;
+			m_adpcm_data = (m_rom && m_mode == MODE_STAND_ALONE) ? m_rom[m_offset++ & m_rommask] : m_fifo_in;
 			update_adpcm(m_adpcm_data >> 4);
 			m_drq = 1;
 
@@ -696,6 +701,7 @@ void upd775x_device::advance_state()
 void upd7759_device::device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr)
 {
 	uint8_t olddrq = m_drq;
+	int old_state = m_state;
 
 	switch (id)
 	{
@@ -713,7 +719,7 @@ void upd7759_device::device_timer(emu_timer &timer, device_timer_id id, int para
 			m_drqcallback(m_drq);
 
 		/* set a timer to go off when that is done */
-		if (m_state != STATE_IDLE)
+		if (m_state != STATE_IDLE || old_state != STATE_IDLE)
 			m_timer->adjust(m_clock_period * m_clocks_left);
 		break;
 
@@ -756,6 +762,32 @@ WRITE_LINE_MEMBER( upd775x_device::reset_w )
 		device_reset();
 }
 
+WRITE_LINE_MEMBER( upd7759_device::reset_w )
+{
+	/* update the reset value */
+	uint8_t oldreset = m_reset;
+	m_reset = (state != 0);
+
+	/* update the stream first */
+	m_channel->update();
+
+	/* on the falling edge, reset everything */
+	if (oldreset && !m_reset)
+		device_reset();
+
+	// When leaving RESET, check level of MD pin
+	if (!oldreset && m_reset)
+	{
+		if (!m_md_pin)
+		{
+			m_mode = MODE_SLAVE;
+			m_state = STATE_START;
+			update_busy();
+			m_timer->adjust(attotime::zero);
+		}
+	}
+}
+
 WRITE_LINE_MEMBER( upd7759_device::start_w )
 {
 	/* update the start value */
@@ -771,9 +803,10 @@ WRITE_LINE_MEMBER( upd7759_device::start_w )
 	if (m_state == STATE_IDLE && !oldstart && m_start && m_reset)
 	{
 		m_state = STATE_START;
+		update_busy();
 
 		/* for slave mode, start the timer going */
-		if (m_timer)
+		if (m_mode == MODE_SLAVE)
 			m_timer->adjust(attotime::zero);
 	}
 }
@@ -793,9 +826,24 @@ WRITE_LINE_MEMBER( upd7756_device::start_w )
 	if (m_state == STATE_IDLE && !oldstart && m_start && m_reset)
 	{
 		m_state = STATE_START;
+		update_busy();
 	}
 }
 
+WRITE_LINE_MEMBER( upd7759_device::md_w )
+{
+	uint8_t old_md_pin = m_md_pin;
+	m_md_pin = (state != 0);
+
+	/* on the falling edge, if we're idle, switch to slave mode, but not if we're held in reset */
+	if (m_state == STATE_IDLE && old_md_pin && !m_md_pin && m_reset)
+	{
+		m_mode = MODE_SLAVE;
+		m_state = STATE_START;
+		update_busy();
+		m_timer->adjust(attotime::zero);
+	}
+}
 
 WRITE8_MEMBER( upd775x_device::port_w )
 {
@@ -807,9 +855,21 @@ WRITE8_MEMBER( upd775x_device::port_w )
 READ_LINE_MEMBER( upd775x_device::busy_r )
 {
 	/* return /BUSY */
-	return (m_state == STATE_IDLE);
+	return m_busy;
 }
 
+void upd775x_device::update_busy()
+{
+	uint8_t old_busy = m_busy;
+
+	// Determine /BUSY
+	m_busy = (m_state == STATE_IDLE) ? 1 : 0;
+
+	if (old_busy != m_busy)
+	{
+		m_busycallback(m_busy);
+	}
+}
 
 void upd775x_device::set_bank_base(uint32_t base)
 {
