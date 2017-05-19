@@ -1,9 +1,9 @@
+// license:BSD-3-Clause
+// copyright-holders:Wilbert Pol, Fabio Priuli
+// thanks-to:Chris Covell
 /***********************************************************************************************************
 
- Sega AI Soundbox expansion emulation by:
- - Chris Covell
- - Fabio Priulli
- - Wilbert Pol
+ Sega AI Soundbox expansion emulation
 
 
  Sega AI Computer Sound Box, Model "AI-2002"  quick PCB overview by Chris Covell

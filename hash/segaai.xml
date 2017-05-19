@@ -25,10 +25,12 @@ AI-4116   Ranran Melody
 3rd Set: "Eigo Wonder School" 1989-5-1 
 ======================================
 C-9532   Eigo de Ohanashi 1
-C-9533   Eigo de Game 1: Popo no Yume
-
 C-9535   Eigo de Ohanashi 2
+C-9533   Eigo de Game 1: Popo no Yume
 C-9536   Eigo de Game 2: Popoland no Himitsu
+
+
+         AI E-nikki
 -->
 <softwarelist name="segaai" description="Sega AI Software">
 
@@ -228,20 +230,6 @@ C-9536   Eigo de Game 2: Popoland no Himitsu
 		</part> 
 	</software>
 
-	<software name="eigogam1">
-		<description>Eigo de Game 1: Popo no Yume</description>
-		<year>1989</year>
-		<publisher>Sega</publisher>
-		<info name="serial" value="C-9533" />
-		<info name="alt_title" value="えいごわんだーすくーるー えいごでげーむ1" />
-		<part name="cart" interface="segaai_card">
-			<feature name="slot" value="rom_256" />
-			<dataarea name="rom" size="262144">
-				<rom name="eigo de game 1 popo no yume.bin" size="262144" crc="096ed76a" sha1="c9ad9479b72c7b58c596feaab984697b6cc1aa9e" offset="0" />
-			</dataarea>
-		</part> 
-	</software>
-
 	<software name="eigooha2">
 		<description>Eigo de Ohanashi 2</description>
 		<year>1989</year>
@@ -256,6 +244,20 @@ C-9536   Eigo de Game 2: Popoland no Himitsu
 		</part> 
 	</software>
 
+	<software name="eigogam1">
+		<description>Eigo de Game 1: Popo no Yume</description>
+		<year>1989</year>
+		<publisher>Sega</publisher>
+		<info name="serial" value="C-9533" />
+		<info name="alt_title" value="えいごわんだーすくーるー えいごでげーむ1" />
+		<part name="cart" interface="segaai_card">
+			<feature name="slot" value="rom_256" />
+			<dataarea name="rom" size="262144">
+				<rom name="eigo de game 1 popo no yume.bin" size="262144" crc="096ed76a" sha1="c9ad9479b72c7b58c596feaab984697b6cc1aa9e" offset="0" />
+			</dataarea>
+		</part>
+	</software>
+
 	<software name="eigogam2">
 		<description>Eigo de Game 2: Popoland no Himitsu</description>
 		<year>1989</year>
@@ -265,9 +267,21 @@ C-9536   Eigo de Game 2: Popoland no Himitsu
 		<part name="cart" interface="segaai_card">
 			<feature name="slot" value="rom_256" />
 			<dataarea name="rom" size="262144">
-				<rom name="alice world.bin" size="262144" crc="bd55f48c" sha1="8d25a2cbbf53844df94fc1becf461adc8b3f0190" offset="0" />
+				<rom name="eigo de game 2 popoland no himitsu.bin" size="262144" crc="bd55f48c" sha1="8d25a2cbbf53844df94fc1becf461adc8b3f0190" offset="0" />
 			</dataarea>
 		</part> 
 	</software>
 
+	<software name="aienikki">
+		<description>AI Enikki</description>
+		<year>198?</year>
+		<publisher>Sega?</publisher>
+		<info name="alt_title" value="ＡＩえにっき" />
+		<part name="cart" interface="segaai_card">
+			<feature name="slot" value="rom_128" />
+			<dataarea name="rom" size="131072">
+				<rom name="ai enikki.bin" size="131072" crc="79bcc160" sha1="6a4280af6d668b0047629ad64e2b85626805913a" offset="0" />
+			</dataarea>
+		</part>
+	</software>
 </softwarelist>
