@@ -19,7 +19,7 @@ class upd775x_device : public device_t, public device_sound_interface
 {
 public:
 	template <class Object> static devcb_base &set_drq_callback(device_t &device, Object &&cb) { return downcast<upd775x_device &>(device).m_drqcallback.set_callback(std::forward<Object>(cb)); }
-
+	template <class Object> static devcb_base &set_busy_callback(device_t &device, Object &&cb) { return downcast<upd775x_device &>(device).m_busycallback.set_callback(std::forward<Object>(cb)); }
 	void set_bank_base(offs_t base);
 
 	DECLARE_WRITE_LINE_MEMBER( reset_w );
@@ -45,6 +45,12 @@ protected:
 		STATE_NIBBLE_MSN,
 		STATE_NIBBLE_LSN
 	};
+	/* chip modes */
+	enum
+	{
+		MODE_STAND_ALONE,
+		MODE_SLAVE
+	};
 
 	upd775x_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock);
 
@@ -57,6 +63,7 @@ protected:
 
 	void update_adpcm(int data);
 	virtual void advance_state();
+	void update_busy();
 
 	// internal state
 	sound_stream *m_channel;                  /* stream channel for playback */
@@ -74,6 +81,8 @@ protected:
 	uint8_t       m_reset;                      /* current state of the RESET line */
 	uint8_t       m_start;                      /* current state of the START line */
 	uint8_t       m_drq;                        /* current state of the DRQ line */
+	uint8_t       m_md_pin;                     /* current state of the MD line */
+	uint8_t       m_busy;                       /* current state of the BUSY line */
 
 	/* internal state machine */
 	int8_t        m_state;                      /* current overall chip state */
@@ -89,6 +98,7 @@ protected:
 	uint8_t       m_first_valid_header;         /* did we get our first valid header yet? */
 	uint32_t      m_offset;                     /* current ROM offset */
 	uint32_t      m_repeat_offset;              /* current ROM repeat offset */
+	int           m_mode;                       /* current mode of the sound chip */
 
 	/* ADPCM processing */
 	int8_t        m_adpcm_state;                /* ADPCM state index */
@@ -102,6 +112,7 @@ protected:
 	uint32_t      m_rommask;                    /* maximum address offset */
 
 	devcb_write_line m_drqcallback;
+	devcb_write_line m_busycallback;
 };
 
 class upd7759_device : public upd775x_device
@@ -110,6 +121,8 @@ public:
 	upd7759_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
 
 	DECLARE_WRITE_LINE_MEMBER( start_w );
+	DECLARE_WRITE_LINE_MEMBER( md_w );
+	DECLARE_WRITE_LINE_MEMBER( reset_w );
 
 protected:
 	enum
@@ -145,6 +158,9 @@ DECLARE_DEVICE_TYPE(UPD7756, upd7756_device)
 
 #define MCFG_UPD7759_DRQ_CALLBACK(_write) \
 	devcb = &upd7759_device::set_drq_callback(*device, DEVCB_##_write);
+
+#define MCFG_UPD7759_BUSY_CALLBACK(_write) \
+	devcb = &upd7759_device::set_busy_callback(*device, DEVCB_##_write);
 
 #define MCFG_UPD7756_DRQ_CALLBACK(_write) \
 	devcb = &upd7756_device::set_drq_callback(*device, DEVCB_##_write);

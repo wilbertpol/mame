@@ -1,0 +1,522 @@
+<?xml version="1.0"?>
+<mamelayout version="2">
+	<element name="none" />
+
+	<element name="touchpad">
+<!--
+		<image file="touchpad.png" />
+-->
+	</element>
+
+	<view name="default">
+		<bounds left="0" right="544" top="0" bottom="960" />
+		<screen index="0">
+			<bounds left="0" right="544" top="0" bottom="480" />
+		</screen>
+
+		<backdrop element="touchpad">
+			<bounds left="0" right="544" top="480" bottom="960" />
+		</backdrop>
+
+		<bezel inputtag="TP.0" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000020" element="none"><bounds left="106" right="127" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000040" element="none"><bounds left="128" right="148" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000080" element="none"><bounds left="149" right="169" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000100" element="none"><bounds left="170" right="191" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000200" element="none"><bounds left="192" right="212" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000400" element="none"><bounds left="213" right="233" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x000800" element="none"><bounds left="234" right="255" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x001000" element="none"><bounds left="256" right="276" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x002000" element="none"><bounds left="277" right="297" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x004000" element="none"><bounds left="298" right="319" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x008000" element="none"><bounds left="320" right="340" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x010000" element="none"><bounds left="341" right="361" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x020000" element="none"><bounds left="362" right="383" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x040000" element="none"><bounds left="384" right="404" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x080000" element="none"><bounds left="405" right="425" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x100000" element="none"><bounds left="426" right="447" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x200000" element="none"><bounds left="448" right="468" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x400000" element="none"><bounds left="469" right="489" top="480" bottom="503" /></bezel>
+		<bezel inputtag="TP.0" inputmask="0x800000" element="none"><bounds left="490" right="511" top="480" bottom="503" /></bezel>
+
+		<bezel inputtag="TP.1" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000020" element="none"><bounds left="106" right="127" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000040" element="none"><bounds left="128" right="148" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000080" element="none"><bounds left="149" right="169" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000100" element="none"><bounds left="170" right="191" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000200" element="none"><bounds left="192" right="212" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000400" element="none"><bounds left="213" right="233" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x000800" element="none"><bounds left="234" right="255" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x001000" element="none"><bounds left="256" right="276" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x002000" element="none"><bounds left="277" right="297" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x004000" element="none"><bounds left="298" right="319" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x008000" element="none"><bounds left="320" right="340" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x010000" element="none"><bounds left="341" right="361" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x020000" element="none"><bounds left="362" right="383" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x040000" element="none"><bounds left="384" right="404" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x080000" element="none"><bounds left="405" right="425" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x100000" element="none"><bounds left="426" right="447" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x200000" element="none"><bounds left="448" right="468" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x400000" element="none"><bounds left="469" right="489" top="504" bottom="527" /></bezel>
+		<bezel inputtag="TP.1" inputmask="0x800000" element="none"><bounds left="490" right="511" top="504" bottom="527" /></bezel>
+
+		<bezel inputtag="TP.2" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000020" element="none"><bounds left="106" right="127" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000040" element="none"><bounds left="128" right="148" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000080" element="none"><bounds left="149" right="169" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000100" element="none"><bounds left="170" right="191" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000200" element="none"><bounds left="192" right="212" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000400" element="none"><bounds left="213" right="233" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x000800" element="none"><bounds left="234" right="255" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x001000" element="none"><bounds left="256" right="276" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x002000" element="none"><bounds left="277" right="297" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x004000" element="none"><bounds left="298" right="319" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x008000" element="none"><bounds left="320" right="340" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x010000" element="none"><bounds left="341" right="361" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x020000" element="none"><bounds left="362" right="383" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x040000" element="none"><bounds left="384" right="404" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x080000" element="none"><bounds left="405" right="425" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x100000" element="none"><bounds left="426" right="447" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x200000" element="none"><bounds left="448" right="468" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x400000" element="none"><bounds left="469" right="489" top="528" bottom="551" /></bezel>
+		<bezel inputtag="TP.2" inputmask="0x800000" element="none"><bounds left="490" right="511" top="528" bottom="551" /></bezel>
+
+		<bezel inputtag="TP.3" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000020" element="none"><bounds left="106" right="127" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000040" element="none"><bounds left="128" right="148" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000080" element="none"><bounds left="149" right="169" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000100" element="none"><bounds left="170" right="191" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000200" element="none"><bounds left="192" right="212" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000400" element="none"><bounds left="213" right="233" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x000800" element="none"><bounds left="234" right="255" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x001000" element="none"><bounds left="256" right="276" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x002000" element="none"><bounds left="277" right="297" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x004000" element="none"><bounds left="298" right="319" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x008000" element="none"><bounds left="320" right="340" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x010000" element="none"><bounds left="341" right="361" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x020000" element="none"><bounds left="362" right="383" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x040000" element="none"><bounds left="384" right="404" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x080000" element="none"><bounds left="405" right="425" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x100000" element="none"><bounds left="426" right="447" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x200000" element="none"><bounds left="448" right="468" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x400000" element="none"><bounds left="469" right="489" top="552" bottom="575" /></bezel>
+		<bezel inputtag="TP.3" inputmask="0x800000" element="none"><bounds left="490" right="511" top="552" bottom="575" /></bezel>
+
+		<bezel inputtag="TP.4" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000020" element="none"><bounds left="106" right="127" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000040" element="none"><bounds left="128" right="148" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000080" element="none"><bounds left="149" right="169" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000100" element="none"><bounds left="170" right="191" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000200" element="none"><bounds left="192" right="212" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000400" element="none"><bounds left="213" right="233" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x000800" element="none"><bounds left="234" right="255" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x001000" element="none"><bounds left="256" right="276" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x002000" element="none"><bounds left="277" right="297" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x004000" element="none"><bounds left="298" right="319" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x008000" element="none"><bounds left="320" right="340" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x010000" element="none"><bounds left="341" right="361" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x020000" element="none"><bounds left="362" right="383" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x040000" element="none"><bounds left="384" right="404" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x080000" element="none"><bounds left="405" right="425" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x100000" element="none"><bounds left="426" right="447" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x200000" element="none"><bounds left="448" right="468" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x400000" element="none"><bounds left="469" right="489" top="576" bottom="599" /></bezel>
+		<bezel inputtag="TP.4" inputmask="0x800000" element="none"><bounds left="490" right="511" top="576" bottom="599" /></bezel>
+
+		<bezel inputtag="TP.5" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000020" element="none"><bounds left="106" right="127" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000040" element="none"><bounds left="128" right="148" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000080" element="none"><bounds left="149" right="169" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000100" element="none"><bounds left="170" right="191" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000200" element="none"><bounds left="192" right="212" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000400" element="none"><bounds left="213" right="233" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x000800" element="none"><bounds left="234" right="255" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x001000" element="none"><bounds left="256" right="276" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x002000" element="none"><bounds left="277" right="297" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x004000" element="none"><bounds left="298" right="319" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x008000" element="none"><bounds left="320" right="340" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x010000" element="none"><bounds left="341" right="361" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x020000" element="none"><bounds left="362" right="383" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x040000" element="none"><bounds left="384" right="404" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x080000" element="none"><bounds left="405" right="425" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x100000" element="none"><bounds left="426" right="447" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x200000" element="none"><bounds left="448" right="468" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x400000" element="none"><bounds left="469" right="489" top="600" bottom="623" /></bezel>
+		<bezel inputtag="TP.5" inputmask="0x800000" element="none"><bounds left="490" right="511" top="600" bottom="623" /></bezel>
+
+		<bezel inputtag="TP.6" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000020" element="none"><bounds left="106" right="127" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000040" element="none"><bounds left="128" right="148" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000080" element="none"><bounds left="149" right="169" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000100" element="none"><bounds left="170" right="191" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000200" element="none"><bounds left="192" right="212" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000400" element="none"><bounds left="213" right="233" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x000800" element="none"><bounds left="234" right="255" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x001000" element="none"><bounds left="256" right="276" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x002000" element="none"><bounds left="277" right="297" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x004000" element="none"><bounds left="298" right="319" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x008000" element="none"><bounds left="320" right="340" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x010000" element="none"><bounds left="341" right="361" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x020000" element="none"><bounds left="362" right="383" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x040000" element="none"><bounds left="384" right="404" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x080000" element="none"><bounds left="405" right="425" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x100000" element="none"><bounds left="426" right="447" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x200000" element="none"><bounds left="448" right="468" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x400000" element="none"><bounds left="469" right="489" top="624" bottom="647" /></bezel>
+		<bezel inputtag="TP.6" inputmask="0x800000" element="none"><bounds left="490" right="511" top="624" bottom="647" /></bezel>
+
+		<bezel inputtag="TP.7" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000020" element="none"><bounds left="106" right="127" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000040" element="none"><bounds left="128" right="148" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000080" element="none"><bounds left="149" right="169" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000100" element="none"><bounds left="170" right="191" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000200" element="none"><bounds left="192" right="212" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000400" element="none"><bounds left="213" right="233" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x000800" element="none"><bounds left="234" right="255" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x001000" element="none"><bounds left="256" right="276" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x002000" element="none"><bounds left="277" right="297" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x004000" element="none"><bounds left="298" right="319" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x008000" element="none"><bounds left="320" right="340" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x010000" element="none"><bounds left="341" right="361" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x020000" element="none"><bounds left="362" right="383" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x040000" element="none"><bounds left="384" right="404" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x080000" element="none"><bounds left="405" right="425" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x100000" element="none"><bounds left="426" right="447" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x200000" element="none"><bounds left="448" right="468" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x400000" element="none"><bounds left="469" right="489" top="648" bottom="671" /></bezel>
+		<bezel inputtag="TP.7" inputmask="0x800000" element="none"><bounds left="490" right="511" top="648" bottom="671" /></bezel>
+
+		<bezel inputtag="TP.8" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000020" element="none"><bounds left="106" right="127" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000040" element="none"><bounds left="128" right="148" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000080" element="none"><bounds left="149" right="169" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000100" element="none"><bounds left="170" right="191" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000200" element="none"><bounds left="192" right="212" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000400" element="none"><bounds left="213" right="233" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x000800" element="none"><bounds left="234" right="255" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x001000" element="none"><bounds left="256" right="276" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x002000" element="none"><bounds left="277" right="297" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x004000" element="none"><bounds left="298" right="319" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x008000" element="none"><bounds left="320" right="340" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x010000" element="none"><bounds left="341" right="361" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x020000" element="none"><bounds left="362" right="383" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x040000" element="none"><bounds left="384" right="404" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x080000" element="none"><bounds left="405" right="425" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x100000" element="none"><bounds left="426" right="447" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x200000" element="none"><bounds left="448" right="468" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x400000" element="none"><bounds left="469" right="489" top="672" bottom="695" /></bezel>
+		<bezel inputtag="TP.8" inputmask="0x800000" element="none"><bounds left="490" right="511" top="672" bottom="695" /></bezel>
+
+		<bezel inputtag="TP.9" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000020" element="none"><bounds left="106" right="127" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000040" element="none"><bounds left="128" right="148" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000080" element="none"><bounds left="149" right="169" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000100" element="none"><bounds left="170" right="191" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000200" element="none"><bounds left="192" right="212" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000400" element="none"><bounds left="213" right="233" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x000800" element="none"><bounds left="234" right="255" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x001000" element="none"><bounds left="256" right="276" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x002000" element="none"><bounds left="277" right="297" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x004000" element="none"><bounds left="298" right="319" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x008000" element="none"><bounds left="320" right="340" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x010000" element="none"><bounds left="341" right="361" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x020000" element="none"><bounds left="362" right="383" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x040000" element="none"><bounds left="384" right="404" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x080000" element="none"><bounds left="405" right="425" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x100000" element="none"><bounds left="426" right="447" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x200000" element="none"><bounds left="448" right="468" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x400000" element="none"><bounds left="469" right="489" top="696" bottom="719" /></bezel>
+		<bezel inputtag="TP.9" inputmask="0x800000" element="none"><bounds left="490" right="511" top="696" bottom="719" /></bezel>
+
+		<bezel inputtag="TP.10" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000020" element="none"><bounds left="106" right="127" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000040" element="none"><bounds left="128" right="148" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000080" element="none"><bounds left="149" right="169" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000100" element="none"><bounds left="170" right="191" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000200" element="none"><bounds left="192" right="212" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000400" element="none"><bounds left="213" right="233" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x000800" element="none"><bounds left="234" right="255" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x001000" element="none"><bounds left="256" right="276" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x002000" element="none"><bounds left="277" right="297" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x004000" element="none"><bounds left="298" right="319" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x008000" element="none"><bounds left="320" right="340" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x010000" element="none"><bounds left="341" right="361" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x020000" element="none"><bounds left="362" right="383" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x040000" element="none"><bounds left="384" right="404" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x080000" element="none"><bounds left="405" right="425" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x100000" element="none"><bounds left="426" right="447" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x200000" element="none"><bounds left="448" right="468" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x400000" element="none"><bounds left="469" right="489" top="720" bottom="743" /></bezel>
+		<bezel inputtag="TP.10" inputmask="0x800000" element="none"><bounds left="490" right="511" top="720" bottom="743" /></bezel>
+
+		<bezel inputtag="TP.11" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000020" element="none"><bounds left="106" right="127" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000040" element="none"><bounds left="128" right="148" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000080" element="none"><bounds left="149" right="169" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000100" element="none"><bounds left="170" right="191" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000200" element="none"><bounds left="192" right="212" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000400" element="none"><bounds left="213" right="233" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x000800" element="none"><bounds left="234" right="255" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x001000" element="none"><bounds left="256" right="276" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x002000" element="none"><bounds left="277" right="297" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x004000" element="none"><bounds left="298" right="319" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x008000" element="none"><bounds left="320" right="340" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x010000" element="none"><bounds left="341" right="361" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x020000" element="none"><bounds left="362" right="383" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x040000" element="none"><bounds left="384" right="404" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x080000" element="none"><bounds left="405" right="425" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x100000" element="none"><bounds left="426" right="447" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x200000" element="none"><bounds left="448" right="468" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x400000" element="none"><bounds left="469" right="489" top="744" bottom="767" /></bezel>
+		<bezel inputtag="TP.11" inputmask="0x800000" element="none"><bounds left="490" right="511" top="744" bottom="767" /></bezel>
+
+		<bezel inputtag="TP.12" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000020" element="none"><bounds left="106" right="127" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000040" element="none"><bounds left="128" right="148" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000080" element="none"><bounds left="149" right="169" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000100" element="none"><bounds left="170" right="191" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000200" element="none"><bounds left="192" right="212" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000400" element="none"><bounds left="213" right="233" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x000800" element="none"><bounds left="234" right="255" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x001000" element="none"><bounds left="256" right="276" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x002000" element="none"><bounds left="277" right="297" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x004000" element="none"><bounds left="298" right="319" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x008000" element="none"><bounds left="320" right="340" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x010000" element="none"><bounds left="341" right="361" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x020000" element="none"><bounds left="362" right="383" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x040000" element="none"><bounds left="384" right="404" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x080000" element="none"><bounds left="405" right="425" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x100000" element="none"><bounds left="426" right="447" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x200000" element="none"><bounds left="448" right="468" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x400000" element="none"><bounds left="469" right="489" top="768" bottom="791" /></bezel>
+		<bezel inputtag="TP.12" inputmask="0x800000" element="none"><bounds left="490" right="511" top="768" bottom="791" /></bezel>
+
+		<bezel inputtag="TP.13" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000020" element="none"><bounds left="106" right="127" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000040" element="none"><bounds left="128" right="148" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000080" element="none"><bounds left="149" right="169" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000100" element="none"><bounds left="170" right="191" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000200" element="none"><bounds left="192" right="212" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000400" element="none"><bounds left="213" right="233" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x000800" element="none"><bounds left="234" right="255" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x001000" element="none"><bounds left="256" right="276" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x002000" element="none"><bounds left="277" right="297" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x004000" element="none"><bounds left="298" right="319" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x008000" element="none"><bounds left="320" right="340" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x010000" element="none"><bounds left="341" right="361" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x020000" element="none"><bounds left="362" right="383" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x040000" element="none"><bounds left="384" right="404" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x080000" element="none"><bounds left="405" right="425" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x100000" element="none"><bounds left="426" right="447" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x200000" element="none"><bounds left="448" right="468" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x400000" element="none"><bounds left="469" right="489" top="792" bottom="815" /></bezel>
+		<bezel inputtag="TP.13" inputmask="0x800000" element="none"><bounds left="490" right="511" top="792" bottom="815" /></bezel>
+
+		<bezel inputtag="TP.14" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000020" element="none"><bounds left="106" right="127" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000040" element="none"><bounds left="128" right="148" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000080" element="none"><bounds left="149" right="169" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000100" element="none"><bounds left="170" right="191" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000200" element="none"><bounds left="192" right="212" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000400" element="none"><bounds left="213" right="233" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x000800" element="none"><bounds left="234" right="255" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x001000" element="none"><bounds left="256" right="276" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x002000" element="none"><bounds left="277" right="297" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x004000" element="none"><bounds left="298" right="319" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x008000" element="none"><bounds left="320" right="340" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x010000" element="none"><bounds left="341" right="361" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x020000" element="none"><bounds left="362" right="383" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x040000" element="none"><bounds left="384" right="404" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x080000" element="none"><bounds left="405" right="425" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x100000" element="none"><bounds left="426" right="447" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x200000" element="none"><bounds left="448" right="468" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x400000" element="none"><bounds left="469" right="489" top="816" bottom="839" /></bezel>
+		<bezel inputtag="TP.14" inputmask="0x800000" element="none"><bounds left="490" right="511" top="816" bottom="839" /></bezel>
+
+		<bezel inputtag="TP.15" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000020" element="none"><bounds left="106" right="127" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000040" element="none"><bounds left="128" right="148" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000080" element="none"><bounds left="149" right="169" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000100" element="none"><bounds left="170" right="191" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000200" element="none"><bounds left="192" right="212" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000400" element="none"><bounds left="213" right="233" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x000800" element="none"><bounds left="234" right="255" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x001000" element="none"><bounds left="256" right="276" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x002000" element="none"><bounds left="277" right="297" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x004000" element="none"><bounds left="298" right="319" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x008000" element="none"><bounds left="320" right="340" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x010000" element="none"><bounds left="341" right="361" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x020000" element="none"><bounds left="362" right="383" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x040000" element="none"><bounds left="384" right="404" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x080000" element="none"><bounds left="405" right="425" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x100000" element="none"><bounds left="426" right="447" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x200000" element="none"><bounds left="448" right="468" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x400000" element="none"><bounds left="469" right="489" top="840" bottom="863" /></bezel>
+		<bezel inputtag="TP.15" inputmask="0x800000" element="none"><bounds left="490" right="511" top="840" bottom="863" /></bezel>
+
+		<bezel inputtag="TP.16" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000020" element="none"><bounds left="106" right="127" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000040" element="none"><bounds left="128" right="148" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000080" element="none"><bounds left="149" right="169" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000100" element="none"><bounds left="170" right="191" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000200" element="none"><bounds left="192" right="212" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000400" element="none"><bounds left="213" right="233" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x000800" element="none"><bounds left="234" right="255" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x001000" element="none"><bounds left="256" right="276" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x002000" element="none"><bounds left="277" right="297" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x004000" element="none"><bounds left="298" right="319" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x008000" element="none"><bounds left="320" right="340" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x010000" element="none"><bounds left="341" right="361" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x020000" element="none"><bounds left="362" right="383" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x040000" element="none"><bounds left="384" right="404" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x080000" element="none"><bounds left="405" right="425" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x100000" element="none"><bounds left="426" right="447" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x200000" element="none"><bounds left="448" right="468" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x400000" element="none"><bounds left="469" right="489" top="864" bottom="887" /></bezel>
+		<bezel inputtag="TP.16" inputmask="0x800000" element="none"><bounds left="490" right="511" top="864" bottom="887" /></bezel>
+
+		<bezel inputtag="TP.17" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000020" element="none"><bounds left="106" right="127" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000040" element="none"><bounds left="128" right="148" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000080" element="none"><bounds left="149" right="169" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000100" element="none"><bounds left="170" right="191" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000200" element="none"><bounds left="192" right="212" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000400" element="none"><bounds left="213" right="233" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x000800" element="none"><bounds left="234" right="255" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x001000" element="none"><bounds left="256" right="276" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x002000" element="none"><bounds left="277" right="297" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x004000" element="none"><bounds left="298" right="319" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x008000" element="none"><bounds left="320" right="340" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x010000" element="none"><bounds left="341" right="361" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x020000" element="none"><bounds left="362" right="383" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x040000" element="none"><bounds left="384" right="404" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x080000" element="none"><bounds left="405" right="425" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x100000" element="none"><bounds left="426" right="447" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x200000" element="none"><bounds left="448" right="468" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x400000" element="none"><bounds left="469" right="489" top="888" bottom="911" /></bezel>
+		<bezel inputtag="TP.17" inputmask="0x800000" element="none"><bounds left="490" right="511" top="888" bottom="911" /></bezel>
+
+		<bezel inputtag="TP.18" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000020" element="none"><bounds left="106" right="127" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000040" element="none"><bounds left="128" right="148" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000080" element="none"><bounds left="149" right="169" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000100" element="none"><bounds left="170" right="191" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000200" element="none"><bounds left="192" right="212" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000400" element="none"><bounds left="213" right="233" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x000800" element="none"><bounds left="234" right="255" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x001000" element="none"><bounds left="256" right="276" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x002000" element="none"><bounds left="277" right="297" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x004000" element="none"><bounds left="298" right="319" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x008000" element="none"><bounds left="320" right="340" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x010000" element="none"><bounds left="341" right="361" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x020000" element="none"><bounds left="362" right="383" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x040000" element="none"><bounds left="384" right="404" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x080000" element="none"><bounds left="405" right="425" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x100000" element="none"><bounds left="426" right="447" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x200000" element="none"><bounds left="448" right="468" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x400000" element="none"><bounds left="469" right="489" top="912" bottom="935" /></bezel>
+		<bezel inputtag="TP.18" inputmask="0x800000" element="none"><bounds left="490" right="511" top="912" bottom="935" /></bezel>
+
+		<bezel inputtag="TP.19" inputmask="0x000001" element="none"><bounds left=  "0" right= "20" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000002" element="none"><bounds left= "21" right= "41" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000004" element="none"><bounds left= "42" right= "63" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000008" element="none"><bounds left= "64" right= "84" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000010" element="none"><bounds left= "85" right="105" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000020" element="none"><bounds left="106" right="127" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000040" element="none"><bounds left="128" right="148" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000080" element="none"><bounds left="149" right="169" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000100" element="none"><bounds left="170" right="191" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000200" element="none"><bounds left="192" right="212" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000400" element="none"><bounds left="213" right="233" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x000800" element="none"><bounds left="234" right="255" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x001000" element="none"><bounds left="256" right="276" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x002000" element="none"><bounds left="277" right="297" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x004000" element="none"><bounds left="298" right="319" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x008000" element="none"><bounds left="320" right="340" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x010000" element="none"><bounds left="341" right="361" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x020000" element="none"><bounds left="362" right="383" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x040000" element="none"><bounds left="384" right="404" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x080000" element="none"><bounds left="405" right="425" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x100000" element="none"><bounds left="426" right="447" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x200000" element="none"><bounds left="448" right="468" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x400000" element="none"><bounds left="469" right="489" top="936" bottom="959" /></bezel>
+		<bezel inputtag="TP.19" inputmask="0x800000" element="none"><bounds left="490" right="511" top="936" bottom="959" /></bezel>
+
+	</view>
+</mamelayout>
