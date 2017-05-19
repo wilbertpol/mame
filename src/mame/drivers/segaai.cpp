@@ -43,11 +43,11 @@ TODO:
  IC 2    315-5200      (86/25)   SEGA          QFP100 
  IC 3    27C512-25     (86/15)   64K EPROM "E000  8/24" 
  IC 4    27C512-25     (86/06)   64K EPROM "F000  7/21" 
- IC 5    MPR-7689      (86/22)   SEGA "264 AA E79" (ROM?) DIP28 
+ IC 5    MPR-7689      (86/22)   SEGA "264 AA E79" (ROM) DIP28
  IC 10   V9938                   Yamaha MSX2 VDP 
  IC 13   D7759C        (86/12)   NEC Speech Synthesizer   DIP40 
- IC 14   MPR-7619      (86/23)   SEGA (ROM?)      DIP28 
- IC 15   MPR-7620      (86/23)   SEGA (ROM?)      DIP28 
+ IC 14   MPR-7619      (86/23)   SEGA (ROM)      DIP28
+ IC 15   MPR-7620      (86/23)   SEGA (ROM)      DIP28
  IC 16   SN76489AN               TI PSG         DIP16 
  IC 17   D8251AFC      (86/09)   NEC Communications Interface DIP28 
  IC 18   315-5201      (86/25)   SEGA (bodge wire on pins 9,10) DIP20 
@@ -145,7 +145,6 @@ public:
 	DECLARE_READ8_MEMBER(i8255_portc_r);
 	DECLARE_WRITE8_MEMBER(i8255_portc_w);
 	DECLARE_WRITE8_MEMBER(upd7759_ctrl_w);
-	DECLARE_WRITE8_MEMBER(upd7759_port_w);
 	DECLARE_WRITE8_MEMBER(port1c_w);
 	DECLARE_WRITE8_MEMBER(port1d_w);
 	DECLARE_WRITE8_MEMBER(port1e_w);
@@ -213,7 +212,7 @@ static ADDRESS_MAP_START(io_map, AS_IO, 8, segaai_state)
 	// 0x0e (w) - ??
 	// 0x0f (w) - ??
 
-	AM_RANGE(0x14, 0x14) AM_MIRROR(0x01) AM_WRITE(upd7759_port_w)
+	AM_RANGE(0x14, 0x14) AM_MIRROR(0x01) AM_DEVWRITE("upd7759", upd7759_device, port_w)
 
 	// 0x16 (w) - ??  irq enable/disable??
 	AM_RANGE(0x16, 0x16) AM_READ(unk16_r)
@@ -503,38 +502,16 @@ WRITE8_MEMBER(segaai_state::i8255_portc_w)
 
 WRITE8_MEMBER(segaai_state::upd7759_ctrl_w)
 {
-	// Bit 0 of this port seems to enable/disable some other device which can eventually trigger
-	// an irq for vector 0xFB after some time.
-
 	logerror("I/O Port $0b write: $%02x\n", data);
 
 	m_upd7759_ctrl = data;
 
-	// bit0 is connected to /md line of the UPD7759
+	// bit0 is connected to /md line of the uPD7759?
 	//m_upd7759->md_w((m_upd7759_ctrl & 0x01) ? 0 : 1);
 	m_upd7759->reset_w((m_upd7759_ctrl & 0x01) ? 1 : 0);
 
 	// bit1 selects which ROM should be used?
 	m_upd7759->set_bank_base((m_upd7759_ctrl & 2) ? 0x00000 : 0x20000);
-
-	// TODO: Get rid of this dirty hack
-//	m_0xfb_irq = (m_upd7759_ctrl & 0x01) ? ASSERT_LINE : CLEAR_LINE;
-//	update_irq_state();
-}
-
-
-// This method is a bit of a hack, and should eventually be removed
-// once the m_0xfb_irq stuff is no longer needed.
-//
-// The m_0xfb_irq is probably connected with the upd7759 BUSY line and/or DRQ.
-WRITE8_MEMBER(segaai_state::upd7759_port_w)
-{
-	m_upd7759->port_w(space, offset, data);
-//	m_upd7759->start_w(0);
-//	m_upd7759->start_w(1);
-
-	m_0xfb_irq = CLEAR_LINE;
-	update_irq_state();
 }
 
 
@@ -739,4 +716,4 @@ ROM_START(segaai)
 ROM_END
 
 
-COMP(198?, segaai,     0,         0,      segaai,   ai_kbd, segaai_state,   0,    "Sega",   "AI", MACHINE_NOT_WORKING)
+COMP(1986, segaai,     0,         0,      segaai,   ai_kbd, segaai_state,   0,    "Sega",   "AI", MACHINE_NOT_WORKING)
