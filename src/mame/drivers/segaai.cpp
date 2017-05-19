@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 // copyright-holders:Wilbert Pol, Fabio Priuli
 // thanks-to:Chris Covell
-
 /*
  
  Sega AI driver
@@ -30,8 +29,9 @@ TODO:
 - Add on the fly switching of the upd7759 between stand alone and
   slave modes.
 - IRQ enable/disable register
-- Proper hooking of DRQ signals in slave mode.
-- More stuff
+- Proper hooking of uPD7759 DRQ signals in slave mode.
+- Cassette
+- Keyboard (there is probably an mcu on it)
 
 ===========================================================================
 
@@ -144,15 +144,14 @@ public:
 	DECLARE_READ8_MEMBER(i8255_portb_r);
 	DECLARE_READ8_MEMBER(i8255_portc_r);
 	DECLARE_WRITE8_MEMBER(i8255_portc_w);
-
+	DECLARE_WRITE8_MEMBER(upd7759_ctrl_w);
+	DECLARE_WRITE8_MEMBER(upd7759_port_w);
 	DECLARE_WRITE8_MEMBER(port1c_w);
 	DECLARE_WRITE8_MEMBER(port1d_w);
 	DECLARE_WRITE8_MEMBER(port1e_w);
 	DECLARE_READ8_MEMBER(port1e_r);
 
 	// unknown device writes
-	DECLARE_WRITE8_MEMBER(upd7759_ctrl_w);
-	DECLARE_WRITE8_MEMBER(upd7759_port_w);
 	DECLARE_READ8_MEMBER(unk16_r);
 	DECLARE_WRITE8_MEMBER(unk17_w);
 
@@ -340,10 +339,10 @@ WRITE_LINE_MEMBER(segaai_state::vdp_interrupt)
 WRITE_LINE_MEMBER(segaai_state::upd7759_drq_w)
 {
 //	if ((m_upd7759_ctrl & 0x01))
-	{
+//	{
 		m_0xfb_irq = state ? CLEAR_LINE : ASSERT_LINE;
 		update_irq_state();
-	}
+//	}
 }
 
 
