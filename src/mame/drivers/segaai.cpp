@@ -31,7 +31,7 @@ TODO:
 - IRQ enable/disable register
 - Proper hooking of uPD7759 DRQ signals in slave mode.
 - Cassette
-- Keyboard (there is probably an mcu on it)
+- Keyboard (there is probably an mcu inside it)
 
 ===========================================================================
 
@@ -119,8 +119,12 @@ New JIS Keyboard Connector Pinout:
 // Layout
 #include "segaai.lh"
 
+//#define VERBOSE (LOG_GENERAL)
+#include "logmacro.h"
+
 
 #define TOUCHPAD_ROWS 20
+
 
 class segaai_state : public driver_device
 {
@@ -496,13 +500,13 @@ READ8_MEMBER(segaai_state::i8255_portc_r)
 
 WRITE8_MEMBER(segaai_state::i8255_portc_w)
 {
-	logerror("i8255 port c write: %02x\n", data);
+	LOG("i8255 port c write: %02x\n", data);
 }
 
 
 WRITE8_MEMBER(segaai_state::upd7759_ctrl_w)
 {
-	logerror("I/O Port $0b write: $%02x\n", data);
+	LOG("I/O Port $0b write: $%02x\n", data);
 
 	m_upd7759_ctrl = data;
 
@@ -583,7 +587,7 @@ A9F3B: E2 F1                     dbnz    0A9F2Eh
 WRITE8_MEMBER(segaai_state::unk17_w)
 {
 	// Possibly mode pins on the 7759
-	logerror("I/O Port $17 write: $%02x\n", data);
+	LOG("I/O Port $17 write: $%02x\n", data);
 
 	int pin = (data >> 1) & 0x07;
 	u8 state = data & 1;
