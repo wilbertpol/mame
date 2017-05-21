@@ -1747,9 +1747,8 @@ void v99x8_device::sprite_mode2 (int line, uint8_t *col)
 							else
 								col[x] |= 0x40;
 						}
-
-						x++;
 					}
+					x++;
 				}
 
 				pattern <<= 1;
