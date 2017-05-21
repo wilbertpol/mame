@@ -43,12 +43,61 @@ OP( 0x0f, i_pre_nec  ) { uint32_t ModRM, tmp, tmp2;
 		case 0x26 : CMP4S; CLKS(7,7,2); break;
 		case 0x28 : ModRM = FETCH(); tmp = GetRMByte(ModRM); tmp <<= 4; tmp |= Breg(AL) & 0xf; Breg(AL) = (Breg(AL) & 0xf0) | ((tmp>>8)&0xf); tmp &= 0xff; PutbackRMByte(ModRM,tmp); CLKM(13,13,9,28,28,15); break;
 		case 0x2a : ModRM = FETCH(); tmp = GetRMByte(ModRM); tmp2 = (Breg(AL) & 0xf)<<4; Breg(AL) = (Breg(AL) & 0xf0) | (tmp&0xf); tmp = tmp2 | (tmp>>4);   PutbackRMByte(ModRM,tmp); CLKM(17,17,13,32,32,19); break;
-		case 0x31 : ModRM = FETCH(); ModRM=0; logerror("%06x: Unimplemented bitfield INS\n",PC()); break;
-		case 0x33 : ModRM = FETCH(); ModRM=0; logerror("%06x: Unimplemented bitfield EXT\n",PC()); break;
-		case 0xe0 : ModRM = FETCH(); ModRM=0; logerror("%06x: V33 unimplemented BRKXA (break to expansion address)\n",PC()); break;
-		case 0xf0 : ModRM = FETCH(); ModRM=0; logerror("%06x: V33 unimplemented RETXA (return from expansion address)\n",PC()); break;
-		case 0xff : ModRM = FETCH(); ModRM=0; logerror("%06x: unimplemented BRKEM (break to 8080 emulation mode)\n",PC()); break;
-		default:    logerror("%06x: Unknown V20 instruction\n",PC()); break;
+		case 0x31 : ModRM = FETCH(); ModRM=0; fatalerror("%06x: Unimplemented bitfield INS\n",PC()); break;
+		case 0x33 : ModRM = FETCH(); ModRM=0; fatalerror("%06x: Unimplemented bitfield EXT\n",PC()); break;
+		case 0x39 : // INS reg,imm4
+			ModRM = FETCH();
+			tmp = GetRMByte(ModRM) & 0x0f;
+			tmp2 = FETCH() + 1;
+			PutMemW(DS1, Wreg(IY), (GetMemW(DS1, Wreg(IY)) & ~(((1 << tmp2) - 1) << tmp)) | ((Wreg(AW) & ((1 << tmp2) - 1)) << tmp));
+			if (tmp + tmp2 > 15) {
+				Wreg(IY) += 2;
+				PutMemW(DS1, Wreg(IY), (GetMemW(DS1, Wreg(IY)) & ~((1 << (tmp2 - (16 - tmp))) - 1)) | (Wreg(AW) >> (16 - tmp)) & ((1 << (tmp2 - (16 - tmp))) - 1));
+				// TODO Check v33 cycles
+				if (Wreg(IY) & 1) {
+					CLKS(103, 103, 77);
+				} else {
+					CLKS(103, 87, 39);
+				}
+			} else {
+				// TODO check v33 cycles
+				if (Wreg(IY) & 1) {
+					CLKS(75, 75, 69);
+				} else {
+					CLKS(75, 67, 37);
+				}
+			}
+			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
+			break;
+		case 0x3b : // EXT reg,imm4
+			ModRM = FETCH();
+			tmp = GetRMByte(ModRM) & 0x0f;
+			tmp2 = FETCH() + 1;
+			Wreg(AW) = GetMemW(DS0, Wreg(IX)) >> tmp;
+			if (tmp + tmp2 > 15) {
+				Wreg(IX) += 2;
+				Wreg(AW) |= GetMemW(DS0, Wreg(IX)) << (16 - tmp);
+				// TODO Verify v33 cycles
+				if (Wreg(IX) & 1) {
+					CLKS(52, 52, 63);
+				} else {
+					CLKS(52, 44, 33);
+				}
+			} else {
+				// TODO Verify v33 cycles
+				if (Wreg(IX) & 1) {
+					CLKS(25, 25, 33);
+				} else {
+					CLKS(25, 21, 29);
+				}
+			}
+			Wreg(AW) &= ((1 << tmp2) - 1);
+			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
+			break;
+		case 0xe0 : ModRM = FETCH(); ModRM=0; fatalerror("%06x: V33 unimplemented BRKXA (break to expansion address)\n",PC()); break;
+		case 0xf0 : ModRM = FETCH(); ModRM=0; fatalerror("%06x: V33 unimplemented RETXA (return from expansion address)\n",PC()); break;
+		case 0xff : ModRM = FETCH(); ModRM=0; fatalerror("%06x: unimplemented BRKEM (break to 8080 emulation mode)\n",PC()); break;
+		default:    fatalerror("%06x: Unknown V20 instruction\n",PC()); break;
 	}
 }
 
@@ -669,5 +718,5 @@ OP( 0xff, i_ffpre ) { uint32_t tmp, tmp1; GetModRM; tmp=GetRMWord(ModRM);
 void nec_common_device::i_invalid()
 {
 	m_icount-=10;
-	logerror("%06x: Invalid Opcode\n",PC());
+	fatalerror("%06x: Invalid Opcode\n",PC());
 }
