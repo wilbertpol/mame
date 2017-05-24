@@ -49,6 +49,9 @@ public:
 
 	virtual image_init_result call_load() override ;
 	virtual void call_unload() override {}
+	virtual const software_list_loader &get_software_list_loader() const override { return rom_software_list_loader::instance(); }
+	virtual const char *custom_instance_name() const override { return "card"; }
+	virtual const char *custom_brief_instance_name() const override { return "card"; }
 
 	int get_type() { return m_type; }
 	static int get_cart_type(const u8 *ROM, u32 len);
@@ -88,7 +91,7 @@ protected:
 	MCFG_DEVICE_SLOT_INTERFACE(_slot_intf, _def_slot, false) \
 	static_cast<segaai_card_slot_device *>(device)->set_mandatory(false); \
 	static_cast<segaai_card_slot_device *>(device)->set_intf("segaai_card"); \
-	static_cast<segaai_card_slot_device *>(device)->set_ext("aic,bin");
+	static_cast<segaai_card_slot_device *>(device)->set_ext("bin,aic");
 
 SLOT_INTERFACE_EXTERN(segaai_card);
 
