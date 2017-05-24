@@ -52,7 +52,7 @@ segaai_soundbox_device::segaai_soundbox_device(const machine_config &mconfig, co
 }
 
 
-static MACHINE_CONFIG_FRAGMENT( soundbox )
+MACHINE_CONFIG_MEMBER(segaai_soundbox_device::device_add_mconfig)
 	MCFG_DEVICE_ADD("tmp8253", PIT8253, 0)
 //	MCFG_PIT8253_CLK0() // unknown frequency, 5MHz?
 //	MCFG_PIT8253_OUT0_HANDLER()
@@ -72,12 +72,6 @@ static MACHINE_CONFIG_FRAGMENT( soundbox )
 	MCFG_SOUND_ROUTE(0, "lspeaker", 1.00)
 	MCFG_SOUND_ROUTE(1, "rspeaker", 1.00)
 MACHINE_CONFIG_END
-
-
-machine_config_constructor segaai_soundbox_device::device_mconfig_additions() const
-{
-	return MACHINE_CONFIG_NAME( soundbox );
-}
 
 
 ROM_START( soundbox )

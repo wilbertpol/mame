@@ -19,16 +19,16 @@ class segaai_soundbox_device : public device_t,
 public:
 	segaai_soundbox_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
 
-	virtual machine_config_constructor device_mconfig_additions() const;
-	virtual const tiny_rom_entry *device_rom_region() const;
-	virtual void device_start();
-	virtual void device_reset();
+	virtual void device_add_mconfig(machine_config &config) override;
+	virtual const tiny_rom_entry *device_rom_region() const override;
+	virtual void device_start() override;
+	virtual void device_reset() override;
 
-	virtual DECLARE_READ8_MEMBER(read_lo);
-	virtual DECLARE_WRITE8_MEMBER(write_lo);
-	virtual DECLARE_READ8_MEMBER(read_hi);
-	virtual DECLARE_READ8_MEMBER(read_io);
-	virtual DECLARE_WRITE8_MEMBER(write_io);
+	virtual DECLARE_READ8_MEMBER(read_lo) override;
+	virtual DECLARE_WRITE8_MEMBER(write_lo) override;
+	virtual DECLARE_READ8_MEMBER(read_hi) override;
+	virtual DECLARE_READ8_MEMBER(read_io) override;
+	virtual DECLARE_WRITE8_MEMBER(write_io) override;
 
 	DECLARE_READ8_MEMBER(tmp8255_porta_r);
 	DECLARE_WRITE8_MEMBER(tmp8255_portb_w);
