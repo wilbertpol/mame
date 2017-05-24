@@ -119,7 +119,7 @@ New JIS Keyboard Connector Pinout:
 // Layout
 #include "segaai.lh"
 
-//#define VERBOSE (LOG_GENERAL)
+#define VERBOSE (LOG_GENERAL)
 #include "logmacro.h"
 
 
@@ -405,9 +405,9 @@ READ8_MEMBER(segaai_state::i8255_porta_r)
 Mainboard 8255 port B
 
  76543210
- +-------- CN9 Pin 8
+ +-------- CN9 Pin 8 (1 - unit is powered??)
   +------- Tape head engaged
-   +------ Tape insertion sensor
+   +------ Tape insertion sensor (0 - tape is inserted, 1 - no tape inserted)
     +----- Tape write enable sensor
      +---- keyboard connector pin 3
       +--- 0 = Touch pad data available
@@ -433,7 +433,10 @@ READ8_MEMBER(segaai_state::i8255_portb_r)
 		// Bit 2 reset to indicate that touchpad data is available
 	}
 
-	return m_i8255_portb;
+	// when checking whether the tape is running Popoland wants to see bit7 set and bit5 reset
+	m_i8255_portb ^= 0x80;
+
+	return (m_i8255_portb & 0xdf) | 0x80;
 }
 
 
@@ -511,8 +514,8 @@ WRITE8_MEMBER(segaai_state::upd7759_ctrl_w)
 	m_upd7759_ctrl = data;
 
 	// bit0 is connected to /md line of the uPD7759?
-	//m_upd7759->md_w((m_upd7759_ctrl & 0x01) ? 0 : 1);
-	m_upd7759->reset_w((m_upd7759_ctrl & 0x01) ? 1 : 0);
+	m_upd7759->md_w((m_upd7759_ctrl & 0x01) ? 0 : 1);
+	//m_upd7759->reset_w((m_upd7759_ctrl & 0x01) ? 1 : 0);
 
 	// bit1 selects which ROM should be used?
 	m_upd7759->set_bank_base((m_upd7759_ctrl & 2) ? 0x00000 : 0x20000);
@@ -601,7 +604,7 @@ WRITE8_MEMBER(segaai_state::unk17_w)
 		{
 			case 3:		// -MD pin on upd7759?
 				// TODO
-				m_upd7759->md_w(state ? 0 : 1);
+//				m_upd7759->md_w(state ? 0 : 1);
 				m_upd7759->reset_w(state ? 1 : 0);
 				break;
 		}
