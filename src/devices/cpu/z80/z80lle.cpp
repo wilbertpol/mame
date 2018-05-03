@@ -681,9 +681,6 @@ void z80lle_device::execute_run()
 //		m_after_ei = false;
 //		m_after_ldair = false;
 
-		// TODO: Create a "program" for the M1 opcode fetching
-
-		// TODO: Except while doing a prefixed instruction
 		if (m_instruction == M1 && m_instruction_step == 0 && m_instruction_offset == 0) {
 			PRVPC = PCD;
 			debugger_instruction_hook(PCD);
@@ -692,7 +689,7 @@ void z80lle_device::execute_run()
 		// Execute steps for instruction
 		switch (insts[m_instruction][m_instruction_step]) {
 		case UNKNOWN:
-			fatalerror("Unsupported instruction %02x encounted at address %04x", m_ir, PRVPC);
+			fatalerror("Unsupported instruction %02x encountered at address %04x", m_ir, PRVPC);
 			break;
 		case A_DB:
 			m_data_bus = A;
