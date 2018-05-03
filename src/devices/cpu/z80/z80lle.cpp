@@ -684,7 +684,7 @@ void z80lle_device::execute_run()
 		// TODO: Create a "program" for the M1 opcode fetching
 
 		// TODO: Except while doing a prefixed instruction
-		if (m_instruction == M1 && m_instruction_step == 0) {
+		if (m_instruction == M1 && m_instruction_step == 0 && m_instruction_offset == 0) {
 			PRVPC = PCD;
 			debugger_instruction_hook(PCD);
 		}
