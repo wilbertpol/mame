@@ -25,7 +25,7 @@
 ******************************************************************************/
 
 #include "emu.h"
-#include "cpu/z80/z80.h"
+#include "cpu/z80/z80lle.h"
 #include "machine/terminal.h"
 
 class zexall_state : public driver_device
@@ -50,7 +50,7 @@ private:
 
 	void mem_map(address_map &map);
 
-	required_device<cpu_device> m_maincpu;
+	required_device<z80lle_device> m_maincpu;
 	required_device<generic_terminal_device> m_terminal;
 	required_shared_ptr<uint8_t> m_main_ram;
 	uint8_t m_out_data; // byte written to 0xFFFF
@@ -161,7 +161,7 @@ INPUT_PORTS_END
 void zexall_state::zexall(machine_config &config)
 {
 	/* basic machine hardware */
-	Z80(config, m_maincpu, XTAL(3'579'545));
+	Z80LLE(config, m_maincpu, XTAL(3'579'545));
 	m_maincpu->set_addrmap(AS_PROGRAM, &zexall_state::mem_map);
 
 	/* video hardware */
