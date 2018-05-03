@@ -1,5 +1,5 @@
 // license:BSD-3-Clause
-// copyright-holders:Juergen Buchmueller
+// copyright-holders:Wilbert Pol
 /*****************************************************************************
  *
  *
@@ -11,6 +11,7 @@
  *
  *
  *   TODO:
+ *   - Implement the 2 start up cycles
  *   - Just about everything
  *
  *****************************************************************************/
@@ -50,6 +51,8 @@
 
 #define SPD     m_sp.d
 #define SP      m_sp.w.l
+#define SP_H    m_sp.b.h
+#define SP_L    m_sp.b.l
 
 #define AFD     m_af.d
 #define AF      m_af.w.l
@@ -278,33 +281,144 @@ static uint8_t SZHVC_sub[2*256*256];
 //
 // 11111001 : { X; HL -> INCDEC; INCDEC -> SP } // LD SP,HL
 
-const uint8_t z80lle_device::insts[256][17] = {
+const u8 z80lle_device::insts[2 * 256 + 1][17] = {
+	/* Regular instructions */
 	/* 0x00 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 0x06, 7 cycles, LD B,n
+	{ 0 },
+	/* 01 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, LD BC,nn
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 06 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD B,n
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 0x0e, 7 cycles, LD C,n
+	/* 0e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD C,n
 	{ 0 },
 	/* 0x10 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 0x16, 7 cycles, LD D,n
+	{ 0 },
+	/* 11 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, LD DE,nn
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 16 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD D,n
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 0x1e, 7 cycles, LD E,n
+	/* 1e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD E,n
 	{ 0 },
 	/* 0x20 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 0x26, 7 cycles, LD H,n
+	{ 0 },
+	/* 21 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, LD HL,nn
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 26 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD H,n
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 0x2e, 7 cycles, LD L,n
+	/* 2e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD L,n
 	{ 0 },
 	/* 0x30 */
-	{ 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, A_DB, WRITE, CHECK_WAIT, END },  // 0x32, 13 cycles, LD (nn),A
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_A, END },  // 0x3a, 13 cycles, LD A,(nn)
-	{ 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 0x3e, 7 cycles, LD A,n
 	{ 0 },
+	/* 31 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, LD SP,nn
+	/* 32 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, A_DB, WRITE, CHECK_WAIT, END },  // 13 cycles, LD (nn),A
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 3a */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_A, END },  // 13 cycles, LD A,(nn)
+	{ 0 }, { 0 }, { 0 },
+	/* 3e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD A,n
+	{ 0 },
+	/* 0x40 */
+	/* 40 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,B
+	/* 41 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,C
+	/* 42 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,D
+	/* 43 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,E
+	/* 44 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,H
+	/* 45 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,L
+	/* 46 */ { 0 },
+	/* 47 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,A
+	/* 48 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,B
+	/* 49 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,C
+	/* 4a */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,D
+	/* 4b */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,E
+	/* 4c */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,H
+	/* 4d */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,L
+	/* 4e */ { 0 },
+	/* 4f */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,A
+	/* 0x50 */
+	/* 50 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,B
+	/* 51 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,C
+	/* 52 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,D
+	/* 53 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,E
+	/* 54 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,H
+	/* 55 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,L
+	/* 56 */ { 0 },
+	/* 57 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,A
+	/* 58 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,B
+	/* 59 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,C
+	/* 5a */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,D
+	/* 5b */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,E
+	/* 5c */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,H
+	/* 5d */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,L
+	/* 5e */ { 0 },
+	/* 5f */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,A
+	/* 0x60 */
+	/* 60 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,B
+	/* 61 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,C
+	/* 62 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,D
+	/* 63 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,E
+	/* 64 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,H
+	/* 65 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,L
+	/* 66 */ { 0 },
+	/* 67 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,A
+	/* 68 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,B
+	/* 69 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,C
+	/* 6a */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,D
+	/* 6b */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,E
+	/* 6c */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,H
+	/* 6d */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,L
+	/* 6e */ { 0 },
+	/* 6f */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,A
+	/* 0x70 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 78 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,B
+	/* 79 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,C
+	/* 7a */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,D
+	/* 7b */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,E
+	/* 7c */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,H
+	/* 7d */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,L
+	/* 7e */ { 0 },
+	/* 7f */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,A
+	/* 0x80 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x90 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xa0 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xb0 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xc0 */
+	{ 0 }, { 0 }, { 0 },
+	/* c3 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 10 cycles, JMP nn
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* cb */ { 0 },
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xd0 */
+	{ 0 }, { 0 }, { 0 },
+	/* d3 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, A_W, WZ_OUT, WZ_INC, A_DB, OUTPUT, CHECK_WAIT, END },  // 11 cycles, OUT (n), A
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xe0 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xf0 */
+	{ 0 }, { 0 }, { 0 },
+	/* f3 */ { DI, END },  // 4 cycles, DI
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+
+	/* CB prefixed instructions */
+	/* 0x00 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x10 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x20 */
+	/* 20 */ { REG_TMP, ALU_SLA, ALU_REG, END }, // 8 cycles, SLA B
+	/* 21 */ { REG_TMP, ALU_SLA, ALU_REG, END }, // 8 cycles, SLA C
+	/* 22 */ { REG_TMP, ALU_SLA, ALU_REG, END }, // 8 cycles, SLA D
+	/* 23 */ { REG_TMP, ALU_SLA, ALU_REG, END }, // 8 cycles, SLA E
+	/* 24 */ { REG_TMP, ALU_SLA, ALU_REG, END }, // 8 cycles, SLA H
+	/* 25 */ { REG_TMP, ALU_SLA, ALU_REG, END }, // 8 cycles, SLA L
+	/* 26 */ { 0 },
+	/* 27 */ { REG_TMP, ALU_SLA, ALU_REG, END }, // 8 cycles, SLA A
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x30 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0x40 */
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0x50 */
@@ -322,19 +436,16 @@ const uint8_t z80lle_device::insts[256][17] = {
 	/* 0xb0 */
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0xc0 */
-	{ 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 0xc3, 10 cycles, JMP nn
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0xd0 */
-	{ 0 }, { 0 }, { 0 },
-	{ X, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, A_W, WZ_OUT, WZ_INC, A_DB_0, OUTPUT, CHECK_WAIT, END },  // 0xd3, 11 cycles, OUT (n), A
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0xe0 */
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0xf0 */
-	{ 0 }, { 0 }, { 0 },
-	{ DI },  // 0xf3, 4 cycles, DI
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+
+	/* Special sequences */
+	/* M1 */ { PC_OUT, PC_INC, READ_OP, CHECK_WAIT, REFRESH, DECODE },
 };
 
 
@@ -544,8 +655,12 @@ void z80lle_device::device_reset()
 
 	WZ=PCD;
 
-	m_execution_state = FETCH;
-	m_fetch_state = M1_SET_ADDRESS;
+	m_instruction = M1;
+	m_instruction_step = 0;
+	m_instruction_offset = 0;
+
+	m_tmp = 0;
+	m_alu = 0;
 }
 
 
@@ -568,194 +683,276 @@ void z80lle_device::execute_run()
 
 		// TODO: Create a "program" for the M1 opcode fetching
 
-		switch (m_execution_state) {
-		case FETCH:
-			// Set up PC address, read, wait for WAIT lines, read instruction
-			// when done, decode instruction, optionally redo fetch for more opcode fetches
-			switch (m_fetch_state) {
-			case M1_SET_ADDRESS:
-				PRVPC = PCD;
-				// TODO: Only do this when starting an instruction
-				debugger_instruction_hook(PCD);
-				// cycle #0: Output PC on address lines
-				m_icount -= 1;
-				m_address_bus = PC;
-				m_fetch_state = M1_READ_OP;
-				break;
-			case M1_READ_OP:
-				// Assert MREQ and RD signals.
-				// Now we may be reading a bit too early, the opcode should really be read when /WAIT is high again.
-				if (m_wait_state)
-				{
-					m_data_bus = m_decrypted_opcodes_direct->read_byte(m_address_bus);
-					PC++;
-					// /WAIT might have been pulled low by the read
-					m_fetch_state = m_wait_state ? M1_REFRESH : M1_WAIT_STATE;
-				}
-				m_icount -= 1;
-				break;
-			case M1_WAIT_STATE:
-				if (m_wait_state)
-				{
-					m_fetch_state = M1_REFRESH;
-				}
-				m_icount -= 1;
-				break;
-			case M1_REFRESH:
-				// do RAM refresh
-				m_ir = m_data_bus;
-				m_instruction_step = 0;
-				m_refresh_cb((m_i << 8) | (m_r2 & 0x80) | (m_r & 0x7f), 0x00, 0xff);
-				m_r++;
-				m_icount -= 1;
-				// TODO Perform decode here
-				m_fetch_state = M1_SET_ADDRESS;
-				m_execution_state = EXECUTE;
-				break;
-			case DECODE:
-				// Not needed... TODO: Remove
-				// TODO: Proper decoding and handling of prefixes
-				if (m_ir == 0xDD || m_ir == 0xCB || m_ir == 0xED) {
-					m_fetch_state = M1_SET_ADDRESS;
-				} else {
-					// TODO: Do decode logic
-					m_fetch_state = M1_SET_ADDRESS;
-					m_execution_state = EXECUTE;
-				}
-				m_icount -= 1;
-				break;
-			}
+		// TODO: Except while doing a prefixed instruction
+		if (m_instruction == M1 && m_instruction_step == 0) {
+			PRVPC = PCD;
+			debugger_instruction_hook(PCD);
+		}
+
+		// Execute steps for instruction
+		switch (insts[m_instruction][m_instruction_step]) {
+		case UNKNOWN:
+			fatalerror("Unsupported instruction %02x encounted at address %04x", m_ir, PRVPC);
 			break;
-		case EXECUTE:
-			// Execute steps for instruction
-			if (insts[m_ir][0] == END) {
-				fatalerror("Unsupported instruction %02x encounted at address %04x", m_ir, PRVPC);
+		case A_DB:
+			m_data_bus = A;
+			WZ_H = m_data_bus;
+			logerror("A_DB\n");
+			break;
+		case A_W:
+			WZ_H = A;
+			logerror("A_W\n");
+			break;
+		case ALU_REG:
+			switch (m_ir & 0x07) {
+			case 0x00:
+				B = m_alu;
+				break;
+			case 0x01:
+				C = m_alu;
+				break;
+			case 0x02:
+				D = m_alu;
+				break;
+			case 0x03:
+				E = m_alu;
+				break;
+			case 0x04:
+				H = m_alu;
+				break;
+			case 0x05:
+				L = m_alu;
+				break;
+			case 0x06:
+				fatalerror("REG_TMP: illegal register reference 0x06\n");
+				break;
+			case 0x07:
+				A = m_alu;
+				break;
 			}
-			while (m_icount > 0 && insts[m_ir][m_instruction_step] != END) {
-				switch (insts[m_ir][m_instruction_step]) {
-				case A_DB:
-					m_data_bus = A;
-					WZ_H = m_data_bus;
-					m_icount -= 1;
-					logerror("A_DB\n");
-					break;
-				case A_DB_0:
-					m_data_bus = A;
-					WZ_H = m_data_bus;
-					logerror("A_DB_0\n");
-					break;
-				case A_W:
-					WZ_H = A;
-					logerror("A_W\n");
-					break;
-				case CHECK_WAIT:
-					if (!m_wait_state) {
-						m_icount -=1;
-						// Do not advance to next step
-						m_instruction_step--;
-					}
-					logerror("CHECK_WAIT\n");
-					break;
-				case DB_REG:
-					switch(m_ir & 0x38) {
-						case 0x00:
-							B = m_data_bus;
-							break;
-						case 0x08:
-							C = m_data_bus;
-							break;
-						case 0x10:
-							D = m_data_bus;
-							break;
-						case 0x18:
-							E = m_data_bus;
-							break;
-						case 0x20:
-							H = m_data_bus;
-							break;
-						case 0x28:
-							L = m_data_bus;
-							break;
-						case 0x30:
-							fatalerror("DB_REG: illegal register reference 0x30\n");
-							break;
-						case 0x38:
-							A = m_data_bus;
-							break;
-					}
-					m_icount -= 1;
-					logerror("DB_REG\n");
-					break;
-				case DB_A:
-					A = m_data_bus;
-					m_icount -= 1;
-					logerror("DB_A\n");
-					break;
-				case DB_W:
-					WZ_H = m_data_bus;
-					m_icount -= 1;
-					logerror("DB_W: WZ = %04x\n", WZ);
-					break;
-				case DB_Z:
-					WZ_L = m_data_bus;
-					m_icount -= 1;
-					logerror("DB_Z: WZ = %04x\n", WZ);
-					break;
-				case DI:
-					m_iff1 = m_iff2 = 0;
-					m_icount -= 1;
-					logerror("DI\n");
-					break;
-				case OUTPUT:
-					m_io->write_byte(m_address_bus, m_data_bus);
-					m_icount -= 3;
-					logerror("OUTPUT\n");
-					break;
-				case PC_INC:
-					PC++;
-					logerror("PC_INC\n");
-					break;
-				case PC_OUT:
-					m_address_bus = PC;
-					m_icount -= 1;
-					logerror("PC_OUT\n");
-					break;
-				case READ:
-					m_data_bus = m_program->read_byte(m_address_bus);
-					m_icount -= 1;
-					logerror("READ: read %02x from %04x\n", m_data_bus, m_address_bus);
-					break;
-				case WRITE:
-					m_program->write_byte(m_address_bus, m_data_bus);
-					m_icount -= 1;
-					logerror("WRITE: write %02x to %04x\n", m_data_bus, m_address_bus);
-					break;
-				case WZ_INC:
-					WZ++;
-					logerror("WZ_INC\n");
-					break;
-				case WZ_OUT:
-					m_address_bus = WZ;
-					m_icount -= 1;
-					logerror("WZ_OUT\n");
-					break;
-				case WZ_TO_PC:
-					PC = WZ;
-					logerror("WZ_TO_PC\n");
-					break;
-				case X:
-					m_icount -= 1;
-					logerror("X, skip cycle\n");
-					break;
-				}
-				m_instruction_step++;
+			logerror("ALU_REG\n");
+			break;
+		case ALU_SLA:
+			m_alu = m_tmp << 1;
+			F = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
+			logerror("ALU_SLA\n");
+			break;
+		case CHECK_WAIT:
+			if (!m_wait_state) {
+				m_icount -=1;
+				// Do not advance to next step
+				m_instruction_step--;
 			}
-			if (insts[m_ir][m_instruction_step] == END) {
-				m_execution_state = M1_SET_ADDRESS;
+			logerror("CHECK_WAIT\n");
+			break;
+		case DB_REG:
+			switch (m_ir & 0x38) {
+			case 0x00:
+				B = m_data_bus;
+				break;
+			case 0x08:
+				C = m_data_bus;
+				break;
+			case 0x10:
+				D = m_data_bus;
+				break;
+			case 0x18:
+				E = m_data_bus;
+				break;
+			case 0x20:
+				H = m_data_bus;
+				break;
+			case 0x28:
+				L = m_data_bus;
+				break;
+			case 0x30:
+				fatalerror("DB_REG: illegal register reference 0x30\n");
+				break;
+			case 0x38:
+				A = m_data_bus;
+				break;
 			}
+			logerror("DB_REG\n");
+			break;
+		case DB_R16H:
+			switch (m_ir & 0x30) {
+			case 0x00:
+				B = m_data_bus;
+				break;
+			case 0x10:
+				D = m_data_bus;
+				break;
+			case 0x20:
+				H = m_data_bus;
+				break;
+			case 0x30:
+				SP_H = m_data_bus;
+				break;
+			}
+			logerror("DB_R16H\n");
+			break;
+		case DB_R16L:
+			switch (m_ir & 0x30) {
+			case 0x00:
+				C = m_data_bus;
+				break;
+			case 0x10:
+				E = m_data_bus;
+				break;
+			case 0x20:
+				L = m_data_bus;
+				break;
+			case 0x30:
+				SP_L = m_data_bus;
+				break;
+			}
+			logerror("DB_R16L\n");
+			break;
+		case DB_A:
+			A = m_data_bus;
+			logerror("DB_A\n");
+			break;
+		case DB_W:
+			WZ_H = m_data_bus;
+			logerror("DB_W: WZ = %04x\n", WZ);
+			break;
+		case DB_Z:
+			WZ_L = m_data_bus;
+			logerror("DB_Z: WZ = %04x\n", WZ);
+			break;
+		case DECODE:
+			m_instruction = m_instruction_offset | m_ir;
+			m_instruction_step = 0 - 1;  // It's incremented at the end of the loop
+			if (m_ir == 0xcb) {
+				m_instruction_offset = CB_OFFSET;
+				m_instruction = M1;
+			}
+			logerror("DECODE\n");
+			break;
+		case DI:
+			m_iff1 = m_iff2 = 0;
+			logerror("DI\n");
+			break;
+		case END:
+			m_instruction = M1;
+			m_instruction_offset = 0;
+			m_instruction_step = 0 - 1;   // It's incremented at the end of the loop
+			logerror("END\n");
+			break;
+		case OUTPUT:
+			m_io->write_byte(m_address_bus, m_data_bus);
+			m_icount -= 3;
+			logerror("OUTPUT\n");
+			break;
+		case PC_INC:
+			PC++;
+			logerror("PC_INC\n");
+			break;
+		case PC_OUT:
+			m_address_bus = PC;
+			m_icount -= 1;
+			logerror("PC_OUT\n");
+			break;
+		case READ:
+			m_data_bus = m_program->read_byte(m_address_bus);
+			m_icount -= 2;
+			logerror("READ: read %02x from %04x\n", m_data_bus, m_address_bus);
+			break;
+		case READ_OP:
+			m_ir = m_decrypted_opcodes_direct->read_byte(m_address_bus);
+			m_icount -= 1;
+			logerror("READ_OP: read op %02x from %04x\n", m_data_bus, m_address_bus);
+			break;
+		case REFRESH:
+			m_icount -= 1;
+			m_refresh_cb((m_i << 8) | m_r, 0x00, 0xff);
+			m_icount -= 1;
+			m_r++;
+			logerror("REFRESH\n");
+			break;
+		case REG_TMP:
+			switch (m_ir & 0x07) {
+			case 0x00:
+				m_tmp = B;
+				break;
+			case 0x01:
+				m_tmp = C;
+				break;
+			case 0x02:
+				m_tmp = D;
+				break;
+			case 0x03:
+				m_tmp = E;
+				break;
+			case 0x04:
+				m_tmp = H;
+				break;
+			case 0x05:
+				m_tmp = L;
+				break;
+			case 0x06:
+				fatalerror("REG_TMP: illegal register reference 0x06\n");
+				break;
+			case 0x07:
+				m_tmp = A;
+				break;
+			}
+			logerror("REG_TMP\n");
+			break;
+		case TMP_REG:
+			switch (m_ir & 0x38) {
+			case 0x00:
+				B = m_tmp;
+				break;
+			case 0x08:
+				C = m_tmp;
+				break;
+			case 0x10:
+				D = m_tmp;
+				break;
+			case 0x18:
+				E = m_tmp;
+				break;
+			case 0x20:
+				H = m_tmp;
+				break;
+			case 0x28:
+				L = m_tmp;
+				break;
+			case 0x30:
+				fatalerror("TMP_REG: illegal register reference 0x30\n");
+				break;
+			case 0x38:
+				A = m_tmp;
+				break;
+			}
+			logerror("TMP_REG\n");
+			break;
+		case WRITE:
+			m_icount -= 1;
+			m_program->write_byte(m_address_bus, m_data_bus);
+			m_icount -= 1;
+			logerror("WRITE: write %02x to %04x\n", m_data_bus, m_address_bus);
+			break;
+		case WZ_INC:
+			WZ++;
+			logerror("WZ_INC\n");
+			break;
+		case WZ_OUT:
+			m_address_bus = WZ;
+			m_icount -= 1;
+			logerror("WZ_OUT\n");
+			break;
+		case WZ_TO_PC:
+			PC = WZ;
+			logerror("WZ_TO_PC\n");
+			break;
+		case X:
+			m_icount -= 1;
+			logerror("X, skip cycle\n");
 			break;
 		}
-//		EXEC(op,rop());
+		m_instruction_step++;
 	} while (m_icount > 0);
 }
 
