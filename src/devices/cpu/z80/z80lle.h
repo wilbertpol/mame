@@ -1,5 +1,5 @@
 // license:BSD-3-Clause
-// copyright-holders:Juergen Buchmueller
+// copyright-holders:Wilbert Pol
 #ifndef MAME_CPU_Z80_Z80LLE_H
 #define MAME_CPU_Z80_Z80LLE_H
 
@@ -124,52 +124,51 @@ protected:
 	const uint8_t *   m_cc_ex;
 
 	// New internal state
-	// Main CPU state
-	enum {
-		FETCH,
-		EXECUTE,
-		MEMORY_READ,
-		MEMORY_WRITE
-	};
-	// Fetch substates
-	enum {
-		M1_SET_ADDRESS,
-		M1_READ_OP,
-		M1_WAIT_STATE,
-		M1_REFRESH,
-		DECODE
-	};
 	// Sub instructions
 	enum {
-		END=0,	     // End of instructions
-		A_DB,        // register A to data bus, takes 1 cycle, also writes to W always?
-		A_DB_0,      // register A to data bus without taking a cycle, also writes to W always?
+		UNKNOWN=0,
+		END,	     // End of instructions
+		A_DB,        // register A to data bus, also writes to W always?
 		A_W,         // register A to W
+		ALU_REG,     // ALU output to register
+		ALU_SLA,     // ALU operation: SLA
 		CHECK_WAIT,	 // Check if a wait state should be taken, can take cycles
-		DB_A,        // Store data bus in A, takes 1 cycle
-		DB_REG,      // Store data bus in 8bit register, takes 1 cycle
-		DB_W,        // Store data bus in W, takes 1 cycle
-		DB_Z,        // Store data bus in Z, takes 1 cycle
-		DI,          // Reset interrupt flip flops, takes 1 cycle
-		EI,          // Set interrupt flip fliops, takes 1 cycle
+		DB_A,        // Store data bus in A
+		DB_REG,      // Store data bus in 8bit register
+		DB_R16H,     // Store data bus in high 8 bits of 16 bit register
+		DB_R16L,     // Store data bus in low 8 bits of 16 bit register
+		DB_W,        // Store data bus in W
+		DB_Z,        // Store data bus in Z
+		DECODE,      // Decode instruction
+		DI,          // Reset interrupt flip flops
+		EI,          // Set interrupt flip flops
 		OUTPUT,      // Write data bus to output, takes 3 cycles
 		PC_INC,      // Increment PC, maybe combines this with PC_OUT
 		PC_OUT,      // Put PC on address bus, takes 1 cycle
-		READ,        // Read memory from m_address_bus, storing result in m_data_bus, takes 1 cycle
-		WRITE,       // Write data bus to memory, takes 1 cycle
+		READ,        // Read memory from m_address_bus, storing result in m_data_bus, takes 2 cycle
+		READ_OP,     // M1 - read memory, takes 1 cycle
+		REFRESH,     // Refresh RAM, takes 2 cycles
+		REG_TMP,     // 8 bit register to TMP
+		TMP_REG,     // TMP to 8 bit register
+		WRITE,       // Write data bus to memory, takes 2 cycle
 		WZ_INC,      // Increment WZ, maybe combine this with WZ_OUT
 		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
 		WZ_TO_PC,    // Store contents of WZ in PC
 		X,           // Do nothing, takes 1 cycle
 	};
 
-	static const uint8_t insts[256][17];
-	int               m_execution_state;
-	int               m_fetch_state;
+	static const u8 insts[2*256 + 1][17];
+	static constexpr unsigned CB_OFFSET = 1 * 256;
+	static constexpr unsigned M1 = 2 * 256;
+
 	u16               m_address_bus;
 	u8                m_data_bus;
 	u8                m_instruction_step;
+	u16               m_instruction_offset;
+	u16               m_instruction;
 	u8                m_ir;
+	u8                m_tmp;    // TMP input into ALU
+	u8                m_alu;    // ALU output
 };
 
 DECLARE_DEVICE_TYPE(Z80LLE, z80lle_device)
