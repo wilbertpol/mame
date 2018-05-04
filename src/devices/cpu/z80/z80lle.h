@@ -84,21 +84,6 @@ protected:
 	devcb_write8 m_refresh_cb;
 	devcb_write_line m_halt_cb;
 
-	PAIR            m_prvpc;
-	PAIR            m_pc;
-	PAIR            m_sp;
-	PAIR            m_af;
-	PAIR            m_bc;
-	PAIR            m_de;
-	PAIR            m_hl;
-	PAIR            m_ix;
-	PAIR            m_iy;
-	PAIR            m_wz;
-	PAIR            m_af2;
-	PAIR            m_bc2;
-	PAIR            m_de2;
-	PAIR            m_hl2;
-	uint8_t           m_r;
 	uint8_t           m_r2;
 	uint8_t           m_iff1;
 	uint8_t           m_iff2;
@@ -128,38 +113,84 @@ protected:
 	enum {
 		UNKNOWN=0,
 		END,	     // End of instructions
+		A_ACT,       // register A to ACT input for ALU
 		A_DB,        // register A to data bus, also writes to W always?
 		A_W,         // register A to W
+		ADC16,       // 16bit addition with carry, takes 7 cycles
+		ADD16,       // 16bit addition, takes 7 cycles
+		SBC16,       // 16bit subtraction with cqrry, takes 7 cycles
+		ALU_A,       // ALU output to A
+		ALU_DB,      // ALU output to data bus
 		ALU_REG,     // ALU output to register
+		ALU_REGD,    // ALU output to destination register
+		ALU_AND,     // ALU operation: AND
+		ALU_CP,      // ALU operation: CP
+		ALU_DEC,     // ALU operation: DEC (decrements TMP input)
+		ALU_INC,     // ALU operation: INC (increments TMP input)
+		ALU_OR,      // ALU operation: OR
 		ALU_SLA,     // ALU operation: SLA
+		ALU_XOR,     // ALU operation: XOR
 		CHECK_WAIT,	 // Check if a wait state should be taken, can take cycles
 		DB_A,        // Store data bus in A
 		DB_REG,      // Store data bus in 8bit register
 		DB_R16H,     // Store data bus in high 8 bits of 16 bit register
 		DB_R16L,     // Store data bus in low 8 bits of 16 bit register
+		DB_TMP,      // Store data bus in TMP
 		DB_W,        // Store data bus in W
 		DB_Z,        // Store data bus in Z
+		DE_OUT,      // Put DE on address buys, takes 1 cycle
+		DE_WZ,       // Store DE in WZ
+		DEC_SP,      // Decrement SP (for PUSH)
 		DECODE,      // Decode instruction
 		DI,          // Reset interrupt flip flops
 		EI,          // Set interrupt flip flops
+		EX_DE_HL,    // Swap DE and HL
+		H_DB,        // register H to data bus
+		HL_OUT,      // Put HL on address bus, takes 1 cycle
+		INC_SP,      // Increment SP (for POP)
+		DEC_R16,     // Decrement a 16 bit register, takes 2 cycles
+		INC_R16,     // Increment a 16 bit register, takes 2 cycles
+		CALL_COND,   // Check condition for CALL, takes 1 cycle when condition is true
+		JR_COND,     // Check condition (Z, NZ, etc) for JR and perform jump, 5 cycles when branch taken
+		JP_COND,     // Check condition for JP and perform jump
+		RET_COND,    // Check condition for RET, takes 1 cycle
+		L_DB,        // register L to data bus
 		OUTPUT,      // Write data bus to output, takes 3 cycles
 		PC_INC,      // Increment PC, maybe combines this with PC_OUT
 		PC_OUT,      // Put PC on address bus, takes 1 cycle
+		PCH_DB,      // Put PC 8 high bits on data bus
+		PCL_DB,      // Put PC 8 low bits on data bus
+		R16H_DB,     // Put high 8 bits of 16 bit register on data bus
+		R16L_DB,     // Put low 8 bits of 16 bit register on data bus
 		READ,        // Read memory from m_address_bus, storing result in m_data_bus, takes 2 cycle
 		READ_OP,     // M1 - read memory, takes 1 cycle
 		REFRESH,     // Refresh RAM, takes 2 cycles
-		REG_TMP,     // 8 bit register to TMP
+		REGS_DB,      // 8 bit source register to data bus
+		REG_TMP,     // 8 bit source register to TMP
+		REGD_TMP,    // 8 bit destination register to TMP
+		RLCA,        // RLCA
+		RRCA,        // RRCA
+		SP_OUT,      // Put SP on address bus, takes 1 cycle
 		TMP_REG,     // TMP to 8 bit register
 		WRITE,       // Write data bus to memory, takes 2 cycle
 		WZ_INC,      // Increment WZ, maybe combine this with WZ_OUT
 		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
 		WZ_TO_PC,    // Store contents of WZ in PC
 		X,           // Do nothing, takes 1 cycle
+		LDI,         // Set flags and update pointers and counter, takes 2 cycles
+		REPEAT,      // Move PC 2 steps back if BC != 0, takes 5 cycles
 	};
 
-	static const u8 insts[2*256 + 1][17];
+	static const u8 insts[4*256 + 1][23];
+	static const u8 jr_conditions[8][2];
+	static const u8 jp_conditions[8][2];
 	static constexpr unsigned CB_OFFSET = 1 * 256;
-	static constexpr unsigned M1 = 2 * 256;
+	static constexpr unsigned ED_OFFSET = 2 * 256;
+	static constexpr unsigned FD_OFFSET = 3 * 256;
+	static constexpr unsigned M1 = 4 * 256;
+	static constexpr unsigned HL_OFFSET = 0;
+	static constexpr unsigned IX_OFFSET = 1;
+	static constexpr unsigned IY_OFFSET = 2;
 
 	u16               m_address_bus;
 	u8                m_data_bus;
@@ -167,8 +198,34 @@ protected:
 	u16               m_instruction_offset;
 	u16               m_instruction;
 	u8                m_ir;
+	u8                m_act;    // ACT input into ALU
 	u8                m_tmp;    // TMP input into ALU
 	u8                m_alu;    // ALU output
+	PAIR              m_prvpc;
+	PAIR              m_pc;
+	PAIR              m_sp;
+	PAIR              m_af;
+	PAIR              m_bc;
+	PAIR              m_de;
+	u8                m_hl_offset;     // Are we using HL, or IX or IY instead of HL
+	PAIR              m_hl_index[3];   // HL, IX, IY
+	PAIR              m_wz;
+	PAIR              m_af2;
+	PAIR              m_bc2;
+	PAIR              m_de2;
+	PAIR              m_hl2;
+	u8                m_r;
+
+	u16 adc16(u16 arg1, u16 arg2);
+	u16 add16(u16 arg1, u16 arg2);
+	u16 sbc16(u16 arg1, u16 arg2);
+	inline void end_instruction()
+	{
+		m_instruction = M1;
+		m_instruction_offset = 0;
+		m_instruction_step = 0;
+		m_hl_offset = HL_OFFSET;
+	}
 };
 
 DECLARE_DEVICE_TYPE(Z80LLE, z80lle_device)
