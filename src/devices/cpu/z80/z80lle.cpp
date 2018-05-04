@@ -289,7 +289,8 @@ const u8 z80lle_device::insts[4 * 256 + 1][23] = {
 	/* c3 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 10 cycles, JMP nn
 	/* c4 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, CALL_COND, DEC_SP, SP_OUT, PCH_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, PCL_DB, WRITE, CHECK_WAIT, WZ_TO_PC, END },  // 10/17 cycles, CALL NZ,nn
 	/* c5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 11 cycles, PUSH BC
-	{ 0 }, { 0 },
+	/* c6 */ { 0 },  // 7 cycles
+	{ 0 },
 	/* c8 */ { RET_COND, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_Z, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 5/11 cycles, RET Z
 	/* c9 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_Z, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 10 cycles, RET
 	/* ca */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, JP_COND, END },  // 10 cycles, JP Z,nn
@@ -931,16 +932,13 @@ void z80lle_device::execute_run()
 			break;
 		case A_ACT:
 			m_act = A;
-			logerror("A_ACT\n");
 			break;
 		case A_DB:
 			m_data_bus = A;
 			WZ_H = m_data_bus;
-			logerror("A_DB\n");
 			break;
 		case A_W:
 			WZ_H = A;
-			logerror("A_W\n");
 			break;
 		case ADC16:
 			switch (m_ir & 0x30)
@@ -959,7 +957,6 @@ void z80lle_device::execute_run()
 				break;
 			}
 			m_icount -= 7;
-			logerror("ADC16\n");
 			break;
 		case ADD16:
 			switch (m_ir & 0x30)
@@ -978,7 +975,6 @@ void z80lle_device::execute_run()
 				break;
 			}
 			m_icount -= 7;
-			logerror("ADD16\n");
 			break;
 		case SBC16:
 			switch (m_ir & 0x30)
@@ -997,15 +993,12 @@ void z80lle_device::execute_run()
 				break;
 			}
 			m_icount -= 7;
-			logerror("SBC16\n");
 			break;
 		case ALU_DB:
 			m_data_bus = m_alu;
-			logerror("ALU_DB\n");
 			break;
 		case ALU_A:
 			A = m_alu;
-			logerror("ALU_A\n");
 			break;
 		case ALU_REG:
 			switch (m_ir & 0x07)
@@ -1035,7 +1028,6 @@ void z80lle_device::execute_run()
 				A = m_alu;
 				break;
 			}
-			logerror("ALU_REG\n");
 			break;
 		case ALU_REGD:
 			switch (m_ir & 0x38)
@@ -1065,43 +1057,35 @@ void z80lle_device::execute_run()
 				A = m_alu;
 				break;
 			}
-			logerror("ALU_REGD\n");
 			break;
 		case ALU_AND:
 			m_alu = m_act & m_tmp;
 			F = SZP[m_alu] | HF;
-			logerror("ALU_AND\n");
 			break;
 		case ALU_CP:  // Flag handling is slightly different from SUB
 			m_alu = m_act - m_tmp;
 			F = (SZHVC_sub[(m_act << 8) | m_alu] & ~(YF | XF)) |
 				(m_tmp & (YF | XF));
-			logerror("ALU_CP\n");
 			break;
 		case ALU_DEC:
 			m_alu = m_tmp - 1;
 			F = (F & CF) | SZHV_dec[m_alu];
-			logerror("ALU_DEC\n");
 			break;
 		case ALU_INC:
 			m_alu = m_tmp + 1;
 			F = (F & CF) | SZHV_inc[m_alu];
-			logerror("ALU_INC\n");
 			break;
 		case ALU_OR:
 			m_alu = m_act | m_tmp;
 			F = SZP[m_alu];
-			logerror("ALU_OR\n");
 			break;
 		case ALU_XOR:
 			m_alu = m_act ^ m_tmp;
 			F = SZP[m_alu];
-			logerror("ALU_XOR\n");
 			break;
 		case ALU_SLA:
 			m_alu = m_tmp << 1;
 			F = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
-			logerror("ALU_SLA\n");
 			break;
 		case CHECK_WAIT:
 			if (!m_wait_state)
@@ -1110,7 +1094,6 @@ void z80lle_device::execute_run()
 				// Do not advance to next step
 				m_instruction_step--;
 			}
-			logerror("CHECK_WAIT\n");
 			break;
 		case DB_REG:
 			switch (m_ir & 0x38)
@@ -1140,35 +1123,27 @@ void z80lle_device::execute_run()
 				A = m_data_bus;
 				break;
 			}
-			logerror("DB_REG\n");
 			break;
 		case DB_TMP:
 			m_tmp = m_data_bus;
-			logerror("DB_TMP\n");
 			break;
 		case DB_A:
 			A = m_data_bus;
-			logerror("DB_A\n");
 			break;
 		case DB_W:
 			WZ_H = m_data_bus;
-			logerror("DB_W: WZ = %04x\n", WZ);
 			break;
 		case DB_Z:
 			WZ_L = m_data_bus;
-			logerror("DB_Z: WZ = %04x\n", WZ);
 			break;
 		case DE_WZ:
 			WZ = DE;
-			logerror("DE_WZ\n");
 			break;
 		case DEC_SP:
 			SP -= 1;
-			logerror("DEC_SP\n");
 			break;
 		case INC_SP:
 			SP += 1;
-			logerror("INC_SP\n");
 			break;
 		case DECODE:
 			m_instruction = m_instruction_offset | m_ir;
@@ -1195,20 +1170,16 @@ void z80lle_device::execute_run()
 				m_instruction = M1;
 				m_hl_offset = IY_OFFSET;
 			}
-			logerror("DECODE\n");
 			break;
 		case DI:
 			m_iff1 = m_iff2 = 0;
-			logerror("DI\n");
 			break;
 		case EI:
 			m_iff1 = m_iff2 = 1;
 			m_after_ei = true;
-			logerror("EI\n");
 			break;
 		case END:
 			end_instruction();
-			logerror("END\n");
 			break;
 		case EX_DE_HL:
 			{
@@ -1216,21 +1187,17 @@ void z80lle_device::execute_run()
 				DE = HL;
 				HL = tmp;
 			}
-			logerror("EX_DE_HL\n");
 			break;
 		case H_DB:
 			m_data_bus = H;
-			logerror("H_DB\n");
 			break;
 		case DE_OUT:
 			m_address_bus = DE;
 			m_icount -= 1;
-			logerror("DE_OUT\n");
 			break;
 		case HL_OUT:
 			m_address_bus = HL;
 			m_icount -= 1;
-			logerror("HL_OUT\n");
 			break;
 		case DEC_R16:
 			switch (m_ir & 0x30)
@@ -1249,7 +1216,6 @@ void z80lle_device::execute_run()
 				break;
 			}
 			m_icount -= 2;
-			logerror("DEC_R16\n");
 			break;
 		case INC_R16:
 			switch (m_ir & 0x30)
@@ -1268,7 +1234,6 @@ void z80lle_device::execute_run()
 				break;
 			}
 			m_icount -= 2;
-			logerror("INC_R16\n");
 			break;
 		case JR_COND:
 			if ((F & jr_conditions[((m_ir >> 3) & 0x07)][0]) == jr_conditions[((m_ir >> 3) & 0x07)][1])
@@ -1277,14 +1242,12 @@ void z80lle_device::execute_run()
 				PC = WZ;
 				m_icount -= 5;
 			}
-			logerror("JR_COND\n");
 			break;
 		case JP_COND:
 			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
 			{
 				PC = WZ;
 			}
-			logerror("JP_COND\n");
 			break;
 		case CALL_COND:
 			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
@@ -1295,7 +1258,6 @@ void z80lle_device::execute_run()
 			{
 				end_instruction();
 			}
-			logerror("CALL_COND\n");
 			break;
 		case RET_COND:
 			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) != jp_conditions[((m_ir >> 3) & 0x07)][1])
@@ -1303,33 +1265,26 @@ void z80lle_device::execute_run()
 				end_instruction();
 			}
 			m_icount -= 1;
-			logerror("RET_COND\n");
 			break;
 		case L_DB:
 			m_data_bus = L;
-			logerror("L_DB\n");
 			break;
 		case OUTPUT:
 			m_io->write_byte(m_address_bus, m_data_bus);
 			m_icount -= 3;
-			logerror("OUTPUT\n");
 			break;
 		case PC_INC:
 			PC++;
-			logerror("PC_INC\n");
 			break;
 		case PC_OUT:
 			m_address_bus = PC;
 			m_icount -= 1;
-			logerror("PC_OUT\n");
 			break;
 		case PCH_DB:
 			m_data_bus = PC_H;
-			logerror("PCH_DB\n");
 			break;
 		case PCL_DB:
 			m_data_bus = PC_L;
-			logerror("PCL_DB\n");
 			break;
 		case R16H_DB:
 			switch (m_ir & 0x30) {
@@ -1349,7 +1304,6 @@ void z80lle_device::execute_run()
 					m_data_bus = SP_H;
 				break;
 			}
-			logerror("R16H_DB\n");
 			break;
 		case R16L_DB:
 			switch (m_ir & 0x30) {
@@ -1369,7 +1323,6 @@ void z80lle_device::execute_run()
 					m_data_bus = SP_L;
 				break;
 			}
-			logerror("R16L_DB\n");
 			break;
 		case DB_R16H:
 			switch (m_ir & 0x30)
@@ -1390,7 +1343,6 @@ void z80lle_device::execute_run()
 					SP_H = m_data_bus;
 				break;
 			}
-			logerror("DB_R16H\n");
 			break;
 		case DB_R16L:
 			switch (m_ir & 0x30)
@@ -1411,24 +1363,20 @@ void z80lle_device::execute_run()
 					SP_L = m_data_bus;
 				break;
 			}
-			logerror("DB_R16L\n");
 			break;
 		case READ:
 			m_data_bus = m_program->read_byte(m_address_bus);
 			m_icount -= 2;
-			logerror("READ: read %02x from %04x\n", m_data_bus, m_address_bus);
 			break;
 		case READ_OP:
 			m_ir = m_decrypted_opcodes_direct->read_byte(m_address_bus);
 			m_icount -= 1;
-			logerror("READ_OP: read op %02x from %04x\n", m_data_bus, m_address_bus);
 			break;
 		case REFRESH:
 			m_icount -= 1;
 			m_refresh_cb((m_i << 8) | m_r, 0x00, 0xff);
 			m_icount -= 1;
 			m_r++;
-			logerror("REFRESH\n");
 			break;
 		case REGS_DB:
 			switch (m_ir & 0x07)
@@ -1458,7 +1406,6 @@ void z80lle_device::execute_run()
 				m_data_bus = A;
 				break;
 			}
-			logerror("REGS_DB\n");
 			break;
 		case REG_TMP:
 			switch (m_ir & 0x07) {
@@ -1487,7 +1434,6 @@ void z80lle_device::execute_run()
 				m_tmp = A;
 				break;
 			}
-			logerror("REG_TMP\n");
 			break;
 		case REGD_TMP:
 			switch (m_ir & 0x38) {
@@ -1516,23 +1462,19 @@ void z80lle_device::execute_run()
 				m_tmp = A;
 				break;
 			}
-			logerror("REGD_TMP\n");
 			break;
 		case RLCA:
 			A = (A << 1) | (A >> 7);
 			F = (F & (SF | ZF | PF)) | (A & (YF | XF | CF));
-			logerror("RLCA\n");
 			break;
 		case RRCA:
 			F = (F & (SF | ZF | PF)) | (A & CF);
 			A = (A >> 1) | (A << 7);
 			F |= (A & (YF | XF));
-			logerror("RRCA\n");
 			break;
 		case SP_OUT:
 			m_address_bus = SP;
 			m_icount -= 1;
-			logerror("SP_OUT\n");
 			break;
 		case TMP_REG:
 			switch (m_ir & 0x38) {
@@ -1561,30 +1503,24 @@ void z80lle_device::execute_run()
 				A = m_tmp;
 				break;
 			}
-			logerror("TMP_REG\n");
 			break;
 		case WRITE:
 			m_icount -= 1;
 			m_program->write_byte(m_address_bus, m_data_bus);
 			m_icount -= 1;
-			logerror("WRITE: write %02x to %04x\n", m_data_bus, m_address_bus);
 			break;
 		case WZ_INC:
 			WZ++;
-			logerror("WZ_INC\n");
 			break;
 		case WZ_OUT:
 			m_address_bus = WZ;
 			m_icount -= 1;
-			logerror("WZ_OUT\n");
 			break;
 		case WZ_TO_PC:
 			PC = WZ;
-			logerror("WZ_TO_PC\n");
 			break;
 		case X:
 			m_icount -= 1;
-			logerror("X, skip cycle\n");
 			break;
 		case LDI:
 			F &= SF | ZF | CF;
@@ -1598,7 +1534,6 @@ void z80lle_device::execute_run()
 			if (BC)
 				F |= VF;
 			m_icount -= 2;
-			logerror("LDI, ");
 			break;
 		case REPEAT:
 			if (BC != 0)
@@ -1611,7 +1546,6 @@ void z80lle_device::execute_run()
 				}
 				m_icount -= 5;
 			}
-			logerror("REPEAT, ");
 			break;
 		}
 	} while (m_icount > 0);
