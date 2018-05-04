@@ -12,6 +12,10 @@
  *
  *   TODO:
  *   - Implement the 2 start up cycles
+ *   - Add support for interrupts
+ *   - Add support for NMI
+ *   - WZ is only incremented once for $22 LD (nn),HL?
+ *   - Verify A_DB, should it set WH for each instruction?
  *   - Just about everything
  *
  *****************************************************************************/
@@ -44,45 +48,29 @@
 #define INT_IRQ 0x01
 #define NMI_IRQ 0x02
 
-#define PRVPC   m_prvpc.d     /* previous program counter */
-
-#define PCD     m_pc.d
 #define PC      m_pc.w.l
+#define PC_H    m_pc.b.h
+#define PC_L    m_pc.b.l
 
-#define SPD     m_sp.d
 #define SP      m_sp.w.l
 #define SP_H    m_sp.b.h
 #define SP_L    m_sp.b.l
 
-#define AFD     m_af.d
 #define AF      m_af.w.l
 #define A       m_af.b.h
 #define F       m_af.b.l
 
-#define BCD     m_bc.d
 #define BC      m_bc.w.l
 #define B       m_bc.b.h
 #define C       m_bc.b.l
 
-#define DED     m_de.d
 #define DE      m_de.w.l
 #define D       m_de.b.h
 #define E       m_de.b.l
 
-#define HLD     m_hl.d
-#define HL      m_hl.w.l
-#define H       m_hl.b.h
-#define L       m_hl.b.l
-
-#define IXD     m_ix.d
-#define IX      m_ix.w.l
-#define HX      m_ix.b.h
-#define LX      m_ix.b.l
-
-#define IYD     m_iy.d
-#define IY      m_iy.w.l
-#define HY      m_iy.b.h
-#define LY      m_iy.b.l
+#define HL      m_hl_index[m_hl_offset].w.l
+#define H       m_hl_index[m_hl_offset].b.h
+#define L       m_hl_index[m_hl_offset].b.l
 
 #define WZ      m_wz.w.l
 #define WZ_H    m_wz.b.h
@@ -100,220 +88,96 @@ static uint8_t SZHVC_add[2*256*256];
 static uint8_t SZHVC_sub[2*256*256];
 
 
-// Partial list of Z80 operations from Programming the Z80 by Rodnay Zaks
-//
-// 00000000 : { X } // NOP
-// 00000001 : { X; PC OUT; ARG_READ; DATABUS -> C; PC OUT; ARG_READ; DATABUS -> B } // LD BC,nn
-// 00000010 : { X; BC OUT; X (check WAIT); DATABUS -> A } // LD (BC),A
-//
-// 00000100 : { B -> TMP; X; TMP + 1 -> B } // INC B  (X, operation overlap with next fetch)
-// 00000101 : { B -> TMP; X; TMP +-1 -> B } // DEC B  (X, operation overlap with next fetch)
-// 00000110 : { X; PC OUT; ARG_READ; DATABUS -> B } // LD B, n
-//
-// 00001001 : { X; C -> ACT; L -> TMP; ACT + TMP -> L, Cy; B -> ACT; H -> TMP; ACT + TMP + Cy -> H, Cy } // ADD HL,BC  should be 11 cycles
-// 00001010 : { X; BC OUT; X (check WAIT); A -> DATABUS } // LD A,(BC)
-//
-// 00001100 : { C -> TMP, X; TMP + 1 -> C } // INC C  (X, operation overlap with next fetch)
-// 00001101 : { C -> TMP, X; TMP - 1 -> C } // DEC C  (X, operation overlap with next fetch)
-// 00001110 : { X; PC OUT; ARG_READ; DATABUS -> C } // LD C, n
-//
-// 00010001 : { X; PC OUT; ARG_READ; DATABUS -> E; PC OUT; ARG_READ; DATABUS -> D } // LD DE,nn
-// 00010010 : { X; BC OUT; X (check WAIT); DATABUS -> A } // LD (DE),A
-//
-// 00010100 : { D -> TMP; X; TMP + 1 -> D } // INC D  (X, operation overlap with next fetch)
-// 00010101 : { D -> TMP; X; TMP - 1 -> D } // DEC D  (X, operation overlap with next fetch)
-// 00010110 : { X; PC OUT; ARG_READ; DATABUS -> D } // LD D, n
-//
-// 00011001 : { X; E -> ACT; L -> TMP; ACT + TMP -> L, Cy; D -> ACT; H -> TMP; ACT + TMP + Cy -> H, Cy } // ADD HL,DE  should be 11 cycles
-// 00011010 : { X; BC OUT; X (check WAIT); A -> DATABUS } // LD A,(DE)
-//
-// 00011100 : { E -> TMP; X; TMP + 1 -> E } // INC E  (X, operation overlap with next fetch)
-// 00011101 : { E -> TMP; X; TMP - 1 -> E } // DEC E  (X, operation overlap with next fetch)
-// 00011110 : { X; PC OUT; ARG_READ; DATABUS -> E } // LD E, n
-//
-// 00100001 : { X; PC OUT; ARG_READ; DATABUS -> L; PC OUT; ARG_READ; DATABUS -> H } // LD HL,nn
-// 00100010 : { X; PC OUT; ARG_READ; DATABUS -> Z; PC OUT; ARG_READ; DATABUS -> W; WZ OUT; X (check WAIT); L -> DATABUS; WZ OUT; X (check WAIT); H -> DATABUS } // LD (nn),HL
-//
-// 00100100 : { H -> TMP; X; TMP + 1 -> H } // INC H  (X, operation overlap with next fetch)
-// 00100101 : { H -> TMP; X; TMP - 1 -> H } // DEC H  (X, operation overlap with next fetch)
-// 00100110 : { X; PC OUT; ARG_READ; DATABUS -> H } // LD H, n
-// 00100111 : { DAA -> A } // DAA
-//
-// 00101001 : { X; L -> ACT; L -> TMP; ACT + TMP -> L, Cy; H -> ACT; H -> TMP; ACT + TMP + Cy -> H, Cy } // ADD HL,HL  should be 11 cycles
-// 00101010 : { X; PC OUT; ARG_READ; DATABUS -> Z; PC OUT; ARG_READ; DATABUS -> W; WZ OUT; X (check WAIT); DATABUS -> L; WZ OUT; X (check WAIT); DATABUS -> H } // LD HL,(nn)
-//
-// 00101100 : { L -> TMP; X; TMP + 1 -> L } // INC L  (X, operation overlap with next fetch)
-// 00101101 : { L -> TMP; X; TMP - 1 -> L } // DEC L  (X, operation overlap with next fetch)
-// 00101110 : { X; PC OUT; ARG_READ; DATABUS -> L } // LD L, n
-//
-// 00110001 : { X; PC OUT; ARG_READ; DATABUS -> P; PC OUT; ARG_READ; DATABUS -> S } // LD SP,nn
-// 00110010 : { X; PC OUT; ARG_READ; DATABUS -> Z; PC OUT; ARG_READ; DATABUS -> W; WZ OUT; X (check WAIT); A -> DATABUS } // LD (nn),A
-//
-// 00110100 : { X; HL OUT; X (check WAIT); DATABUS -> TMP; HL OUT; X (check WAIT); TMP + 1 -> DATABUS } // INC (HL)
-// 00110101 : { X; HL OUT; X (check WAIT); DATABUS -> TMP; HL OUT; X (check WAIT); TMP - 1 -> DATABUS } // DEC (HL)
-// 00110110 : { X; PC OUT; ARG_READ; DATABUS -> TMP; HL OUT; X (check WAIT); TMP -> DATABUS } // LD (HL), n
-//
-// 00111001 : { X; P -> ACT; L -> TMP; ACT + TMP -> L, Cy; S -> ACT; H -> TMP; ACT + TMP + Cy -> H, Cy } // ADD HL,SP  should be 11 cycles
-// 00111010 : { X; PC OUT; ARG_READ; DATABUS -> Z; PC OUT; ARG_READ; DATABUS -> W; WZ OUT; X (check WAIT); DATABUS -> A } // LD A,(nn)
-//
-// 00111100 : { A -> TMP; X; TMP + 1 -> A } // INC A  (X, operation overlap with next fetch)
-// 00111101 : { A -> TMP; X; TMP - 1 -> A } // DEC A  (X, operation overlap with next fetch)
-// 00111110 : { X; PC OUT; ARG_READ; DATABUS -> A } // LD A, n
-//
-// 01000000 : { B -> TMP; TMP -> B } // LD B, B  (last store overlaps with next fetch)
-// 01000001 : { C -> TMP; TMP -> B } // LD B, C  (last store overlaps with next fetch)
-// 01000010 : { D -> TMP; TMP -> B } // LD B, D  (last store overlaps with next fetch)
-// 01000011 : { E -> TMP; TMP -> B } // LD B, E  (last store overlaps with next fetch)
-// 01000100 : { H -> TMP; TMP -> B } // LD B, H  (last store overlaps with next fetch)
-// 01000101 : { L -> TMP; TMP -> B } // LD B, L  (last store overlaps with next fetch)
-// 01000110 : { X; HL OUT; DATA_READ; DATABUS -> B } // LD B,(HL)
-// 01000111 : { A -> TMP; TMP -> B } // LD B, A  (last store overlaps with next fetch)
-// 01001000 : { B -> TMP; TMP -> C } // LD C, B  (last store overlaps with next fetch)
-// 01001001 : { C -> TMP; TMP -> C } // LD C, C  (last store overlaps with next fetch)
-// 01001010 : { D -> TMP; TMP -> C } // LD C, D  (last store overlaps with next fetch)
-// 01001011 : { E -> TMP; TMP -> C } // LD C, E  (last store overlaps with next fetch)
-// 01001100 : { H -> TMP; TMP -> C } // LD C, H  (last store overlaps with next fetch)
-// 01001101 : { L -> TMP; TMP -> C } // LD C, L  (last store overlaps with next fetch)
-// 01001110 : { X; HL OUT; DATA_READ; DATABUS -> C } // LD C,(HL)
-// 01001111 : { A -> TMP; TMP -> C } // LD C, A  (last store overlaps with next fetch)
-// 01010000 : { B -> TMP; TMP -> D } // LD D, B  (last store overlaps with next fetch)
-// 01010001 : { C -> TMP; TMP -> D } // LD D, C  (last store overlaps with next fetch)
-// 01010010 : { D -> TMP; TMP -> D } // LD D, D  (last store overlaps with next fetch)
-// 01010011 : { E -> TMP; TMP -> D } // LD D, E  (last store overlaps with next fetch)
-// 01010100 : { H -> TMP; TMP -> D } // LD D, H  (last store overlaps with next fetch)
-// 01010101 : { L -> TMP; TMP -> D } // LD D, L  (last store overlaps with next fetch)
-// 01010110 : { X; HL OUT; DATA_READ; DATABUS -> D } // LD D,(HL)
-// 01010111 : { A -> TMP; TMP -> D } // LD D, A  (last store overlaps with next fetch)
-// 01011000 : { B -> TMP; TMP -> E } // LD E, B  (last store overlaps with next fetch)
-// 01011001 : { C -> TMP; TMP -> E } // LD E, C  (last store overlaps with next fetch)
-// 01011010 : { D -> TMP; TMP -> E } // LD E, D  (last store overlaps with next fetch)
-// 01011011 : { E -> TMP; TMP -> E } // LD E, E  (last store overlaps with next fetch)
-// 01011100 : { H -> TMP; TMP -> E } // LD E, H  (last store overlaps with next fetch)
-// 01011101 : { L -> TMP; TMP -> E } // LD E, L  (last store overlaps with next fetch)
-// 01011110 : { X; HL OUT; DATA_READ; DATABUS -> E } // LD E,(HL)
-// 01011111 : { A -> TMP; TMP -> E } // LD E, A  (last store overlaps with next fetch)
-// 01100000 : { B -> TMP; TMP -> H } // LD H, B  (last store overlaps with next fetch)
-// 01100001 : { C -> TMP; TMP -> H } // LD H, C  (last store overlaps with next fetch)
-// 01100010 : { D -> TMP; TMP -> H } // LD H, D  (last store overlaps with next fetch)
-// 01100011 : { E -> TMP; TMP -> H } // LD H, E  (last store overlaps with next fetch)
-// 01100100 : { H -> TMP; TMP -> H } // LD H, H  (last store overlaps with next fetch)
-// 01100101 : { L -> TMP; TMP -> H } // LD H, L  (last store overlaps with next fetch)
-// 01100110 : { X; HL OUT; DATA_READ; DATABUS -> H } // LD H,(HL)
-// 01100111 : { A -> TMP; TMP -> H } // LD H, A  (last store overlaps with next fetch)
-// 01101000 : { B -> TMP; TMP -> L } // LD L, B  (last store overlaps with next fetch)
-// 01101001 : { C -> TMP; TMP -> L } // LD L, C  (last store overlaps with next fetch)
-// 01101010 : { D -> TMP; TMP -> L } // LD L, D  (last store overlaps with next fetch)
-// 01101011 : { E -> TMP; TMP -> L } // LD L, E  (last store overlaps with next fetch)
-// 01101100 : { H -> TMP; TMP -> L } // LD L, H  (last store overlaps with next fetch)
-// 01101101 : { L -> TMP; TMP -> L } // LD L, L  (last store overlaps with next fetch)
-// 01101110 : { X; HL OUT; DATA_READ; DATABUS -> L } // LD L,(HL)
-// 01101111 : { A -> TMP; TMP -> L } // LD L, A  (last store overlaps with next fetch)
-// 01110000 : { B -> TMP; HL OUT; X (check WAIT); TMP -> DATABUS } // LD (HL),B
-// 01110001 : { C -> TMP; HL OUT; X (check WAIT); TMP -> DATABUS } // LD (HL),C
-// 01110010 : { D -> TMP; HL OUT; X (check WAIT); TMP -> DATABUS } // LD (HL),D
-// 01110011 : { E -> TMP; HL OUT; X (check WAIT); TMP -> DATABUS } // LD (HL),E
-// 01110100 : { H -> TMP; HL OUT; X (check WAIT); TMP -> DATABUS } // LD (HL),H
-// 01110101 : { L -> TMP; HL OUT; X (check WAIT); TMP -> DATABUS } // LD (HL),L
-//
-// 01110111 : { A -> TMP; HL OUT; X (check WAIT); TMP -> DATABUS } // LD (HL),A
-// 01111000 : { B -> TMP; TMP -> A } // LD A, B  (last store overlaps with next fetch)
-// 01111001 : { C -> TMP; TMP -> A } // LD A, C  (last store overlaps with next fetch)
-// 01111010 : { D -> TMP; TMP -> A } // LD A, D  (last store overlaps with next fetch)
-// 01111011 : { E -> TMP; TMP -> A } // LD A, E  (last store overlaps with next fetch)
-// 01111100 : { H -> TMP; TMP -> A } // LD A, H  (last store overlaps with next fetch)
-// 01111101 : { L -> TMP; TMP -> A } // LD A, L  (last store overlaps with next fetch)
-// 01111110 : { X; HL OUT; DATA_READ; DATABUS -> A } // LD A,(HL)
-// 01111111 : { A -> TMP; TMP -> A } // LD A, A  (last store overlaps with next fetch)
-// 10000000 : { B -> TMP; A -> ACT; X; ACT + TMP -> A } // ADD A,B  (X, operation overlaps with next fetch)
-// 10000001 : { C -> TMP; A -> ACT; X; ACT + TMP -> A } // ADD A,C  (X, operation overlaps with next fetch)
-// 10000010 : { D -> TMP; A -> ACT; X; ACT + TMP -> A } // ADD A,D  (X, operation overlaps with next fetch)
-// 10000011 : { E -> TMP; A -> ACT; X; ACT + TMP -> A } // ADD A,E  (X, operation overlaps with next fetch)
-// 10000100 : { H -> TMP; A -> ACT; X; ACT + TMP -> A } // ADD A,H  (X, operation overlaps with next fetch)
-// 10000101 : { L -> TMP; A -> ACT; X; ACT + TMP -> A } // ADD A,L  (X, operation overlaps with next fetch)
-// 10000110 : { A -> ACT; HL OUT; X (check WAIT); DATABUS -> TMP; X; ACT + TMP -> A } // ADD A,(HL)  (X, operation overlaps with next fetch)
-// 10000111 : { A -> TMP; A -> ACT; X; ACT + TMP -> A } // ADD A,A  (X, operation overlaps with next fetch)
-// 10001000 : { B -> TMP; A -> ACT; X; ACT + TMP + Cy -> A } // ADC A,B  (X, operation overlaps with next fetch)
-// 10001001 : { C -> TMP; A -> ACT; X; ACT + TMP + Cy -> A } // ADC A,C  (X, operation overlaps with next fetch)
-// 10001010 : { D -> TMP; A -> ACT; X; ACT + TMP + Cy -> A } // ADC A,D  (X, operation overlaps with next fetch)
-// 10001011 : { E -> TMP; A -> ACT; X; ACT + TMP + Cy -> A } // ADC A,E  (X, operation overlaps with next fetch)
-// 10001100 : { H -> TMP; A -> ACT; X; ACT + TMP + Cy -> A } // ADC A,H  (X, operation overlaps with next fetch)
-// 10001101 : { L -> TMP; A -> ACT; X; ACT + TMP + Cy -> A } // ADC A,L  (X, operation overlaps with next fetch)
-// 10001110 : { A -> ACT; HL OUT; X (check WAIT); DATABUS -> TMP; X; ACT + TMP + Cy -> A } // ADC A,(HL)  (X, operation overlaps with next fetch)
-// 10001111 : { A -> TMP; A -> ACT; X; ACT + TMP + Cy -> A } // ADC A,A  (X, operation overlaps with next fetch)
-// 10010000 : { B -> TMP; A -> ACT; X; ACT - TMP -> A } // SUB A,B  (X, operation overlaps with next fetch)
-// 10010001 : { C -> TMP; A -> ACT; X; ACT - TMP -> A } // SUB A,C  (X, operation overlaps with next fetch)
-// 10010010 : { D -> TMP; A -> ACT; X; ACT - TMP -> A } // SUB A,D  (X, operation overlaps with next fetch)
-// 10010011 : { E -> TMP; A -> ACT; X; ACT - TMP -> A } // SUB A,E  (X, operation overlaps with next fetch)
-// 10010100 : { H -> TMP; A -> ACT; X; ACT - TMP -> A } // SUB A,H  (X, operation overlaps with next fetch)
-// 10010101 : { L -> TMP; A -> ACT; X; ACT - TMP -> A } // SUB A,L  (X, operation overlaps with next fetch)
-// 10010110 : { A -> ACT; HL OUT; X (check WAIT); DATABUS -> TMP; X; ACT - TMP -> A } // SUB A,(HL)  (X, operation overlaps with next fetch)
-// 10010111 : { A -> TMP; A -> ACT; X; ACT - TMP -> A } // SUB A,A  (X, operation overlaps with next fetch)
-//
-// 10100000 : { B -> TMP, A -> ACT; X, ACT AND TMP -> A } // AND A,B  (X, operation overlaps with next fetch)
-// 10100001 : { C -> TMP, A -> ACT; X, ACT AND TMP -> A } // AND A,C  (X, operation overlaps with next fetch)
-// 10100010 : { D -> TMP, A -> ACT; X, ACT AND TMP -> A } // AND A,D  (X, operation overlaps with next fetch)
-// 10100011 : { E -> TMP, A -> ACT; X, ACT AND TMP -> A } // AND A,E  (X, operation overlaps with next fetch)
-// 10100100 : { H -> TMP, A -> ACT; X, ACT AND TMP -> A } // AND A,H  (X, operation overlaps with next fetch)
-// 10100101 : { L -> TMP, A -> ACT; X, ACT AND TMP -> A } // AND A,L  (X, operation overlaps with next fetch)
-// 10100110 : { A -> ACT; HL OUT; X (check WAIT); DATABUS -> TMP; X; ACT AND TMP -> A } // AND A,(HL)  (X, operation overlaps with next fetch)
-// 10100111 : { A -> TMP, A -> ACT; X, ACT AND TMP -> A } // AND A,A  (X, operation overlaps with next fetch)
-//
-// 10111000 : { B -> TMP; A -> ACT; X; ACT - TMP - Cy -> A } // SBC A,B  (X, operation overlaps with next fetch)
-// 10111001 : { C -> TMP; A -> ACT; X; ACT - TMP - Cy -> A } // SBC A,C  (X, operation overlaps with next fetch)
-// 10111010 : { D -> TMP; A -> ACT; X; ACT - TMP - Cy -> A } // SBC A,D  (X, operation overlaps with next fetch)
-// 10111011 : { E -> TMP; A -> ACT; X; ACT - TMP - Cy -> A } // SBC A,E  (X, operation overlaps with next fetch)
-// 10111100 : { H -> TMP; A -> ACT; X; ACT - TMP - Cy -> A } // SBC A,H  (X, operation overlaps with next fetch)
-// 10111101 : { L -> TMP; A -> ACT; X; ACT - TMP - Cy -> A } // SBC A,L  (X, operation overlaps with next fetch)
-// 10111110 : { A -> ACT; HL OUT; X (check WAIT); DATABUS -> TMP; X; ACT - TMP - Cy -> A } // SBC A,(HL)  (X, operation overlaps with next fetch)
-// 10111111 : { A -> TMP; A -> ACT; X; ACT - TMP - Cy -> A } // SBC A,A  (X, operation overlaps with next fetch)
-//
-// 11000011 : { X; PC OUT; ARG_READ; STORE_Z; PC OUT; ARG_READ; STORE_W; WZ_TO_PC_0 (0 cycles) } // JMP nn
-//
-// 11000110 : { A -> ACT; PC OUT; ARG_READ; DATABUS -> TMP; X; ACT + TMP -> A } // ADD A,n  (X, operation overlaps with next fetch)
-//
-// 11001110 : { A -> ACT; PC OUT; ARG_READ; DATABUS -> TMP; X; ACT + TMP + Cy -> A } // ADC A,n  (X, operation overlaps with next fetch)
-//
-// 11010110 : { A -> ACT; PC OUT; ARG_READ; DATABUS -> TMP; X; ACT - TMP -> A } // SUB A,n  (X, operation overlaps with next fetch)
-//
-// 11011110 : { A -> ACT; PC OUT; ARG_READ; DATABUS -> TMP; X; ACT - TMP - Cy -> A } // SBC A,n  (X, operation overlaps with next fetch)
-//
-// 11101011 : { HL <-> DE } // EX HL,DE
-//
-// 11111001 : { X; HL -> INCDEC; INCDEC -> SP } // LD SP,HL
+const u8 z80lle_device::jr_conditions[8][2] = {
+	{ 0,  0  },  // always
+	{ 0,  0  },  // always
+	{ 0,  0  },  // always
+	{ 0,  0  },  // always
+	{ ZF, 0  },  // NZ
+	{ ZF, ZF },  // Z
+	{ CF, 0  },  // NC
+	{ CF, CF }   // C
+};
 
-const u8 z80lle_device::insts[2 * 256 + 1][17] = {
+
+const u8 z80lle_device::jp_conditions[8][2] = {
+	{ ZF, 0  },  // NZ
+	{ ZF, ZF },  // Z
+	{ CF, 0  },  // NC
+	{ CF, CF },  // C
+	{ PF, 0  },  // PO
+	{ PF, PF },  // PE
+	{ SF, 0  },  // P
+	{ SF, SF }   // M
+};
+
+const u8 z80lle_device::insts[4 * 256 + 1][23] = {
 	/* Regular instructions */
 	/* 0x00 */
-	{ 0 },
+	/* 00 */ { END },  // 4 cycles, NOP
 	/* 01 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, LD BC,nn
-	{ 0 }, { 0 }, { 0 }, { 0 },
-	/* 06 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD B,n
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	/* 0e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD C,n
 	{ 0 },
+	/* 03 */ { INC_R16, END },  // 6 cycles, INC BC
+	/* 04 */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 4 cycles, INC B
+	/* 05 */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 4 cycles, DEC B
+	/* 06 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD B,n
+	/* 07 */ { RLCA, END },  // 4 cycles, RLCA
+	{ 0 },
+	/* 09 */ { ADD16, END },  // 11 cycles, ADD HL,BC
+	{ 0 },
+	/* 0b */ { DEC_R16, END },  // 6 cycles, DEC BC
+	/* 0c */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 4 cycles, INC C
+	/* 0d */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 4 cycles, DEC C
+	/* 0e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD C,n
+	/* 0f */ { RRCA, END },  // 4 cycles, RRCA
 	/* 0x10 */
 	{ 0 },
 	/* 11 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, LD DE,nn
-	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 12 */ { DE_WZ, WZ_OUT, WZ_INC, A_DB, WRITE, CHECK_WAIT, END },  // 7 cycles, LD (DE),A
+	/* 13 */ { INC_R16, END },  // 6 cycles, INC DE
+	/* 14 */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 4 cycles, INC D
+	/* 15 */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 4 cycles, DEC D
 	/* 16 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD D,n
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* 18 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, JR_COND, END },  // 12 cycles, JR n
+	/* 19 */ { ADD16, END },  // 11 cycles, ADD HL,DE
+	/* 1a */ { DE_WZ, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_A, END },  // 7 cycles, LD A,(DE)
+	{ 0 },
+	/* 1c */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 4 cycles, INC E
+	/* 1d */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 4 cycles, DEC E
 	/* 1e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD E,n
 	{ 0 },
 	/* 0x20 */
-	{ 0 },
+	/* 20 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, JR_COND, END },  // 7/12 cycles, JR NZ,n
 	/* 21 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, LD HL,nn
-	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 22 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, L_DB, WRITE, CHECK_WAIT, WZ_OUT, H_DB, WRITE, CHECK_WAIT, END },  // 16 cycles, LD (nn),HL
+	/* 23 */ { INC_R16, END },  // 6 cycles, INC HL
+	/* 24 */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 4 cycles, INC H
+	/* 25 */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 4 cycles, DEC H
 	/* 26 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD H,n
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* 28 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, JR_COND, END },  // 7/12 cycles, JR Z,n
+	/* 29 */ { ADD16, END },  // 11 cycles, ADD HL,HL
+	/* 2a */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_R16L, WZ_OUT, READ, CHECK_WAIT, DB_R16H, END },  // 16 cycles, LD HL,(nn)
+	/* 2b */ { DEC_R16, END },  // 6 cycles, DEC HL
+	/* 2c */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 4 cycles, INC L
+	/* 2d */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 4 cycles, DEC L
 	/* 2e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD L,n
 	{ 0 },
 	/* 0x30 */
 	{ 0 },
 	/* 31 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, LD SP,nn
 	/* 32 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, A_DB, WRITE, CHECK_WAIT, END },  // 13 cycles, LD (nn),A
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* 34 */ { HL_OUT, READ, CHECK_WAIT, DB_TMP, ALU_INC, ALU_DB, X, HL_OUT, WRITE, CHECK_WAIT, END },  // 11 cycles, INC (HL)
+	{ 0 },
+	/* 36 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, HL_OUT, WRITE, END },  // 10 cycles, LD (HL),n
+	{ 0 }, { 0 },
+	/* 39 */ { ADD16, END },  // 11 cycles, ADD HL,SP
 	/* 3a */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_A, END },  // 13 cycles, LD A,(nn)
-	{ 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* 3c */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 4 cycles, INC A
+	/* 3d */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 4 cycles, DEC A
 	/* 3e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD A,n
 	{ 0 },
 	/* 0x40 */
@@ -323,7 +187,7 @@ const u8 z80lle_device::insts[2 * 256 + 1][17] = {
 	/* 43 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,E
 	/* 44 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,H
 	/* 45 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,L
-	/* 46 */ { 0 },
+	/* 46 */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD B,(HL)
 	/* 47 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD B,A
 	/* 48 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,B
 	/* 49 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,C
@@ -331,7 +195,7 @@ const u8 z80lle_device::insts[2 * 256 + 1][17] = {
 	/* 4b */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,E
 	/* 4c */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,H
 	/* 4d */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,L
-	/* 4e */ { 0 },
+	/* 4e */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD C,(HL)
 	/* 4f */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD C,A
 	/* 0x50 */
 	/* 50 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,B
@@ -340,7 +204,7 @@ const u8 z80lle_device::insts[2 * 256 + 1][17] = {
 	/* 53 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,E
 	/* 54 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,H
 	/* 55 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,L
-	/* 56 */ { 0 },
+	/* 56 */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD D,(HL)
 	/* 57 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD D,A
 	/* 58 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,B
 	/* 59 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,C
@@ -348,7 +212,7 @@ const u8 z80lle_device::insts[2 * 256 + 1][17] = {
 	/* 5b */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,E
 	/* 5c */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,H
 	/* 5d */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,L
-	/* 5e */ { 0 },
+	/* 5e */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD E,(HL)
 	/* 5f */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD E,A
 	/* 0x60 */
 	/* 60 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,B
@@ -357,7 +221,7 @@ const u8 z80lle_device::insts[2 * 256 + 1][17] = {
 	/* 63 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,E
 	/* 64 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,H
 	/* 65 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,L
-	/* 66 */ { 0 },
+	/* 66 */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD H,(HL)
 	/* 67 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD H,A
 	/* 68 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,B
 	/* 69 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,C
@@ -365,42 +229,105 @@ const u8 z80lle_device::insts[2 * 256 + 1][17] = {
 	/* 6b */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,E
 	/* 6c */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,H
 	/* 6d */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,L
-	/* 6e */ { 0 },
+	/* 6e */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD L,(HL)
 	/* 6f */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD L,A
 	/* 0x70 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 }, { 0 }, { 0 },
+	/* 73 */ { HL_OUT, REGS_DB, WRITE, CHECK_WAIT, END },  // 7 cycles, LD (HL),E
+	{ 0 }, { 0 }, { 0 },
+	/* 77 */ { HL_OUT, REGS_DB, WRITE, CHECK_WAIT, END },  // 7 cycles, LD (HL),A
 	/* 78 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,B
 	/* 79 */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,C
 	/* 7a */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,D
 	/* 7b */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,E
 	/* 7c */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,H
 	/* 7d */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,L
-	/* 7e */ { 0 },
+	/* 7e */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 7 cycles, LD A,(HL)
 	/* 7f */ { REG_TMP, TMP_REG, END },  // 4 cycles, LD A,A
 	/* 0x80 */
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0x90 */
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0xa0 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* a0 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 4 cycles, AND B
+	/* a1 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 4 cycles, AND C
+	/* a2 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 4 cycles, AND D
+	/* a3 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 4 cycles, AND E
+	/* a4 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 4 cycles, AND H
+	/* a5 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 4 cycles, AND L
+	/* a6 */ { 0 },
+	/* a7 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 4 cycles, AND A
+	/* a8 */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 4 cycles, XOR B
+	/* a9 */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 4 cycles, XOR C
+	/* aa */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 4 cycles, XOR D
+	/* ab */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 4 cycles, XOR E
+	/* ac */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 4 cycles, XOR H
+	/* ad */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 4 cycles, XOR L
+	/* ae */ { HL_OUT, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_XOR, ALU_A, END },  // 7 cycles, XOR (HL)
+	/* af */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 4 cycles, XOR A
 	/* 0xb0 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* b0 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 4 cycles, OR B
+	/* b1 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 4 cycles, OR C
+	/* b2 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 4 cycles, OR D
+	/* b3 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 4 cycles, OR E
+	/* b4 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 4 cycles, OR H
+	/* b5 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 4 cycles, OR L
+	/* b6 */ { HL_OUT, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_OR, ALU_A, END },  // 7 cycles, OR (HL)
+	/* b7 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 4 cycles, OR A
+	/* b8 */ { A_ACT, REG_TMP, ALU_CP, END },  // 4 cycles, CP B
+	/* b9 */ { A_ACT, REG_TMP, ALU_CP, END },  // 4 cycles, CP C
+	/* ba */ { A_ACT, REG_TMP, ALU_CP, END },  // 4 cycles, CP D
+	/* bb */ { A_ACT, REG_TMP, ALU_CP, END },  // 4 cycles, CP E
+	/* bc */ { A_ACT, REG_TMP, ALU_CP, END },  // 4 cycles, CP H
+	/* bd */ { A_ACT, REG_TMP, ALU_CP, END },  // 4 cycles, CP L
+	/* be */ { HL_OUT, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_CP, END },  // 7 cycles, CP (HL)
+	/* bf */ { A_ACT, REG_TMP, ALU_CP, END },  // 4 cycles, CP A
 	/* 0xc0 */
-	{ 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* c1 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16L, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, POP BC
+	/* c2 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, JP_COND, END },  // 10 cycles, JP NZ,nn
 	/* c3 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 10 cycles, JMP nn
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* c4 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, CALL_COND, DEC_SP, SP_OUT, PCH_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, PCL_DB, WRITE, CHECK_WAIT, WZ_TO_PC, END },  // 10/17 cycles, CALL NZ,nn
+	/* c5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 11 cycles, PUSH BC
+	{ 0 }, { 0 },
+	/* c8 */ { RET_COND, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_Z, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 5/11 cycles, RET Z
+	/* c9 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_Z, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 10 cycles, RET
+	/* ca */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, JP_COND, END },  // 10 cycles, JP Z,nn
 	/* cb */ { 0 },
-	{ 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* cd */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, X, DEC_SP, SP_OUT, PCH_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, PCL_DB, WRITE, CHECK_WAIT, WZ_TO_PC, END },  // 17 cycles, CALL nn
+	{ 0 }, { 0 },
 	/* 0xd0 */
-	{ 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* d1 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16L, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, POP DE
+	{ 0 },
 	/* d3 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, A_W, WZ_OUT, WZ_INC, A_DB, OUTPUT, CHECK_WAIT, END },  // 11 cycles, OUT (n), A
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	/* 0xe0 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
-	/* 0xf0 */
+	{ 0 },
+	/* d5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 11 cycles, PUSH DE
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* dc */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, CALL_COND, DEC_SP, SP_OUT, PCH_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, PCL_DB, WRITE, CHECK_WAIT, WZ_TO_PC, END },  // 10/17 cycles, CALL C,nn
 	{ 0 }, { 0 }, { 0 },
+	/* 0xe0 */
+	{ 0 },
+	/* e1 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16L, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, POP HL
+	{ 0 }, { 0 }, { 0 },
+	/* e5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 11 cycles, PUSH HL
+	/* e6 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_AND, ALU_A, END },  // 7 cycles, AND n
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* eb */ { EX_DE_HL, END },  // 4 cycles, EX DE,HL
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xf0 */
+	{ 0 },
+	/* f1 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16L, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16H, END },  // 10 cycles, POP AF
+	{ 0 },
 	/* f3 */ { DI, END },  // 4 cycles, DI
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* f5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 11 cycles, PUSH AF
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* fb */ { EI, END },  // 4 cycles, EI
+	{ 0 }, { 0 },
+	/* fe */ { PC_OUT, PC_INC, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_CP, END },  // 7 cycles, CP n
+	{ 0 },
 
 	/* CB prefixed instructions */
 	/* 0x00 */
@@ -444,9 +371,317 @@ const u8 z80lle_device::insts[2 * 256 + 1][17] = {
 	/* 0xf0 */
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 
+	/* ED-prefixed instructions */
+	/* 0x00 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x10 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x20 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x30 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x40 */
+	{ 0 }, { 0 },
+	/* 42 */ { SBC16, END },  // 15 cycles, SBC HL,BC
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 4a */ { ADC16, END },  // 15 cycles, ADC HL,BC
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x50 */
+	{ 0 }, { 0 },
+	/* 52 */ { SBC16, END },  // 15 cycles SBC HL,DE
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 5a */ { ADC16, END },  // 15 cycles, ADC HL,DE
+	{ 0 },
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x60 */
+	{ 0 }, { 0 },
+	/* 62 */ { SBC16, END },  // 15 cycles, SBC HL,HL
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 6a */ { ADC16, END },  // 15 cycles, ADC HL,HL
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x70 */
+	{ 0 }, { 0 },
+	/* 72 */ { SBC16, END },  // 15 cycles, SBC HL,SP
+	/* 73 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, R16L_DB, WRITE, CHECK_WAIT, WZ_OUT, R16H_DB, WRITE, CHECK_WAIT, END },  // 20 cycles, LD (nn),SP
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 7a */ { ADC16, END },  // 15 cycles, ADC HL,SP
+	/* 7b */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_R16L, WZ_OUT, READ, CHECK_WAIT, DB_R16H, END },  // 20 cycles, LD SP,(nn)
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x80 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x90 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xa0 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xb0 */
+	/* b0 */ { HL_OUT, READ, CHECK_WAIT, DE_OUT, WRITE, CHECK_WAIT, LDI, REPEAT, END },  // 16/21 cycles, LDIR
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xc0 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xd0 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xe0 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xf0 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+
+	/* DD/FD prefixed instructions, almost equal to regular instructions */
+	/* 0x00 */
+	/* 00 */ { END },  // 8 cycles, NOP
+	/* 01 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 14 cycles, LD BC,nn
+	{ 0 },
+	/* 03 */ { INC_R16, END },  // 10 cycles, INC BC
+	/* 04 */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 8 cycles, INC B
+	/* 05 */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 8 cycles, DEC B
+	/* 06 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD B,n
+	/* 07 */ { RLCA, END },  // 8 cycles, RLCA
+	{ 0 },
+	/* 09 */ { ADD16, END },  // 15 cycles, ADD HL,BC
+	{ 0 },
+	/* 0b */ { DEC_R16, END },  // 10 cycles, DEC BC
+	/* 0c */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 8 cycles, INC C
+	/* 0d */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 8 cycles, DEC C
+	/* 0e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD C,n
+	/* 0f */ { RRCA, END },  // 8 cycles, RRCA
+	/* 0x10 */
+	{ 0 },
+	/* 11 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 14 cycles, LD DE,nn
+	/* 12 */ { DE_WZ, WZ_OUT, WZ_INC, A_DB, WRITE, CHECK_WAIT, END },  // 7 cycles, LD (DE),A
+	/* 13 */ { INC_R16, END },  // 10 cycles, INC DE
+	/* 14 */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 8 cycles, INC D
+	/* 15 */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 8 cycles, DEC D
+	/* 16 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD D,n
+	{ 0 },
+	/* 18 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, JR_COND, END },  // 16 cycles, JR n
+	/* 19 */ { ADD16, END },  // 11 cycles, ADD HL,DE
+	/* 1a */ { DE_WZ, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_A, END },  // 11 cycles, LD A,(DE)
+	{ 0 },
+	/* 1c */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 8 cycles, INC E
+	/* 1d */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 8 cycles, DEC E
+	/* 1e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD E,n
+	{ 0 },
+	/* 0x20 */
+	/* 20 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, JR_COND, END },  // 11/16 cycles, JR NZ,n
+	/* 21 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 14 cycles, LD HL,nn
+	/* 22 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, L_DB, WRITE, CHECK_WAIT, WZ_OUT, H_DB, WRITE, CHECK_WAIT, END },  // 20 cycles, LD (nn),HL
+	/* 23 */ { INC_R16, END },  // 10 cycles, INC HL
+	/* 24 */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 8 cycles, INC H
+	/* 25 */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 8 cycles, DEC H
+	/* 26 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD H,n
+	{ 0 },
+	/* 28 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, JR_COND, END },  // 11/16 cycles, JR Z,n
+	/* 29 */ { ADD16, END },  // 15 cycles, ADD HL,HL
+	/* 2a */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_R16L, WZ_OUT, READ, CHECK_WAIT, DB_R16H, END },  // 20 cycles, LD HL,(nn)
+	/* 2b */ { DEC_R16, END },  // 10 cycles, DEC HL
+	/* 2c */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 8 cycles, INC L
+	/* 2d */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 8 cycles, DEC L
+	/* 2e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD L,n
+	{ 0 },
+	/* 0x30 */
+	{ 0 },
+	/* 31 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16L, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_R16H, END },  // 14 cycles, LD SP,nn
+	/* 32 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, A_DB, WRITE, CHECK_WAIT, END },  // 17 cycles, LD (nn),A
+	{ 0 },
+	/* 34 */ { HL_OUT, READ, CHECK_WAIT, DB_TMP, ALU_INC, ALU_DB, X, HL_OUT, WRITE, CHECK_WAIT, END },  // 15 cycles, INC (HL)
+	{ 0 },
+	/* 36 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, HL_OUT, WRITE, END },  // 14 cycles, LD (HL),n
+	{ 0 }, { 0 },
+	/* 39 */ { ADD16, END },  // 15 cycles, ADD HL,SP
+	/* 3a */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_A, END },  // 17 cycles, LD A,(nn)
+	{ 0 },
+	/* 3c */ { REGD_TMP, ALU_INC, ALU_REGD, END },  // 8 cycles, INC A
+	/* 3d */ { REGD_TMP, ALU_DEC, ALU_REGD, END },  // 8 cycles, DEC A
+	/* 3e */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD A,n
+	{ 0 },
+	/* 0x40 */
+	/* 40 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD B,B
+	/* 41 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD B,C
+	/* 42 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD B,D
+	/* 43 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD B,E
+	/* 44 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD B,H
+	/* 45 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD B,L
+	/* 46 */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD B,(HL)
+	/* 47 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD B,A
+	/* 48 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD C,B
+	/* 49 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD C,C
+	/* 4a */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD C,D
+	/* 4b */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD C,E
+	/* 4c */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD C,H
+	/* 4d */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD C,L
+	/* 4e */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD C,(HL)
+	/* 4f */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD C,A
+	/* 0x50 */
+	/* 50 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD D,B
+	/* 51 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD D,C
+	/* 52 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD D,D
+	/* 53 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD D,E
+	/* 54 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD D,H
+	/* 55 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD D,L
+	/* 56 */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD D,(HL)
+	/* 57 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD D,A
+	/* 58 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD E,B
+	/* 59 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD E,C
+	/* 5a */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD E,D
+	/* 5b */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD E,E
+	/* 5c */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD E,H
+	/* 5d */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD E,L
+	/* 5e */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD E,(HL)
+	/* 5f */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD E,A
+	/* 0x60 */
+	/* 60 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD H,B
+	/* 61 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD H,C
+	/* 62 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD H,D
+	/* 63 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD H,E
+	/* 64 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD H,H
+	/* 65 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD H,L
+	/* 66 */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD H,(HL)
+	/* 67 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD H,A
+	/* 68 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD L,B
+	/* 69 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD L,C
+	/* 6a */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD L,D
+	/* 6b */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD L,E
+	/* 6c */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD L,H
+	/* 6d */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD L,L
+	/* 6e */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD L,(HL)
+	/* 6f */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD L,A
+	/* 0x70 */
+	{ 0 }, { 0 }, { 0 },
+	/* 73 */ { HL_OUT, REGS_DB, WRITE, CHECK_WAIT, END },  // 11 cycles, LD (HL),E
+	{ 0 }, { 0 }, { 0 },
+	/* 77 */ { HL_OUT, REGS_DB, WRITE, CHECK_WAIT, END },  // 11 cycles, LD (HL),A
+	/* 78 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD A,B
+	/* 79 */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD A,C
+	/* 7a */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD A,D
+	/* 7b */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD A,E
+	/* 7c */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD A,H
+	/* 7d */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD A,L
+	/* 7e */ { HL_OUT, READ, CHECK_WAIT, DB_REG, END },  // 11 cycles, LD A,(HL)
+	/* 7f */ { REG_TMP, TMP_REG, END },  // 8 cycles, LD A,A
+	/* 0x80 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0x90 */
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xa0 */
+	/* a0 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 8 cycles, AND B
+	/* a1 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 8 cycles, AND C
+	/* a2 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 8 cycles, AND D
+	/* a3 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 8 cycles, AND E
+	/* a4 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 8 cycles, AND H
+	/* a5 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 8 cycles, AND L
+	/* a6 */ { 0 },
+	/* a7 */ { A_ACT, REG_TMP, ALU_AND, ALU_A, END },  // 4 cycles, AND A
+	/* a8 */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 8 cycles, XOR B
+	/* a9 */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 8 cycles, XOR C
+	/* aa */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 8 cycles, XOR D
+	/* ab */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 8 cycles, XOR E
+	/* ac */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 8 cycles, XOR H
+	/* ad */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 8 cycles, XOR L
+	/* ae */ { HL_OUT, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_XOR, ALU_A, END },  // 11 cycles, XOR (HL)
+	/* af */ { A_ACT, REG_TMP, ALU_XOR, ALU_A, END },  // 8 cycles, XOR A
+	/* 0xb0 */
+	/* b0 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 8 cycles, OR B
+	/* b1 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 8 cycles, OR C
+	/* b2 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 8 cycles, OR D
+	/* b3 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 8 cycles, OR E
+	/* b4 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 8 cycles, OR H
+	/* b5 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 8 cycles, OR L
+	/* b6 */ { HL_OUT, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_OR, ALU_A, END },  // 11 cycles, OR (HL)
+	/* b7 */ { A_ACT, REG_TMP, ALU_OR, ALU_A, END },  // 8 cycles, OR A
+	/* b8 */ { A_ACT, REG_TMP, ALU_CP, END },  // 8 cycles, CP B
+	/* b9 */ { A_ACT, REG_TMP, ALU_CP, END },  // 8 cycles, CP C
+	/* ba */ { A_ACT, REG_TMP, ALU_CP, END },  // 8 cycles, CP D
+	/* bb */ { A_ACT, REG_TMP, ALU_CP, END },  // 8 cycles, CP E
+	/* bc */ { A_ACT, REG_TMP, ALU_CP, END },  // 8 cycles, CP H
+	/* bd */ { A_ACT, REG_TMP, ALU_CP, END },  // 8 cycles, CP L
+	/* be */ { HL_OUT, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_CP, END },  // 11 cycles, CP (HL)
+	/* bf */ { A_ACT, REG_TMP, ALU_CP, END },  // 8 cycles, CP A
+	/* 0xc0 */
+	{ 0 },
+	/* c1 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16L, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16H, END },  // 14 cycles, POP BC
+	/* c2 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, JP_COND, END },  // 14 cycles, JP NZ,nn
+	/* c3 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 14 cycles, JMP nn
+	/* c4 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, CALL_COND, DEC_SP, SP_OUT, PCH_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, PCL_DB, WRITE, CHECK_WAIT, WZ_TO_PC, END },  // 14/21 cycles, CALL NZ,nn
+	/* c5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 15 cycles, PUSH BC
+	{ 0 }, { 0 },
+	/* c8 */ { RET_COND, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_Z, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 9/15 cycles, RET Z
+	/* c9 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_Z, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_W, WZ_TO_PC, END },  // 14 cycles, RET
+	/* ca */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, JP_COND, END },  // 14 cycles, JP Z,nn
+	/* cb */ { 0 },
+	{ 0 },
+	/* cd */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, X, DEC_SP, SP_OUT, PCH_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, PCL_DB, WRITE, CHECK_WAIT, WZ_TO_PC, END },  // 21 cycles, CALL nn
+	{ 0 }, { 0 },
+	/* 0xd0 */
+	{ 0 },
+	/* d1 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16L, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16H, END },  // 14 cycles, POP DE
+	{ 0 },
+	/* d3 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, A_W, WZ_OUT, WZ_INC, A_DB, OUTPUT, CHECK_WAIT, END },  // 15 cycles, OUT (n), A
+	{ 0 },
+	/* d5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 15 cycles, PUSH DE
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* dc */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, CALL_COND, DEC_SP, SP_OUT, PCH_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, PCL_DB, WRITE, CHECK_WAIT, WZ_TO_PC, END },  // 14/21 cycles, CALL C,nn
+	{ 0 }, { 0 }, { 0 },
+	/* 0xe0 */
+	{ 0 },
+	/* e1 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16L, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16H, END },  // 14 cycles, POP HL
+	{ 0 }, { 0 }, { 0 },
+	/* e5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 15 cycles, PUSH HL
+	/* e6 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_AND, ALU_A, END },  // 11 cycles, AND n
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* eb */ { EX_DE_HL, END },  // 8 cycles, EX DE,HL
+	{ 0 }, { 0 }, { 0 }, { 0 },
+	/* 0xf0 */
+	{ 0 },
+	/* f1 */ { SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16L, SP_OUT, INC_SP, READ, CHECK_WAIT, DB_R16H, END },  // 14 cycles, POP AF
+	{ 0 },
+	/* f3 */ { DI, END },  // 8 cycles, DI
+	{ 0 },
+	/* f5 */ { X, DEC_SP, SP_OUT, R16H_DB, WRITE, CHECK_WAIT, DEC_SP, SP_OUT, R16L_DB, WRITE, CHECK_WAIT, END },  // 15 cycles, PUSH AF
+	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	/* fb */ { EI, END },  // 8 cycles, EI
+	{ 0 }, { 0 },
+	/* fe */ { PC_OUT, PC_INC, READ, CHECK_WAIT, A_ACT, DB_TMP, ALU_CP, END },  // 11 cycles, CP n
+	{ 0 },
+
 	/* Special sequences */
 	/* M1 */ { PC_OUT, PC_INC, READ_OP, CHECK_WAIT, REFRESH, DECODE },
 };
+
+
+inline u16 z80lle_device::adc16(u16 arg1, u16 arg2)
+{
+	u32 res = arg1 + arg2 + (F & CF);
+	WZ = arg1 + 1;
+	F = (((arg1 ^ res ^ arg2) >> 8) & HF) |
+		((res >> 16) & CF) |
+		((res >> 8) & (SF | YF | XF)) |
+		((res & 0xffff) ? 0 : ZF) |
+		(((arg2 ^ arg1 ^ 0x8000) & (arg2 ^ res) & 0x8000) >> 13);
+	return res;
+}
+
+
+inline u16 z80lle_device::add16(u16 arg1, u16 arg2)
+{
+	u32 res = arg1 + arg2;
+	WZ = res + 1;
+	F = (F & (SF | ZF | VF)) |
+		(((arg1 ^ res ^ arg2) >> 8) & HF) |
+		((res >> 16) & CF) | ((res >> 8) & (YF | XF));
+	return (u16)res;
+}
+
+
+inline u16 z80lle_device::sbc16(u16 arg1, u16 arg2)
+{
+	u32 res = arg1 - arg2 - (F & CF);
+	WZ = arg1 + 1;
+	F = (((arg1 ^ res ^ arg2) >> 8) & HF) | NF |
+		((res >> 16) & CF) |
+		((res >> 8) & (SF | YF | XF)) |
+		((res & 0xffff) ? 0 : ZF) |
+		(((arg2 ^ arg1) & (arg1 ^ res) &0x8000) >> 13);
+	return res;
+}
 
 
 /****************************************************************************
@@ -530,15 +765,15 @@ void z80lle_device::device_start()
 	}
 
 	save_item(NAME(m_prvpc.w.l));
-	save_item(NAME(PC));
-	save_item(NAME(SP));
-	save_item(NAME(AF));
-	save_item(NAME(BC));
-	save_item(NAME(DE));
-	save_item(NAME(HL));
-	save_item(NAME(IX));
-	save_item(NAME(IY));
-	save_item(NAME(WZ));
+	save_item(NAME(m_pc.w.l));
+	save_item(NAME(m_sp.w.l));
+	save_item(NAME(m_af.w.l));
+	save_item(NAME(m_bc.w.l));
+	save_item(NAME(m_de.w.l));
+	save_item(NAME(m_hl_index[HL_OFFSET].w.l));
+	save_item(NAME(m_hl_index[IX_OFFSET].w.l));
+	save_item(NAME(m_hl_index[IY_OFFSET].w.l));
+	save_item(NAME(m_wz.w.l));
 	save_item(NAME(m_af2.w.l));
 	save_item(NAME(m_bc2.w.l));
 	save_item(NAME(m_de2.w.l));
@@ -559,16 +794,16 @@ void z80lle_device::device_start()
 	save_item(NAME(m_after_ldair));
 
 	/* Reset registers to their initial values */
-	PRVPC = 0;
-	PCD = 0;
-	SPD = 0;
-	AFD = 0;
-	BCD = 0;
-	DED = 0;
-	HLD = 0;
-	IXD = 0;
-	IYD = 0;
-	WZ = 0;
+	m_prvpc.d = 0;
+	m_pc.d = 0;
+	m_sp.d = 0;
+	m_af.d = 0;
+	m_bc.d = 0;
+	m_de.d = 0;
+	m_hl_index[HL_OFFSET].d = 0;
+	m_hl_index[IX_OFFSET].d = 0;
+	m_hl_index[IY_OFFSET].d = 0;
+	m_wz.d = 0;
 	m_af2.d = 0;
 	m_bc2.d = 0;
 	m_de2.d = 0;
@@ -595,33 +830,33 @@ void z80lle_device::device_start()
 	m_decrypted_opcodes_direct = m_decrypted_opcodes->direct<0>();
 	m_io = &space(AS_IO);
 
-	IX = IY = 0xffff; /* IX and IY are FFFF after a reset! */
+	m_hl_index[IX_OFFSET].w.l = m_hl_index[IY_OFFSET].w.l = 0xffff; /* IX and IY are FFFF after a reset! */
 	F = ZF;           /* Zero flag is set */
 
 	/* set up the state table */
 	state_add(STATE_GENPC,     "PC",        m_pc.w.l).callimport();
 	state_add(STATE_GENPCBASE, "CURPC",     m_prvpc.w.l).callimport().noshow();
-	state_add(Z80_SP,          "SP",        SP);
-	state_add(STATE_GENSP,     "GENSP",     SP).noshow();
+	state_add(Z80_SP,          "SP",        m_sp.w.l);
+	state_add(STATE_GENSP,     "GENSP",     m_sp.w.l).noshow();
 	state_add(STATE_GENFLAGS,  "GENFLAGS",  F).noshow().formatstr("%8s");
-	state_add(Z80_A,           "A",         A).noshow();
-	state_add(Z80_B,           "B",         B).noshow();
-	state_add(Z80_C,           "C",         C).noshow();
-	state_add(Z80_D,           "D",         D).noshow();
-	state_add(Z80_E,           "E",         E).noshow();
-	state_add(Z80_H,           "H",         H).noshow();
-	state_add(Z80_L,           "L",         L).noshow();
-	state_add(Z80_AF,          "AF",        AF);
-	state_add(Z80_BC,          "BC",        BC);
-	state_add(Z80_DE,          "DE",        DE);
-	state_add(Z80_HL,          "HL",        HL);
-	state_add(Z80_IX,          "IX",        IX);
-	state_add(Z80_IY,          "IY",        IY);
+	state_add(Z80_A,           "A",         m_af.b.h).noshow();
+	state_add(Z80_B,           "B",         m_bc.b.h).noshow();
+	state_add(Z80_C,           "C",         m_bc.b.l).noshow();
+	state_add(Z80_D,           "D",         m_de.b.h).noshow();
+	state_add(Z80_E,           "E",         m_de.b.l).noshow();
+	state_add(Z80_H,           "H",         m_hl_index[HL_OFFSET].b.h).noshow();
+	state_add(Z80_L,           "L",         m_hl_index[HL_OFFSET].b.l).noshow();
+	state_add(Z80_AF,          "AF",        m_af.w.l);
+	state_add(Z80_BC,          "BC",        m_bc.w.l);
+	state_add(Z80_DE,          "DE",        m_de.w.l);
+	state_add(Z80_HL,          "HL",        m_hl_index[HL_OFFSET].w.l);
+	state_add(Z80_IX,          "IX",        m_hl_index[IX_OFFSET].w.l);
+	state_add(Z80_IY,          "IY",        m_hl_index[IY_OFFSET].w.l);
 	state_add(Z80_AF2,         "AF2",       m_af2.w.l);
 	state_add(Z80_BC2,         "BC2",       m_bc2.w.l);
 	state_add(Z80_DE2,         "DE2",       m_de2.w.l);
 	state_add(Z80_HL2,         "HL2",       m_hl2.w.l);
-	state_add(Z80_WZ,          "WZ",        WZ);
+	state_add(Z80_WZ,          "WZ",        m_wz.w.l);
 	state_add(Z80_R,           "R",         m_rtemp).callimport().callexport();
 	state_add(Z80_I,           "I",         m_i);
 	state_add(Z80_IM,          "IM",        m_im).mask(0x3);
@@ -643,7 +878,7 @@ void z80lle_device::device_start()
  ****************************************************************************/
 void z80lle_device::device_reset()
 {
-	PC = 0x0000;
+	m_pc.d = 0x0000;
 	m_i = 0;
 	m_r = 0;
 	m_r2 = 0;
@@ -653,7 +888,7 @@ void z80lle_device::device_reset()
 	m_iff1 = 0;
 	m_iff2 = 0;
 
-	WZ=PCD;
+	m_wz.d = m_pc.d;
 
 	m_instruction = M1;
 	m_instruction_step = 0;
@@ -661,6 +896,7 @@ void z80lle_device::device_reset()
 
 	m_tmp = 0;
 	m_alu = 0;
+	m_hl_offset = HL_OFFSET;
 }
 
 
@@ -682,14 +918,20 @@ void z80lle_device::execute_run()
 //		m_after_ldair = false;
 
 		if (m_instruction == M1 && m_instruction_step == 0 && m_instruction_offset == 0) {
-			PRVPC = PCD;
-			debugger_instruction_hook(PCD);
+			m_prvpc.d = m_pc.d;
+			debugger_instruction_hook(m_pc.d);
 		}
 
 		// Execute steps for instruction
-		switch (insts[m_instruction][m_instruction_step]) {
+		u8 step = insts[m_instruction][m_instruction_step++];
+		switch (step)
+		{
 		case UNKNOWN:
-			fatalerror("Unsupported instruction %02x encountered at address %04x", m_ir, PRVPC);
+			fatalerror("Unsupported instruction %d,%02x encountered at address %04x", m_instruction_offset / 256, m_ir, m_prvpc.d);
+			break;
+		case A_ACT:
+			m_act = A;
+			logerror("A_ACT\n");
 			break;
 		case A_DB:
 			m_data_bus = A;
@@ -700,8 +942,74 @@ void z80lle_device::execute_run()
 			WZ_H = A;
 			logerror("A_W\n");
 			break;
+		case ADC16:
+			switch (m_ir & 0x30)
+			{
+			case 0x00:
+				HL = adc16(HL, BC);
+				break;
+			case 0x10:
+				HL = adc16(HL, DE);
+				break;
+			case 0x20:
+				HL = adc16(HL, HL);
+				break;
+			case 0x30:
+				HL = adc16(HL, SP);
+				break;
+			}
+			m_icount -= 7;
+			logerror("ADC16\n");
+			break;
+		case ADD16:
+			switch (m_ir & 0x30)
+			{
+			case 0x00:
+				HL = add16(HL, BC);
+				break;
+			case 0x10:
+				HL = add16(HL, DE);
+				break;
+			case 0x20:
+				HL = add16(HL, HL);
+				break;
+			case 0x30:
+				HL = add16(HL, SP);
+				break;
+			}
+			m_icount -= 7;
+			logerror("ADD16\n");
+			break;
+		case SBC16:
+			switch (m_ir & 0x30)
+			{
+			case 0x00:
+				HL = sbc16(HL, BC);
+				break;
+			case 0x10:
+				HL = sbc16(HL, DE);
+				break;
+			case 0x20:
+				HL = sbc16(HL, HL);
+				break;
+			case 0x30:
+				HL = sbc16(HL, SP);
+				break;
+			}
+			m_icount -= 7;
+			logerror("SBC16\n");
+			break;
+		case ALU_DB:
+			m_data_bus = m_alu;
+			logerror("ALU_DB\n");
+			break;
+		case ALU_A:
+			A = m_alu;
+			logerror("ALU_A\n");
+			break;
 		case ALU_REG:
-			switch (m_ir & 0x07) {
+			switch (m_ir & 0x07)
+			{
 			case 0x00:
 				B = m_alu;
 				break;
@@ -721,7 +1029,7 @@ void z80lle_device::execute_run()
 				L = m_alu;
 				break;
 			case 0x06:
-				fatalerror("REG_TMP: illegal register reference 0x06\n");
+				fatalerror("ALU_REG: illegal register reference 0x06\n");
 				break;
 			case 0x07:
 				A = m_alu;
@@ -729,21 +1037,84 @@ void z80lle_device::execute_run()
 			}
 			logerror("ALU_REG\n");
 			break;
+		case ALU_REGD:
+			switch (m_ir & 0x38)
+			{
+			case 0x00:
+				B = m_alu;
+				break;
+			case 0x08:
+				C = m_alu;
+				break;
+			case 0x10:
+				D = m_alu;
+				break;
+			case 0x18:
+				E = m_alu;
+				break;
+			case 0x20:
+				H = m_alu;
+				break;
+			case 0x28:
+				L = m_alu;
+				break;
+			case 0x30:
+				fatalerror("ALU_REGD: illegal register reference 0x30\n");
+				break;
+			case 0x38:
+				A = m_alu;
+				break;
+			}
+			logerror("ALU_REGD\n");
+			break;
+		case ALU_AND:
+			m_alu = m_act & m_tmp;
+			F = SZP[m_alu] | HF;
+			logerror("ALU_AND\n");
+			break;
+		case ALU_CP:  // Flag handling is slightly different from SUB
+			m_alu = m_act - m_tmp;
+			F = (SZHVC_sub[(m_act << 8) | m_alu] & ~(YF | XF)) |
+				(m_tmp & (YF | XF));
+			logerror("ALU_CP\n");
+			break;
+		case ALU_DEC:
+			m_alu = m_tmp - 1;
+			F = (F & CF) | SZHV_dec[m_alu];
+			logerror("ALU_DEC\n");
+			break;
+		case ALU_INC:
+			m_alu = m_tmp + 1;
+			F = (F & CF) | SZHV_inc[m_alu];
+			logerror("ALU_INC\n");
+			break;
+		case ALU_OR:
+			m_alu = m_act | m_tmp;
+			F = SZP[m_alu];
+			logerror("ALU_OR\n");
+			break;
+		case ALU_XOR:
+			m_alu = m_act ^ m_tmp;
+			F = SZP[m_alu];
+			logerror("ALU_XOR\n");
+			break;
 		case ALU_SLA:
 			m_alu = m_tmp << 1;
 			F = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
 			logerror("ALU_SLA\n");
 			break;
 		case CHECK_WAIT:
-			if (!m_wait_state) {
-				m_icount -=1;
+			if (!m_wait_state)
+			{
+				m_icount -= 1;
 				// Do not advance to next step
 				m_instruction_step--;
 			}
 			logerror("CHECK_WAIT\n");
 			break;
 		case DB_REG:
-			switch (m_ir & 0x38) {
+			switch (m_ir & 0x38)
+			{
 			case 0x00:
 				B = m_data_bus;
 				break;
@@ -771,39 +1142,9 @@ void z80lle_device::execute_run()
 			}
 			logerror("DB_REG\n");
 			break;
-		case DB_R16H:
-			switch (m_ir & 0x30) {
-			case 0x00:
-				B = m_data_bus;
-				break;
-			case 0x10:
-				D = m_data_bus;
-				break;
-			case 0x20:
-				H = m_data_bus;
-				break;
-			case 0x30:
-				SP_H = m_data_bus;
-				break;
-			}
-			logerror("DB_R16H\n");
-			break;
-		case DB_R16L:
-			switch (m_ir & 0x30) {
-			case 0x00:
-				C = m_data_bus;
-				break;
-			case 0x10:
-				E = m_data_bus;
-				break;
-			case 0x20:
-				L = m_data_bus;
-				break;
-			case 0x30:
-				SP_L = m_data_bus;
-				break;
-			}
-			logerror("DB_R16L\n");
+		case DB_TMP:
+			m_tmp = m_data_bus;
+			logerror("DB_TMP\n");
 			break;
 		case DB_A:
 			A = m_data_bus;
@@ -817,12 +1158,42 @@ void z80lle_device::execute_run()
 			WZ_L = m_data_bus;
 			logerror("DB_Z: WZ = %04x\n", WZ);
 			break;
+		case DE_WZ:
+			WZ = DE;
+			logerror("DE_WZ\n");
+			break;
+		case DEC_SP:
+			SP -= 1;
+			logerror("DEC_SP\n");
+			break;
+		case INC_SP:
+			SP += 1;
+			logerror("INC_SP\n");
+			break;
 		case DECODE:
 			m_instruction = m_instruction_offset | m_ir;
-			m_instruction_step = 0 - 1;  // It's incremented at the end of the loop
-			if (m_ir == 0xcb) {
+			m_instruction_step = 0;
+			if (m_ir == 0xcb)
+			{
 				m_instruction_offset = CB_OFFSET;
 				m_instruction = M1;
+			}
+			else if (m_ir == 0xdd)
+			{
+				m_instruction_offset = FD_OFFSET;
+				m_instruction = M1;
+				m_hl_offset = IX_OFFSET;
+			}
+			else if (m_ir == 0xed)
+			{
+				m_instruction_offset = ED_OFFSET;
+				m_instruction = M1;
+			}
+			else if (m_ir == 0xfd)
+			{
+				m_instruction_offset = FD_OFFSET;
+				m_instruction = M1;
+				m_hl_offset = IY_OFFSET;
 			}
 			logerror("DECODE\n");
 			break;
@@ -830,11 +1201,113 @@ void z80lle_device::execute_run()
 			m_iff1 = m_iff2 = 0;
 			logerror("DI\n");
 			break;
+		case EI:
+			m_iff1 = m_iff2 = 1;
+			m_after_ei = true;
+			logerror("EI\n");
+			break;
 		case END:
-			m_instruction = M1;
-			m_instruction_offset = 0;
-			m_instruction_step = 0 - 1;   // It's incremented at the end of the loop
+			end_instruction();
 			logerror("END\n");
+			break;
+		case EX_DE_HL:
+			{
+				u16 tmp = DE;
+				DE = HL;
+				HL = tmp;
+			}
+			logerror("EX_DE_HL\n");
+			break;
+		case H_DB:
+			m_data_bus = H;
+			logerror("H_DB\n");
+			break;
+		case DE_OUT:
+			m_address_bus = DE;
+			m_icount -= 1;
+			logerror("DE_OUT\n");
+			break;
+		case HL_OUT:
+			m_address_bus = HL;
+			m_icount -= 1;
+			logerror("HL_OUT\n");
+			break;
+		case DEC_R16:
+			switch (m_ir & 0x30)
+			{
+			case 0x00:
+				BC--;
+				break;
+			case 0x10:
+				DE--;
+				break;
+			case 0x20:
+				HL--;
+				break;
+			case 0x30:
+				SP--;
+				break;
+			}
+			m_icount -= 2;
+			logerror("DEC_R16\n");
+			break;
+		case INC_R16:
+			switch (m_ir & 0x30)
+			{
+			case 0x00:
+				BC++;
+				break;
+			case 0x10:
+				DE++;
+				break;
+			case 0x20:
+				HL++;
+				break;
+			case 0x30:
+				SP++;
+				break;
+			}
+			m_icount -= 2;
+			logerror("INC_R16\n");
+			break;
+		case JR_COND:
+			if ((F & jr_conditions[((m_ir >> 3) & 0x07)][0]) == jr_conditions[((m_ir >> 3) & 0x07)][1])
+			{
+				WZ = PC + (s8)m_data_bus;
+				PC = WZ;
+				m_icount -= 5;
+			}
+			logerror("JR_COND\n");
+			break;
+		case JP_COND:
+			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
+			{
+				PC = WZ;
+			}
+			logerror("JP_COND\n");
+			break;
+		case CALL_COND:
+			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
+			{
+				m_icount -= 1;
+			}
+			else
+			{
+				end_instruction();
+			}
+			logerror("CALL_COND\n");
+			break;
+		case RET_COND:
+			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) != jp_conditions[((m_ir >> 3) & 0x07)][1])
+			{
+				end_instruction();
+			}
+			m_icount -= 1;
+			logerror("RET_COND\n");
+			break;
+		case L_DB:
+			m_data_bus = L;
+			logerror("L_DB\n");
 			break;
 		case OUTPUT:
 			m_io->write_byte(m_address_bus, m_data_bus);
@@ -849,6 +1322,96 @@ void z80lle_device::execute_run()
 			m_address_bus = PC;
 			m_icount -= 1;
 			logerror("PC_OUT\n");
+			break;
+		case PCH_DB:
+			m_data_bus = PC_H;
+			logerror("PCH_DB\n");
+			break;
+		case PCL_DB:
+			m_data_bus = PC_L;
+			logerror("PCL_DB\n");
+			break;
+		case R16H_DB:
+			switch (m_ir & 0x30) {
+			case 0x00:
+				m_data_bus = B;
+				break;
+			case 0x10:
+				m_data_bus = D;
+				break;
+			case 0x20:
+				m_data_bus = H;
+				break;
+			case 0x30:
+				if (m_ir & 0x80)
+					m_data_bus = A;
+				else
+					m_data_bus = SP_H;
+				break;
+			}
+			logerror("R16H_DB\n");
+			break;
+		case R16L_DB:
+			switch (m_ir & 0x30) {
+			case 0x00:
+				m_data_bus = C;
+				break;
+			case 0x10:
+				m_data_bus = E;
+				break;
+			case 0x20:
+				m_data_bus = L;
+				break;
+			case 0x30:
+				if (m_ir & 0x80)
+					m_data_bus = F;
+				else
+					m_data_bus = SP_L;
+				break;
+			}
+			logerror("R16L_DB\n");
+			break;
+		case DB_R16H:
+			switch (m_ir & 0x30)
+			{
+			case 0x00:
+				B = m_data_bus;
+				break;
+			case 0x10:
+				D = m_data_bus;
+				break;
+			case 0x20:
+				H = m_data_bus;
+				break;
+			case 0x30:
+				if (m_ir & 0x80)
+					A = m_data_bus;
+				else
+					SP_H = m_data_bus;
+				break;
+			}
+			logerror("DB_R16H\n");
+			break;
+		case DB_R16L:
+			switch (m_ir & 0x30)
+			{
+			case 0x00:
+				C = m_data_bus;
+				break;
+			case 0x10:
+				E = m_data_bus;
+				break;
+			case 0x20:
+				L = m_data_bus;
+				break;
+			case 0x30:
+				if (m_ir & 0x80)
+					F = m_data_bus;
+				else
+					SP_L = m_data_bus;
+				break;
+			}
+			logerror("DB_R16L\n");
 			break;
 		case READ:
 			m_data_bus = m_program->read_byte(m_address_bus);
@@ -866,6 +1429,36 @@ void z80lle_device::execute_run()
 			m_icount -= 1;
 			m_r++;
 			logerror("REFRESH\n");
+			break;
+		case REGS_DB:
+			switch (m_ir & 0x07)
+			{
+			case 0x00:
+				m_data_bus = B;
+				break;
+			case 0x01:
+				m_data_bus = C;
+				break;
+			case 0x02:
+				m_data_bus = D;
+				break;
+			case 0x03:
+				m_data_bus = E;
+				break;
+			case 0x04:
+				m_data_bus = H;
+				break;
+			case 0x05:
+				m_data_bus = L;
+				break;
+			case 0x06:
+				fatalerror("REGS_DB: illegal register reference 0x06\n");
+				break;
+			case 0x07:
+				m_data_bus = A;
+				break;
+			}
+			logerror("REGS_DB\n");
 			break;
 		case REG_TMP:
 			switch (m_ir & 0x07) {
@@ -895,6 +1488,51 @@ void z80lle_device::execute_run()
 				break;
 			}
 			logerror("REG_TMP\n");
+			break;
+		case REGD_TMP:
+			switch (m_ir & 0x38) {
+			case 0x00:
+				m_tmp = B;
+				break;
+			case 0x08:
+				m_tmp = C;
+				break;
+			case 0x10:
+				m_tmp = D;
+				break;
+			case 0x18:
+				m_tmp = E;
+				break;
+			case 0x20:
+				m_tmp = H;
+				break;
+			case 0x28:
+				m_tmp = L;
+				break;
+			case 0x30:
+				fatalerror("REGD_TMP: illegal register reference 0x30\n");
+				break;
+			case 0x38:
+				m_tmp = A;
+				break;
+			}
+			logerror("REGD_TMP\n");
+			break;
+		case RLCA:
+			A = (A << 1) | (A >> 7);
+			F = (F & (SF | ZF | PF)) | (A & (YF | XF | CF));
+			logerror("RLCA\n");
+			break;
+		case RRCA:
+			F = (F & (SF | ZF | PF)) | (A & CF);
+			A = (A >> 1) | (A << 7);
+			F |= (A & (YF | XF));
+			logerror("RRCA\n");
+			break;
+		case SP_OUT:
+			m_address_bus = SP;
+			m_icount -= 1;
+			logerror("SP_OUT\n");
 			break;
 		case TMP_REG:
 			switch (m_ir & 0x38) {
@@ -948,8 +1586,34 @@ void z80lle_device::execute_run()
 			m_icount -= 1;
 			logerror("X, skip cycle\n");
 			break;
+		case LDI:
+			F &= SF | ZF | CF;
+			if ((A + m_data_bus) & 0x02)
+				F |= YF; /* bit 1 -> flag 5 */
+			if ((A + m_data_bus) & 0x08)
+				F |= XF; /* bit 3 -> flag 3 */
+			HL++;
+			DE++;
+			BC--;
+			if (BC)
+				F |= VF;
+			m_icount -= 2;
+			logerror("LDI, ");
+			break;
+		case REPEAT:
+			if (BC != 0)
+			{
+				PC -= 2;
+				// Except for inir, otir, indr, otdr
+				if (!BIT(m_ir,1))
+				{
+					WZ = PC + 1;
+				}
+				m_icount -= 5;
+			}
+			logerror("REPEAT, ");
+			break;
 		}
-		m_instruction_step++;
 	} while (m_icount > 0);
 }
 
@@ -1034,14 +1698,14 @@ void z80lle_device::state_string_export(const device_state_entry &entry, std::st
 	{
 		case STATE_GENFLAGS:
 			str = string_format("%c%c%c%c%c%c%c%c",
-				F & 0x80 ? 'S':'.',
-				F & 0x40 ? 'Z':'.',
-				F & 0x20 ? 'Y':'.',
-				F & 0x10 ? 'H':'.',
-				F & 0x08 ? 'X':'.',
-				F & 0x04 ? 'P':'.',
-				F & 0x02 ? 'N':'.',
-				F & 0x01 ? 'C':'.');
+				m_af.b.l & 0x80 ? 'S':'.',
+				m_af.b.l & 0x40 ? 'Z':'.',
+				m_af.b.l & 0x20 ? 'Y':'.',
+				m_af.b.l & 0x10 ? 'H':'.',
+				m_af.b.l & 0x08 ? 'X':'.',
+				m_af.b.l & 0x04 ? 'P':'.',
+				m_af.b.l & 0x02 ? 'N':'.',
+				m_af.b.l & 0x01 ? 'C':'.');
 			break;
 	}
 }
