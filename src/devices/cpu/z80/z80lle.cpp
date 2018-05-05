@@ -674,60 +674,80 @@ const u8 z80lle_device::insts[5 * 256 + 2][23] = {
 	/*****************************************************/
 
 	/* 0x00 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0x10 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0x20 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0x30 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0x40 */
 	{ 0 }, { 0 },
 	/* ed 42 */ { SBC16, END },  // 15 cycles, SBC HL,BC
 	/* ed 43 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, R16L_DB, WRITE, CHECK_WAIT, WZ_OUT, R16H_DB, WRITE, CHECK_WAIT, END },  // 20 cycles, LD (nn),BC
 	/* ed 44 */ { NEG, END },  // 8 cycles, NEG
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* ed 46 */ { IM, END },  // 8 cycles, IM 0
+	{ 0 }, { 0 }, { 0 },
 	/* ed 4a */ { ADC16, END },  // 15 cycles, ADC HL,BC
 	/* ed 4b */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_R16L, WZ_OUT, READ, CHECK_WAIT, DB_R16H, END },  // 20 cycles, LD BC,(nn)
 	/* ed 4c */ { NEG, END },  // 8 cycles, NEG
-	{ 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* ed 4e */ { IM, END },  // 8 cycles, IM 0
+	{ 0 },
 	/* 0x50 */
 	{ 0 }, { 0 },
 	/* ed 52 */ { SBC16, END },  // 15 cycles SBC HL,DE
 	/* ed 53 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, R16L_DB, WRITE, CHECK_WAIT, WZ_OUT, R16H_DB, WRITE, CHECK_WAIT, END },  // 20 cycles, LD (nn),DE
 	/* ed 54 */ { NEG, END },  // 8 cycles, NEG
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* ed 56 */ { IM, END },  // 8 cycles, IM 1
+	{ 0 }, { 0 }, { 0 },
 	/* ed 5a */ { ADC16, END },  // 15 cycles, ADC HL,DE
 	/* ed 5b */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_R16L, WZ_OUT, READ, CHECK_WAIT, DB_R16H, END },  // 20 cycles, LD DE,(nn)
 	/* ed 5c */ { NEG, END },  // 8 cycles, NEG
-	{ 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* ed 5e */ { IM, END },  // 8 cycles, IM 2
+	{ 0 },
 	/* 0x60 */
 	{ 0 }, { 0 },
 	/* ed 62 */ { SBC16, END },  // 15 cycles, SBC HL,HL
 	/* ed 63 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, R16L_DB, WRITE, CHECK_WAIT, WZ_OUT, R16H_DB, WRITE, CHECK_WAIT, END },  // 20 cycles, LD (nn),HL
 	/* ed 64 */ { NEG, END },  // 8 cycles, NEG
-	{ 0 }, { 0 },
+	{ 0 },
+	/* ed 66 */ { IM, END },  // 8 cycles, IM 0
 	/* ed 67 */ { HL_WZ, WZ_OUT, WZ_INC, READ, RRD, WRITE, END },  // 18 cycles, RRD
 	{ 0 }, { 0 },
 	/* ed 6a */ { ADC16, END },  // 15 cycles, ADC HL,HL
 	/* ed 6b */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_R16L, WZ_OUT, READ, CHECK_WAIT, DB_R16H, END },  // 20 cycles, LD HL,(nn)
 	/* ed 6c */ { NEG, END },  // 8 cycles, NEG
-	{ 0 }, { 0 },
+	{ 0 },
+	/* ed 6e */ { IM, END },  // 8 cycles, IM 0
 	/* ed 6f */ { HL_WZ, WZ_OUT, WZ_INC, READ, RLD, WRITE, END },  // 18 cycles, RLD
 	/* 0x70 */
 	{ 0 }, { 0 },
 	/* ed 72 */ { SBC16, END },  // 15 cycles, SBC HL,SP
 	/* ed 73 */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, R16L_DB, WRITE, CHECK_WAIT, WZ_OUT, R16H_DB, WRITE, CHECK_WAIT, END },  // 20 cycles, LD (nn),SP
 	/* ed 74 */ { NEG, END },  // 8 cycles, NEG
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* ed 76 */ { IM, END },  // 8 cycles, IM 1
+	{ 0 }, { 0 }, { 0 },
 	/* ed 7a */ { ADC16, END },  // 15 cycles, ADC HL,SP
 	/* ed 7b */ { PC_OUT, PC_INC, READ, CHECK_WAIT, DB_Z, PC_OUT, PC_INC, READ, CHECK_WAIT, DB_W, WZ_OUT, WZ_INC, READ, CHECK_WAIT, DB_R16L, WZ_OUT, READ, CHECK_WAIT, DB_R16H, END },  // 20 cycles, LD SP,(nn)
 	/* ed 7c */ { NEG, END },  // 8 cycles, NEG
-	{ 0 }, { 0 }, { 0 },
+	{ 0 },
+	/* ed 7e */ { IM, END },  // 8 cycles, IM 2
+	{ 0 },
 	/* 0x80 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0x90 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0xa0 */
 	/* ed a0 */ { HL_OUT, READ, CHECK_WAIT, DE_OUT, WRITE, CHECK_WAIT, LDI, END },  // 16 cycles, LDI
 	/* ed a1 */ { HL_OUT, READ, CHECK_WAIT, CPI, END },  // 16 cycles, CPI
@@ -743,13 +763,17 @@ const u8 z80lle_device::insts[5 * 256 + 2][23] = {
 	/* ed b9 */ { HL_OUT, READ, CHECK_WAIT, CPD, CPREPEAT, END },  // 16/21 cycles, CPDR
 	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
 	/* 0xc0 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0xd0 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0xe0 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 	/* 0xf0 */
-	{ 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
 	/*****************************************************/
 	/* DD/FD prefixed instructions                       */
@@ -2344,6 +2368,11 @@ void z80lle_device::execute_run()
 			}
 			F = (F&(CF|NF)) | (A>0x99) | ((A^m_alu)&HF) | SZP[m_alu];
 			A = m_alu;
+			break;
+		case IM:
+			m_im = (m_ir >> 3) & 0x03;
+			if (m_im)
+				m_im--;
 			break;
 		case NEG:
 			m_alu = 0 - A;

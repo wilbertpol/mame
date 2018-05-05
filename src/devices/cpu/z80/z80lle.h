@@ -190,6 +190,7 @@ protected:
 		CCF,         // CCF
 		CPL,         // CPL
 		DAA,         // DAA
+		IM,          // IM
 		NEG,         // NEG
 		RLA,         // RLA
 		RLCA,        // RLCA
