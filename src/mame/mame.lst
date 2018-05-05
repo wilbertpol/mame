@@ -40529,6 +40529,7 @@ zerozone                        // (c) 1993 Comad
 
 @source:zexall.cpp
 zexall                          // zexall z80 test suite with kevtris' preloader/serial interface at 0000-00ff
+zexall_lle                      // zexall z80 test suite with kevtris' preloader/serial interface at 0000-00ff
 
 @source:zms8085.cpp
 zephyr                          //
