@@ -7,33 +7,30 @@
 
 #include "z80daisy.h"
 
-#define MCFG_Z80_SET_IRQACK_CALLBACK(_devcb) \
+#define MCFG_Z80LLE_SET_IRQACK_CALLBACK(_devcb) \
 	devcb = &downcast<z80lle_device &>(*device).set_irqack_cb(DEVCB_##_devcb);
 
-#define MCFG_Z80_SET_REFRESH_CALLBACK(_devcb) \
+#define MCFG_Z80LLE_SET_REFRESH_CALLBACK(_devcb) \
 	devcb = &downcast<z80lle_device &>(*device).set_refresh_cb(DEVCB_##_devcb);
 
-#define MCFG_Z80_SET_HALT_CALLBACK(_devcb) \
+#define MCFG_Z80LLE_SET_HALT_CALLBACK(_devcb) \
 	devcb = &downcast<z80lle_device &>(*device).set_halt_cb(DEVCB_##_devcb);
 
 enum
 {
-	NSC800_RSTA = INPUT_LINE_IRQ0 + 1,
-	NSC800_RSTB,
-	NSC800_RSTC,
-	Z80_INPUT_LINE_WAIT,
-	Z80_INPUT_LINE_BOGUSWAIT, /* WAIT pin implementation used to be nonexistent, please remove this when all drivers are updated with Z80_INPUT_LINE_WAIT */
-	Z80_INPUT_LINE_BUSRQ
+	Z80LLE_INPUT_LINE_WAIT = INPUT_LINE_IRQ0 + 1,
+	Z80LLE_INPUT_LINE_BOGUSWAIT, /* WAIT pin implementation used to be nonexistent, please remove this when all drivers are updated with Z80_INPUT_LINE_WAIT */
+	Z80LLE_INPUT_LINE_BUSRQ
 };
 
 enum
 {
-	Z80_PC = STATE_GENPC, Z80_SP = 1,
-	Z80_A, Z80_B, Z80_C, Z80_D, Z80_E, Z80_H, Z80_L,
-	Z80_AF, Z80_BC, Z80_DE, Z80_HL,
-	Z80_IX, Z80_IY, Z80_AF2, Z80_BC2, Z80_DE2, Z80_HL2,
-	Z80_R, Z80_I, Z80_IM, Z80_IFF1, Z80_IFF2, Z80_HALT,
-	Z80_DC0, Z80_DC1, Z80_DC2, Z80_DC3, Z80_WZ
+	Z80LLE_PC = STATE_GENPC, Z80LLE_SP = 1,
+	Z80LLE_A, Z80LLE_B, Z80LLE_C, Z80LLE_D, Z80LLE_E, Z80LLE_H, Z80LLE_L,
+	Z80LLE_AF, Z80LLE_BC, Z80LLE_DE, Z80LLE_HL,
+	Z80LLE_IX, Z80LLE_IY, Z80LLE_AF2, Z80LLE_BC2, Z80LLE_DE2, Z80LLE_HL2,
+	Z80LLE_R, Z80LLE_I, Z80LLE_IM, Z80LLE_IFF1, Z80LLE_IFF2, Z80LLE_HALT,
+	Z80LLE_DC0, Z80LLE_DC1, Z80LLE_DC2, Z80LLE_DC3, Z80LLE_WZ
 };
 
 class z80lle_device : public cpu_device, public z80_daisy_chain_interface
@@ -118,17 +115,22 @@ protected:
 		A_W,         // register A to W
 		ADC16,       // 16bit addition with carry, takes 7 cycles
 		ADD16,       // 16bit addition, takes 7 cycles
-		SBC16,       // 16bit subtraction with cqrry, takes 7 cycles
+		SBC16,       // 16bit subtraction with carry, takes 7 cycles
 		ALU_A,       // ALU output to A
 		ALU_DB,      // ALU output to data bus
-		ALU_REG,     // ALU output to register
-		ALU_REGD,    // ALU output to destination register
+		ALU_REGS,    // ALU output to source register (bits .....xxx)
+		ALU_REGD,    // ALU output to destination register (bits ..xxx...)
+		ALU_ADC,     // ALU operation: ADC
+		ALU_ADD,     // ALU operation: ADD
 		ALU_AND,     // ALU operation: AND
+		ALU_BIT,     // ALU operation: BIT
 		ALU_CP,      // ALU operation: CP
 		ALU_DEC,     // ALU operation: DEC (decrements TMP input)
 		ALU_INC,     // ALU operation: INC (increments TMP input)
 		ALU_OR,      // ALU operation: OR
+		ALU_SBC,     // ALU operation: SBC
 		ALU_SLA,     // ALU operation: SLA
+		ALU_SUB,     // ALU operation: SUB
 		ALU_XOR,     // ALU operation: XOR
 		CHECK_WAIT,	 // Check if a wait state should be taken, can take cycles
 		DB_A,        // Store data bus in A
@@ -138,10 +140,13 @@ protected:
 		DB_TMP,      // Store data bus in TMP
 		DB_W,        // Store data bus in W
 		DB_Z,        // Store data bus in Z
-		DE_OUT,      // Put DE on address buys, takes 1 cycle
+		DE_OUT,      // Put DE on address bus, takes 1 cycle
+		BC_WZ,       // Store BC in WZ
 		DE_WZ,       // Store DE in WZ
 		DEC_SP,      // Decrement SP (for PUSH)
 		DECODE,      // Decode instruction
+		DISP_WZ2,    // Calculate IX/IY displacement into WZ, takes 2 cycles (in DD CB xx II instructions)
+		DISP_WZ5,    // Calculate IX/IY displacement into WZ, takes 5 cycles (in DD xx instructions)
 		DI,          // Reset interrupt flip flops
 		EI,          // Set interrupt flip flops
 		EX_DE_HL,    // Swap DE and HL
@@ -165,11 +170,15 @@ protected:
 		READ,        // Read memory from m_address_bus, storing result in m_data_bus, takes 2 cycle
 		READ_OP,     // M1 - read memory, takes 1 cycle
 		REFRESH,     // Refresh RAM, takes 2 cycles
-		REGS_DB,      // 8 bit source register to data bus
-		REG_TMP,     // 8 bit source register to TMP
-		REGD_TMP,    // 8 bit destination register to TMP
+		REGS_DB,     // 8 bit source register (bits .....xxx) to data bus
+		REGS_TMP,    // 8 bit source register (bits .....xxx) to TMP
+		REGD_TMP,    // 8 bit destination register (bits ..xxx...) to TMP
+		CCF,         // CCF
+		CPL,         // CPL
+		DAA,         // DAA
 		RLCA,        // RLCA
 		RRCA,        // RRCA
+		SCF,         // SCF
 		SP_OUT,      // Put SP on address bus, takes 1 cycle
 		TMP_REG,     // TMP to 8 bit register
 		WRITE,       // Write data bus to memory, takes 2 cycle
@@ -177,17 +186,23 @@ protected:
 		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
 		WZ_TO_PC,    // Store contents of WZ in PC
 		X,           // Do nothing, takes 1 cycle
+		CPD,         // Set flags and update pointers and counter, takes 5 cycles
+		CPI,         // Set flags and update pointers and counter, takes 5 cycles
+		LDD,         // Set flags and update pointers and counter, takes 2 cycles
 		LDI,         // Set flags and update pointers and counter, takes 2 cycles
 		REPEAT,      // Move PC 2 steps back if BC != 0, takes 5 cycles
+		CPREPEAT,    // Move PC 2 steps back if BC != 0 and ZF clear, takes 5 cycles
 	};
 
-	static const u8 insts[4*256 + 1][23];
+	static const u8 insts[5*256 + 2][23];
 	static const u8 jr_conditions[8][2];
 	static const u8 jp_conditions[8][2];
 	static constexpr unsigned CB_OFFSET = 1 * 256;
 	static constexpr unsigned ED_OFFSET = 2 * 256;
 	static constexpr unsigned FD_OFFSET = 3 * 256;
-	static constexpr unsigned M1 = 4 * 256;
+	static constexpr unsigned FDCB_OFFSET = 4 * 256;
+	static constexpr unsigned M1 = 5 * 256 + 0;
+	static constexpr unsigned DD_FD_CB = 5 * 256 + 1;
 	static constexpr unsigned HL_OFFSET = 0;
 	static constexpr unsigned IX_OFFSET = 1;
 	static constexpr unsigned IY_OFFSET = 2;
