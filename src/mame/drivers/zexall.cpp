@@ -179,6 +179,16 @@ MACHINE_CONFIG_START(zexall_state::zexall_lle)
 MACHINE_CONFIG_END
 
 
+MACHINE_CONFIG_START(zexall_state::zexall_lle)
+	/* basic machine hardware */
+	MCFG_CPU_ADD("maincpu", Z80LLE, XTAL(3'579'545))
+	MCFG_CPU_PROGRAM_MAP(z80_mem)
+
+	/* video hardware */
+	MCFG_DEVICE_ADD("terminal", GENERIC_TERMINAL, 0)
+MACHINE_CONFIG_END
+
+
 /******************************************************************************
  ROM Definitions
 ******************************************************************************/
