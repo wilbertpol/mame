@@ -119,22 +119,33 @@ protected:
 		ALU_A,       // ALU output to A
 		ALU_DB,      // ALU output to data bus
 		ALU_REGS,    // ALU output to source register (bits .....xxx)
+		ALU_REGS0,   // ALU output to source register (bits .....xxx), not to index registers
 		ALU_REGD,    // ALU output to destination register (bits ..xxx...)
 		ALU_ADC,     // ALU operation: ADC
 		ALU_ADD,     // ALU operation: ADD
 		ALU_AND,     // ALU operation: AND
 		ALU_BIT,     // ALU operation: BIT
+		ALU_RES,     // ALU operation: RES
+		ALU_SET,     // ALU operation: SET
 		ALU_CP,      // ALU operation: CP
 		ALU_DEC,     // ALU operation: DEC (decrements TMP input)
 		ALU_INC,     // ALU operation: INC (increments TMP input)
 		ALU_OR,      // ALU operation: OR
+		ALU_RL,      // ALU operation: RL
+		ALU_RLC,     // ALU operation: RLC
+		ALU_RR,      // ALU operation: RR
+		ALU_RRC,     // ALU operation: RRC
 		ALU_SBC,     // ALU operation: SBC
 		ALU_SLA,     // ALU operation: SLA
+		ALU_SLL,     // ALU operation: SLL
+		ALU_SRA,     // ALU operation: SRA
+		ALU_SRL,     // ALU operation: SRL
 		ALU_SUB,     // ALU operation: SUB
 		ALU_XOR,     // ALU operation: XOR
 		CHECK_WAIT,	 // Check if a wait state should be taken, can take cycles
 		DB_A,        // Store data bus in A
 		DB_REG,      // Store data bus in 8bit register
+		DB_REG0,     // Store data bus in 8bit register, not to index registers
 		DB_R16H,     // Store data bus in high 8 bits of 16 bit register
 		DB_R16L,     // Store data bus in low 8 bits of 16 bit register
 		DB_TMP,      // Store data bus in TMP
@@ -143,6 +154,7 @@ protected:
 		DE_OUT,      // Put DE on address bus, takes 1 cycle
 		BC_WZ,       // Store BC in WZ
 		DE_WZ,       // Store DE in WZ
+		HL_WZ,       // Store HL in WZ
 		DEC_SP,      // Decrement SP (for PUSH)
 		DECODE,      // Decode instruction
 		DISP_WZ2,    // Calculate IX/IY displacement into WZ, takes 2 cycles (in DD CB xx II instructions)
@@ -169,15 +181,22 @@ protected:
 		R16L_DB,     // Put low 8 bits of 16 bit register on data bus
 		READ,        // Read memory from m_address_bus, storing result in m_data_bus, takes 2 cycle
 		READ_OP,     // M1 - read memory, takes 1 cycle
+		READ_OP2,    // Opcode read as part of DD/FD CB dd xx instructions, takes 2 cycles
 		REFRESH,     // Refresh RAM, takes 2 cycles
 		REGS_DB,     // 8 bit source register (bits .....xxx) to data bus
+		REGS0_DB,    // 8 bit source register (bits .....xxx) to data bus not to index registers
 		REGS_TMP,    // 8 bit source register (bits .....xxx) to TMP
 		REGD_TMP,    // 8 bit destination register (bits ..xxx...) to TMP
 		CCF,         // CCF
 		CPL,         // CPL
 		DAA,         // DAA
+		NEG,         // NEG
+		RLA,         // RLA
 		RLCA,        // RLCA
+		RRA,         // RRA
 		RRCA,        // RRCA
+		RRD,         // RRD, takes 5 cycles
+		RLD,         // RLD, takes 5 cycles
 		SCF,         // SCF
 		SP_OUT,      // Put SP on address bus, takes 1 cycle
 		TMP_REG,     // TMP to 8 bit register
@@ -186,6 +205,7 @@ protected:
 		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
 		WZ_TO_PC,    // Store contents of WZ in PC
 		X,           // Do nothing, takes 1 cycle
+		X2,          // Do nothing, takes 2 cycle
 		CPD,         // Set flags and update pointers and counter, takes 5 cycles
 		CPI,         // Set flags and update pointers and counter, takes 5 cycles
 		LDD,         // Set flags and update pointers and counter, takes 2 cycles
