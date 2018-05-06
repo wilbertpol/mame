@@ -144,14 +144,17 @@ protected:
 		ALU_XOR,     // ALU operation: XOR
 		CHECK_WAIT,	 // Check if a wait state should be taken, can take cycles
 		DB_A,        // Store data bus in A
-		DB_REG,      // Store data bus in 8bit register
+		DB_REG,      // Store data bus in 8bit register (bits ..xxx...)
 		DB_REG0,     // Store data bus in 8bit register, not to index registers
 		DB_R16H,     // Store data bus in high 8 bits of 16 bit register
 		DB_R16L,     // Store data bus in low 8 bits of 16 bit register
 		DB_TMP,      // Store data bus in TMP
 		DB_W,        // Store data bus in W
 		DB_Z,        // Store data bus in Z
+		BZ_OUT,      // Put BC on address bus, takes 1 cycle
 		DE_OUT,      // Put DE on address bus, takes 1 cycle
+		HL_OUT,      // Put HL on address bus, takes 1 cycle
+		PC_OUT_INC,  // Put PC on address bus, takes 1 cycle, increment PC
 		BC_WZ,       // Store BC in WZ
 		DE_WZ,       // Store DE in WZ
 		HL_WZ,       // Store HL in WZ
@@ -161,29 +164,36 @@ protected:
 		DISP_WZ5,    // Calculate IX/IY displacement into WZ, takes 5 cycles (in DD xx instructions)
 		DI,          // Reset interrupt flip flops
 		EI,          // Set interrupt flip flops
+		EX_AF_AF,    // Swap AF and AF'
 		EX_DE_HL,    // Swap DE and HL
+		EXX,         // Swap BC, DE, HL and BC2, DE2, HL2
 		H_DB,        // register H to data bus
-		HL_OUT,      // Put HL on address bus, takes 1 cycle
 		INC_SP,      // Increment SP (for POP)
 		DEC_R16,     // Decrement a 16 bit register, takes 2 cycles
 		INC_R16,     // Increment a 16 bit register, takes 2 cycles
 		CALL_COND,   // Check condition for CALL, takes 1 cycle when condition is true
+		DJNZ,        // Decrement B and jump when not zero, takes 5 cycles when branch taken
 		JR_COND,     // Check condition (Z, NZ, etc) for JR and perform jump, 5 cycles when branch taken
 		JP_COND,     // Check condition for JP and perform jump
 		RET_COND,    // Check condition for RET, takes 1 cycle
+		RST,         // Change PC to 0/8/10/18/20/28/30/38
 		L_DB,        // register L to data bus
-		OUTPUT,      // Write data bus to output, takes 3 cycles
-		PC_OUT_INC,  // Put PC on address bus, takes 1 cycle, increment PC
 		PCH_DB,      // Put PC 8 high bits on data bus
 		PCL_DB,      // Put PC 8 low bits on data bus
 		R16H_DB,     // Put high 8 bits of 16 bit register on data bus
 		R16L_DB,     // Put low 8 bits of 16 bit register on data bus
-		READ,        // Read memory from m_address_bus, storing result in m_data_bus, takes 2 cycle
+		INPUT,       // Read data bus from input, takes 3 cycles
+		OUTPUT,      // Write data bus to output, takes 3 cycles
+		READ,        // Read memory from m_address_bus, storing result in m_data_bus, takes 2 cycles
 		READ_OP,     // M1 - read memory, takes 1 cycle
 		READ_OP2,    // Opcode read as part of DD/FD CB dd xx instructions, takes 2 cycles
+		READ_OP_IRQ, // Special opcode reading while taking an interrupt
+		WRITE,       // Write data bus to memory, takes 2 cycles
 		REFRESH,     // Refresh RAM, takes 2 cycles
+		REGD_DB,     // 8 bit source register (bits ..xxx...) to data bus
 		REGS_DB,     // 8 bit source register (bits .....xxx) to data bus
 		REGS0_DB,    // 8 bit source register (bits .....xxx) to data bus not to index registers
+		ZERO_DB,     // put all zeroes on the data bus
 		REGS_TMP,    // 8 bit source register (bits .....xxx) to TMP
 		REGD_TMP,    // 8 bit destination register (bits ..xxx...) to TMP
 		CCF,         // CCF
@@ -200,9 +210,9 @@ protected:
 		SCF,         // SCF
 		SP_OUT,      // Put SP on address bus, takes 1 cycle
 		TMP_REG,     // TMP to 8 bit register
-		WRITE,       // Write data bus to memory, takes 2 cycle
 		WZ_INC,      // Increment WZ, maybe combine this with WZ_OUT
 		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
+		HL_PC,       // Store HL in PC
 		WZ_TO_PC,    // Store contents of WZ in PC
 		X,           // Do nothing, takes 1 cycle
 		X2,          // Do nothing, takes 2 cycle
@@ -210,11 +220,13 @@ protected:
 		CPI,         // Set flags and update pointers and counter, takes 5 cycles
 		LDD,         // Set flags and update pointers and counter, takes 2 cycles
 		LDI,         // Set flags and update pointers and counter, takes 2 cycles
+		OUTI,        // Set flags and update pointers and counter and prepare for I/O, takes 1 cycles
 		REPEAT,      // Move PC 2 steps back if BC != 0, takes 5 cycles
-		CPREPEAT,    // Move PC 2 steps back if BC != 0 and ZF clear, takes 5 cycles
+		REPEATCP,    // Move PC 2 steps back if BC != 0 and ZF clear, takes 5 cycles
+		REPEATIO,    // Move PC 2 steps back if B != 0, takes 5 cycles
 	};
 
-	static const u8 insts[5*256 + 2][21];
+	static const u8 insts[5*256 + 3][21];
 	static const u8 jr_conditions[8][2];
 	static const u8 jp_conditions[8][2];
 	static constexpr unsigned CB_OFFSET = 1 * 256;
@@ -223,6 +235,7 @@ protected:
 	static constexpr unsigned FDCB_OFFSET = 4 * 256;
 	static constexpr unsigned M1 = 5 * 256 + 0;
 	static constexpr unsigned DD_FD_CB = 5 * 256 + 1;
+	static constexpr unsigned TAKE_IRQ = 5 * 256 + 2;
 	static constexpr unsigned HL_OFFSET = 0;
 	static constexpr unsigned IX_OFFSET = 1;
 	static constexpr unsigned IY_OFFSET = 2;
@@ -261,6 +274,8 @@ protected:
 		m_instruction_step = 0;
 		m_hl_offset = HL_OFFSET;
 	}
+	void leave_halt();
+	void check_interrupts();
 };
 
 DECLARE_DEVICE_TYPE(Z80LLE, z80lle_device)
