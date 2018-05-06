@@ -173,8 +173,7 @@ protected:
 		RET_COND,    // Check condition for RET, takes 1 cycle
 		L_DB,        // register L to data bus
 		OUTPUT,      // Write data bus to output, takes 3 cycles
-		PC_INC,      // Increment PC, maybe combines this with PC_OUT
-		PC_OUT,      // Put PC on address bus, takes 1 cycle
+		PC_OUT_INC,  // Put PC on address bus, takes 1 cycle, increment PC
 		PCH_DB,      // Put PC 8 high bits on data bus
 		PCL_DB,      // Put PC 8 low bits on data bus
 		R16H_DB,     // Put high 8 bits of 16 bit register on data bus
@@ -215,7 +214,7 @@ protected:
 		CPREPEAT,    // Move PC 2 steps back if BC != 0 and ZF clear, takes 5 cycles
 	};
 
-	static const u8 insts[5*256 + 2][23];
+	static const u8 insts[5*256 + 2][21];
 	static const u8 jr_conditions[8][2];
 	static const u8 jp_conditions[8][2];
 	static constexpr unsigned CB_OFFSET = 1 * 256;
