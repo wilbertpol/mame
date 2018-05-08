@@ -142,14 +142,15 @@ protected:
 		ALU_SUB,     // ALU operation: SUB
 		ALU_XOR,     // ALU operation: XOR
 		DB_A,        // Store data bus in A
-		DB_REG,      // Store data bus in 8bit register (bits ..xxx...)
-		DB_REG0,     // Store data bus in 8bit register, not to index registers
+		DB_REGD,     // Store data bus in 8bit register (bits ..xxx...)
+		DB_REGD0,    // Store data bus in 8bit register (bits ..xxx...), not to index registers
+		DB_REGD_INPUT, // Store data bus in 8bit register (bits ..xxx...)
 		DB_R16H,     // Store data bus in high 8 bits of 16 bit register
 		DB_R16L,     // Store data bus in low 8 bits of 16 bit register
 		DB_TMP,      // Store data bus in TMP
 		DB_W,        // Store data bus in W
 		DB_Z,        // Store data bus in Z
-		BZ_OUT,      // Put BC on address bus, takes 1 cycle
+		BC_OUT,      // Put BC on address bus, takes 1 cycle
 		DE_OUT,      // Put DE on address bus, takes 1 cycle
 		HL_OUT,      // Put HL on address bus, takes 1 cycle
 		PC_OUT,      // Put PC on address bus, takes 1 cycle
@@ -198,10 +199,16 @@ protected:
 		CCF,         // CCF
 		CPL,         // CPL
 		DAA,         // DAA
+		HALT,        // HALT
 		IM,          // IM
-		LD_A_R,      // LD_A_R
+		LD_A_I,      // LD A,I, takes 1 cycle
+		LD_A_R,      // LD A,R, takes 1 cycle
+		LD_I_A,      // LD I,A, takes 1 cycle
+		LD_R_A,      // LD R,A, takes 1 cycle
+		LD_SP_HL,    // LD SP,HL, takes 2 cycles
 		NEG,         // NEG
 		NMI,         // NMI
+		RETI,        // RETI
 		RETN,        // RETN
 		RLA,         // RLA
 		RLCA,        // RLCA
@@ -220,6 +227,8 @@ protected:
 		X2,          // Do nothing, takes 2 cycle
 		CPD,         // Set flags and update pointers and counter, takes 5 cycles
 		CPI,         // Set flags and update pointers and counter, takes 5 cycles
+		IND,         // Set flags and update pointers and counter, takes no cycles
+		INI,         // Set flags and update pointers and counter, takes no cycles
 		LDD,         // Set flags and update pointers and counter, takes 2 cycles
 		LDI,         // Set flags and update pointers and counter, takes 2 cycles
 		OUTD,        // Set flags and update pointers and counter and prepare for I/O, takes 1 cycles
