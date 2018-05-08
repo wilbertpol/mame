@@ -109,7 +109,6 @@ protected:
 	// Sub instructions
 	enum {
 		UNKNOWN=0,
-		END,	     // End of instructions
 		A_ACT,       // register A to ACT input for ALU
 		A_DB,        // register A to data bus, also writes to W always?
 		A_W,         // register A to W
@@ -142,7 +141,6 @@ protected:
 		ALU_SRL,     // ALU operation: SRL
 		ALU_SUB,     // ALU operation: SUB
 		ALU_XOR,     // ALU operation: XOR
-		CHECK_WAIT,	 // Check if a wait state should be taken, can take cycles
 		DB_A,        // Store data bus in A
 		DB_REG,      // Store data bus in 8bit register (bits ..xxx...)
 		DB_REG0,     // Store data bus in 8bit register, not to index registers
@@ -154,6 +152,7 @@ protected:
 		BZ_OUT,      // Put BC on address bus, takes 1 cycle
 		DE_OUT,      // Put DE on address bus, takes 1 cycle
 		HL_OUT,      // Put HL on address bus, takes 1 cycle
+		PC_OUT,      // Put PC on address bus, takes 1 cycle
 		PC_OUT_INC,  // Put PC on address bus, takes 1 cycle, increment PC
 		BC_WZ,       // Store BC in WZ
 		DE_WZ,       // Store DE in WZ
@@ -200,7 +199,10 @@ protected:
 		CPL,         // CPL
 		DAA,         // DAA
 		IM,          // IM
+		LD_A_R,      // LD_A_R
 		NEG,         // NEG
+		NMI,         // NMI
+		RETN,        // RETN
 		RLA,         // RLA
 		RLCA,        // RLCA
 		RRA,         // RRA
@@ -220,13 +222,14 @@ protected:
 		CPI,         // Set flags and update pointers and counter, takes 5 cycles
 		LDD,         // Set flags and update pointers and counter, takes 2 cycles
 		LDI,         // Set flags and update pointers and counter, takes 2 cycles
+		OUTD,        // Set flags and update pointers and counter and prepare for I/O, takes 1 cycles
 		OUTI,        // Set flags and update pointers and counter and prepare for I/O, takes 1 cycles
 		REPEAT,      // Move PC 2 steps back if BC != 0, takes 5 cycles
 		REPEATCP,    // Move PC 2 steps back if BC != 0 and ZF clear, takes 5 cycles
 		REPEATIO,    // Move PC 2 steps back if B != 0, takes 5 cycles
 	};
 
-	static const u8 insts[5*256 + 3][21];
+	static const u16 insts[5*256 + 4][17];
 	static const u8 jr_conditions[8][2];
 	static const u8 jp_conditions[8][2];
 	static constexpr unsigned CB_OFFSET = 1 * 256;
@@ -236,6 +239,8 @@ protected:
 	static constexpr unsigned M1 = 5 * 256 + 0;
 	static constexpr unsigned DD_FD_CB = 5 * 256 + 1;
 	static constexpr unsigned TAKE_IRQ = 5 * 256 + 2;
+	static constexpr unsigned TAKE_NMI = 5 * 256 + 3;
+	static constexpr unsigned END = 0x8000;
 	static constexpr unsigned HL_OFFSET = 0;
 	static constexpr unsigned IX_OFFSET = 1;
 	static constexpr unsigned IY_OFFSET = 2;
@@ -263,6 +268,7 @@ protected:
 	PAIR              m_de2;
 	PAIR              m_hl2;
 	u8                m_r;
+	bool              m_check_wait;
 
 	u16 adc16(u16 arg1, u16 arg2);
 	u16 add16(u16 arg1, u16 arg2);
