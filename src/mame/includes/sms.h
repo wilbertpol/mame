@@ -75,6 +75,7 @@ public:
 
 	void sms_base(machine_config &config);
 	void sms_ntsc_base(machine_config &config);
+	void sms_ntsc_base_lle(machine_config &config);
 	void sms_pal_base(machine_config &config);
 	void sms_paln_base(machine_config &config);
 	void sms_br_base(machine_config &config);
@@ -91,6 +92,7 @@ public:
 	void sms2_kr(machine_config &config);
 	void sms1_br(machine_config &config);
 	void sms2_ntsc(machine_config &config);
+	void sms2_ntsc_lle(machine_config &config);
 	void sms1_kr(machine_config &config);
 
 	DECLARE_WRITE_LINE_MEMBER(gg_pause_callback);

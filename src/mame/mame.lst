@@ -35837,6 +35837,7 @@ gamegeaj                        // Sega GameGear (Japan)
 gamegear                        // Sega GameGear
 sg1000m3                        // Sega SG-1000 Mark III (Japan)
 sms                             // Sega Master System II (NTSC)
+sms_lle
 sms1                            // Sega Master System I (NTSC)
 sms1br                          // Tec Toy Master System I (Brazil)
 sms1kr                          // Samsung Gam*Boy I (Korea)

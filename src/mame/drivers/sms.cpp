@@ -246,6 +246,7 @@ DC00      - Selection buttons #2, 9-16 (R)
 #include "includes/sms.h"
 
 #include "cpu/z80/z80.h"
+#include "cpu/z80/z80lle.h"
 #include "softlist.h"
 #include "speaker.h"
 
@@ -518,6 +519,19 @@ void sms_state::sms_ntsc_base(machine_config &config)
 	config.m_minimum_quantum = attotime::from_hz(60);
 }
 
+MACHINE_CONFIG_START(sms_state::sms_ntsc_base_lle)
+	sms_base(config);
+	MCFG_DEVICE_ADD("maincpu", Z80LLE, XTAL(10'738'635)/3)
+	MCFG_DEVICE_PROGRAM_MAP(sms_mem)
+	MCFG_DEVICE_IO_MAP(sms_io)
+
+	MCFG_QUANTUM_TIME(attotime::from_hz(60))
+
+	/* actually, PSG is embedded in the VDP chip */
+	MCFG_DEVICE_ADD("segapsg", SEGAPSG, XTAL(10'738'635)/3)
+	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 1.00)
+MACHINE_CONFIG_END
+
 /*
     For SMS drivers, the ratio between CPU and pixel clocks, set through dividers, is 2/3. The
     division that sets the pixel clock, in screen.set_raw(), results in a remainder
@@ -592,6 +606,26 @@ void sms_state::sms2_ntsc(machine_config &config)
 
 	m_has_bios_full = true;
 }
+
+
+<<<<<<< HEAD
+=======
+void sms_state::sms2_ntsc_lle(machine_config &config)
+{
+	sms_ntsc_base_lle(config);
+	/* video hardware */
+	/* video hardware */
+	SCREEN(config, m_main_scr, SCREEN_TYPE_RASTER);
+	screen_sms_ntsc_raw_params(*m_main_scr, XTAL(10'738'635)/2);
+	m_main_scr->set_screen_update(FUNC(sms_state::screen_update_sms));
+
+	SEGA315_5124(config, m_vdp, XTAL(10'738'635));
+	m_vdp->set_screen(m_main_scr);
+	m_vdp->set_is_pal(false);
+	m_vdp->n_int().set_inputline(m_maincpu, 0);
+	m_vdp->n_nmi().set_inputline(m_maincpu, INPUT_LINE_NMI);
+	m_vdp->add_route(ALL_OUTPUTS, "mono", 1.00);
+MACHINE_CONFIG_END
 
 
 void sms_state::sms1_ntsc(machine_config &config)
@@ -1161,6 +1195,7 @@ ROM_END
 #define rom_sms1krfm rom_smsj
 #define rom_sms1kr rom_smsj
 #define rom_sms1paln rom_sms1br
+#define rom_sms_lle rom_sms
 
 /***************************************************************************
 
@@ -1268,6 +1303,8 @@ CONS( 1992, smsbr,    sms,      0,      sms3_br,   sms,      sms_state,      emp
 CONS( 19??, sms1paln, sms,      0,      sms1_paln, sms1,     sms_state,      empty_init,    "Tec Toy", "Master System I (PAL-N)",            MACHINE_SUPPORTS_SAVE )
 CONS( 19??, sms2paln, sms,      0,      sms1_paln, sms1,     sms_state,      empty_init,    "Tec Toy", "Master System II (PAL-N)",           MACHINE_SUPPORTS_SAVE )
 CONS( 19??, smspaln,  sms,      0,      sms3_paln, sms,      sms_state,      empty_init,    "Tec Toy", "Master System III Compact (PAL-N)",  MACHINE_SUPPORTS_SAVE )
+
+CONS( 1990, sms_lle,    sms,        0,      sms2_ntsc_lle, sms,    sms_state,      sms,      "Sega",     "Master System II (LLE)",             MACHINE_SUPPORTS_SAVE )
 
 CONS( 1991, gamegear, 0,        sms,    gamegear,  gg,       sms_state,      empty_init,    "Sega",    "Game Gear (Europe/America)",         MACHINE_SUPPORTS_SAVE )
 CONS( 1990, gamegeaj, gamegear, 0,      gamegeaj,  gg,       sms_state,      empty_init,    "Sega",    "Game Gear (Japan)",                  MACHINE_SUPPORTS_SAVE )
