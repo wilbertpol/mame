@@ -214,6 +214,16 @@ protected:
 		REPEATIO,    // Move PC 2 steps back if B != 0, takes 5 cycles
 	};
 
+	// Flag result lookup tables
+	static bool tables_initialised;
+	static u8 SZ[256];       /* zero and sign flags */
+	static u8 SZ_BIT[256];   /* zero, sign and parity/overflow (=zero) flags for BIT opcode */
+	static u8 SZP[256];      /* zero, sign and parity flags */
+	static u8 SZHV_inc[256]; /* zero, sign, half carry and overflow flags INC r8 */
+	static u8 SZHV_dec[256]; /* zero, sign, half carry and overflow flags DEC r8 */
+	static u8 SZHVC_add[2*256*256];
+	static u8 SZHVC_sub[2*256*256];
+
 	static const u16 insts[5*256 + 4][17];
 	static const u8 jr_conditions[8][2];
 	static const u8 jp_conditions[8][2];

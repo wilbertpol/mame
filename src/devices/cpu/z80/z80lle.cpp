@@ -12,11 +12,9 @@
  *   TODO:
  *   - Implement the 2 start up cycles after a RESET
  *   - RETI: When should the daisy chain be notified?
- *   - Add support for interrupts
+ *   - Add support for interrupt modes 0 and 2
  *   - WZ is only incremented once for $22 LD (nn),HL?
  *   - Verify A_DB, should it set WH for each instruction?
- *   - Add more instructions
- *   - Move the flag tables into the class definition
  *   - Group sub-instructions for readability and/or move code out into functions
  *   - These instructions are untested:
  *     - 76 / dd/fd 76 - HALT (leaving halt state is also untested)
@@ -54,15 +52,16 @@
 #define LOG(x)  do { if (VERBOSE) logerror x; } while (0)
 
 
-static bool tables_initialised = false;
-static uint8_t SZ[256];       /* zero and sign flags */
-static uint8_t SZ_BIT[256];   /* zero, sign and parity/overflow (=zero) flags for BIT opcode */
-static uint8_t SZP[256];      /* zero, sign and parity flags */
-static uint8_t SZHV_inc[256]; /* zero, sign, half carry and overflow flags INC r8 */
-static uint8_t SZHV_dec[256]; /* zero, sign, half carry and overflow flags DEC r8 */
+bool z80lle_device::tables_initialised = false;
 
-static uint8_t SZHVC_add[2*256*256];
-static uint8_t SZHVC_sub[2*256*256];
+u8 z80lle_device::SZ[256];       /* zero and sign flags */
+u8 z80lle_device::SZ_BIT[256];   /* zero, sign and parity/overflow (=zero) flags for BIT opcode */
+u8 z80lle_device::SZP[256];      /* zero, sign and parity flags */
+u8 z80lle_device::SZHV_inc[256]; /* zero, sign, half carry and overflow flags INC r8 */
+u8 z80lle_device::SZHV_dec[256]; /* zero, sign, half carry and overflow flags DEC r8 */
+
+u8 z80lle_device::SZHVC_add[2*256*256];
+u8 z80lle_device::SZHVC_sub[2*256*256];
 
 
 const u8 z80lle_device::jr_conditions[8][2] = {
@@ -1428,10 +1427,10 @@ void z80lle_device::device_start()
 {
 	if (!tables_initialised)
 	{
-		uint8_t *padd = &SZHVC_add[  0*256];
-		uint8_t *padc = &SZHVC_add[256*256];
-		uint8_t *psub = &SZHVC_sub[  0*256];
-		uint8_t *psbc = &SZHVC_sub[256*256];
+		u8 *padd = &SZHVC_add[  0*256];
+		u8 *padc = &SZHVC_add[256*256];
+		u8 *psub = &SZHVC_sub[  0*256];
+		u8 *psbc = &SZHVC_sub[256*256];
 		for (int oldval = 0; oldval < 256; oldval++)
 		{
 			for (int newval = 0; newval < 256; newval++)
@@ -1903,7 +1902,7 @@ void z80lle_device::execute_run()
 			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
 			break;
 		case ALU_SBC:
-			m_alu = (uint8_t)(m_act - m_tmp - (m_af.b.l & CF));
+			m_alu = m_act - m_tmp - (m_af.b.l & CF);
 			m_af.b.l = SZHVC_sub[((m_af.b.l & CF) << 16) | (m_act << 8) | m_alu];
 			break;
 		case ALU_SLA:
@@ -2756,7 +2755,7 @@ void z80lle_device::execute_run()
 					m_af.b.l |= NF;
 				if (t & 0x100)
 					m_af.b.l |= HF | CF;
-				m_af.b.l |= SZP[(uint8_t)(t & 0x07) ^ m_bc.b.h] & PF;
+				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
 			}
 			break;
 		case INI:
@@ -2770,7 +2769,7 @@ void z80lle_device::execute_run()
 					m_af.b.l |= NF;
 				if (t & 0x100)
 					m_af.b.l |= HF | CF;
-				m_af.b.l |= SZP[(uint8_t)(t & 0x07) ^ m_bc.b.h] & PF;
+				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
 			}
 			break;
 		case LDD:
@@ -2811,7 +2810,7 @@ void z80lle_device::execute_run()
 					m_af.b.l |= NF;
 				if (t & 0x100)
 					m_af.b.l |= HF | CF;
-				m_af.b.l |= SZP[(uint8_t)(t & 0x07) ^ m_bc.b.h] & PF;
+				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
 				m_icount -= 1;
 			}
 			break;
@@ -2827,7 +2826,7 @@ void z80lle_device::execute_run()
 					m_af.b.l |= NF;
 				if (t & 0x100)
 					m_af.b.l |= HF | CF;
-				m_af.b.l |= SZP[(uint8_t)(t & 0x07) ^ m_bc.b.h] & PF;
+				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
 				m_icount -= 1;
 			}
 			break;
