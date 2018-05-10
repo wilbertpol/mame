@@ -81,31 +81,6 @@ protected:
 	devcb_write8 m_refresh_cb;
 	devcb_write_line m_halt_cb;
 
-	uint8_t           m_r2;
-	uint8_t           m_iff1;
-	uint8_t           m_iff2;
-	uint8_t           m_halt;
-	uint8_t           m_im;
-	uint8_t           m_i;
-	uint8_t           m_nmi_state;          /* nmi line state */
-	uint8_t           m_nmi_pending;        /* nmi pending */
-	uint8_t           m_irq_state;          /* irq line state */
-	int             m_wait_state;         // wait line state
-	int             m_busrq_state;        // bus request line state
-	uint8_t           m_after_ei;           /* are we in the EI shadow? */
-	uint8_t           m_after_ldair;        /* same, but for LD A,I or LD A,R */
-	uint32_t          m_ea;
-
-	int             m_icount;
-	uint8_t           m_rtemp;
-	const uint8_t *   m_cc_op;
-	const uint8_t *   m_cc_cb;
-	const uint8_t *   m_cc_ed;
-	const uint8_t *   m_cc_xy;
-	const uint8_t *   m_cc_xycb;
-	const uint8_t *   m_cc_ex;
-
-	// New internal state
 	// Sub instructions
 	enum {
 		UNKNOWN=0,
@@ -254,6 +229,16 @@ protected:
 	static constexpr unsigned HL_OFFSET = 0;
 	static constexpr unsigned IX_OFFSET = 1;
 	static constexpr unsigned IY_OFFSET = 2;
+	// Flags
+	static constexpr unsigned CF = 0x01;
+	static constexpr unsigned NF = 0x02;
+	static constexpr unsigned PF = 0x04;
+	static constexpr unsigned VF = 0x04;
+	static constexpr unsigned XF = 0x08;
+	static constexpr unsigned HF = 0x10;
+	static constexpr unsigned YF = 0x20;
+	static constexpr unsigned ZF = 0x40;
+	static constexpr unsigned SF = 0x80;
 
 	u16               m_address_bus;
 	u8                m_data_bus;
@@ -278,7 +263,24 @@ protected:
 	PAIR              m_de2;
 	PAIR              m_hl2;
 	u8                m_r;
+	u8                m_r2;      // Keeps bit 7 of what was stored in R
+	u8                m_iff1;
+	u8                m_iff2;
 	bool              m_check_wait;
+	u8                m_halt;
+	u8                m_im;
+	u8                m_i;
+	u8                m_nmi_state;          // nmi line state
+	bool              m_nmi_pending;        // nmi pending
+	u8                m_irq_state;          // irq line state
+	int               m_wait_state;         // wait line state
+	int               m_busrq_state;        // bus request line state
+	bool              m_after_ei;           // are we in the EI shadow?
+	bool              m_after_ldair;        // same, but for LD A,I or LD A,R
+	int               m_icount;
+
+	// Temporary state for the debugger
+	u8                m_rtemp;
 
 	u16 adc16(u16 arg1, u16 arg2);
 	u16 add16(u16 arg1, u16 arg2);

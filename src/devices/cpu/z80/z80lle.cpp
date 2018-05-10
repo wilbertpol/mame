@@ -20,7 +20,6 @@
  *   - Group sub-instructions for readability and/or move code out into functions
  *   - These instructions are untested:
  *     - 76 / dd/fd 76 - HALT (leaving halt state is also untested)
- *     - e3 / dd/fd e3 - EX (SP),HL
  *     - f9 / dd/fd f9 - LD SP,HL
  *     - ed 40 - IN B,(C)
  *     - ed 47 - LD I,A
@@ -53,53 +52,6 @@
 #define VERBOSE             0
 
 #define LOG(x)  do { if (VERBOSE) logerror x; } while (0)
-
-
-/****************************************************************************/
-/* The Z80 registers. halt is set to 1 when the CPU is halted, the refresh  */
-/* register is calculated as follows: refresh=(r&127)|(r2&128)    */
-/****************************************************************************/
-
-#define CF      0x01
-#define NF      0x02
-#define PF      0x04
-#define VF      PF
-#define XF      0x08
-#define HF      0x10
-#define YF      0x20
-#define ZF      0x40
-#define SF      0x80
-
-#define INT_IRQ 0x01
-#define NMI_IRQ 0x02
-
-#define PC      m_pc.w.l
-#define PC_H    m_pc.b.h
-#define PC_L    m_pc.b.l
-
-#define SP      m_sp.w.l
-#define SP_H    m_sp.b.h
-#define SP_L    m_sp.b.l
-
-#define AF      m_af.w.l
-#define A       m_af.b.h
-#define F       m_af.b.l
-
-#define BC      m_bc.w.l
-#define B       m_bc.b.h
-#define C       m_bc.b.l
-
-#define DE      m_de.w.l
-#define D       m_de.b.h
-#define E       m_de.b.l
-
-#define HL      m_hl_index[m_hl_offset].w.l
-#define H       m_hl_index[m_hl_offset].b.h
-#define L       m_hl_index[m_hl_offset].b.l
-
-#define WZ      m_wz.w.l
-#define WZ_H    m_wz.b.h
-#define WZ_L    m_wz.b.l
 
 
 static bool tables_initialised = false;
@@ -135,6 +87,7 @@ const u8 z80lle_device::jp_conditions[8][2] = {
 	{ SF, 0  },  // P
 	{ SF, SF }   // M
 };
+
 
 const u16 z80lle_device::insts[5 * 256 + 4][17] = {
 	/*****************************************************/
@@ -1380,9 +1333,9 @@ const u16 z80lle_device::insts[5 * 256 + 4][17] = {
 
 inline u16 z80lle_device::adc16(u16 arg1, u16 arg2)
 {
-	u32 res = arg1 + arg2 + (F & CF);
-	WZ = arg1 + 1;
-	F = (((arg1 ^ res ^ arg2) >> 8) & HF) |
+	u32 res = arg1 + arg2 + (m_af.b.l & CF);
+	m_wz.w.l = arg1 + 1;
+	m_af.b.l = (((arg1 ^ res ^ arg2) >> 8) & HF) |
 		((res >> 16) & CF) |
 		((res >> 8) & (SF | YF | XF)) |
 		((res & 0xffff) ? 0 : ZF) |
@@ -1394,8 +1347,8 @@ inline u16 z80lle_device::adc16(u16 arg1, u16 arg2)
 inline u16 z80lle_device::add16(u16 arg1, u16 arg2)
 {
 	u32 res = arg1 + arg2;
-	WZ = res + 1;
-	F = (F & (SF | ZF | VF)) |
+	m_wz.w.l = res + 1;
+	m_af.b.l = (m_af.b.l & (SF | ZF | VF)) |
 		(((arg1 ^ res ^ arg2) >> 8) & HF) |
 		((res >> 16) & CF) | ((res >> 8) & (YF | XF));
 	return (u16)res;
@@ -1404,9 +1357,9 @@ inline u16 z80lle_device::add16(u16 arg1, u16 arg2)
 
 inline u16 z80lle_device::sbc16(u16 arg1, u16 arg2)
 {
-	u32 res = arg1 - arg2 - (F & CF);
-	WZ = arg1 + 1;
-	F = (((arg1 ^ res ^ arg2) >> 8) & HF) | NF |
+	u32 res = arg1 - arg2 - (m_af.b.l & CF);
+	m_wz.w.l = arg1 + 1;
+	m_af.b.l = (((arg1 ^ res ^ arg2) >> 8) & HF) | NF |
 		((res >> 16) & CF) |
 		((res >> 8) & (SF | YF | XF)) |
 		((res & 0xffff) ? 0 : ZF) |
@@ -1421,7 +1374,7 @@ inline void z80lle_device::leave_halt()
 	{
 		m_halt = 0;
 		m_halt_cb(m_halt);
-		PC++;
+		m_pc.w.l++;
 	}
 }
 
@@ -1622,7 +1575,6 @@ void z80lle_device::device_start()
 	m_busrq_state = 0;
 	m_after_ei = false;
 	m_after_ldair = false;
-	m_ea = 0;
 
 	m_program = &space(AS_PROGRAM);
 	m_decrypted_opcodes = has_space(AS_OPCODES) ? &space(AS_OPCODES) : m_program;
@@ -1631,14 +1583,14 @@ void z80lle_device::device_start()
 	m_io = &space(AS_IO);
 
 	m_hl_index[IX_OFFSET].w.l = m_hl_index[IY_OFFSET].w.l = 0xffff; /* IX and IY are FFFF after a reset! */
-	F = ZF;           /* Zero flag is set */
+	m_af.b.l = ZF;           /* Zero flag is set */
 
 	/* set up the state table */
 	state_add(STATE_GENPC,     "PC",        m_pc.w.l).callimport();
 	state_add(STATE_GENPCBASE, "CURPC",     m_prvpc.w.l).callimport().noshow();
 	state_add(Z80LLE_SP,       "SP",        m_sp.w.l);
 	state_add(STATE_GENSP,     "GENSP",     m_sp.w.l).noshow();
-	state_add(STATE_GENFLAGS,  "GENFLAGS",  F).noshow().formatstr("%8s");
+	state_add(STATE_GENFLAGS,  "GENFLAGS",  m_af.b.l).noshow().formatstr("%8s");
 	state_add(Z80LLE_A,        "A",         m_af.b.h).noshow();
 	state_add(Z80LLE_B,        "B",         m_bc.b.h).noshow();
 	state_add(Z80LLE_C,        "C",         m_bc.b.l).noshow();
@@ -1734,29 +1686,29 @@ void z80lle_device::execute_run()
 						   m_ir, m_prvpc.d);
 			break;
 		case A_ACT:
-			m_act = A;
+			m_act = m_af.b.h;
 			break;
 		case A_DB:
-			m_data_bus = A;
-			WZ_H = m_data_bus;
+			m_data_bus = m_af.b.h;
+			m_wz.b.h = m_data_bus;
 			break;
 		case A_W:
-			WZ_H = A;
+			m_wz.b.h = m_af.b.h;
 			break;
 		case ADC16:
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				HL = adc16(HL, BC);
+				m_hl_index[m_hl_offset].w.l = adc16(m_hl_index[m_hl_offset].w.l, m_bc.w.l);
 				break;
 			case 0x10:
-				HL = adc16(HL, DE);
+				m_hl_index[m_hl_offset].w.l = adc16(m_hl_index[m_hl_offset].w.l, m_de.w.l);
 				break;
 			case 0x20:
-				HL = adc16(HL, HL);
+				m_hl_index[m_hl_offset].w.l = adc16(m_hl_index[m_hl_offset].w.l, m_hl_index[m_hl_offset].w.l);
 				break;
 			case 0x30:
-				HL = adc16(HL, SP);
+				m_hl_index[m_hl_offset].w.l = adc16(m_hl_index[m_hl_offset].w.l, m_sp.w.l);
 				break;
 			}
 			m_icount -= 7;
@@ -1765,16 +1717,16 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				HL = add16(HL, BC);
+				m_hl_index[m_hl_offset].w.l = add16(m_hl_index[m_hl_offset].w.l, m_bc.w.l);
 				break;
 			case 0x10:
-				HL = add16(HL, DE);
+				m_hl_index[m_hl_offset].w.l = add16(m_hl_index[m_hl_offset].w.l, m_de.w.l);
 				break;
 			case 0x20:
-				HL = add16(HL, HL);
+				m_hl_index[m_hl_offset].w.l = add16(m_hl_index[m_hl_offset].w.l, m_hl_index[m_hl_offset].w.l);
 				break;
 			case 0x30:
-				HL = add16(HL, SP);
+				m_hl_index[m_hl_offset].w.l = add16(m_hl_index[m_hl_offset].w.l, m_sp.w.l);
 				break;
 			}
 			m_icount -= 7;
@@ -1783,16 +1735,16 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				HL = sbc16(HL, BC);
+				m_hl_index[m_hl_offset].w.l = sbc16(m_hl_index[m_hl_offset].w.l, m_bc.w.l);
 				break;
 			case 0x10:
-				HL = sbc16(HL, DE);
+				m_hl_index[m_hl_offset].w.l = sbc16(m_hl_index[m_hl_offset].w.l, m_de.w.l);
 				break;
 			case 0x20:
-				HL = sbc16(HL, HL);
+				m_hl_index[m_hl_offset].w.l = sbc16(m_hl_index[m_hl_offset].w.l, m_hl_index[m_hl_offset].w.l);
 				break;
 			case 0x30:
-				HL = sbc16(HL, SP);
+				m_hl_index[m_hl_offset].w.l = sbc16(m_hl_index[m_hl_offset].w.l, m_sp.w.l);
 				break;
 			}
 			m_icount -= 7;
@@ -1801,34 +1753,34 @@ void z80lle_device::execute_run()
 			m_data_bus = m_alu;
 			break;
 		case ALU_A:
-			A = m_alu;
+			m_af.b.h = m_alu;
 			break;
 		case ALU_REGS:
 			switch (m_ir & 0x07)
 			{
 			case 0x00:
-				B = m_alu;
+				m_bc.b.h = m_alu;
 				break;
 			case 0x01:
-				C = m_alu;
+				m_bc.b.l = m_alu;
 				break;
 			case 0x02:
-				D = m_alu;
+				m_de.b.h = m_alu;
 				break;
 			case 0x03:
-				E = m_alu;
+				m_de.b.l = m_alu;
 				break;
 			case 0x04:
-				H = m_alu;
+				m_hl_index[m_hl_offset].b.h = m_alu;
 				break;
 			case 0x05:
-				L = m_alu;
+				m_hl_index[m_hl_offset].b.l = m_alu;
 				break;
 			case 0x06:
 				fatalerror("ALU_REGS: illegal register reference 0x06\n");
 				break;
 			case 0x07:
-				A = m_alu;
+				m_af.b.h = m_alu;
 				break;
 			}
 			break;
@@ -1836,16 +1788,16 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x07)
 			{
 			case 0x00:
-				B = m_alu;
+				m_bc.b.h = m_alu;
 				break;
 			case 0x01:
-				C = m_alu;
+				m_bc.b.l = m_alu;
 				break;
 			case 0x02:
-				D = m_alu;
+				m_de.b.h = m_alu;
 				break;
 			case 0x03:
-				E = m_alu;
+				m_de.b.l = m_alu;
 				break;
 			case 0x04:
 				m_hl_index[HL_OFFSET].b.h = m_alu;
@@ -1857,7 +1809,7 @@ void z80lle_device::execute_run()
 				fatalerror("ALU_REGS0: illegal register reference 0x06\n");
 				break;
 			case 0x07:
-				A = m_alu;
+				m_af.b.h = m_alu;
 				break;
 			}
 			break;
@@ -1865,51 +1817,51 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x38)
 			{
 			case 0x00:
-				B = m_alu;
+				m_bc.b.h = m_alu;
 				break;
 			case 0x08:
-				C = m_alu;
+				m_bc.b.l = m_alu;
 				break;
 			case 0x10:
-				D = m_alu;
+				m_de.b.h = m_alu;
 				break;
 			case 0x18:
-				E = m_alu;
+				m_de.b.l = m_alu;
 				break;
 			case 0x20:
-				H = m_alu;
+				m_hl_index[m_hl_offset].b.h = m_alu;
 				break;
 			case 0x28:
-				L = m_alu;
+				m_hl_index[m_hl_offset].b.l = m_alu;
 				break;
 			case 0x30:
 				fatalerror("ALU_REGD: illegal register reference 0x30\n");
 				break;
 			case 0x38:
-				A = m_alu;
+				m_af.b.h = m_alu;
 				break;
 			}
 			break;
 		case ALU_ADC:
-			m_alu = m_act + m_tmp + (F & CF);
-			F = SZHVC_add[((F & CF) << 16) | (m_act << 8) | m_alu];
+			m_alu = m_act + m_tmp + (m_af.b.l & CF);
+			m_af.b.l = SZHVC_add[((m_af.b.l & CF) << 16) | (m_act << 8) | m_alu];
 			break;
 		case ALU_ADD:
 			m_alu = m_act + m_tmp;
-			F = SZHVC_add[(m_act << 8) | m_alu];
+			m_af.b.l = SZHVC_add[(m_act << 8) | m_alu];
 			break;
 		case ALU_AND:
 			m_alu = m_act & m_tmp;
-			F = SZP[m_alu] | HF;
+			m_af.b.l = SZP[m_alu] | HF;
 			break;
 		case ALU_BIT:
 			if ((m_ir & 0x07) == 0x06)
 			{
-				F = (F & CF) | HF | (SZ_BIT[m_tmp & (1 << ((m_ir >> 3) & 0x07))] & ~(YF | XF)) | (WZ_H & (YF | XF));
+				m_af.b.l = (m_af.b.l & CF) | HF | (SZ_BIT[m_tmp & (1 << ((m_ir >> 3) & 0x07))] & ~(YF | XF)) | (m_wz.b.h & (YF | XF));
 			}
 			else
 			{
-				F = (F & CF) | HF | (SZ_BIT[m_tmp & (1 << ((m_ir >> 3) & 0x07))] & ~(YF | XF)) | (m_tmp & (YF | XF));
+				m_af.b.l = (m_af.b.l & CF) | HF | (SZ_BIT[m_tmp & (1 << ((m_ir >> 3) & 0x07))] & ~(YF | XF)) | (m_tmp & (YF | XF));
 			}
 			break;
 		case ALU_RES:
@@ -1920,90 +1872,90 @@ void z80lle_device::execute_run()
 			break;
 		case ALU_CP:  // Flag handling is slightly different from SUB
 			m_alu = m_act - m_tmp;
-			F = (SZHVC_sub[(m_act << 8) | m_alu] & ~(YF | XF)) | (m_tmp & (YF | XF));
+			m_af.b.l = (SZHVC_sub[(m_act << 8) | m_alu] & ~(YF | XF)) | (m_tmp & (YF | XF));
 			break;
 		case ALU_DEC:
 			m_alu = m_tmp - 1;
-			F = (F & CF) | SZHV_dec[m_alu];
+			m_af.b.l = (m_af.b.l & CF) | SZHV_dec[m_alu];
 			break;
 		case ALU_INC:
 			m_alu = m_tmp + 1;
-			F = (F & CF) | SZHV_inc[m_alu];
+			m_af.b.l = (m_af.b.l & CF) | SZHV_inc[m_alu];
 			break;
 		case ALU_OR:
 			m_alu = m_act | m_tmp;
-			F = SZP[m_alu];
+			m_af.b.l = SZP[m_alu];
 			break;
 		case ALU_RL:
-			m_alu = (m_tmp << 1) | (F & CF);
-			F = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
+			m_alu = (m_tmp << 1) | (m_af.b.l & CF);
+			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
 			break;
 		case ALU_RLC:
 			m_alu = (m_tmp << 1) | (m_tmp >> 7);
-			F = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
+			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
 			break;
 		case ALU_RR:
-			m_alu = (m_tmp >> 1) | (F << 7);
-			F = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
+			m_alu = (m_tmp >> 1) | (m_af.b.l << 7);
+			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
 			break;
 		case ALU_RRC:
 			m_alu = (m_tmp >> 1) | (m_tmp << 7);
-			F = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
+			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
 			break;
 		case ALU_SBC:
-			m_alu = (uint8_t)(m_act - m_tmp - (F & CF));
-			F = SZHVC_sub[((F & CF) << 16) | (m_act << 8) | m_alu];
+			m_alu = (uint8_t)(m_act - m_tmp - (m_af.b.l & CF));
+			m_af.b.l = SZHVC_sub[((m_af.b.l & CF) << 16) | (m_act << 8) | m_alu];
 			break;
 		case ALU_SLA:
 			m_alu = m_tmp << 1;
-			F = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
+			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
 			break;
 		case ALU_SLL:
 			m_alu = (m_tmp << 1) | 0x01;
-			F = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
+			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x80) ? CF : 0);
 			break;
 		case ALU_SRA:
 			m_alu = (m_tmp >> 1) | (m_tmp & 0x80);
-			F = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
+			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
 			break;
 		case ALU_SRL:
 			m_alu = m_tmp >> 1;
-			F = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
+			m_af.b.l = SZP[m_alu] | ((m_tmp & 0x01) ? CF : 0);
 			break;
 		case ALU_SUB:
 			m_alu = m_act - m_tmp;
-			F = SZHVC_sub[(m_act << 8) | m_alu];
+			m_af.b.l = SZHVC_sub[(m_act << 8) | m_alu];
 			break;
 		case ALU_XOR:
 			m_alu = m_act ^ m_tmp;
-			F = SZP[m_alu];
+			m_af.b.l = SZP[m_alu];
 			break;
 		case DB_REGD:
 			switch (m_ir & 0x38)
 			{
 			case 0x00:
-				B = m_data_bus;
+				m_bc.b.h = m_data_bus;
 				break;
 			case 0x08:
-				C = m_data_bus;
+				m_bc.b.l = m_data_bus;
 				break;
 			case 0x10:
-				D = m_data_bus;
+				m_de.b.h = m_data_bus;
 				break;
 			case 0x18:
-				E = m_data_bus;
+				m_de.b.l = m_data_bus;
 				break;
 			case 0x20:
-				H = m_data_bus;
+				m_hl_index[m_hl_offset].b.h = m_data_bus;
 				break;
 			case 0x28:
-				L = m_data_bus;
+				m_hl_index[m_hl_offset].b.l = m_data_bus;
 				break;
 			case 0x30:
 				fatalerror("DB_REG: illegal register reference 0x30\n");
 				break;
 			case 0x38:
-				A = m_data_bus;
+				m_af.b.h = m_data_bus;
 				break;
 			}
 			break;
@@ -2011,16 +1963,16 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x38)
 			{
 			case 0x00:
-				B = m_data_bus;
+				m_bc.b.h = m_data_bus;
 				break;
 			case 0x08:
-				C = m_data_bus;
+				m_bc.b.l = m_data_bus;
 				break;
 			case 0x10:
-				D = m_data_bus;
+				m_de.b.h = m_data_bus;
 				break;
 			case 0x18:
-				E = m_data_bus;
+				m_de.b.l = m_data_bus;
 				break;
 			case 0x20:
 				m_hl_index[HL_OFFSET].b.h = m_data_bus;
@@ -2032,7 +1984,7 @@ void z80lle_device::execute_run()
 				fatalerror("DB_REGD0: illegal register reference 0x30\n");
 				break;
 			case 0x38:
-				A = m_data_bus;
+				m_af.b.h = m_data_bus;
 				break;
 			}
 			break;
@@ -2040,58 +1992,58 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x38)
 			{
 			case 0x00:
-				B = m_data_bus;
+				m_bc.b.h = m_data_bus;
 				break;
 			case 0x08:
-				C = m_data_bus;
+				m_bc.b.l = m_data_bus;
 				break;
 			case 0x10:
-				D = m_data_bus;
+				m_de.b.h = m_data_bus;
 				break;
 			case 0x18:
-				E = m_data_bus;
+				m_de.b.l = m_data_bus;
 				break;
 			case 0x20:
-				H = m_data_bus;
+				m_hl_index[m_hl_offset].b.h = m_data_bus;
 				break;
 			case 0x28:
-				L = m_data_bus;
+				m_hl_index[m_hl_offset].b.l = m_data_bus;
 				break;
 			case 0x30:
 				// the byte read is not stored in a register, only the flags are updated.
 				break;
 			case 0x38:
-				A = m_data_bus;
+				m_af.b.h = m_data_bus;
 				break;
 			}
-			F = (F & CF) | SZP[m_data_bus];
+			m_af.b.l = (m_af.b.l & CF) | SZP[m_data_bus];
 			break;
 		case DB_TMP:
 			m_tmp = m_data_bus;
 			break;
 		case DB_A:
-			A = m_data_bus;
+			m_af.b.h = m_data_bus;
 			break;
 		case DB_W:
-			WZ_H = m_data_bus;
+			m_wz.b.h = m_data_bus;
 			break;
 		case DB_Z:
-			WZ_L = m_data_bus;
+			m_wz.b.l = m_data_bus;
 			break;
 		case BC_WZ:
-			WZ = BC;
+			m_wz.w.l = m_bc.w.l;
 			break;
 		case DE_WZ:
-			WZ = DE;
+			m_wz.w.l = m_de.w.l;
 			break;
 		case HL_WZ:
-			WZ = HL;
+			m_wz.w.l = m_hl_index[m_hl_offset].w.l;
 			break;
 		case DEC_SP:
-			SP -= 1;
+			m_sp.w.l -= 1;
 			break;
 		case INC_SP:
-			SP += 1;
+			m_sp.w.l += 1;
 			break;
 		case DECODE:
 			m_instruction = m_instruction_offset | m_ir;
@@ -2132,11 +2084,11 @@ void z80lle_device::execute_run()
 			}
 			break;
 		case DISP_WZ2:
-			WZ = HL + (s8) m_tmp;
+			m_wz.w.l = m_hl_index[m_hl_offset].w.l + (s8) m_tmp;
 			m_icount -= 2;
 			break;
 		case DISP_WZ5:
-			WZ = HL + (s8) m_tmp;
+			m_wz.w.l = m_hl_index[m_hl_offset].w.l + (s8) m_tmp;
 			m_icount -= 5;
 			break;
 		case DI:
@@ -2158,9 +2110,9 @@ void z80lle_device::execute_run()
 			break;
 		case EX_DE_HL:
 			{
-				u16 tmp = DE;
-				DE = HL;
-				HL = tmp;
+				u16 tmp = m_de.w.l;
+				m_de.w.l = m_hl_index[m_hl_offset].w.l;
+				m_hl_index[m_hl_offset].w.l = tmp;
 			}
 			break;
 		case EXX:
@@ -2178,34 +2130,34 @@ void z80lle_device::execute_run()
 			}
 			break;
 		case H_DB:
-			m_data_bus = H;
+			m_data_bus = m_hl_index[m_hl_offset].b.h;
 			break;
 		case BC_OUT:
-			m_address_bus = BC;
+			m_address_bus = m_bc.w.l;
 			m_icount -= 1;
 			break;
 		case DE_OUT:
-			m_address_bus = DE;
+			m_address_bus = m_de.w.l;
 			m_icount -= 1;
 			break;
 		case HL_OUT:
-			m_address_bus = HL;
+			m_address_bus = m_hl_index[m_hl_offset].w.l;
 			m_icount -= 1;
 			break;
 		case DEC_R16:
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				BC--;
+				m_bc.w.l--;
 				break;
 			case 0x10:
-				DE--;
+				m_de.w.l--;
 				break;
 			case 0x20:
-				HL--;
+				m_hl_index[m_hl_offset].w.l--;
 				break;
 			case 0x30:
-				SP--;
+				m_sp.w.l--;
 				break;
 			}
 			m_icount -= 2;
@@ -2214,22 +2166,22 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				BC++;
+				m_bc.w.l++;
 				break;
 			case 0x10:
-				DE++;
+				m_de.w.l++;
 				break;
 			case 0x20:
-				HL++;
+				m_hl_index[m_hl_offset].w.l++;
 				break;
 			case 0x30:
-				SP++;
+				m_sp.w.l++;
 				break;
 			}
 			m_icount -= 2;
 			break;
 		case CALL_COND:
-			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
+			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
 			{
 				m_icount -= 1;
 			}
@@ -2239,74 +2191,74 @@ void z80lle_device::execute_run()
 			}
 			break;
 		case DJNZ:
-			B--;
-			if (B)
+			m_bc.b.h--;
+			if (m_bc.b.h)
 			{
-				WZ = PC + (s8) m_data_bus;
-				PC = WZ;
+				m_wz.w.l = m_pc.w.l + (s8) m_data_bus;
+				m_pc.w.l = m_wz.w.l;
 				m_icount -= 5;
 			}
 			break;
 		case JR_COND:
-			if ((F & jr_conditions[((m_ir >> 3) & 0x07)][0]) == jr_conditions[((m_ir >> 3) & 0x07)][1])
+			if ((m_af.b.l & jr_conditions[((m_ir >> 3) & 0x07)][0]) == jr_conditions[((m_ir >> 3) & 0x07)][1])
 			{
-				WZ = PC + (s8) m_data_bus;
-				PC = WZ;
+				m_wz.w.l = m_pc.w.l + (s8) m_data_bus;
+				m_pc.w.l = m_wz.w.l;
 				m_icount -= 5;
 			}
 			break;
 		case JP_COND:
-			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
+			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
 			{
-				PC = WZ;
+				m_pc.w.l = m_wz.w.l;
 			}
 			break;
 		case RET_COND:
-			if ((F & jp_conditions[((m_ir >> 3) & 0x07)][0]) != jp_conditions[((m_ir >> 3) & 0x07)][1])
+			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) != jp_conditions[((m_ir >> 3) & 0x07)][1])
 			{
 				end_instruction();
 			}
 			m_icount -= 1;
 			break;
 		case RST:
-			PC = m_ir & 0x38;
-			WZ = PC;
+			m_pc.w.l = m_ir & 0x38;
+			m_wz.w.l = m_pc.w.l;
 			break;
 		case L_DB:
-			m_data_bus = L;
+			m_data_bus = m_hl_index[m_hl_offset].b.l;
 			break;
 		case PC_OUT:
-			m_address_bus = PC;
+			m_address_bus = m_pc.w.l;
 			m_icount -= 1;
 			break;
 		case PC_OUT_INC:
-			m_address_bus = PC;
+			m_address_bus = m_pc.w.l;
 			m_icount -= 1;
-			PC++;
+			m_pc.w.l++;
 			break;
 		case PCH_DB:
-			m_data_bus = PC_H;
+			m_data_bus = m_pc.b.h;
 			break;
 		case PCL_DB:
-			m_data_bus = PC_L;
+			m_data_bus = m_pc.b.l;
 			break;
 		case R16H_DB:
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				m_data_bus = B;
+				m_data_bus = m_bc.b.h;
 				break;
 			case 0x10:
-				m_data_bus = D;
+				m_data_bus = m_de.b.h;
 				break;
 			case 0x20:
-				m_data_bus = H;
+				m_data_bus = m_hl_index[m_hl_offset].b.h;
 				break;
 			case 0x30:
 				if (m_ir & 0x80)
-					m_data_bus = A;
+					m_data_bus = m_af.b.h;
 				else
-					m_data_bus = SP_H;
+					m_data_bus = m_sp.b.h;
 				break;
 			}
 			break;
@@ -2314,19 +2266,19 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				m_data_bus = C;
+				m_data_bus = m_bc.b.l;
 				break;
 			case 0x10:
-				m_data_bus = E;
+				m_data_bus = m_de.b.l;
 				break;
 			case 0x20:
-				m_data_bus = L;
+				m_data_bus = m_hl_index[m_hl_offset].b.l;
 				break;
 			case 0x30:
 				if (m_ir & 0x80)
-					m_data_bus = F;
+					m_data_bus = m_af.b.l;
 				else
-					m_data_bus = SP_L;
+					m_data_bus = m_sp.b.l;
 				break;
 			}
 			break;
@@ -2334,19 +2286,19 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				B = m_data_bus;
+				m_bc.b.h = m_data_bus;
 				break;
 			case 0x10:
-				D = m_data_bus;
+				m_de.b.h = m_data_bus;
 				break;
 			case 0x20:
-				H = m_data_bus;
+				m_hl_index[m_hl_offset].b.h = m_data_bus;
 				break;
 			case 0x30:
 				if (m_ir & 0x80)
-					A = m_data_bus;
+					m_af.b.h = m_data_bus;
 				else
-					SP_H = m_data_bus;
+					m_sp.b.h = m_data_bus;
 				break;
 			}
 			break;
@@ -2354,19 +2306,19 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x30)
 			{
 			case 0x00:
-				C = m_data_bus;
+				m_bc.b.l = m_data_bus;
 				break;
 			case 0x10:
-				E = m_data_bus;
+				m_de.b.l = m_data_bus;
 				break;
 			case 0x20:
-				L = m_data_bus;
+				m_hl_index[m_hl_offset].b.l = m_data_bus;
 				break;
 			case 0x30:
 				if (m_ir & 0x80)
-					F = m_data_bus;
+					m_af.b.l = m_data_bus;
 				else
-					SP_L = m_data_bus;
+					m_sp.b.l = m_data_bus;
 				break;
 			}
 			break;
@@ -2449,28 +2401,28 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x38)
 			{
 			case 0x00:
-				m_data_bus = B;
+				m_data_bus = m_bc.b.h;
 				break;
 			case 0x08:
-				m_data_bus = C;
+				m_data_bus = m_bc.b.l;
 				break;
 			case 0x10:
-				m_data_bus = D;
+				m_data_bus = m_de.b.h;
 				break;
 			case 0x18:
-				m_data_bus = E;
+				m_data_bus = m_de.b.l;
 				break;
 			case 0x20:
-				m_data_bus = H;
+				m_data_bus = m_hl_index[m_hl_offset].b.h;
 				break;
 			case 0x28:
-				m_data_bus = L;
+				m_data_bus = m_hl_index[m_hl_offset].b.l;
 				break;
 			case 0x30:
 				fatalerror("REGD_DB: illegal register reference 0x06\n");
 				break;
 			case 0x38:
-				m_data_bus = A;
+				m_data_bus = m_af.b.h;
 				break;
 			}
 			break;
@@ -2478,28 +2430,28 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x07)
 			{
 			case 0x00:
-				m_data_bus = B;
+				m_data_bus = m_bc.b.h;
 				break;
 			case 0x01:
-				m_data_bus = C;
+				m_data_bus = m_bc.b.l;
 				break;
 			case 0x02:
-				m_data_bus = D;
+				m_data_bus = m_de.b.h;
 				break;
 			case 0x03:
-				m_data_bus = E;
+				m_data_bus = m_de.b.l;
 				break;
 			case 0x04:
-				m_data_bus = H;
+				m_data_bus = m_hl_index[m_hl_offset].b.h;
 				break;
 			case 0x05:
-				m_data_bus = L;
+				m_data_bus = m_hl_index[m_hl_offset].b.l;
 				break;
 			case 0x06:
 				fatalerror("REGS_DB: illegal register reference 0x06\n");
 				break;
 			case 0x07:
-				m_data_bus = A;
+				m_data_bus = m_af.b.h;
 				break;
 			}
 			break;
@@ -2507,16 +2459,16 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x07)
 			{
 			case 0x00:
-				m_data_bus = B;
+				m_data_bus = m_bc.b.h;
 				break;
 			case 0x01:
-				m_data_bus = C;
+				m_data_bus = m_bc.b.l;
 				break;
 			case 0x02:
-				m_data_bus = D;
+				m_data_bus = m_de.b.h;
 				break;
 			case 0x03:
-				m_data_bus = E;
+				m_data_bus = m_de.b.l;
 				break;
 			case 0x04:
 				m_data_bus = m_hl_index[HL_OFFSET].b.h;
@@ -2528,7 +2480,7 @@ void z80lle_device::execute_run()
 				fatalerror("REGS0_DB: illegal register reference 0x06\n");
 				break;
 			case 0x07:
-				m_data_bus = A;
+				m_data_bus = m_af.b.h;
 				break;
 			}
 			break;
@@ -2539,28 +2491,28 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x07)
 			{
 			case 0x00:
-				m_tmp = B;
+				m_tmp = m_bc.b.h;
 				break;
 			case 0x01:
-				m_tmp = C;
+				m_tmp = m_bc.b.l;
 				break;
 			case 0x02:
-				m_tmp = D;
+				m_tmp = m_de.b.h;
 				break;
 			case 0x03:
-				m_tmp = E;
+				m_tmp = m_de.b.l;
 				break;
 			case 0x04:
-				m_tmp = H;
+				m_tmp = m_hl_index[m_hl_offset].b.h;
 				break;
 			case 0x05:
-				m_tmp = L;
+				m_tmp = m_hl_index[m_hl_offset].b.l;
 				break;
 			case 0x06:
 				fatalerror("REGS_TMP: illegal register reference 0x06\n");
 				break;
 			case 0x07:
-				m_tmp = A;
+				m_tmp = m_af.b.h;
 				break;
 			}
 			break;
@@ -2568,59 +2520,59 @@ void z80lle_device::execute_run()
 			switch (m_ir & 0x38)
 			{
 			case 0x00:
-				m_tmp = B;
+				m_tmp = m_bc.b.h;
 				break;
 			case 0x08:
-				m_tmp = C;
+				m_tmp = m_bc.b.l;
 				break;
 			case 0x10:
-				m_tmp = D;
+				m_tmp = m_de.b.h;
 				break;
 			case 0x18:
-				m_tmp = E;
+				m_tmp = m_de.b.l;
 				break;
 			case 0x20:
-				m_tmp = H;
+				m_tmp = m_hl_index[m_hl_offset].b.h;
 				break;
 			case 0x28:
-				m_tmp = L;
+				m_tmp = m_hl_index[m_hl_offset].b.l;
 				break;
 			case 0x30:
 				fatalerror("REGD_TMP: illegal register reference 0x30\n");
 				break;
 			case 0x38:
-				m_tmp = A;
+				m_tmp = m_af.b.h;
 				break;
 			}
 			break;
 		case CCF:
-			F = ((F & (SF | ZF | YF | XF | PF | CF)) | ((F & CF) << 4) | (A & (YF | XF))) ^ CF;
+			m_af.b.l = ((m_af.b.l & (SF | ZF | YF | XF | PF | CF)) | ((m_af.b.l & CF) << 4) | (m_af.b.h & (YF | XF))) ^ CF;
 			break;
 		case CPL:
-			A ^= 0xff;
-			F = (F & (SF | ZF | PF | CF)) | HF | NF | (A & (YF | XF));
+			m_af.b.h ^= 0xff;
+			m_af.b.l = (m_af.b.l & (SF | ZF | PF | CF)) | HF | NF | (m_af.b.h & (YF | XF));
 			break;
 		case DAA:
-			m_alu = A;
-			if (F & NF)
+			m_alu = m_af.b.h;
+			if (m_af.b.l & NF)
 			{
-				if ((F & HF) | ((A & 0xf) > 9))
+				if ((m_af.b.l & HF) | ((m_af.b.h & 0xf) > 9))
 					m_alu -= 6;
-				if ((F & CF) | (A > 0x99))
+				if ((m_af.b.l & CF) | (m_af.b.h > 0x99))
 					m_alu -= 0x60;
 			}
 			else
 			{
-				if ((F & HF) | ((A & 0xf) > 9))
+				if ((m_af.b.l & HF) | ((m_af.b.h & 0xf) > 9))
 					m_alu += 6;
-				if ((F & CF) | (A > 0x99))
+				if ((m_af.b.l & CF) | (m_af.b.h > 0x99))
 					m_alu += 0x60;
 			}
-			F = (F & (CF | NF)) | (A > 0x99) | ((A ^ m_alu) & HF) | SZP[m_alu];
-			A = m_alu;
+			m_af.b.l = (m_af.b.l & (CF | NF)) | (m_af.b.h > 0x99) | ((m_af.b.h ^ m_alu) & HF) | SZP[m_alu];
+			m_af.b.h = m_alu;
 			break;
 		case HALT:
-			PC--;
+			m_pc.w.l--;
 			if (!m_halt)
 			{
 				m_halt = 1;
@@ -2633,37 +2585,37 @@ void z80lle_device::execute_run()
 				m_im--;
 			break;
 		case LD_A_I:
-			A = m_i;
-			F = (F & CF) | SZ[A] | (m_iff2 << 2);
+			m_af.b.h = m_i;
+			m_af.b.l = (m_af.b.l & CF) | SZ[m_af.b.h] | (m_iff2 << 2);
 			m_after_ldair = true;
 			m_icount -= 1;
 			break;
 		case LD_A_R:
-			A = (m_r & 0x7f) | m_r2;
-			F = (F & CF) | SZ[A] | (m_iff2 << 2);
+			m_af.b.h = (m_r & 0x7f) | m_r2;
+			m_af.b.l = (m_af.b.l & CF) | SZ[m_af.b.h] | (m_iff2 << 2);
 			m_after_ldair = true;
 			m_icount -= 1;
 			break;
 		case LD_I_A:
-			m_i = A;
+			m_i = m_af.b.h;
 			m_icount -= 1;
 			break;
 		case LD_R_A:
-			m_r = A;
-			m_r2 = A & 0x80;
+			m_r = m_af.b.h;
+			m_r2 = m_af.b.h & 0x80;
 			m_icount -= 1;
 			break;
 		case LD_SP_HL:
-			SP = HL;
+			m_sp.w.l = m_hl_index[m_hl_offset].w.l;
 			m_icount -= 2;
 			break;
 		case NEG:
-			m_alu = 0 - A;
-			F = SZHVC_sub[m_alu];
-			A = m_alu;
+			m_alu = 0 - m_af.b.h;
+			m_af.b.l = SZHVC_sub[m_alu];
+			m_af.b.h = m_alu;
 			break;
 		case NMI:
-			PC = 0x66;
+			m_pc.w.l = 0x66;
 			break;
 		case RETI:
 			m_iff1 = m_iff2;
@@ -2673,89 +2625,89 @@ void z80lle_device::execute_run()
 			m_iff1 = m_iff2;
 			break;
 		case RLA:
-			m_alu = (A << 1) | (F & CF);
-			F = (F & (SF | ZF | PF)) | ((A & 0x80) ? CF : 0) | (m_alu & (YF | XF));
-			A = m_alu;
+			m_alu = (m_af.b.h << 1) | (m_af.b.l & CF);
+			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | ((m_af.b.h & 0x80) ? CF : 0) | (m_alu & (YF | XF));
+			m_af.b.h = m_alu;
 			break;
 		case RLCA:
-			A = (A << 1) | (A >> 7);
-			F = (F & (SF | ZF | PF)) | (A & (YF | XF | CF));
+			m_af.b.h = (m_af.b.h << 1) | (m_af.b.h >> 7);
+			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | (m_af.b.h & (YF | XF | CF));
 			break;
 		case RRA:
-			m_alu = (A >> 1) | (F << 7);
-			F = (F & (SF | ZF | PF)) | ((A & 0x01) ? CF : 0) | (m_alu & (YF | XF));
-			A = m_alu;
+			m_alu = (m_af.b.h >> 1) | (m_af.b.l << 7);
+			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | ((m_af.b.h & 0x01) ? CF : 0) | (m_alu & (YF | XF));
+			m_af.b.h = m_alu;
 			break;
 		case RRCA:
-			F = (F & (SF | ZF | PF)) | (A & CF);
-			A = (A >> 1) | (A << 7);
-			F |= (A & (YF | XF));
+			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | (m_af.b.h & CF);
+			m_af.b.h = (m_af.b.h >> 1) | (m_af.b.h << 7);
+			m_af.b.l |= (m_af.b.h & (YF | XF));
 			break;
 		case RRD:
-			m_alu = (m_data_bus >> 4) | (A << 4);
-			A = (A & 0xf0) | (m_data_bus & 0x0f);
-			F = (F & CF) | SZP[A];
+			m_alu = (m_data_bus >> 4) | (m_af.b.h << 4);
+			m_af.b.h = (m_af.b.h & 0xf0) | (m_data_bus & 0x0f);
+			m_af.b.l = (m_af.b.l & CF) | SZP[m_af.b.h];
 			m_data_bus = m_alu;
 			m_icount -= 5;
 			break;
 		case RLD:
-			m_alu = (m_data_bus << 4) | (A & 0x0f);
-			A = (A & 0xf0) | (m_data_bus >> 4);
-			F = (F & CF) | SZP[A];
+			m_alu = (m_data_bus << 4) | (m_af.b.h & 0x0f);
+			m_af.b.h = (m_af.b.h & 0xf0) | (m_data_bus >> 4);
+			m_af.b.l = (m_af.b.l & CF) | SZP[m_af.b.h];
 			m_data_bus = m_alu;
 			m_icount -= 5;
 			break;
 		case SCF:
-			F = (F & (SF | ZF | YF | XF | PF)) | CF | (A & (YF | XF));
+			m_af.b.l = (m_af.b.l & (SF | ZF | YF | XF | PF)) | CF | (m_af.b.h & (YF | XF));
 			break;
 		case SP_OUT:
-			m_address_bus = SP;
+			m_address_bus = m_sp.w.l;
 			m_icount -= 1;
 			break;
 		case TMP_REG:
 			switch (m_ir & 0x38)
 			{
 			case 0x00:
-				B = m_tmp;
+				m_bc.b.h = m_tmp;
 				break;
 			case 0x08:
-				C = m_tmp;
+				m_bc.b.l = m_tmp;
 				break;
 			case 0x10:
-				D = m_tmp;
+				m_de.b.h = m_tmp;
 				break;
 			case 0x18:
-				E = m_tmp;
+				m_de.b.l = m_tmp;
 				break;
 			case 0x20:
-				H = m_tmp;
+				m_hl_index[m_hl_offset].b.h = m_tmp;
 				break;
 			case 0x28:
-				L = m_tmp;
+				m_hl_index[m_hl_offset].b.l = m_tmp;
 				break;
 			case 0x30:
 				fatalerror("TMP_REG: illegal register reference 0x30\n");
 				break;
 			case 0x38:
-				A = m_tmp;
+				m_af.b.h = m_tmp;
 				break;
 			}
 			break;
 		case WZ_INC:
-			WZ++;
+			m_wz.w.l++;
 			break;
 		case WZ_OUT:
-			m_address_bus = WZ;
+			m_address_bus = m_wz.w.l;
 			m_icount -= 1;
 			break;
 		case HL_PC:
-			PC = HL;
+			m_pc.w.l = m_hl_index[m_hl_offset].w.l;
 			break;
 		case WZ_HL:
-			HL = WZ;
+			m_hl_index[m_hl_offset].w.l = m_wz.w.l;
 			break;
 		case WZ_PC:
-			PC = WZ;
+			m_pc.w.l = m_wz.w.l;
 			break;
 		case X:
 			m_icount -= 1;
@@ -2764,148 +2716,148 @@ void z80lle_device::execute_run()
 			m_icount -= 2;
 			break;
 		case CPD:
-			m_alu = A - m_data_bus;
-			WZ--;
-			HL--;
-			BC--;
-			F = (F & CF) | (SZ[m_alu] & ~(YF | XF)) | ((A ^ m_data_bus ^ m_alu) & HF) | NF;
-			if (F & HF)
+			m_alu = m_af.b.h - m_data_bus;
+			m_wz.w.l--;
+			m_hl_index[m_hl_offset].w.l--;
+			m_bc.w.l--;
+			m_af.b.l = (m_af.b.l & CF) | (SZ[m_alu] & ~(YF | XF)) | ((m_af.b.h ^ m_data_bus ^ m_alu) & HF) | NF;
+			if (m_af.b.l & HF)
 				m_alu -= 1;
 			if (m_alu & 0x02)
-				F |= YF; /* bit 1 -> flag 5 */
+				m_af.b.l |= YF; /* bit 1 -> flag 5 */
 			if (m_alu & 0x08)
-				F |= XF; /* bit 3 -> flag 3 */
-			if (BC)
-				F |= VF;
+				m_af.b.l |= XF; /* bit 3 -> flag 3 */
+			if (m_bc.w.l)
+				m_af.b.l |= VF;
 			break;
 		case CPI:
-			m_alu = A - m_data_bus;
-			WZ++;
-			HL++;
-			BC--;
-			F = (F & CF) | (SZ[m_alu] & ~(YF | XF)) | ((A ^ m_data_bus ^ m_alu) & HF) | NF;
-			if (F & HF)
+			m_alu = m_af.b.h - m_data_bus;
+			m_wz.w.l++;
+			m_hl_index[m_hl_offset].w.l++;
+			m_bc.w.l--;
+			m_af.b.l = (m_af.b.l & CF) | (SZ[m_alu] & ~(YF | XF)) | ((m_af.b.h ^ m_data_bus ^ m_alu) & HF) | NF;
+			if (m_af.b.l & HF)
 				m_alu -= 1;
 			if (m_alu & 0x02)
-				F |= YF; /* bit 1 -> flag 5 */
+				m_af.b.l |= YF; /* bit 1 -> flag 5 */
 			if (m_alu & 0x08)
-				F |= XF; /* bit 3 -> flag 3 */
-			if (BC)
-				F |= VF;
+				m_af.b.l |= XF; /* bit 3 -> flag 3 */
+			if (m_bc.w.l)
+				m_af.b.l |= VF;
 			break;
 		case IND:
 			{
-				WZ = BC - 1;
-				B--;
-				HL++;
-				F = SZ[B];
-				u16 t = ((C - 1) & 0xff) + m_data_bus;
+				m_wz.w.l = m_bc.w.l - 1;
+				m_bc.b.h--;
+				m_hl_index[m_hl_offset].w.l++;
+				m_af.b.l = SZ[m_bc.b.h];
+				u16 t = ((m_bc.b.l - 1) & 0xff) + m_data_bus;
 				if (m_data_bus & SF)
-					F |= NF;
+					m_af.b.l |= NF;
 				if (t & 0x100)
-					F |= HF | CF;
-				F |= SZP[(uint8_t)(t & 0x07) ^ B] & PF;
+					m_af.b.l |= HF | CF;
+				m_af.b.l |= SZP[(uint8_t)(t & 0x07) ^ m_bc.b.h] & PF;
 			}
 			break;
 		case INI:
 			{
-				WZ = BC + 1;
-				B--;
-				HL--;
-				F = SZ[B];
-				u16 t = ((C + 1) & 0xff) + m_data_bus;
+				m_wz.w.l = m_bc.w.l + 1;
+				m_bc.b.h--;
+				m_hl_index[m_hl_offset].w.l--;
+				m_af.b.l = SZ[m_bc.b.h];
+				u16 t = ((m_bc.b.l + 1) & 0xff) + m_data_bus;
 				if (m_data_bus & SF)
-					F |= NF;
+					m_af.b.l |= NF;
 				if (t & 0x100)
-					F |= HF | CF;
-				F |= SZP[(uint8_t)(t & 0x07) ^ B] & PF;
+					m_af.b.l |= HF | CF;
+				m_af.b.l |= SZP[(uint8_t)(t & 0x07) ^ m_bc.b.h] & PF;
 			}
 			break;
 		case LDD:
-			F &= SF | ZF | CF;
-			if ((A + m_data_bus) & 0x02)
-				F |= YF; /* bit 1 -> flag 5 */
-			if ((A + m_data_bus) & 0x08)
-				F |= XF; /* bit 3 -> flag 3 */
-			HL--;
-			DE--;
-			BC--;
-			if (BC)
-				F |= VF;
+			m_af.b.l &= SF | ZF | CF;
+			if ((m_af.b.h + m_data_bus) & 0x02)
+				m_af.b.l |= YF; /* bit 1 -> flag 5 */
+			if ((m_af.b.h + m_data_bus) & 0x08)
+				m_af.b.l |= XF; /* bit 3 -> flag 3 */
+			m_hl_index[m_hl_offset].w.l--;
+			m_de.w.l--;
+			m_bc.w.l--;
+			if (m_bc.w.l)
+				m_af.b.l |= VF;
 			m_icount -= 2;
 			break;
 		case LDI:
-			F &= SF | ZF | CF;
-			if ((A + m_data_bus) & 0x02)
-				F |= YF; /* bit 1 -> flag 5 */
-			if ((A + m_data_bus) & 0x08)
-				F |= XF; /* bit 3 -> flag 3 */
-			HL++;
-			DE++;
-			BC--;
-			if (BC)
-				F |= VF;
+			m_af.b.l &= SF | ZF | CF;
+			if ((m_af.b.h + m_data_bus) & 0x02)
+				m_af.b.l |= YF; /* bit 1 -> flag 5 */
+			if ((m_af.b.h + m_data_bus) & 0x08)
+				m_af.b.l |= XF; /* bit 3 -> flag 3 */
+			m_hl_index[m_hl_offset].w.l++;
+			m_de.w.l++;
+			m_bc.w.l--;
+			if (m_bc.w.l)
+				m_af.b.l |= VF;
 			m_icount -= 2;
 			break;
 		case OUTD:
 			{
-				B--;
-				m_address_bus = BC;
-				WZ = BC - 1;
-				HL--;
-				F = SZ[B];
-				u16 t = L + m_data_bus;
+				m_bc.b.h--;
+				m_address_bus = m_bc.w.l;
+				m_wz.w.l = m_bc.w.l - 1;
+				m_hl_index[m_hl_offset].w.l--;
+				m_af.b.l = SZ[m_bc.b.h];
+				u16 t = m_hl_index[m_hl_offset].b.l + m_data_bus;
 				if (m_data_bus & SF)
-					F |= NF;
+					m_af.b.l |= NF;
 				if (t & 0x100)
-					F |= HF | CF;
-				F |= SZP[(uint8_t)(t & 0x07) ^ B] & PF;
+					m_af.b.l |= HF | CF;
+				m_af.b.l |= SZP[(uint8_t)(t & 0x07) ^ m_bc.b.h] & PF;
 				m_icount -= 1;
 			}
 			break;
 		case OUTI:
 			{
-				B--;
-				m_address_bus = BC;
-				WZ = BC + 1;
-				HL++;
-				F = SZ[B];
-				u16 t = L + m_data_bus;
+				m_bc.b.h--;
+				m_address_bus = m_bc.w.l;
+				m_wz.w.l = m_bc.w.l + 1;
+				m_hl_index[m_hl_offset].w.l++;
+				m_af.b.l = SZ[m_bc.b.h];
+				u16 t = m_hl_index[m_hl_offset].b.l + m_data_bus;
 				if (m_data_bus & SF)
-					F |= NF;
+					m_af.b.l |= NF;
 				if (t & 0x100)
-					F |= HF | CF;
-				F |= SZP[(uint8_t)(t & 0x07) ^ B] & PF;
+					m_af.b.l |= HF | CF;
+				m_af.b.l |= SZP[(uint8_t)(t & 0x07) ^ m_bc.b.h] & PF;
 				m_icount -= 1;
 			}
 			break;
 		case REPEAT:
-			if (BC != 0)
+			if (m_bc.w.l != 0)
 			{
-				PC -= 2;
+				m_pc.w.l -= 2;
 				// Except for inir, otir, indr, otdr
 				if (!BIT(m_ir,1))
 				{
-					WZ = PC + 1;
+					m_wz.w.l = m_pc.w.l + 1;
 				}
 				m_icount -= 5;
 			}
 			break;
 		case REPEATCP:
-			if (BC != 0 && !(F & ZF))
+			if (m_bc.w.l != 0 && !(m_af.b.l & ZF))
 			{
-				PC -= 2;
+				m_pc.w.l -= 2;
 				// Except for inir, otir, indr, otdr
 				if (!BIT(m_ir,1))
 				{
-					WZ = PC + 1;
+					m_wz.w.l = m_pc.w.l + 1;
 				}
 				m_icount -= 5;
 			}
 			break;
 		case REPEATIO:
-			if (B != 0) {
-				PC -= 2;
+			if (m_bc.b.h != 0) {
+				m_pc.w.l -= 2;
 				m_icount -= 5;
 			}
 			break;
