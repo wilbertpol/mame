@@ -292,6 +292,7 @@ protected:
 	// Temporary state for the debugger
 	u8                m_rtemp;
 
+	void setup_flag_tables();
 	u16 adc16(u16 arg1, u16 arg2);
 	u16 add16(u16 arg1, u16 arg2);
 	u16 sbc16(u16 arg1, u16 arg2);

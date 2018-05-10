@@ -13,7 +13,6 @@
  *   - Implement the 2 start up cycles after a RESET
  *   - RETI: When should the daisy chain be notified?
  *   - Add support for interrupt modes 0 and 2
- *   - WZ is only incremented once for $22 LD (nn),HL?
  *   - Verify A_DB, should it set WH for each instruction?
  *   - Group sub-instructions for readability and/or move code out into functions
  *   - These instructions are untested:
@@ -1423,7 +1422,7 @@ inline void z80lle_device::check_interrupts()
 /****************************************************************************
  * Processor initialization
  ****************************************************************************/
-void z80lle_device::device_start()
+void z80lle_device::setup_flag_tables()
 {
 	if (!tables_initialised)
 	{
@@ -1515,6 +1514,12 @@ void z80lle_device::device_start()
 
 		tables_initialised = true;
 	}
+}
+
+
+void z80lle_device::device_start()
+{
+	setup_flag_tables();
 
 	save_item(NAME(m_prvpc.w.l));
 	save_item(NAME(m_pc.w.l));
@@ -1544,6 +1549,16 @@ void z80lle_device::device_start()
 	save_item(NAME(m_busrq_state));
 	save_item(NAME(m_after_ei));
 	save_item(NAME(m_after_ldair));
+	save_item(NAME(m_hl_offset));
+	save_item(NAME(m_address_bus));
+	save_item(NAME(m_data_bus));
+	save_item(NAME(m_instruction_step));
+	save_item(NAME(m_instruction_offset));
+	save_item(NAME(m_instruction));
+	save_item(NAME(m_ir));
+	save_item(NAME(m_act));
+	save_item(NAME(m_tmp));
+	save_item(NAME(m_alu));
 
 	/* Reset registers to their initial values */
 	m_prvpc.d = 0;
