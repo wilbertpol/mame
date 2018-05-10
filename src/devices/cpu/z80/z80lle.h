@@ -222,7 +222,8 @@ protected:
 		WZ_INC,      // Increment WZ, maybe combine this with WZ_OUT
 		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
 		HL_PC,       // Store HL in PC
-		WZ_TO_PC,    // Store contents of WZ in PC
+		WZ_HL,       // Store contents of WZ in HL
+		WZ_PC,    // Store contents of WZ in PC
 		X,           // Do nothing, takes 1 cycle
 		X2,          // Do nothing, takes 2 cycle
 		CPD,         // Set flags and update pointers and counter, takes 5 cycles
