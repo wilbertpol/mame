@@ -276,16 +276,17 @@ SamRam
 *******************************************************************************/
 
 #include "emu.h"
-#include "includes/spectrum.h"
 
 #include "cpu/z80/z80.h"
+#include "cpu/z80/z80lle.h"
 #include "sound/wave.h"
-#include "machine/spec_snqk.h"
 
 #include "screen.h"
 #include "softlist.h"
 #include "speaker.h"
 
+#include "includes/spectrum.h"
+#include "machine/spec_snqk.h"
 #include "formats/tzx_cas.h"
 
 
@@ -668,7 +669,7 @@ INTERRUPT_GEN_MEMBER(spectrum_state::spec_interrupt)
 MACHINE_CONFIG_START(spectrum_state::spectrum_common)
 
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", Z80, X1 / 4)        /* This is verified only for the ZX Spectrum. Other clones are reported to have different clocks */
+	MCFG_DEVICE_ADD("maincpu", Z80LLE, X1 / 4)        /* This is verified only for the ZX Spectrum. Other clones are reported to have different clocks */
 	MCFG_DEVICE_PROGRAM_MAP(spectrum_mem)
 	MCFG_DEVICE_IO_MAP(spectrum_io)
 	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", spectrum_state, spec_interrupt)
