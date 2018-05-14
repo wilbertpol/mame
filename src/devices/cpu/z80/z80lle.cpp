@@ -1591,9 +1591,9 @@ void z80lle_device::device_start()
 	m_after_ldair = false;
 
 	m_program = &space(AS_PROGRAM);
-	m_decrypted_opcodes = has_space(AS_OPCODES) ? &space(AS_OPCODES) : m_program;
-	m_direct = m_program->direct<0>();
-	m_decrypted_opcodes_direct = m_decrypted_opcodes->direct<0>();
+	m_opcodes = has_space(AS_OPCODES) ? &space(AS_OPCODES) : m_program;
+	m_cache = m_program->cache<0, 0, ENDIANNESS_LITTLE>();
+	m_opcodes_cache = m_opcodes->cache<0, 0, ENDIANNESS_LITTLE>();
 	m_io = &space(AS_IO);
 
 	m_hl_index[IX_OFFSET].w.l = m_hl_index[IY_OFFSET].w.l = 0xffff; /* IX and IY are FFFF after a reset! */
@@ -2358,7 +2358,7 @@ void z80lle_device::execute_run()
 			break;
 		case READ_OP:
 			// Assert MREQ and RD signals (M1 is already asserted)
-			m_ir = m_decrypted_opcodes_direct->read_byte(m_address_bus);
+			m_ir = m_opcodes_cache->read_byte(m_address_bus);
 			m_icount -= 1;
 			// Clear M1, MREQ, and RD signals after any possible wait states
 			m_check_wait = true;
@@ -2366,7 +2366,7 @@ void z80lle_device::execute_run()
 		case READ_OP2:
 			// This is a regular read but the result ends up in the instruction register (for DDCB / FDCB instructions)
 			// Assert MREQ and RD signals
-			m_ir = m_decrypted_opcodes_direct->read_byte(m_address_bus);
+			m_ir = m_opcodes_cache->read_byte(m_address_bus);
 			m_icount -= 2;
 			// Clear MREQ and RD signals
 			m_check_wait = true;
