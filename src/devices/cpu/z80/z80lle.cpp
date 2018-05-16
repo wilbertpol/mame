@@ -2358,6 +2358,7 @@ void z80lle_device::execute_run()
 			break;
 		case READ_OP:
 			// Assert MREQ and RD signals (M1 is already asserted)
+			m_icount -= m_m1_wait_states;
 			m_ir = m_opcodes_cache->read_byte(m_address_bus);
 			m_icount -= 1;
 			// Clear M1, MREQ, and RD signals after any possible wait states
@@ -2990,20 +2991,21 @@ std::unique_ptr<util::disasm_interface> z80lle_device::create_disassembler()
  * Generic set_info
  **************************************************************************/
 
-z80lle_device::z80lle_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
-	z80lle_device(mconfig, Z80LLE, tag, owner, clock)
+z80lle_device::z80lle_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: z80lle_device(mconfig, Z80LLE, tag, owner, clock)
 {
 }
 
-z80lle_device::z80lle_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock) :
-	cpu_device(mconfig, type, tag, owner, clock),
-	z80_daisy_chain_interface(mconfig, *this),
-	m_program_config("program", ENDIANNESS_LITTLE, 8, 16, 0),
-	m_decrypted_opcodes_config("decrypted_opcodes", ENDIANNESS_LITTLE, 8, 16, 0),
-	m_io_config("io", ENDIANNESS_LITTLE, 8, 16, 0),
-	m_irqack_cb(*this),
-	m_refresh_cb(*this),
-	m_halt_cb(*this)
+z80lle_device::z80lle_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+	: cpu_device(mconfig, type, tag, owner, clock)
+	, z80_daisy_chain_interface(mconfig, *this)
+	, m_program_config("program", ENDIANNESS_LITTLE, 8, 16, 0)
+	, m_decrypted_opcodes_config("decrypted_opcodes", ENDIANNESS_LITTLE, 8, 16, 0)
+	, m_io_config("io", ENDIANNESS_LITTLE, 8, 16, 0)
+	, m_irqack_cb(*this)
+	, m_refresh_cb(*this)
+	, m_halt_cb(*this)
+	, m_m1_wait_states(0)
 {
 }
 

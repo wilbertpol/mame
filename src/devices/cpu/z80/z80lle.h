@@ -41,6 +41,7 @@ public:
 	template<class Object> devcb_base &set_irqack_cb(Object &&cb) { return m_irqack_cb.set_callback(std::forward<Object>(cb)); }
 	template<class Object> devcb_base &set_refresh_cb(Object &&cb) { return m_refresh_cb.set_callback(std::forward<Object>(cb)); }
 	template<class Object> devcb_base &set_halt_cb(Object &&cb) { return m_halt_cb.set_callback(std::forward<Object>(cb)); }
+	void set_m1_wait_states(u8 m1_wait_states) { m_m1_wait_states = m1_wait_states; }
 
 protected:
 	z80lle_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock);
@@ -255,6 +256,7 @@ protected:
 	u8                m_instruction_step;
 	u16               m_instruction_offset;
 	u16               m_instruction;
+	u8                m_m1_wait_states; // Wait states during an M1 cycle (default 0)
 	u8                m_ir;
 	u8                m_act;    // ACT input into ALU
 	u8                m_tmp;    // TMP input into ALU
