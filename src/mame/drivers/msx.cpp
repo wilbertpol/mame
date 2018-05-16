@@ -1347,9 +1347,10 @@ MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(msx_state::msx)
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", Z80, XTAL(10'738'635)/3)         /* 3.579545 MHz */
+	MCFG_DEVICE_ADD("maincpu", Z80LLE, XTAL(10'738'635)/3)         /* 3.579545 MHz */
 	MCFG_DEVICE_PROGRAM_MAP(msx_memory_map)
 	MCFG_DEVICE_IO_MAP(msx_io_map)
+	downcast<z80lle_device &>(*device).set_m1_wait_states(1);    // Always inject 1 wait states during M1
 	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", msx_state,  msx_interrupt) /* Needed for mouse updates */
 	MCFG_QUANTUM_TIME(attotime::from_hz(60))
 
@@ -1495,9 +1496,10 @@ MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(msx_state::msx2)
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", Z80, XTAL(21'477'272)/6)       /* 3.579545 MHz */
+	MCFG_DEVICE_ADD("maincpu", Z80LLE, XTAL(21'477'272)/6)       /* 3.579545 MHz */
 	MCFG_DEVICE_PROGRAM_MAP(msx_memory_map)
 	MCFG_DEVICE_IO_MAP(msx2_io_map)
+	downcast<z80lle_device &>(*device).set_m1_wait_states(1);    // Always inject 1 wait states during M1
 	MCFG_QUANTUM_TIME(attotime::from_hz(60))
 
 	MCFG_DEVICE_ADD("ppi8255", I8255, 0)
@@ -1552,9 +1554,10 @@ MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(msx_state::msx2p)
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", Z80, XTAL(21'477'272)/6)       /* 3.579545 MHz */
+	MCFG_DEVICE_ADD("maincpu", Z80LLE, XTAL(21'477'272)/6)       /* 3.579545 MHz */
 	MCFG_DEVICE_PROGRAM_MAP(msx_memory_map)
 	MCFG_DEVICE_IO_MAP(msx2p_io_map)
+	downcast<z80lle_device &>(*device).set_m1_wait_states(1);    // Always inject 1 wait states during M1
 	MCFG_QUANTUM_TIME(attotime::from_hz(60))
 
 	MCFG_DEVICE_ADD("ppi8255", I8255, 0)
