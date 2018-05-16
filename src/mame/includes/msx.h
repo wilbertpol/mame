@@ -9,7 +9,7 @@
 #ifndef MAME_INCLUDES_MSX_H
 #define MAME_INCLUDES_MSX_H
 
-#include "cpu/z80/z80.h"
+#include "cpu/z80/z80lle.h"
 #include "machine/i8255.h"
 #include "machine/rp5c01.h"
 #include "machine/buffer.h"
@@ -317,7 +317,7 @@ protected:
 	void msx_io_map(address_map &map);
 	void msx_memory_map(address_map &map);
 
-	required_device<z80_device> m_maincpu;
+	required_device<z80lle_device> m_maincpu;
 	required_device<cassette_image_device> m_cassette;
 	required_device<ay8910_device> m_ay8910;
 	required_device<dac_bit_interface> m_dac;
