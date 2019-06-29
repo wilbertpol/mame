@@ -38,9 +38,9 @@ class z80lle_device : public cpu_device, public z80_daisy_chain_interface
 public:
 	z80lle_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
 
-	template<class Object> devcb_base &set_irqack_cb(Object &&cb) { return m_irqack_cb.set_callback(std::forward<Object>(cb)); }
-	template<class Object> devcb_base &set_refresh_cb(Object &&cb) { return m_refresh_cb.set_callback(std::forward<Object>(cb)); }
-	template<class Object> devcb_base &set_halt_cb(Object &&cb) { return m_halt_cb.set_callback(std::forward<Object>(cb)); }
+	auto irqack_cb() { return m_irqack_cb.bind(); }
+	auto refresh_cb() { return m_refresh_cb.bind(); }
+	auto halt_cb() { return m_halt_cb.bind(); }
 	void set_m1_wait_states(u8 m1_wait_states) { m_m1_wait_states = m1_wait_states; }
 
 protected:
@@ -54,7 +54,7 @@ protected:
 	virtual uint32_t execute_min_cycles() const override { return 2; }
 	virtual uint32_t execute_max_cycles() const override { return 16; }
 	virtual uint32_t execute_input_lines() const override { return 4; }
-	virtual uint32_t execute_default_irq_vector() const override { return 0xff; }
+	virtual uint32_t execute_default_irq_vector(int inputnum) const override { return 0xff; }
 	virtual void execute_run() override;
 	virtual void execute_set_input(int inputnum, int state) override;
 

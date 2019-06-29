@@ -519,18 +519,15 @@ void sms_state::sms_ntsc_base(machine_config &config)
 	config.m_minimum_quantum = attotime::from_hz(60);
 }
 
-MACHINE_CONFIG_START(sms_state::sms_ntsc_base_lle)
+void sms_state::sms_ntsc_base_lle(machine_config &config)
+{
 	sms_base(config);
-	MCFG_DEVICE_ADD("maincpu", Z80LLE, XTAL(10'738'635)/3)
-	MCFG_DEVICE_PROGRAM_MAP(sms_mem)
-	MCFG_DEVICE_IO_MAP(sms_io)
+	Z80LLE(config, m_maincpu, XTAL(10'738'635)/3);
+	m_maincpu->set_addrmap(AS_PROGRAM, &sms_state::sms_mem);
+	m_maincpu->set_addrmap(AS_IO, &sms_state::sms_io);
 
-	MCFG_QUANTUM_TIME(attotime::from_hz(60))
-
-	/* actually, PSG is embedded in the VDP chip */
-	MCFG_DEVICE_ADD("segapsg", SEGAPSG, XTAL(10'738'635)/3)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 1.00)
-MACHINE_CONFIG_END
+	config.m_minimum_quantum = attotime::from_hz(60);
+}
 
 /*
     For SMS drivers, the ratio between CPU and pixel clocks, set through dividers, is 2/3. The
@@ -608,8 +605,6 @@ void sms_state::sms2_ntsc(machine_config &config)
 }
 
 
-<<<<<<< HEAD
-=======
 void sms_state::sms2_ntsc_lle(machine_config &config)
 {
 	sms_ntsc_base_lle(config);
@@ -625,7 +620,7 @@ void sms_state::sms2_ntsc_lle(machine_config &config)
 	m_vdp->n_int().set_inputline(m_maincpu, 0);
 	m_vdp->n_nmi().set_inputline(m_maincpu, INPUT_LINE_NMI);
 	m_vdp->add_route(ALL_OUTPUTS, "mono", 1.00);
-MACHINE_CONFIG_END
+}
 
 
 void sms_state::sms1_ntsc(machine_config &config)
@@ -1304,7 +1299,7 @@ CONS( 19??, sms1paln, sms,      0,      sms1_paln, sms1,     sms_state,      emp
 CONS( 19??, sms2paln, sms,      0,      sms1_paln, sms1,     sms_state,      empty_init,    "Tec Toy", "Master System II (PAL-N)",           MACHINE_SUPPORTS_SAVE )
 CONS( 19??, smspaln,  sms,      0,      sms3_paln, sms,      sms_state,      empty_init,    "Tec Toy", "Master System III Compact (PAL-N)",  MACHINE_SUPPORTS_SAVE )
 
-CONS( 1990, sms_lle,    sms,        0,      sms2_ntsc_lle, sms,    sms_state,      sms,      "Sega",     "Master System II (LLE)",             MACHINE_SUPPORTS_SAVE )
+CONS( 1990, sms_lle,    sms,        0,      sms2_ntsc_lle, sms,    sms_state,      empty_init,      "Sega",     "Master System II (LLE)",             MACHINE_SUPPORTS_SAVE )
 
 CONS( 1991, gamegear, 0,        sms,    gamegear,  gg,       sms_state,      empty_init,    "Sega",    "Game Gear (Europe/America)",         MACHINE_SUPPORTS_SAVE )
 CONS( 1990, gamegeaj, gamegear, 0,      gamegeaj,  gg,       sms_state,      empty_init,    "Sega",    "Game Gear (Japan)",                  MACHINE_SUPPORTS_SAVE )

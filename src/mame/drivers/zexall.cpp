@@ -172,6 +172,7 @@ void zexall_state::zexall(machine_config &config)
 
 
 void zexall_state::zexall_lle(machine_config &config)
+{
 	/* basic machine hardware */
 	Z80LLE(config, m_maincpu, XTAL(3'579'545));
 	m_maincpu->set_addrmap(AS_PROGRAM, &zexall_state::mem_map);

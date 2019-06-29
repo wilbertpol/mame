@@ -49,7 +49,6 @@ void msx2_state::machine_start()
 	save_item(NAME(m_rtc_latch));
 }
 
-
 void msx_state::driver_start()
 {
 	m_maincpu->set_input_line_vector(0, 0xff); // Z80
