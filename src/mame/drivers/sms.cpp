@@ -620,6 +620,8 @@ void sms_state::sms2_ntsc_lle(machine_config &config)
 	m_vdp->n_int().set_inputline(m_maincpu, 0);
 	m_vdp->n_nmi().set_inputline(m_maincpu, INPUT_LINE_NMI);
 	m_vdp->add_route(ALL_OUTPUTS, "mono", 1.00);
+
+	m_has_bios_full = true;
 }
 
 
