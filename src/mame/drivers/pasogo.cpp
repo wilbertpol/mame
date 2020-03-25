@@ -541,7 +541,7 @@ void pasogo_state::machine_reset()
 	membank("bank27")->set_base(m_cart_rom->base());
 	m_ems_index = 0;
 	memset(m_ems_bank, 0, sizeof(m_ems_bank));
-	contrast(*color->fields().first(), nullptr, 0, color->read());
+	contrast(*color->fields().first(), 0, 0, color->read());
 }
 
 void pasogo_state::pasogo(machine_config &config)
@@ -554,7 +554,10 @@ void pasogo_state::pasogo(machine_config &config)
 
 	ADDRESS_MAP_BANK(config, "ems").set_map(&pasogo_state::emsbank_map).set_options(ENDIANNESS_LITTLE, 16, 32, 0x4000);
 
-	IBM5160_MOTHERBOARD(config, "mb", 0).set_cputag(m_maincpu);
+	ibm5160_mb_device &mb(IBM5160_MOTHERBOARD(config, "mb", 0));
+	mb.set_cputag(m_maincpu);
+	mb.int_callback().set_inputline(m_maincpu, 0);
+	mb.nmi_callback().set_inputline(m_maincpu, INPUT_LINE_NMI);
 
 	RAM(config, RAM_TAG).set_default_size("512K");
 

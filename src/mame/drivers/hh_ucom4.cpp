@@ -57,8 +57,8 @@
  @060     uPD650C  1979, Mattel Computer Gin
  *085     uPD650C  1980, Roland TR-808
  *127     uPD650C  198?, Sony OA-S1100 Typecorder (subcpu, have dump)
-  128     uPD650C  1981, Roland TR-606 -> tr606.cpp
-  133     uPD650C  1982, Roland TB-303 -> tb303.cpp
+  128     uPD650C  1981, Roland TR-606 -> roland_tr606.cpp
+  133     uPD650C  1982, Roland TB-303 -> roland_tb303.cpp
 
   (* means undumped unless noted, @ denotes it's in this driver)
 
@@ -298,8 +298,6 @@ static INPUT_PORTS_START( ufombs )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-static const s16 ufombs_speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
-
 void ufombs_state::ufombs(machine_config &config)
 {
 	/* basic machine hardware */
@@ -325,7 +323,8 @@ void ufombs_state::ufombs(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, ufombs_speaker_levels);
+	static const s16 speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -455,8 +454,6 @@ static INPUT_PORTS_START( ssfball )
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_16WAY PORT_NAME("P1 Left/Right")
 INPUT_PORTS_END
 
-static const s16 ssfball_speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
-
 void ssfball_state::ssfball(machine_config &config)
 {
 	/* basic machine hardware */
@@ -482,7 +479,8 @@ void ssfball_state::ssfball(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, ssfball_speaker_levels);
+	static const s16 speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -879,8 +877,6 @@ static INPUT_PORTS_START( splasfgt )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-static const s16 splasfgt_speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
-
 void splasfgt_state::splasfgt(machine_config &config)
 {
 	/* basic machine hardware */
@@ -906,7 +902,8 @@ void splasfgt_state::splasfgt(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, splasfgt_speaker_levels);
+	static const s16 speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -1264,7 +1261,7 @@ static INPUT_PORTS_START( ctntune )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_SELECT ) PORT_NAME("Play Button")
 
 	PORT_START("IN.5") // D3 port A
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_START ) PORT_CHANGED_MEMBER(DEVICE_SELF, ctntune_state, start_button, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_START ) PORT_CHANGED_MEMBER(DEVICE_SELF, ctntune_state, start_button, 0)
 	PORT_BIT( 0x0e, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
@@ -2183,7 +2180,7 @@ static INPUT_PORTS_START( grobot9 )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_R) PORT_NAME("Repeat")
 
 	PORT_START("IN.4") // INT
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_V) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_ucom4_state, single_interrupt_line, nullptr) PORT_NAME("Start-Pitch")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_V) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_ucom4_state, single_interrupt_line, 0) PORT_NAME("Start-Pitch")
 INPUT_PORTS_END
 
 void grobot9_state::grobot9(machine_config &config)
@@ -2437,7 +2434,7 @@ static INPUT_PORTS_START( tmtennis )
 	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_J) PORT_NAME("P1 Button 6")
 
 	PORT_START("IN.1") // E1 port A/B
-	PORT_CONFNAME( 0x101, 0x100, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, tmtennis_state, difficulty_switch, nullptr)
+	PORT_CONFNAME( 0x101, 0x100, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, tmtennis_state, difficulty_switch, 0)
 	PORT_CONFSETTING(     0x001, "Practice" )
 	PORT_CONFSETTING(     0x100, "Pro 1" ) // -> difficulty_switch
 	PORT_CONFSETTING(     0x000, "Pro 2" )

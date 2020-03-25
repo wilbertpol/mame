@@ -27,6 +27,7 @@ maybe close to jalmah.cpp?
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 
 class patapata_state : public driver_device
@@ -84,7 +85,7 @@ TILE_GET_INFO_MEMBER(patapata_state::get_bg_tile_info)
 {
 	int tileno = m_bg_videoram[tile_index];
 	int pal = tileno>>12;
-	SET_TILE_INFO_MEMBER(0, tileno&0x1fff, pal, 0);
+	tileinfo.set(0, tileno&0x1fff, pal, 0);
 }
 
 WRITE16_MEMBER(patapata_state::fg_videoram_w)
@@ -105,7 +106,7 @@ TILE_GET_INFO_MEMBER(patapata_state::get_fg_tile_info)
 	int tileno = m_fg_videoram[tile_index];
 	int pal = tileno>>12;
 
-	SET_TILE_INFO_MEMBER(1, (tileno&0x0fff)+(bank*0x1000), pal, 0);
+	tileinfo.set(1, (tileno&0x0fff)+(bank*0x1000), pal, 0);
 }
 
 TILEMAP_MAPPER_MEMBER(patapata_state::pagescan)
@@ -117,12 +118,12 @@ TILEMAP_MAPPER_MEMBER(patapata_state::pagescan)
 
 void patapata_state::video_start()
 {
-	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(patapata_state::get_bg_tile_info),this), tilemap_mapper_delegate(FUNC(patapata_state::pagescan),this), 16, 16, 1024,16*2);
-	m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(patapata_state::get_fg_tile_info),this), tilemap_mapper_delegate(FUNC(patapata_state::pagescan),this), 16, 16, 1024,16*2);
+	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(patapata_state::get_bg_tile_info)), tilemap_mapper_delegate(*this, FUNC(patapata_state::pagescan)), 16, 16, 1024, 16*2);
+	m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(patapata_state::get_fg_tile_info)), tilemap_mapper_delegate(*this, FUNC(patapata_state::pagescan)), 16, 16, 1024, 16*2);
 
 // 2nd half of the ram seems unused, maybe it's actually a mirror meaning this would be the correct tilemap sizes
-// m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(patapata_state::get_bg_tile_info),this), tilemap_mapper_delegate(FUNC(patapata_state::pagescan),this), 16, 16, 1024/2,16*2);
-// m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(patapata_state::get_fg_tile_info),this), tilemap_mapper_delegate(FUNC(patapata_state::pagescan),this), 16, 16, 1024/2,16*2);
+// m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(patapata_state::get_bg_tile_info)), tilemap_mapper_delegate(*this, FUNC(patapata_state::pagescan)), 16, 16, 1024/2, 16*2);
+// m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(patapata_state::get_fg_tile_info)), tilemap_mapper_delegate(*this, FUNC(patapata_state::pagescan)), 16, 16, 1024/2, 16*2);
 
 	m_fg_tilemap->set_transparent_pen(0xf);
 

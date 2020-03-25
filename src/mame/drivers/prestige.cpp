@@ -44,6 +44,26 @@ Notes:
 
 /*
 
+ VTech PC Super Color (Spain)
+ __________________________________     _______________|||||||||||||____
+ |                                 |   |               ||||||||||||| ___|
+ |                                 |   |                             |
+ |                                 |___|              TI CSM10233AN  |__
+ |                                 ____      ____              __\_____ |
+ |      _____________              ____     (GLOB)             |_______||
+ |      |S2564RL-100 |             ____     _____                 _____ |
+ |      |____________|             ____     |    |                |    ||
+ |                                 ____     |Z80 |   S2564RL-100->|    ||
+ |     ______________              ____     |    |                |    ||
+ |     | 27-5560-01  |             ____     |    |<-Z84C0008PEC   |    ||
+ |     |_____________|             |   |    |    | __________     |____||
+  \                                |   |    |____| |_________|  ________|
+   \_____              ____________|   |           SN74HC244N   |
+         ||||||||||||||                |__|||||_____         ___|
+         ||||||||||||||                            |||||||||||
+*/
+
+/*
     Undumped cartridges:
 
     80-1410   Super Science
@@ -64,7 +84,6 @@ Notes:
 */
 
 /*
-
     TODO:
 
     - identify unknown chips (maybe related to the sound??)
@@ -75,7 +94,6 @@ Notes:
     - cartridges
 
 */
-
 
 #include "emu.h"
 
@@ -110,7 +128,6 @@ public:
 
 	void prestige_base(machine_config &config);
 	void gl6000sl(machine_config &config);
-	void gjmovie(machine_config &config);
 	void snotec(machine_config &config);
 	void glmcolor(machine_config &config);
 	void glcolor(machine_config &config);
@@ -831,13 +848,6 @@ void prestige_state::gl7007sl(machine_config &config)
 	SOFTWARE_LIST(config, "misterx_cart").set_compatible("misterx");
 }
 
-void prestige_state::gjmovie(machine_config &config)
-{
-	prestige_base(config);
-
-	SOFTWARE_LIST(config, "cart_list").set_original("gjmovie");
-}
-
 
 /* ROM definition */
 ROM_START( gl6000sl )
@@ -870,6 +880,14 @@ ROM_START( glscolor )
 	ROM_LOAD( "27-5488-00.u5", 0x00000, 0x080000, CRC(e6cf7702) SHA1(ce40418a7777b331bf8c4c881d51732aeb384582) )    // identical to 'Genius Leader Color'
 ROM_END
 
+ROM_START( pcscolor )
+	ROM_REGION( 0x100000, "maincpu", 0 )
+	ROM_LOAD( "27-5560-01.u5", 0x00000, 0x080000, CRC(e21e7ecd) SHA1(f3eeb19a88f1856406b357f2966880113b7340dc) )
+
+	ROM_REGION( 0x2000, "speech", 0 )
+	ROM_LOAD( "csm10233an.u1", 0x0000, 0x2000, NO_DUMP ) // TSP50C10 (8K bytes of ROM) labeled "51CTCJT VIDEO TECH CSM10233AN"
+ROM_END
+
 ROM_START( snotec )
 	ROM_REGION( 0x100000, "maincpu", 0 )
 	ROM_LOAD( "27-5616-01.u6", 0x00000, 0x080000, CRC(74093f5b) SHA1(3495b07e297315051888261d608680513a05c08b) )
@@ -890,44 +908,13 @@ ROM_START( glmcolor )
 	ROM_LOAD( "27-5673-00.u6", 0x00000, 0x100000, CRC(c4245392) SHA1(bb651aaf11b75f4155c0a0106de9394018110cc7) )
 ROM_END
 
-ROM_START( gj4000 )
+ROM_START( gmmc )
 	ROM_REGION( 0x100000, "maincpu", 0 )
-	ROM_LOAD( "27-05886-000-000.u4", 0x000000, 0x40000, CRC(5f6db95b) SHA1(fe683154e33a82ea38696096616d11e850e0c7a3))
-ROM_END
-
-ROM_START( gj5000 )
-	ROM_REGION( 0x100000, "maincpu", 0 )
-	ROM_LOAD( "27-6019-01.u2", 0x000000, 0x80000, CRC(946e5b7d) SHA1(80963d6ad80d49e54c8996bfc77ac135c4935be5))
-ROM_END
-
-ROM_START( gjmovie )
-	ROM_REGION( 0x100000, "maincpu", 0 )
-	ROM_LOAD( "lh532hlk.bin", 0x000000, 0x40000, CRC(2e64c296) SHA1(604034f902e20851cb9af60964031a508ceef83e))
-ROM_END
-
-ROM_START( gjrstar )
-	ROM_REGION( 0x100000, "maincpu", 0 )
-	ROM_LOAD( "27-5740-00.u1", 0x000000, 0x40000, CRC(ff3dc3bb) SHA1(bc16dfc1e12b0008456c700c431c8df6263b671f))
-ROM_END
-
-ROM_START( gjrstar2 )
-	ROM_REGION( 0x100000, "maincpu", 0 )
-	ROM_LOAD( "27-5740-00.u1", 0x000000, 0x40000, CRC(ff3dc3bb) SHA1(bc16dfc1e12b0008456c700c431c8df6263b671f))     // identical to 'Genius Junior Redstar'
-ROM_END
-
-ROM_START( gjrstar3 )
-	ROM_REGION( 0x100000, "maincpu", 0 )
-	ROM_LOAD( "54-06056-000-000.u3", 0x000000, 0x040000, CRC(72522179) SHA1(ede9491713ad018012cf925a519bcafe126f1ad3))
-ROM_END
-
-ROM_START( gkidabc )
-	ROM_REGION( 0x20000, "maincpu", 0 )
-	ROM_LOAD("27-5730-00.bin", 0x00000, 0x20000, CRC(64664708) SHA1(74212c2dec1caa41dbc933b50f857904a8ac623b))
-ROM_END
-
-ROM_START( cars2lap )
-	ROM_REGION( 0x200000, "maincpu", 0 )
-	ROM_LOAD("n25s16.u6", 0x00000, 0x200000, CRC(ec1ba96e) SHA1(51b8844ae77adf20f74f268d380d268c9ce19785))
+	ROM_LOAD( "27-5889-00.bin", 0x080000, 0x080000, CRC(5e2c6359) SHA1(cc01c7bd5c87224b63dd1044db5a36a5cb7824f1) BAD_DUMP ) // very likely underdumped
+	ROM_RELOAD( 0x060000, 0x020000 )
+	ROM_CONTINUE( 0x040000, 0x020000 )
+	ROM_CONTINUE( 0x020000, 0x020000 )
+	ROM_CONTINUE( 0x000000, 0x020000 )
 ROM_END
 
 
@@ -937,6 +924,7 @@ ROM_END
 //    YEAR  NAME      PARENT   COMPAT  MACHINE   INPUT     CLASS           INIT        COMPANY   FULLNAME                                FLAGS
 COMP( 1994, glcolor,  0,       0,      glcolor,  glcolor,  prestige_state, empty_init, "VTech",  "Genius Leader Color (Germany)",        MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
 COMP( 1994, glscolor, glcolor, 0,      glcolor,  glcolor,  prestige_state, empty_init, "VTech",  "Genius Leader Super Color (Germany)",  MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
+COMP( 1994, pcscolor, 0,       0,      glcolor,  glcolor,  prestige_state, empty_init, "VTech",  "PC Super Color (Spain)",               MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
 COMP( 1995, snotec,   0,       0,      snotec,   glcolor,  prestige_state, empty_init, "Bandai", "Super Note Club (Japan)",              MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
 COMP( 1996, snotecex, 0,       0,      snotec,   glcolor,  prestige_state, empty_init, "Bandai", "Super Note Club EX (Japan)",           MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
 COMP( 1996, glmcolor, 0,       0,      glmcolor, glmcolor, prestige_state, empty_init, "VTech",  "Genius Leader Magic Color (Germany)",  MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
@@ -945,14 +933,4 @@ COMP( 1998, snotecu,  0,       0,      snotec,   glcolor,  prestige_state, empty
 COMP( 1998, gl7007sl, 0,       0,      gl7007sl, prestige, prestige_state, empty_init, "VTech",  "Genius Leader 7007SL (Germany)",       MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
 COMP( 1998, prestige, 0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "PreComputer Prestige Elite",           MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
 COMP( 1999, gwnf,     0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "Genius Winner Notebook Fun (Germany)", MACHINE_NOT_WORKING | MACHINE_NO_SOUND )
-
-
-// these systems need to be moved into a separate driver
-COMP( 1996, gj4000,   0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "Genius Junior 4000 (Germany)",         MACHINE_IS_SKELETON )
-COMP( 1996, gkidabc,  0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "Genius KID ABC Fan (Germany)",         MACHINE_IS_SKELETON )
-COMP( 1993, gjmovie,  0,       0,      gjmovie,  prestige, prestige_state, empty_init, "VTech",  "Genius Junior Movie (Germany)",        MACHINE_IS_SKELETON )
-COMP( 1996, gjrstar,  0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "Genius Junior Redstar(Germany)",       MACHINE_IS_SKELETON )
-COMP( 1996, gjrstar2, gjrstar, 0,      prestige, prestige, prestige_state, empty_init, "VTech",  "Genius Junior Redstar 2 (Germany)",    MACHINE_IS_SKELETON )
-COMP( 1998, gjrstar3, 0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "Genius Junior Redstar 3 (Germany)",    MACHINE_IS_SKELETON )
-COMP( 1998, gj5000,   0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "Genius Junior 5000 (Germany)",         MACHINE_IS_SKELETON )
-COMP( 2012, cars2lap, 0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "CARS 2 Laptop (Germany)",              MACHINE_IS_SKELETON )
+COMP( 19??, gmmc,     0,       0,      prestige, prestige, prestige_state, empty_init, "VTech",  "Genius Master Mega Color (Germany)",   MACHINE_NOT_WORKING | MACHINE_NO_SOUND )

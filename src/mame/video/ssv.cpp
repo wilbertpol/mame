@@ -227,7 +227,7 @@ TILE_GET_INFO_MEMBER(ssv_state::get_tile_info_0)
 {
 	uint16_t tile = m_gdfs_tmapram[tile_index];
 
-	SET_TILE_INFO_MEMBER(1, tile, 0, TILE_FLIPXY( tile >> 14 ));
+	tileinfo.set(1, tile, 0, TILE_FLIPXY( tile >> 14 ));
 }
 
 WRITE16_MEMBER(ssv_state::gdfs_tmapram_w)
@@ -240,7 +240,7 @@ VIDEO_START_MEMBER(ssv_state,gdfs)
 {
 	ssv_state::video_start();
 
-	m_gdfs_tmap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(ssv_state::get_tile_info_0),this), TILEMAP_SCAN_ROWS, 16,16, 0x100,0x100);
+	m_gdfs_tmap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(ssv_state::get_tile_info_0)), TILEMAP_SCAN_ROWS, 16,16, 0x100,0x100);
 
 	m_gdfs_tmap->set_transparent_pen(0);
 }

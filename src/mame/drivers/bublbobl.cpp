@@ -732,8 +732,8 @@ static INPUT_PORTS_START( tokio )
 	PORT_INCLUDE( tokio_base )
 
 	PORT_MODIFY("IN0")
-	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_CUSTOM_MEMBER("bmcu", taito68705_mcu_device, host_semaphore_r, nullptr)
-	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_CUSTOM_MEMBER("bmcu", taito68705_mcu_device, mcu_semaphore_r, nullptr)
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_READ_LINE_DEVICE_MEMBER("bmcu", taito68705_mcu_device, host_semaphore_r)
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_READ_LINE_DEVICE_MEMBER("bmcu", taito68705_mcu_device, mcu_semaphore_r)
 INPUT_PORTS_END
 
 static INPUT_PORTS_START( bublboblp )
@@ -863,7 +863,7 @@ void bublbobl_state::tokio(machine_config &config)
 
 	TAITO68705_MCU(config, "bmcu", MAIN_XTAL/8); // 3 Mhz
 
-	config.m_perfect_cpu_quantum = subtag("maincpu"); // is this necessary?
+	config.set_perfect_quantum(m_maincpu); // is this necessary?
 
 	WATCHDOG_TIMER(config, "watchdog").set_vblank_count("screen", 128); // 74LS393, counts 128 vblanks before firing watchdog; same circuit as taitosj uses
 
@@ -972,7 +972,7 @@ void bublbobl_state::bublbobl_nomcu(machine_config &config)
 	Z80(config, m_audiocpu, MAIN_XTAL/8); // 3 MHz
 	m_audiocpu->set_addrmap(AS_PROGRAM, &bublbobl_state::sound_map); // IRQs are triggered by the YM2203
 
-	config.m_minimum_quantum = attotime::from_hz(6000); // 100 CPU slices per frame - a high value to ensure proper synchronization of the CPUs
+	config.set_maximum_quantum(attotime::from_hz(6000)); // 100 CPU slices per frame - a high value to ensure proper synchronization of the CPUs
 
 	WATCHDOG_TIMER(config, "watchdog").set_vblank_count("screen", 128); // 74LS393, counts 128 vblanks before firing watchdog; same circuit as taitosj uses
 

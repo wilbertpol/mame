@@ -10,6 +10,7 @@
 #include "sound/n63701x.h"
 #include "sound/namco.h"
 #include "emupal.h"
+#include "tilemap.h"
 
 class namcos86_state : public driver_device
 {
@@ -92,7 +93,7 @@ private:
 
 	required_device<cpu_device> m_cpu1;
 	required_device<cpu_device> m_cpu2;
-	required_device<hd63701_cpu_device> m_mcu;
+	required_device<hd63701v0_cpu_device> m_mcu;
 	required_device<watchdog_timer_device> m_watchdog;
 	required_device<namco_cus30_device> m_cus30;
 	required_device<gfxdecode_device> m_gfxdecode;

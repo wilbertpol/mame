@@ -15,6 +15,7 @@
 #include "video/toaplan_scu.h"
 #include "emupal.h"
 #include "screen.h"
+#include "tilemap.h"
 
 class toaplan1_state : public driver_device
 {
@@ -254,7 +255,6 @@ private:
 	DECLARE_WRITE_LINE_MEMBER(screen_vblank);
 
 	void hd647180_io_map(address_map &map);
-	void hd647180_mem_map(address_map &map);
 	void main_map(address_map &map);
 };
 

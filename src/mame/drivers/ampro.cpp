@@ -23,12 +23,11 @@ of a hard drive of up to 88MB.
 #include "cpu/z80/z80.h"
 #include "imagedev/floppy.h"
 #include "machine/ncr5380n.h"
-#include "machine/nscsi_cd.h"
-#include "machine/nscsi_hd.h"
+#include "bus/nscsi/devices.h"
 #include "machine/output_latch.h"
 #include "machine/z80daisy.h"
 #include "machine/z80ctc.h"
-#include "machine/z80dart.h"
+#include "machine/z80sio.h"
 #include "machine/wd_fdc.h"
 #include "machine/timer.h"
 #include "softlist.h"
@@ -136,7 +135,7 @@ void ampro_state::ampro_io(address_map &map)
 	map.unmap_value_high();
 	map.global_mask(0xff);
 	map(0x00, 0x00).w(FUNC(ampro_state::port00_w)); // system
-	map(0x01, 0x01).w("pio", FUNC(output_latch_device::bus_w)); // printer data
+	map(0x01, 0x01).w("pio", FUNC(output_latch_device::write)); // printer data
 	map(0x02, 0x02).w(FUNC(ampro_state::set_strobe)); // printer strobe
 	map(0x03, 0x03).w(FUNC(ampro_state::clear_strobe)); // printer strobe
 	map(0x20, 0x27).rw(m_ncr, FUNC(ncr5380n_device::read), FUNC(ncr5380n_device::write)); // scsi chip
@@ -158,12 +157,6 @@ static const z80_daisy_config daisy_chain_intf[] =
 static void ampro_floppies(device_slot_interface &device)
 {
 	device.option_add("525dd", FLOPPY_525_DD);
-}
-
-static void scsi_devices(device_slot_interface &device)
-{
-	device.option_add("harddisk", NSCSI_HARDDISK);
-	device.option_add_internal("ncr", NCR5380N);
 }
 
 /* Input ports */
@@ -247,14 +240,14 @@ void ampro_state::ampro(machine_config &config)
 	SOFTWARE_LIST(config, "flop_list").set_original("ampro");
 
 	NSCSI_BUS(config, "scsi");
-	NSCSI_CONNECTOR(config, "scsi:0", scsi_devices, nullptr);
-	NSCSI_CONNECTOR(config, "scsi:1", scsi_devices, nullptr);
-	NSCSI_CONNECTOR(config, "scsi:2", scsi_devices, nullptr);
-	NSCSI_CONNECTOR(config, "scsi:3", scsi_devices, nullptr);
-	NSCSI_CONNECTOR(config, "scsi:4", scsi_devices, nullptr);
-	NSCSI_CONNECTOR(config, "scsi:5", scsi_devices, nullptr);
-	NSCSI_CONNECTOR(config, "scsi:6", scsi_devices, nullptr);
-	NSCSI_CONNECTOR(config, "scsi:7", scsi_devices, "ncr", true).set_option_machine_config("ncr", [] (device_t *device) {
+	NSCSI_CONNECTOR(config, "scsi:0", default_scsi_devices, nullptr);
+	NSCSI_CONNECTOR(config, "scsi:1", default_scsi_devices, nullptr);
+	NSCSI_CONNECTOR(config, "scsi:2", default_scsi_devices, nullptr);
+	NSCSI_CONNECTOR(config, "scsi:3", default_scsi_devices, nullptr);
+	NSCSI_CONNECTOR(config, "scsi:4", default_scsi_devices, nullptr);
+	NSCSI_CONNECTOR(config, "scsi:5", default_scsi_devices, nullptr);
+	NSCSI_CONNECTOR(config, "scsi:6", default_scsi_devices, nullptr);
+	NSCSI_CONNECTOR(config, "scsi:7").option_set("ncr", NCR5380N).machine_config([] (device_t *device) {
 		//downcast<ncr5380n_device &>(*device).irq_handler().set(m_ctc, FUNC(z80ctc_device::trg2)); // only if JMP3 shorted
 		//downcast<ncr5380n_device &>(*device).drq_handler().set(m_dart, FUNC(z80dart_device::dcda_w)); // only if JMP8 shorted
 	});

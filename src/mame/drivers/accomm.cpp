@@ -63,13 +63,13 @@ public:
 private:
 	uint32_t screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 
-	DECLARE_WRITE8_MEMBER(ch00switch_w);
-	DECLARE_READ8_MEMBER(read_keyboard1);
-	DECLARE_READ8_MEMBER(read_keyboard2);
-	DECLARE_READ8_MEMBER(ram_r);
-	DECLARE_WRITE8_MEMBER(ram_w);
-	DECLARE_READ8_MEMBER(sheila_r);
-	DECLARE_WRITE8_MEMBER(sheila_w);
+	void ch00switch_w(offs_t offset, uint8_t data);
+	uint8_t read_keyboard1(offs_t offset);
+	uint8_t read_keyboard2(offs_t offset);
+	uint8_t ram_r(offs_t offset);
+	void ram_w(offs_t offset, uint8_t data);
+	uint8_t sheila_r(offs_t offset);
+	void sheila_w(offs_t offset, uint8_t data);
 
 	void accomm_palette(palette_device &palette) const;
 	INTERRUPT_GEN_MEMBER(vbl_int);
@@ -150,7 +150,7 @@ void accomm_state::accomm_palette(palette_device &palette) const
 	palette.set_pen_colors(0, electron_palette);
 }
 
-READ8_MEMBER(accomm_state::read_keyboard1)
+uint8_t accomm_state::read_keyboard1(offs_t offset)
 {
 	uint8_t data = 0;
 
@@ -164,7 +164,7 @@ READ8_MEMBER(accomm_state::read_keyboard1)
 	return data;
 }
 
-READ8_MEMBER(accomm_state::read_keyboard2)
+uint8_t accomm_state::read_keyboard2(offs_t offset)
 {
 	uint8_t data = 0;
 
@@ -216,7 +216,7 @@ void accomm_state::video_start()
 	}
 }
 
-WRITE8_MEMBER(accomm_state::ch00switch_w)
+void accomm_state::ch00switch_w(offs_t offset, uint8_t data)
 {
 	logerror("ch00switch_w: offset %04x, data %02x\n", offset, data);
 	if (!machine().side_effects_disabled())
@@ -432,7 +432,7 @@ uint32_t accomm_state::screen_update(screen_device &screen, bitmap_ind16 &bitmap
 }
 
 
-READ8_MEMBER(accomm_state::ram_r)
+uint8_t accomm_state::ram_r(offs_t offset)
 {
 	uint8_t data = 0xff;
 
@@ -456,7 +456,7 @@ READ8_MEMBER(accomm_state::ram_r)
 	return data;
 }
 
-WRITE8_MEMBER(accomm_state::ram_w)
+void accomm_state::ram_w(offs_t offset, uint8_t data)
 {
 	switch (m_ram->size())
 	{
@@ -471,7 +471,7 @@ WRITE8_MEMBER(accomm_state::ram_w)
 }
 
 
-READ8_MEMBER(accomm_state::sheila_r)
+uint8_t accomm_state::sheila_r(offs_t offset)
 {
 	uint8_t data = 0;
 	switch ( offset & 0x0f )
@@ -494,7 +494,7 @@ READ8_MEMBER(accomm_state::sheila_r)
 static const int palette_offset[4] = { 0, 4, 5, 1 };
 static const uint16_t screen_base[8] = { 0x3000, 0x3000, 0x3000, 0x4000, 0x5800, 0x5800, 0x6000, 0x5800 };
 
-WRITE8_MEMBER(accomm_state::sheila_w)
+void accomm_state::sheila_w(offs_t offset, uint8_t data)
 {
 	int i = palette_offset[(( offset >> 1 ) & 0x03)];
 	logerror( "ULA: write offset %02x <- %02x\n", offset & 0x0f, data );
@@ -626,7 +626,7 @@ void accomm_state::main_map(address_map &map)
 	map(0x200000, 0x3fffff).noprw();                                                                /* External expansion RAM */
 	map(0x400000, 0x400000).noprw();                                                                /* MODEM */
 	map(0x410000, 0x410000).ram();                                                                  /* Econet ID */
-	map(0x420000, 0x42000f).rw(m_via, FUNC(via6522_device::read), FUNC(via6522_device::write));     /* 6522 VIA (printer etc) */
+	map(0x420000, 0x42000f).m(m_via, FUNC(via6522_device::map));                                    /* 6522 VIA (printer etc) */
 	map(0x430000, 0x430001).rw(m_acia, FUNC(acia6850_device::read), FUNC(acia6850_device::write));  /* 2641 ACIA (RS423) */
 	map(0x440000, 0x44ffff).w(FUNC(accomm_state::ch00switch_w));                                    /* CH00SWITCH */
 	map(0x450000, 0x457fff).ram().share("vram");                                                    /* Video RAM */
@@ -847,7 +847,7 @@ void accomm_state::accomm(machine_config &config)
 
 	/* via */
 	VIA6522(config, m_via, 16_MHz_XTAL / 16);
-	m_via->writepa_handler().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	m_via->writepa_handler().set("cent_data_out", FUNC(output_latch_device::write));
 	m_via->ca2_handler().set("centronics", FUNC(centronics_device::write_strobe));
 
 	/* acia */
@@ -875,9 +875,7 @@ void accomm_state::accomm(machine_config &config)
 	econet.clk_wr_callback().append(m_adlc, FUNC(mc6854_device::rxc_w));
 	econet.data_wr_callback().set(m_adlc, FUNC(mc6854_device::set_rx));
 
-	econet_slot_device &econet_slot(ECONET_SLOT(config, "econet254", 0));
-	econet_devices(econet_slot);
-	econet_slot.set_slot(254);
+	ECONET_SLOT(config, "econet254", "econet", econet_devices).set_slot(254);
 
 	/* printer */
 	centronics_device &centronics(CENTRONICS(config, "centronics", centronics_devices, "printer"));

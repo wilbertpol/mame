@@ -35,7 +35,6 @@ Notes:
 #include "machine/i8255.h"
 #include "imagedev/cassette.h"
 #include "machine/timer.h"
-#include "sound/wave.h"
 #include "speaker.h"
 #include "pmi80.lh"
 
@@ -145,8 +144,8 @@ void pmi80_state::pmi80_io(address_map &map)
 /* Input ports */
 static INPUT_PORTS_START( pmi80 )
 	PORT_START("SP")
-	PORT_BIT(0x01, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("RE") PORT_CODE(KEYCODE_LALT) PORT_CHANGED_MEMBER(DEVICE_SELF, pmi80_state, reset_button, nullptr)
-	PORT_BIT(0x02, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("I") PORT_CODE(KEYCODE_I) PORT_CHANGED_MEMBER(DEVICE_SELF, pmi80_state, int_button, nullptr)
+	PORT_BIT(0x01, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("RE") PORT_CODE(KEYCODE_LALT) PORT_CHANGED_MEMBER(DEVICE_SELF, pmi80_state, reset_button, 0)
+	PORT_BIT(0x02, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("I") PORT_CODE(KEYCODE_I) PORT_CHANGED_MEMBER(DEVICE_SELF, pmi80_state, int_button, 0)
 	PORT_START("X0")
 	PORT_BIT(0x10, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("=") PORT_CODE(KEYCODE_EQUALS)
 	PORT_BIT(0x20, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("3") PORT_CODE(KEYCODE_3)
@@ -220,11 +219,12 @@ void pmi80_state::pmi80(machine_config &config)
 
 	I8255A(config, "ppi2");   // User PPI
 
+	SPEAKER(config, "mono").front_center();
+
 	// cassette
 	CASSETTE(config, m_cass);
 	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_SPEAKER_ENABLED | CASSETTE_MOTOR_ENABLED);
-	SPEAKER(config, "mono").front_center();
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "mono", 0.05);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 	TIMER(config, "kansas_r").configure_periodic(FUNC(pmi80_state::kansas_r), attotime::from_hz(40000));
 
 	/* video hardware */

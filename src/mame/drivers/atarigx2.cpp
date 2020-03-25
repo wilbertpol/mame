@@ -1489,8 +1489,8 @@ static const atari_rle_objects_config modesc_0x400 =
  *
  *************************************/
 
-MACHINE_CONFIG_START(atarigx2_state::atarigx2)
-
+void atarigx2_state::atarigx2(machine_config &config)
+{
 	/* basic machine hardware */
 	M68EC020(config, m_maincpu, ATARI_CLOCK_14MHz);
 	m_maincpu->set_addrmap(AS_PROGRAM, &atarigx2_state::main_map);
@@ -1511,7 +1511,9 @@ MACHINE_CONFIG_START(atarigx2_state::atarigx2)
 	GFXDECODE(config, m_gfxdecode, "palette", gfx_atarigx2);
 	PALETTE(config, "palette").set_format(palette_device::IRGB_1555, 2048);
 
-	MCFG_TILEMAP_ADD_CUSTOM("playfield", "gfxdecode", 2, atarigx2_state, get_playfield_tile_info, 8,8, atarigx2_playfield_scan, 128,64)
+	TILEMAP(config, m_playfield_tilemap, m_gfxdecode, 2, 8,8);
+	m_playfield_tilemap->set_layout(FUNC(atarigx2_state::atarigx2_playfield_scan), 128,64);
+	m_playfield_tilemap->set_info_callback(FUNC(atarigx2_state::get_playfield_tile_info));
 	TILEMAP(config, m_alpha_tilemap, m_gfxdecode, 2, 8,8, TILEMAP_SCAN_ROWS, 64,32, 0).set_info_callback(FUNC(atarigx2_state::get_alpha_tile_info));
 
 	SCREEN(config, m_screen, SCREEN_TYPE_RASTER);
@@ -1532,8 +1534,7 @@ MACHINE_CONFIG_START(atarigx2_state::atarigx2)
 	m_jsa->test_read_cb().set_ioport("SERVICE").bit(6);
 	m_jsa->add_route(0, "lspeaker", 1.0);
 	m_jsa->add_route(1, "rspeaker", 1.0);
-MACHINE_CONFIG_END
-
+}
 
 void atarigx2_state::atarigx2_0x200(machine_config &config)
 {
@@ -1739,10 +1740,10 @@ ROM_END
 
 ROM_START( motofren )
 	ROM_REGION( 0x80000, "maincpu", 0 ) /* 8*64k for 68000 code */
-	ROM_LOAD32_BYTE( "136094-moto0.23e", 0x000000, 0x020000, CRC(2c6ec446) SHA1(d83fee26b384e6fd783104746e6560504ae43ca6) )
-	ROM_LOAD32_BYTE( "136094-moto1.23j", 0x000001, 0x020000, CRC(e7163e7b) SHA1(7ea8a7a63bd1befee4cf9e708949fca7f06572c1) )
-	ROM_LOAD32_BYTE( "136094-moto2.37e", 0x000002, 0x020000, CRC(6b1c7626) SHA1(b318a5856bcbd6a8fc7eb92e4b9a576b8c16cbf3) )
-	ROM_LOAD32_BYTE( "136094-moto3.37j", 0x000003, 0x020000, CRC(44c3cd2a) SHA1(a16046586cbaa000e056115c92b5f22bf49869ad) )
+	ROM_LOAD32_BYTE( "136094-0021i.23e", 0x000000, 0x020000, CRC(2c6ec446) SHA1(d83fee26b384e6fd783104746e6560504ae43ca6) )
+	ROM_LOAD32_BYTE( "136094-0022i.23j", 0x000001, 0x020000, CRC(e7163e7b) SHA1(7ea8a7a63bd1befee4cf9e708949fca7f06572c1) )
+	ROM_LOAD32_BYTE( "136094-0023i.37e", 0x000002, 0x020000, CRC(6b1c7626) SHA1(b318a5856bcbd6a8fc7eb92e4b9a576b8c16cbf3) )
+	ROM_LOAD32_BYTE( "136094-0024i.37j", 0x000003, 0x020000, CRC(44c3cd2a) SHA1(a16046586cbaa000e056115c92b5f22bf49869ad) )
 
 	ROM_REGION( 0x10000, "jsa:cpu", 0 ) /* 64k for 6502 code */
 	ROM_LOAD( "136094-0080a.12c", 0x00000, 0x10000, CRC(0b1e565c) SHA1(03bdeafd8cf680f76bbd1f9aba6efac27f19a93c) )
@@ -2262,8 +2263,8 @@ void atarigx2_state::init_spclords()
 {
 	m_playfield_base = 0x000;
 
-	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0xc80f00, 0xc80fff, read32_delegate(FUNC(atari_136095_0072_device::polylsb_read),(atari_136095_0072_device*)&(*m_xga)), write32_delegate(FUNC(atari_136095_0072_device::polylsb_write),(atari_136095_0072_device*)&(*m_xga)));
-	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0xca0000, 0xca0fff, read32_delegate(FUNC(atari_xga_device::read),&(*m_xga)), write32_delegate(FUNC(atari_xga_device::write),&(*m_xga)));
+	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0xc80f00, 0xc80fff, read32_delegate(downcast<atari_136095_0072_device &>(*m_xga), FUNC(atari_136095_0072_device::polylsb_read)), write32_delegate(downcast<atari_136095_0072_device &>(*m_xga), FUNC(atari_136095_0072_device::polylsb_write)));
+	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0xca0000, 0xca0fff, read32_delegate(*m_xga, FUNC(atari_xga_device::read)), write32_delegate(*m_xga, FUNC(atari_xga_device::write)));
 }
 
 
@@ -2292,15 +2293,15 @@ XMEM=68.A23*E.A22*!E.A21*68.A20                                 = 1101 xxxx = d0
     +68.A23*E.A22*!E.A21*!68.A20*68.A19                         = 1100 1xxx = c80000-cfffff
     +!68.A23*!E.A22*!E.A21                                      = 000x xxxx = 000000-1fffff
 */
-	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0xca0000, 0xca0fff, read32_delegate(FUNC(atari_xga_device::read),&(*m_xga)), write32_delegate(FUNC(atari_xga_device::write),&(*m_xga)));
+	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0xca0000, 0xca0fff, read32_delegate(*m_xga, FUNC(atari_xga_device::read)), write32_delegate(*m_xga, FUNC(atari_xga_device::write)));
 }
 
 void atarigx2_state::init_rrreveng()
 {
 	m_playfield_base = 0x000;
 
-	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0xca0000, 0xca0fff, read32_delegate(FUNC(atarigx2_state::atarigx2_protection_r),this), write32_delegate(FUNC(atarigx2_state::atarigx2_protection_w),this));
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0xca0fc0, 0xca0fc3, read32_delegate(FUNC(atarigx2_state::rrreveng_prot_r),this));
+	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0xca0000, 0xca0fff, read32_delegate(*this, FUNC(atarigx2_state::atarigx2_protection_r)), write32_delegate(*this, FUNC(atarigx2_state::atarigx2_protection_w)));
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0xca0fc0, 0xca0fc3, read32_delegate(*this, FUNC(atarigx2_state::rrreveng_prot_r)));
 }
 
 

@@ -125,7 +125,7 @@ void sagitta180_state::maincpu_map(address_map &map)
 {
 	map.global_mask(0xffff);
 	map(0x0000, 0x07ff).rom();
-//  AM_RANGE(0x0800, 0x17ff) AM_ROM
+//  map(0x0800, 0x17ff).rom();
 	map(0x1800, 0xffff).ram();
 }
 
@@ -191,12 +191,12 @@ void sagitta180_state::sagitta180(machine_config &config)
 	uart.dtr_handler().set("rs232", FUNC(rs232_port_device::write_dtr));
 	uart.rts_handler().set("rs232", FUNC(rs232_port_device::write_rts));
 
-	rs232_port_device &rs232(RS232_PORT(config, "rs232", default_rs232_devices, nullptr));
+	rs232_port_device &rs232(RS232_PORT(config, "rs232", default_rs232_devices, "keyboard"));
 	rs232.rxd_handler().set("uart", FUNC(i8251_device::write_rxd));
 	rs232.cts_handler().set("uart", FUNC(i8251_device::write_cts));
 	rs232.dsr_handler().set("uart", FUNC(i8251_device::write_dsr));
 
-	clock_device &uart_clock(CLOCK(config, "uart_clock", 19218)); // 19218 / 19222 ? guesses...
+	clock_device &uart_clock(CLOCK(config, "uart_clock", 153600));
 	uart_clock.signal_handler().set("uart", FUNC(i8251_device::write_txc));
 	uart_clock.signal_handler().append("uart", FUNC(i8251_device::write_rxc));
 
@@ -216,7 +216,7 @@ void sagitta180_state::sagitta180(machine_config &config)
 
 	I8275(config, m_crtc, 12480000 / 8); /* guessed xtal */
 	m_crtc->set_character_width(8);
-	m_crtc->set_display_callback(FUNC(sagitta180_state::crtc_display_pixels), this);
+	m_crtc->set_display_callback(FUNC(sagitta180_state::crtc_display_pixels));
 	m_crtc->drq_wr_callback().set(m_dma8257, FUNC(i8257_device::dreq2_w));
 	m_crtc->irq_wr_callback().set_inputline(m_maincpu, I8085_INTR_LINE);
 	m_crtc->set_screen("screen");

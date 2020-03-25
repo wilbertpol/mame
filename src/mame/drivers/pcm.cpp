@@ -61,7 +61,6 @@
 #include "machine/z80sio.h"
 #include "machine/z80pio.h"
 #include "sound/spkrdev.h"
-#include "sound/wave.h"
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
@@ -180,9 +179,9 @@ void pcm_state::pcm_io(address_map &map)
 	map(0x88, 0x8B).rw("sio", FUNC(z80sio_device::cd_ba_r), FUNC(z80sio_device::cd_ba_w)); // SIO
 	map(0x8C, 0x8F).rw(m_ctc_u, FUNC(z80ctc_device::read), FUNC(z80ctc_device::write)); // user CTC
 	map(0x90, 0x93).rw(m_pio_u, FUNC(z80pio_device::read), FUNC(z80pio_device::write)); // user PIO
-	//AM_RANGE(0x94, 0x97) // bank select
-	//AM_RANGE(0x98, 0x9B) // NMI generator
-	//AM_RANGE(0x9C, 0x9F) // io ports available to the user
+	//map(0x94, 0x97) // bank select
+	//map(0x98, 0x9B) // NMI generator
+	//map(0x9C, 0x9F) // io ports available to the user
 	// disk controller?
 }
 
@@ -278,12 +277,12 @@ void pcm_state::pcm(machine_config &config)
 
 	/* Sound */
 	SPEAKER(config, "mono").front_center();
-	WAVE(config, "wave", "cassette").add_route(ALL_OUTPUTS, "mono", 0.25);
 	SPEAKER_SOUND(config, "speaker").add_route(ALL_OUTPUTS, "mono", 0.50);
 
 	/* Devices */
 	K7659_KEYBOARD(config, K7659_KEYBOARD_TAG, 0);
 	CASSETTE(config, m_cass);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	Z80PIO(config, m_pio_u, XTAL(10'000'000)/4);
 	m_pio_u->out_int_callback().set_inputline(m_maincpu, INPUT_LINE_IRQ0);

@@ -19,12 +19,12 @@ I/O is similar to supercon
 #include "emu.h"
 
 #include "cpu/m6502/r65c02.h"
-#include "video/pwm.h"
 #include "machine/sensorboard.h"
 #include "machine/nvram.h"
 #include "machine/timer.h"
-#include "video/hlcd0538.h"
 #include "sound/beep.h"
+#include "video/hlcd0538.h"
+#include "video/pwm.h"
 #include "speaker.h"
 
 // internal artwork
@@ -47,7 +47,7 @@ public:
 		m_inputs(*this, "IN.%u", 0)
 	{ }
 
-	// machine drivers
+	// machine configs
 	void cforte(machine_config &config);
 
 protected:
@@ -96,10 +96,10 @@ void cforte_state::machine_start()
 
 
 /******************************************************************************
-    Devices, I/O
+    I/O
 ******************************************************************************/
 
-// TTL/generic
+// HLCD0538
 
 WRITE64_MEMBER(cforte_state::lcd_output_w)
 {
@@ -121,6 +121,9 @@ WRITE64_MEMBER(cforte_state::lcd_output_w)
 
 	m_display->update();
 }
+
+
+// TTL/generic
 
 void cforte_state::update_display()
 {
@@ -238,7 +241,7 @@ INPUT_PORTS_END
 
 
 /******************************************************************************
-    Machine Drivers
+    Machine Configs
 ******************************************************************************/
 
 void cforte_state::cforte(machine_config &config)

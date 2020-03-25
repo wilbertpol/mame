@@ -333,7 +333,7 @@ void sigmab52_state::jwildb52_map(address_map &map)
 
 	map(0xf760, 0xf760).r(FUNC(sigmab52_state::unk_f760_r));
 
-//  AM_RANGE(0xf770, 0xf77f)  Bill validator
+//  map(0xf770, 0xf77f)  Bill validator
 
 	map(0xf780, 0xf780).w(FUNC(sigmab52_state::audiocpu_cmd_irq_w));
 	map(0xf790, 0xf790).w("soundlatch", FUNC(generic_latch_8_device::write));
@@ -447,7 +447,7 @@ static INPUT_PORTS_START( jwildb52 )
 	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_UNKNOWN ) PORT_CODE(KEYCODE_7_PAD)
 	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_OTHER ) PORT_NAME("V Door")
 	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN ) PORT_CODE(KEYCODE_8_PAD)
-	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_COIN1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, sigmab52_state, coin_drop_start, nullptr)
+	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_COIN1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, sigmab52_state, coin_drop_start, 0)
 
 	PORT_START("DSW1")
 	PORT_DIPNAME( 0x01, 0x01, "DSW1-1" )        PORT_DIPLOCATION("SW1:1")

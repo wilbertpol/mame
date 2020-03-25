@@ -30,6 +30,7 @@ are the same of IGS.  AMT may be previous IGS name.
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 
 class cabaret_state : public driver_device
@@ -107,14 +108,14 @@ WRITE8_MEMBER(cabaret_state::bg_tile_w)
 TILE_GET_INFO_MEMBER(cabaret_state::get_bg_tile_info)
 {
 	int code = m_bg_tile_ram[tile_index];
-	SET_TILE_INFO_MEMBER(1, code & 0xff, 0, 0);
+	tileinfo.set(1, code & 0xff, 0, 0);
 }
 
 TILE_GET_INFO_MEMBER(cabaret_state::get_fg_tile_info)
 {
 	int code = m_fg_tile_ram[tile_index] | (m_fg_color_ram[tile_index] << 8);
 	int tile = code & 0x1fff;
-	SET_TILE_INFO_MEMBER(0, code, tile != 0x1fff ? ((code >> 12) & 0xe) + 1 : 0, 0);
+	tileinfo.set(0, code, tile != 0x1fff ? ((code >> 12) & 0xe) + 1 : 0, 0);
 }
 
 WRITE8_MEMBER(cabaret_state::fg_tile_w)
@@ -131,8 +132,8 @@ WRITE8_MEMBER(cabaret_state::fg_color_w)
 
 void cabaret_state::video_start()
 {
-	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(cabaret_state::get_bg_tile_info),this), TILEMAP_SCAN_ROWS,    8,  32, 64, 8);
-	m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(cabaret_state::get_fg_tile_info),this), TILEMAP_SCAN_ROWS,    8,  8,  64, 32);
+	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(cabaret_state::get_bg_tile_info)), TILEMAP_SCAN_ROWS,    8,  32, 64, 8);
+	m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(cabaret_state::get_fg_tile_info)), TILEMAP_SCAN_ROWS,    8,  8,  64, 32);
 	m_fg_tilemap->set_transparent_pen(0);
 	m_bg_tilemap->set_scroll_cols(64);
 }
@@ -368,7 +369,7 @@ INTERRUPT_GEN_MEMBER(cabaret_state::cabaret_interrupt)
 void cabaret_state::cabaret(machine_config &config)
 {
 	/* basic machine hardware */
-	Z180(config, m_maincpu, XTAL(12'000'000) / 2);
+	Z80180(config, m_maincpu, XTAL(12'000'000));
 	m_maincpu->set_addrmap(AS_PROGRAM, &cabaret_state::cabaret_map);
 	m_maincpu->set_addrmap(AS_IO, &cabaret_state::cabaret_portmap);
 	m_maincpu->set_vblank_int("screen", FUNC(cabaret_state::cabaret_interrupt));

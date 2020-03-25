@@ -356,46 +356,6 @@ configuration { }
 strip()
 
 --------------------------------------------------
--- src2html
---------------------------------------------------
-
-project("src2html")
-uuid ("b31e963a-09ef-4696-acbd-e663e35ce6f7")
-kind "ConsoleApp"
-
-flags {
-	"Symbols", -- always include minimum symbols for executables
-}
-
-if _OPTIONS["SEPARATE_BIN"]~="1" then
-	targetdir(MAME_DIR)
-end
-
-links {
-	"utils",
-	ext_lib("expat"),
-	"ocore_" .. _OPTIONS["osd"],
-	ext_lib("zlib"),
-	ext_lib("utf8proc"),
-}
-
-includedirs {
-	MAME_DIR .. "src/osd",
-	MAME_DIR .. "src/lib/util",
-}
-
-files {
-	MAME_DIR .. "src/tools/src2html.cpp",
-}
-
-configuration { "mingw*" or "vs*" }
-	targetextension ".exe"
-
-configuration { }
-
-strip()
-
---------------------------------------------------
 -- split
 --------------------------------------------------
 
@@ -813,6 +773,7 @@ if (_OPTIONS["osd"] == "sdl") then
 	end
 
 	links {
+		"utils",
 		"ocore_" .. _OPTIONS["osd"],
 		ext_lib("utf8proc"),
 	}
@@ -876,6 +837,7 @@ if (_OPTIONS["osd"] == "sdl") then
 
 	includedirs {
 		MAME_DIR .. "src/osd",
+		MAME_DIR .. "src/lib/util",
 	}
 
 	files {

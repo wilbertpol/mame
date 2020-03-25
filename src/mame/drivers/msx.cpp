@@ -551,9 +551,9 @@ void msx_state::msx_io_map(address_map &map)
 	map.unmap_value_high();
 	map.global_mask(0xff);
 	// 0x7c - 0x7d : MSX-MUSIC/FM-PAC write port. Handlers will be installed if MSX-MUSIC is present in a system
-	map(0x90, 0x90).r("cent_status_in", FUNC(input_buffer_device::bus_r));
-	map(0x90, 0x90).w("cent_ctrl_out", FUNC(output_latch_device::bus_w));
-	map(0x91, 0x91).w("cent_data_out", FUNC(output_latch_device::bus_w));
+	map(0x90, 0x90).r("cent_status_in", FUNC(input_buffer_device::read));
+	map(0x90, 0x90).w("cent_ctrl_out", FUNC(output_latch_device::write));
+	map(0x91, 0x91).w("cent_data_out", FUNC(output_latch_device::write));
 	map(0xa0, 0xa7).rw(m_ay8910, FUNC(ay8910_device::data_r), FUNC(ay8910_device::address_data_w));
 	map(0xa8, 0xab).rw("ppi8255", FUNC(i8255_device::read), FUNC(i8255_device::write));
 	map(0x98, 0x99).rw("tms9928a", FUNC(tms9928a_device::read), FUNC(tms9928a_device::write));
@@ -568,9 +568,9 @@ void msx2_state::msx2_io_map(address_map &map)
 	map.global_mask(0xff);
 	map(0x40, 0x4f).rw(FUNC(msx2_state::msx_switched_r), FUNC(msx2_state::msx_switched_w));
 	// 0x7c - 0x7d : MSX-MUSIC/FM-PAC write port. Handlers will be installed if MSX-MUSIC is present in a system
-	map(0x90, 0x90).r("cent_status_in", FUNC(input_buffer_device::bus_r));
-	map(0x90, 0x90).w("cent_ctrl_out", FUNC(output_latch_device::bus_w));
-	map(0x91, 0x91).w("cent_data_out", FUNC(output_latch_device::bus_w));
+	map(0x90, 0x90).r("cent_status_in", FUNC(input_buffer_device::read));
+	map(0x90, 0x90).w("cent_ctrl_out", FUNC(output_latch_device::write));
+	map(0x91, 0x91).w("cent_data_out", FUNC(output_latch_device::write));
 	map(0xa0, 0xa7).rw(m_ay8910, FUNC(ay8910_device::data_r), FUNC(ay8910_device::address_data_w));
 	map(0xa8, 0xab).rw("ppi8255", FUNC(i8255_device::read), FUNC(i8255_device::write));
 	map(0x98, 0x9b).rw(m_v9938, FUNC(v9938_device::read), FUNC(v9938_device::write));
@@ -587,9 +587,9 @@ void msx2_state::msx2p_io_map(address_map &map)
 	map.global_mask(0xff);
 	map(0x40, 0x4f).rw(FUNC(msx2_state::msx_switched_r), FUNC(msx2_state::msx_switched_w));
 	// 0x7c - 0x7d : MSX-MUSIC/FM-PAC write port. Handlers will be installed if MSX-MUSIC is present in a system
-	map(0x90, 0x90).r("cent_status_in", FUNC(input_buffer_device::bus_r));
-	map(0x90, 0x90).w("cent_ctrl_out", FUNC(output_latch_device::bus_w));
-	map(0x91, 0x91).w("cent_data_out", FUNC(output_latch_device::bus_w));
+	map(0x90, 0x90).r("cent_status_in", FUNC(input_buffer_device::read));
+	map(0x90, 0x90).w("cent_ctrl_out", FUNC(output_latch_device::write));
+	map(0x91, 0x91).w("cent_data_out", FUNC(output_latch_device::write));
 	map(0xa0, 0xa7).rw(m_ay8910, FUNC(ay8910_device::data_r), FUNC(ay8910_device::address_data_w));
 	map(0xa8, 0xab).rw("ppi8255", FUNC(i8255_device::read), FUNC(i8255_device::write));
 	map(0x98, 0x9b).rw(m_v9958, FUNC(v9958_device::read), FUNC(v9958_device::write));
@@ -1358,7 +1358,7 @@ void msx_state::msx(machine_config &config)
 	m_maincpu->set_addrmap(AS_IO, &msx_state::msx_io_map);
 	m_maincpu->set_m1_wait_states(1);    // Always inject 1 wait states during M1
 	m_maincpu->set_vblank_int("screen", FUNC(msx_state::msx_interrupt)); /* Needed for mouse updates */
-	config.m_minimum_quantum = attotime::from_hz(60);
+	config.set_maximum_quantum(attotime::from_hz(60));
 
 	INPUT_MERGER_ANY_HIGH(config, "mainirq").output_handler().set_inputline("maincpu", INPUT_LINE_IRQ0);
 
@@ -1373,7 +1373,6 @@ void msx_state::msx(machine_config &config)
 	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref", 0));
 	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
 
-	WAVE(config, "wave", m_cassette).add_route(ALL_OUTPUTS, "speaker", 0.25);
 	AY8910(config, m_ay8910, 10.738635_MHz_XTAL / 3 / 2);
 	m_ay8910->set_flags(AY8910_SINGLE_OUTPUT);
 	m_ay8910->port_a_read_callback().set(FUNC(msx_state::msx_psg_port_a_r));
@@ -1397,6 +1396,7 @@ void msx_state::msx(machine_config &config)
 	CASSETTE(config, m_cassette);
 	m_cassette->set_formats(fmsx_cassette_formats);
 	m_cassette->set_default_state(CASSETTE_PLAY);
+	m_cassette->add_route(ALL_OUTPUTS, "speaker", 0.05);
 	m_cassette->set_interface("msx_cass");
 
 	/* Software lists */
@@ -1424,7 +1424,7 @@ void msx2_state::msx2(machine_config &config)
 	m_maincpu->set_addrmap(AS_PROGRAM, &msx2_state::msx_memory_map);
 	m_maincpu->set_addrmap(AS_IO, &msx2_state::msx2_io_map);
 	m_maincpu->set_m1_wait_states(1);    // Always inject 1 wait states during M1
-	config.m_minimum_quantum = attotime::from_hz(60);
+	config.set_maximum_quantum(attotime::from_hz(60));
 
 	INPUT_MERGER_ANY_HIGH(config, "mainirq").output_handler().set_inputline("maincpu", INPUT_LINE_IRQ0);
 
@@ -1446,7 +1446,6 @@ void msx2_state::msx2(machine_config &config)
 	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref", 0));
 	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
 
-	WAVE(config, "wave", m_cassette).add_route(ALL_OUTPUTS, "speaker", 0.25);
 	AY8910(config, m_ay8910, 21.477272_MHz_XTAL / 6 / 2);
 	m_ay8910->set_flags(AY8910_SINGLE_OUTPUT);
 	m_ay8910->port_a_read_callback().set(FUNC(msx2_state::msx_psg_port_a_r));
@@ -1470,6 +1469,7 @@ void msx2_state::msx2(machine_config &config)
 	CASSETTE(config, m_cassette);
 	m_cassette->set_formats(fmsx_cassette_formats);
 	m_cassette->set_default_state(CASSETTE_PLAY);
+	m_cassette->add_route(ALL_OUTPUTS, "speaker", 0.05);
 	m_cassette->set_interface("msx_cass");
 
 	/* real time clock */
@@ -1488,7 +1488,7 @@ void msx2_state::msx2p(machine_config &config)
 	m_maincpu->set_addrmap(AS_PROGRAM, &msx2_state::msx_memory_map);
 	m_maincpu->set_addrmap(AS_IO, &msx2_state::msx2p_io_map);
 	m_maincpu->set_m1_wait_states(1);    // Always inject 1 wait states during M1
-	config.m_minimum_quantum = attotime::from_hz(60);
+	config.set_maximum_quantum(attotime::from_hz(60));
 
 	INPUT_MERGER_ANY_HIGH(config, "mainirq").output_handler().set_inputline("maincpu", INPUT_LINE_IRQ0);
 
@@ -1510,7 +1510,6 @@ void msx2_state::msx2p(machine_config &config)
 	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref", 0));
 	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
 
-	WAVE(config, "wave", m_cassette).add_route(ALL_OUTPUTS, "speaker", 0.25);
 	AY8910(config, m_ay8910, 21.477272_MHz_XTAL / 6 / 2);
 	m_ay8910->set_flags(AY8910_SINGLE_OUTPUT);
 	m_ay8910->port_a_read_callback().set(FUNC(msx2_state::msx_psg_port_a_r));
@@ -1534,6 +1533,7 @@ void msx2_state::msx2p(machine_config &config)
 	CASSETTE(config, m_cassette);
 	m_cassette->set_formats(fmsx_cassette_formats);
 	m_cassette->set_default_state(CASSETTE_PLAY);
+	m_cassette->add_route(ALL_OUTPUTS, "speaker", 0.05);
 	m_cassette->set_interface("msx_cass");
 
 	/* real time clock */

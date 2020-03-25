@@ -11,13 +11,13 @@
 
 #include "bus/amiga/keyboard/keyboard.h"
 #include "bus/amiga/zorro/zorro.h"
+#include "bus/ata/ataintf.h"
 #include "cpu/m68000/m68000.h"
 #include "cpu/m6502/m6502.h"
 #include "machine/bankdev.h"
 #include "machine/6525tpi.h"
 #include "machine/mos6526.h"
 #include "machine/gayle.h"
-#include "machine/ataintf.h"
 #include "machine/dmac.h"
 #include "machine/nvram.h"
 #include "machine/i2cmem.h"
@@ -33,7 +33,6 @@
 //**************************************************************************
 
 #define EXP_SLOT_TAG "exp"
-#define ZORROBUS_TAG "zorrobus"
 
 
 //**************************************************************************
@@ -260,7 +259,7 @@ public:
 	a2000_state(const machine_config &mconfig, device_type type, const char *tag) :
 		amiga_state(mconfig, type, tag),
 		m_rtc(*this, "u65"),
-		m_zorro(*this, ZORROBUS_TAG),
+		m_zorro(*this, "zorrobus"),
 		m_zorro2_int2(0),
 		m_zorro2_int6(0)
 	{ }
@@ -287,7 +286,7 @@ protected:
 private:
 	// devices
 	required_device<msm6242_device> m_rtc;
-	required_device<zorro2_device> m_zorro;
+	required_device<zorro2_bus_device> m_zorro;
 
 	// internal state
 	int m_zorro2_int2;
@@ -552,7 +551,7 @@ public:
 	u16 handle_joystick_potgor(u16 potgor);
 
 	DECLARE_CUSTOM_INPUT_MEMBER( cd32_input );
-	DECLARE_CUSTOM_INPUT_MEMBER( cd32_sel_mirror_input );
+	template <int P> DECLARE_READ_LINE_MEMBER( cd32_sel_mirror_input );
 
 	void init_pal();
 	void init_ntsc();
@@ -581,32 +580,32 @@ private:
 
 READ16_MEMBER( cdtv_state::clock_r )
 {
-	return m_rtc->read(space, offset / 2);
+	return m_rtc->read(offset / 2);
 }
 
 WRITE16_MEMBER( cdtv_state::clock_w )
 {
-	m_rtc->write(space, offset / 2, data);
+	m_rtc->write(offset / 2, data);
 }
 
 READ16_MEMBER( a2000_state::clock_r )
 {
-	return m_rtc->read(space, offset / 2);
+	return m_rtc->read(offset / 2);
 }
 
 WRITE16_MEMBER( a2000_state::clock_w )
 {
-	m_rtc->write(space, offset / 2, data);
+	m_rtc->write(offset / 2, data);
 }
 
 READ16_MEMBER( a500p_state::clock_r )
 {
-	return m_rtc->read(space, offset / 2);
+	return m_rtc->read(offset / 2);
 }
 
 WRITE16_MEMBER( a500p_state::clock_w )
 {
-	m_rtc->write(space, offset / 2, data);
+	m_rtc->write(offset / 2, data);
 }
 
 
@@ -630,12 +629,12 @@ WRITE8_MEMBER( cdtv_state::dmac_scsi_data_write )
 
 READ8_MEMBER( cdtv_state::dmac_io_read )
 {
-	return m_cdrom->read(space, 0);
+	return m_cdrom->read();
 }
 
 WRITE8_MEMBER( cdtv_state::dmac_io_write )
 {
-	m_cdrom->write(space, 0, data);
+	m_cdrom->write(data);
 }
 
 WRITE_LINE_MEMBER( cdtv_state::dmac_int_w )
@@ -1146,9 +1145,10 @@ CUSTOM_INPUT_MEMBER( cd32_state::cd32_input )
 	return handle_joystick_potgor(m_potgo_value) >> 8;
 }
 
-CUSTOM_INPUT_MEMBER( cd32_state::cd32_sel_mirror_input )
+template <int P>
+READ_LINE_MEMBER( cd32_state::cd32_sel_mirror_input )
 {
-	u8 bits = m_player_ports[(int)(uintptr_t)param]->read();
+	u8 bits = m_player_ports[P]->read();
 	return (bits & 0x20)>>5;
 }
 
@@ -1459,6 +1459,22 @@ void a4000_state::a4000t_mem(address_map &map)
 //  INPUTS
 //**************************************************************************
 
+template <int P>
+CUSTOM_INPUT_MEMBER( amiga_state::amiga_joystick_convert )
+{
+	uint8_t bits = m_joy_ports[P].read_safe(0xff);
+
+	int up = (bits >> 0) & 1;
+	int down = (bits >> 1) & 1;
+	int left = (bits >> 2) & 1;
+	int right = (bits >> 3) & 1;
+
+	if (left) up ^= 1;
+	if (right) down ^= 1;
+
+	return down | (right << 1) | (up << 8) | (left << 9);
+}
+
 static INPUT_PORTS_START( amiga )
 	PORT_START("input")
 	PORT_CONFNAME(0x10, 0x00, "Game Port 0 Device")
@@ -1469,16 +1485,16 @@ static INPUT_PORTS_START( amiga )
 	PORT_CONFSETTING(0x20, DEF_STR(Joystick) )
 
 	PORT_START("cia_0_port_a")
-	PORT_BIT(0x3f, IP_ACTIVE_HIGH, IPT_CUSTOM) PORT_CUSTOM_MEMBER(DEVICE_SELF, amiga_state, floppy_drive_status, (void *)0)
+	PORT_BIT(0x3f, IP_ACTIVE_HIGH, IPT_CUSTOM) PORT_CUSTOM_MEMBER(amiga_state, floppy_drive_status)
 	PORT_BIT(0x40, IP_ACTIVE_LOW,  IPT_BUTTON1) PORT_PLAYER(1)
 	PORT_BIT(0x80, IP_ACTIVE_LOW,  IPT_BUTTON1) PORT_PLAYER(2)
 
 	PORT_START("joy_0_dat")
-	PORT_BIT(0x0303, IP_ACTIVE_HIGH, IPT_CUSTOM) PORT_CUSTOM_MEMBER(DEVICE_SELF, amiga_state, amiga_joystick_convert, (void *)0)
+	PORT_BIT(0x0303, IP_ACTIVE_HIGH, IPT_CUSTOM) PORT_CUSTOM_MEMBER(amiga_state, amiga_joystick_convert<0>)
 	PORT_BIT(0xfcfc, IP_ACTIVE_HIGH, IPT_UNUSED)
 
 	PORT_START("joy_1_dat")
-	PORT_BIT(0x0303, IP_ACTIVE_HIGH, IPT_CUSTOM) PORT_CUSTOM_MEMBER(DEVICE_SELF, amiga_state, amiga_joystick_convert, (void *)1)
+	PORT_BIT(0x0303, IP_ACTIVE_HIGH, IPT_CUSTOM) PORT_CUSTOM_MEMBER(amiga_state, amiga_joystick_convert<1>)
 	PORT_BIT(0xfcfc, IP_ACTIVE_HIGH, IPT_UNUSED)
 
 	PORT_START("potgo")
@@ -1519,19 +1535,19 @@ INPUT_PORTS_START( cd32 )
 	PORT_MODIFY("cia_0_port_a")
 	PORT_BIT( 0x3f, IP_ACTIVE_LOW, IPT_CUSTOM )
 	// this is the regular port for reading a single button joystick on the Amiga, many CD32 games require this to mirror the pad start button!
-	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, cd32_state, cd32_sel_mirror_input, (void *)0)
-	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, cd32_state, cd32_sel_mirror_input, (void *)1)
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(cd32_state, cd32_sel_mirror_input<0>)
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(cd32_state, cd32_sel_mirror_input<1>)
 
 	PORT_MODIFY("joy_0_dat")
-	PORT_BIT( 0x0303, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, amiga_state, amiga_joystick_convert, (void *)0)
+	PORT_BIT( 0x0303, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(amiga_state, amiga_joystick_convert<0>)
 	PORT_BIT( 0xfcfc, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_MODIFY("joy_1_dat")
-	PORT_BIT( 0x0303, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, amiga_state, amiga_joystick_convert, (void *)1)
+	PORT_BIT( 0x0303, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(amiga_state, amiga_joystick_convert<1>)
 	PORT_BIT( 0xfcfc, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_MODIFY("potgo")
-	PORT_BIT( 0xff00, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, cd32_state, cd32_input, (void *)0)
+	PORT_BIT( 0xff00, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(cd32_state, cd32_input)
 	PORT_BIT( 0x00ff, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	// CD32 '11' button pad (4 dpad directions + 7 buttons), not read directly
@@ -1580,7 +1596,7 @@ void amiga_state::amiga_base(machine_config &config)
 	m_cia_0->irq_wr_callback().set(FUNC(amiga_state::cia_0_irq));
 	m_cia_0->pa_rd_callback().set_ioport("cia_0_port_a");
 	m_cia_0->pa_wr_callback().set(FUNC(amiga_state::cia_0_port_a_write));
-	m_cia_0->pb_wr_callback().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	m_cia_0->pb_wr_callback().set("cent_data_out", FUNC(output_latch_device::write));
 	m_cia_0->pc_wr_callback().set(m_centronics, FUNC(centronics_device::write_strobe));
 	m_cia_0->sp_wr_callback().set("kbd", FUNC(amiga_keyboard_bus_device::kdat_in_w)).invert();
 

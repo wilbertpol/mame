@@ -339,14 +339,14 @@ WRITE_LINE_MEMBER(champwr_state::msm5205_vck)
 {
 	if (m_adpcm_data != -1)
 	{
-		m_msm->write_data(m_adpcm_data & 0x0f);
+		m_msm->data_w(m_adpcm_data & 0x0f);
 		m_adpcm_data = -1;
 	}
 	else
 	{
 		m_adpcm_data = m_adpcm_rgn[m_adpcm_pos];
 		m_adpcm_pos = (m_adpcm_pos + 1) & 0x1ffff;
-		m_msm->write_data(m_adpcm_data >> 4);
+		m_msm->data_w(m_adpcm_data >> 4);
 	}
 }
 
@@ -541,7 +541,7 @@ void taitol_1cpu_state::puzznici_map(address_map &map)
 	map(0xa000, 0xa003).r(FUNC(taitol_1cpu_state::extport_select_and_ym2203_r)).w(m_ymsnd, FUNC(ym2203_device::write));
 	map(0xa800, 0xa800).nopr(); // Watchdog
 	map(0xb801, 0xb801).r(FUNC(taitol_1cpu_state::mcu_control_r));
-//  AM_RANGE(0xb801, 0xb801) AM_WRITE(mcu_control_w)
+//  map(0xb801, 0xb801).w(FUNC(taitol_1cpu_state::mcu_control_w));
 	map(0xbc00, 0xbc00).nopw();    // Control register, function unknown
 }
 
@@ -584,10 +584,10 @@ void horshoes_state::horshoes_map(address_map &map)
 	common_banks_map(map);
 	map(0x8000, 0x9fff).ram();
 	map(0xa000, 0xa003).r(FUNC(horshoes_state::extport_select_and_ym2203_r)).w(m_ymsnd, FUNC(ym2203_device::write));
-	map(0xa800, 0xa800).select(0x000c).lr8("upd4701_r",
+	map(0xa800, 0xa800).select(0x000c).lr8(NAME(
 										   [this](address_space &space, offs_t offset, u8 mem_mask) {
 											   return m_upd4701->read_xy(space, offset >> 2, mem_mask);
-										   });
+										   }));
 	map(0xa802, 0xa802).r(m_upd4701, FUNC(upd4701_device::reset_x_r));
 	map(0xa803, 0xa803).r(m_upd4701, FUNC(upd4701_device::reset_y_r));
 	map(0xb801, 0xb801).nopr(); // Watchdog or interrupt ack
@@ -1488,7 +1488,7 @@ void fhawk_state::fhawk(machine_config &config)
 	slave.set_addrmap(AS_PROGRAM, &fhawk_state::fhawk_2_map);
 	slave.set_vblank_int("screen", FUNC(taitol_state::irq0_line_hold));
 
-	config.m_perfect_cpu_quantum = subtag("maincpu");
+	config.set_perfect_quantum(m_main_cpu);
 
 	tc0220ioc_device &tc0220ioc(TC0220IOC(config, "tc0220ioc", 0));
 	tc0220ioc.read_0_callback().set_ioport("DSWA");
@@ -1553,7 +1553,7 @@ void taitol_2cpu_state::raimais(machine_config &config)
 	slave.set_addrmap(AS_PROGRAM, &taitol_2cpu_state::raimais_2_map);
 	slave.set_vblank_int("screen", FUNC(taitol_state::irq0_line_hold));
 
-	config.m_perfect_cpu_quantum = subtag("maincpu");
+	config.set_perfect_quantum(m_main_cpu);
 
 	tc0040ioc_device &tc0040ioc(TC0040IOC(config, "tc0040ioc", 0));
 	tc0040ioc.read_0_callback().set_ioport("DSWA");
@@ -1596,7 +1596,7 @@ void taitol_2cpu_state::kurikint(machine_config &config)
 	m_audio_cpu->set_addrmap(AS_PROGRAM, &taitol_2cpu_state::kurikint_2_map);
 	m_audio_cpu->set_vblank_int("screen", FUNC(taitol_state::irq0_line_hold));
 
-	config.m_minimum_quantum = attotime::from_hz(6000);
+	config.set_maximum_quantum(attotime::from_hz(6000));
 
 	tc0040ioc_device &tc0040ioc(TC0040IOC(config, "tc0040ioc", 0));
 	tc0040ioc.read_0_callback().set_ioport("DSWA");
@@ -1739,7 +1739,7 @@ void taitol_2cpu_state::evilston(machine_config &config)
 	m_audio_cpu->set_addrmap(AS_PROGRAM, &taitol_2cpu_state::evilston_2_map);
 	m_audio_cpu->set_vblank_int("screen", FUNC(taitol_state::irq0_line_hold));
 
-	config.m_minimum_quantum = attotime::from_hz(6000);
+	config.set_maximum_quantum(attotime::from_hz(6000));
 
 	tc0510nio_device &tc0510nio(TC0510NIO(config, "tc0510nio", 0));
 	tc0510nio.read_0_callback().set_ioport("DSWA");
@@ -1930,6 +1930,27 @@ ROM_START( kurikint )
 	ROM_REGION( 0x100000, "gfx1", 0 )
 	ROM_LOAD( "b42-01.ic1",  0x00000, 0x80000, CRC(7d1a1fec) SHA1(28311b07673686c18988400d0254533a454f07f4) )
 	ROM_LOAD( "b42-02.ic5",  0x80000, 0x80000, CRC(1a52e65c) SHA1(20a1fc4d02b5928fb01444079692e23d178c6297) )
+
+	ROM_REGION( 0x022e, "plds", 0 )
+	ROM_LOAD( "gal16v8-b42-03.ic4.bin",  0x0000, 0x0117, CRC(f7150d37) SHA1(10f9190b89c802e0722fd6ba0f17ba97d463f434) )  /* derived, but verified, PAL16L8 Stamped B42-03 */
+	ROM_LOAD( "gal16v8-b42-04.ic21.bin", 0x0117, 0x0117, CRC(b57b806c) SHA1(04cbb008256b7317ebf366327dfd38ead8eaf94e) )  /* derived, but verified, PAL16L8 Stamped B42-04 */
+ROM_END
+
+ROM_START( kurikintw )
+	ROM_REGION( 0x40000, "maincpu", 0 )
+	ROM_LOAD( "b42-10.ic2",  0x00000, 0x20000, CRC(87460109) SHA1(78d0726f5d344673828191bf2e56e9741e977350) )
+	ROM_LOAD( "b42-06.ic6",  0x20000, 0x20000, CRC(fa15fd65) SHA1(a810d7315878212e4e5344a24addf117ea6baeab) )
+
+	ROM_REGION( 0x10000, "audiocpu", 0 )
+	ROM_LOAD( "b42-07.ic22", 0x00000, 0x10000, CRC(0f2719c0) SHA1(f870335a75f236f0059522f9a577dee7ca3acb2f) )
+
+	ROM_REGION( 0x100000, "gfx1", 0 )
+	ROM_LOAD( "b42-01.ic1",  0x00000, 0x80000, CRC(7d1a1fec) SHA1(28311b07673686c18988400d0254533a454f07f4) )
+	ROM_LOAD( "b42-02.ic5",  0x80000, 0x80000, CRC(1a52e65c) SHA1(20a1fc4d02b5928fb01444079692e23d178c6297) )
+
+	ROM_REGION( 0x022e, "plds", 0 )
+	ROM_LOAD( "gal16v8-b42-03.ic4.bin",  0x0000, 0x0117, CRC(f7150d37) SHA1(10f9190b89c802e0722fd6ba0f17ba97d463f434) )  /* derived, but verified, PAL16L8 Stamped B42-03 */
+	ROM_LOAD( "gal16v8-b42-04.ic21.bin", 0x0117, 0x0117, CRC(b57b806c) SHA1(04cbb008256b7317ebf366327dfd38ead8eaf94e) )  /* derived, but verified, PAL16L8 Stamped B42-04 */
 ROM_END
 
 ROM_START( kurikintu )
@@ -1943,6 +1964,10 @@ ROM_START( kurikintu )
 	ROM_REGION( 0x100000, "gfx1", 0 )
 	ROM_LOAD( "b42-01.ic1",  0x00000, 0x80000, CRC(7d1a1fec) SHA1(28311b07673686c18988400d0254533a454f07f4) )
 	ROM_LOAD( "b42-02.ic5",  0x80000, 0x80000, CRC(1a52e65c) SHA1(20a1fc4d02b5928fb01444079692e23d178c6297) )
+
+	ROM_REGION( 0x022e, "plds", 0 )
+	ROM_LOAD( "gal16v8-b42-03.ic4.bin",  0x0000, 0x0117, CRC(f7150d37) SHA1(10f9190b89c802e0722fd6ba0f17ba97d463f434) )  /* derived, but verified, PAL16L8 Stamped B42-03 */
+	ROM_LOAD( "gal16v8-b42-04.ic21.bin", 0x0117, 0x0117, CRC(b57b806c) SHA1(04cbb008256b7317ebf366327dfd38ead8eaf94e) )  /* derived, but verified, PAL16L8 Stamped B42-04 */
 ROM_END
 
 ROM_START( kurikintj )
@@ -1956,6 +1981,10 @@ ROM_START( kurikintj )
 	ROM_REGION( 0x100000, "gfx1", 0 )
 	ROM_LOAD( "b42-01.ic1",  0x00000, 0x80000, CRC(7d1a1fec) SHA1(28311b07673686c18988400d0254533a454f07f4) )
 	ROM_LOAD( "b42-02.ic5",  0x80000, 0x80000, CRC(1a52e65c) SHA1(20a1fc4d02b5928fb01444079692e23d178c6297) )
+
+	ROM_REGION( 0x022e, "plds", 0 )
+	ROM_LOAD( "gal16v8-b42-03.ic4.bin",  0x0000, 0x0117, CRC(f7150d37) SHA1(10f9190b89c802e0722fd6ba0f17ba97d463f434) )  /* derived, but verified, PAL16L8 Stamped B42-03 */
+	ROM_LOAD( "gal16v8-b42-04.ic21.bin", 0x0117, 0x0117, CRC(b57b806c) SHA1(04cbb008256b7317ebf366327dfd38ead8eaf94e) )  /* derived, but verified, PAL16L8 Stamped B42-04 */
 ROM_END
 
 ROM_START( kurikinta )
@@ -2370,6 +2399,7 @@ GAME( 1989, champwru,  champwr,  champwr,   champwru,  champwr_state,     empty_
 GAME( 1989, champwrj,  champwr,  champwr,   champwrj,  champwr_state,     empty_init,     ROT0,   "Taito Corporation", "Champion Wrestler (Japan)", MACHINE_IMPERFECT_SOUND )
 
 GAME( 1988, kurikint,  0,        kurikint,  kurikint,  taitol_2cpu_state, empty_init,     ROT0,   "Taito Corporation Japan", "Kuri Kinton (World)", 0 )
+GAME( 1988, kurikintw, kurikint, kurikint,  kurikintj, taitol_2cpu_state, empty_init,     ROT0,   "Taito Corporation (World Games, Inc. license)", "Kuri Kinton (US, World Games license)", 0 )
 GAME( 1988, kurikintu, kurikint, kurikint,  kurikintj, taitol_2cpu_state, empty_init,     ROT0,   "Taito America Corporation", "Kuri Kinton (US)", 0 )
 GAME( 1988, kurikintj, kurikint, kurikint,  kurikintj, taitol_2cpu_state, empty_init,     ROT0,   "Taito Corporation", "Kuri Kinton (Japan)", 0 )
 GAME( 1988, kurikinta, kurikint, kurikint,  kurikinta, taitol_2cpu_state, empty_init,     ROT0,   "Taito Corporation Japan", "Kuri Kinton (World, prototype?)", 0 )

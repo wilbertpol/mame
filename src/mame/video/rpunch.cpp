@@ -31,7 +31,7 @@ TILE_GET_INFO_MEMBER(rpunch_state::get_bg0_tile_info)
 	if (m_videoflags & 0x0400)  code = (data & 0x0fff) | 0x2000;
 	else                        code = (data & 0x1fff);
 
-	SET_TILE_INFO_MEMBER(0,
+	tileinfo.set(0,
 			code,
 			((m_videoflags & 0x0010) >> 1) | ((data >> 13) & 7),
 			0);
@@ -45,7 +45,7 @@ TILE_GET_INFO_MEMBER(rpunch_state::get_bg1_tile_info)
 	if (m_videoflags & 0x0800)  code = (data & 0x0fff) | 0x2000;
 	else                        code = (data & 0x1fff);
 
-	SET_TILE_INFO_MEMBER(1,
+	tileinfo.set(1,
 			code,
 			((m_videoflags & 0x0020) >> 2) | ((data >> 13) & 7),
 			0);
@@ -71,8 +71,8 @@ VIDEO_START_MEMBER(rpunch_state,rpunch)
 	m_sprite_xoffs = 0;
 
 	/* allocate tilemaps for the backgrounds */
-	m_background[0] = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(rpunch_state::get_bg0_tile_info),this),TILEMAP_SCAN_COLS,8,8,64,64);
-	m_background[1] = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(rpunch_state::get_bg1_tile_info),this),TILEMAP_SCAN_COLS,8,8,64,64);
+	m_background[0] = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(rpunch_state::get_bg0_tile_info)), TILEMAP_SCAN_COLS, 8, 8, 64, 64);
+	m_background[1] = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(rpunch_state::get_bg1_tile_info)), TILEMAP_SCAN_COLS, 8, 8, 64, 64);
 
 	/* configure the tilemaps */
 	m_background[1]->set_transparent_pen(15);

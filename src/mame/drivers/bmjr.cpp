@@ -18,7 +18,6 @@
 #include "cpu/m6800/m6800.h"
 #include "imagedev/cassette.h"
 #include "sound/beep.h"
-#include "sound/wave.h"
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
@@ -174,9 +173,9 @@ void bmjr_state::bmjr_mem(address_map &map)
 	map(0x0000, 0xafff).ram().share("wram");
 	map(0xb000, 0xdfff).rom();
 	map(0xe000, 0xe7ff).rom();
-//  AM_RANGE(0xe890, 0xe890) W MP-1710 tile color
-//  AM_RANGE(0xe891, 0xe891) W MP-1710 background color
-//  AM_RANGE(0xe892, 0xe892) W MP-1710 monochrome / color setting
+//  map(0xe890, 0xe890) W MP-1710 tile color
+//  map(0xe891, 0xe891) W MP-1710 background color
+//  map(0xe892, 0xe892) W MP-1710 monochrome / color setting
 	map(0xee00, 0xee00).r(FUNC(bmjr_state::tape_stop_r)); //R stop tape
 	map(0xee20, 0xee20).r(FUNC(bmjr_state::tape_start_r)); //R start tape
 	map(0xee40, 0xee40).w(FUNC(bmjr_state::xor_display_w)); //W Picture reverse
@@ -185,7 +184,7 @@ void bmjr_state::bmjr_mem(address_map &map)
 	map(0xef00, 0xef00).r(FUNC(bmjr_state::ff_r)); //R timer
 	map(0xef40, 0xef40).r(FUNC(bmjr_state::ff_r)); //R unknown
 	map(0xef80, 0xef80).r(FUNC(bmjr_state::unk_r)); //R unknown
-//  AM_RANGE(0xefe0, 0xefe0) W screen mode
+//  map(0xefe0, 0xefe0) W screen mode
 	map(0xf000, 0xffff).rom();
 }
 
@@ -360,10 +359,10 @@ void bmjr_state::bmjr(machine_config &config)
 	/* Audio */
 	SPEAKER(config, "mono").front_center();
 	BEEP(config, "beeper", 1200).add_route(ALL_OUTPUTS, "mono", 0.50); // guesswork
-	WAVE(config, "wave", "cassette").add_route(ALL_OUTPUTS, "mono", 0.25);
 
 	/* Devices */
 	CASSETTE(config, m_cass);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 }
 
 /* ROM definition */

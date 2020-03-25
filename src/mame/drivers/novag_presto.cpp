@@ -5,13 +5,6 @@
 
 Novag Presto / Novag Octo
 
-TODO:
-- controls are too sensitive, is there a bug in the CPU core timer emulation?
-  6MHz: valid (single) button press registered between 307ms and 436ms,
-  12MHz: between 154ms and 218ms, 15MHz: between 123ms and 174ms.
-
-*******************************************************************************
-
 Hardware notes (Presto):
 - NEC D80C49C MCU(serial 186), OSC from LC circuit measured ~6MHz
 - buzzer, 16+4 LEDs, 8*8 chessboard buttons
@@ -20,14 +13,19 @@ Octo has a NEC D80C49HC MCU(serial 111), OSC from LC circuit measured ~12MHz
 The buzzer has a little electronic circuit going on, not sure whatfor.
 Otherwise, it's identical to Presto. The MCU internal ROM is same too.
 
+TODO:
+- controls are too sensitive, is there a bug in the CPU core timer emulation?
+  6MHz: valid (single) button press registered between 307ms and 436ms,
+  12MHz: between 154ms and 218ms, 15MHz: between 123ms and 174ms.
+
 ******************************************************************************/
 
 #include "emu.h"
 #include "cpu/mcs48/mcs48.h"
-#include "video/pwm.h"
 #include "machine/sensorboard.h"
 #include "sound/dac.h"
 #include "sound/volt_reg.h"
+#include "video/pwm.h"
 #include "speaker.h"
 
 // internal artwork
@@ -47,20 +45,22 @@ public:
 		m_display(*this, "display"),
 		m_board(*this, "board"),
 		m_dac(*this, "dac"),
-		m_keypad(*this, "IN.0")
+		m_inputs(*this, "IN.0")
 	{ }
 
-	// machine drivers
+	// machine configs
 	void presto(machine_config &config);
 	void octo(machine_config &config);
 
 protected:
+	virtual void machine_start() override;
+
 	// devices/pointers
 	required_device<mcs48_cpu_device> m_maincpu;
 	required_device<pwm_display_device> m_display;
 	required_device<sensorboard_device> m_board;
 	optional_device<dac_bit_interface> m_dac;
-	required_ioport m_keypad;
+	required_ioport m_inputs;
 
 	// I/O handlers
 	void update_display();
@@ -71,8 +71,6 @@ protected:
 	bool m_kp_select;
 	u8 m_inp_mux;
 	u8 m_led_select;
-
-	virtual void machine_start() override;
 };
 
 void presto_state::machine_start()
@@ -119,7 +117,7 @@ void octo_state::octo_set_cpu_freq()
 
 
 /******************************************************************************
-    Devices, I/O
+    I/O
 ******************************************************************************/
 
 // MCU ports/generic
@@ -161,7 +159,7 @@ READ8_MEMBER(presto_state::input_r)
 
 	// read sidepanel keypad
 	if (m_kp_select)
-		data |= m_keypad->read();
+		data |= m_inputs->read();
 
 	return ~data;
 }
@@ -188,7 +186,7 @@ static INPUT_PORTS_START( octo )
 	PORT_INCLUDE( presto )
 
 	PORT_START("FAKE")
-	PORT_CONFNAME( 0x01, 0x00, "CPU Frequency" ) PORT_CHANGED_MEMBER(DEVICE_SELF, octo_state, octo_cpu_freq, nullptr) // factory set
+	PORT_CONFNAME( 0x01, 0x00, "CPU Frequency" ) PORT_CHANGED_MEMBER(DEVICE_SELF, octo_state, octo_cpu_freq, 0) // factory set
 	PORT_CONFSETTING(    0x00, "12MHz" )
 	PORT_CONFSETTING(    0x01, "15MHz" )
 INPUT_PORTS_END
@@ -196,7 +194,7 @@ INPUT_PORTS_END
 
 
 /******************************************************************************
-    Machine Drivers
+    Machine Configs
 ******************************************************************************/
 
 void presto_state::presto(machine_config &config)

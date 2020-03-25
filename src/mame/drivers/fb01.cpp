@@ -70,7 +70,7 @@ private:
 void fb01_state::fb01_mem(address_map &map)
 {
 	map(0x0000, 0x7fff).rom();
-	map(0x8000, 0xbfff).ram().share("nvram");  // 2 * 8KB S-RAM
+	map(0x8000, 0xbfff).mirror(0x4000).ram().share("nvram"); // 2 * 8KB S-RAM
 }
 
 
@@ -89,8 +89,7 @@ void fb01_state::fb01_io(address_map &map)
 	map(0x20, 0x20).portr("PANEL");
 
 	// 30-31  HD44780A
-	map(0x30, 0x30).rw("hd44780", FUNC(hd44780_device::control_read), FUNC(hd44780_device::control_write));
-	map(0x31, 0x31).rw("hd44780", FUNC(hd44780_device::data_read), FUNC(hd44780_device::data_write));
+	map(0x30, 0x31).rw("hd44780", FUNC(hd44780_device::read), FUNC(hd44780_device::write));
 }
 
 
@@ -201,7 +200,7 @@ void fb01_state::fb01(machine_config &config)
 
 	hd44780_device &hd44780(HD44780(config, "hd44780", 0));
 	hd44780.set_lcd_size(2, 8);   // 2x8 displayed as 1x16
-	hd44780.set_pixel_update_cb(FUNC(fb01_state::fb01_pixel_update), this);
+	hd44780.set_pixel_update_cb(FUNC(fb01_state::fb01_pixel_update));
 
 	I8251(config, m_upd71051, XTAL(4'000'000));
 	m_upd71051->rxrdy_handler().set(FUNC(fb01_state::upd71051_rxrdy_w));
@@ -219,7 +218,7 @@ void fb01_state::fb01(machine_config &config)
 
 	SPEAKER(config, "lspeaker").front_left();
 	SPEAKER(config, "rspeaker").front_right();
-	ym2151_device &ym2164(YM2151(config, "ym2164", XTAL(4'000'000)));
+	ym2164_device &ym2164(YM2164(config, "ym2164", XTAL(4'000'000)));
 	ym2164.irq_handler().set(FUNC(fb01_state::ym2164_irq_w));
 	ym2164.add_route(0, "lspeaker", 1.00);
 	ym2164.add_route(1, "rspeaker", 1.00);

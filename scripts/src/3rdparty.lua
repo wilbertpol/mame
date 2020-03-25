@@ -51,6 +51,7 @@ end
 			"/wd4100", -- warning C4100: 'xxx' : unreferenced formal parameter
 			"/wd4127", -- warning C4127: conditional expression is constant
 			"/wd4244", -- warning C4244: 'argument' : conversion from 'xxx' to 'xxx', possible loss of data
+			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
 		}
 if _OPTIONS["vs"]=="intel-15" then
 		buildoptions {
@@ -60,10 +61,6 @@ if _OPTIONS["vs"]=="intel-15" then
 			"/Qwd869",              -- remark #869: parameter "xxx" was never referenced
 		}
 end
-	configuration { "vs201*" }
-		buildoptions {
-			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
-		}
 	configuration { }
 
 	files {
@@ -76,6 +73,7 @@ links {
 	ext_lib("expat"),
 }
 end
+
 
 --------------------------------------------------
 -- zlib library objects
@@ -142,6 +140,7 @@ links {
 }
 end
 
+
 --------------------------------------------------
 -- SoftFloat library objects
 --------------------------------------------------
@@ -157,6 +156,12 @@ project "softfloat"
 	includedirs {
 		MAME_DIR .. "src/osd",
 	}
+
+	configuration { "gmake or ninja" }
+		buildoptions_cpp {
+			"-x c++",
+		}
+
 	configuration { "vs*" }
 		buildoptions {
 			"/wd4244", -- warning C4244: 'argument' : conversion from 'xxx' to 'xxx', possible loss of data
@@ -176,6 +181,7 @@ end
 		MAME_DIR .. "3rdparty/softfloat/fyl2x.c",
 	}
 
+
 --------------------------------------------------
 -- SoftFloat 3 library objects
 --------------------------------------------------
@@ -194,6 +200,11 @@ includedirs {
 	MAME_DIR .. "3rdparty/softfloat3/source",
 	MAME_DIR .. "3rdparty/softfloat3/source/include",
 	MAME_DIR .. "3rdparty/softfloat3/source/8086",
+}
+
+configuration { "gmake or ninja" }
+buildoptions_cpp {
+	"-x c++",
 }
 
 configuration { "vs*" }
@@ -515,6 +526,7 @@ files {
 	MAME_DIR .. "3rdparty/softfloat3/source/f128M_lt_quiet.c",
 }
 
+
 -------------------------------------------------
 -- libJPEG library objects
 --------------------------------------------------
@@ -597,6 +609,7 @@ links {
 }
 end
 
+
 --------------------------------------------------
 -- libflac library objects
 --------------------------------------------------
@@ -611,6 +624,7 @@ project "flac"
 			"/wd4127", -- warning C4127: conditional expression is constant
 			"/wd4244", -- warning C4244: 'argument' : conversion from 'xxx' to 'xxx', possible loss of data
 			"/wd4100", -- warning C4100: 'xxx' : unreferenced formal parameter
+			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
 			"/wd4702", -- warning C4702: unreachable code
 		}
 if _OPTIONS["vs"]=="intel-15" then
@@ -626,11 +640,6 @@ end
 	configuration { "mingw-clang" }
 		buildoptions {
 			"-include stdint.h"
-		}
-
-	configuration { "vs201*" }
-		buildoptions {
-			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
 		}
 
 	configuration { "vsllvm" }
@@ -694,6 +703,7 @@ links {
 }
 end
 
+
 --------------------------------------------------
 -- lib7z library objects
 --------------------------------------------------
@@ -716,17 +726,14 @@ project "7z"
 	configuration { "vs*" }
 		buildoptions {
 			"/wd4100", -- warning C4100: 'xxx' : unreferenced formal parameter
+			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
+			"/wd4457", -- warning C4457: declaration of 'xxx' hides function parameter
 		}
 if _OPTIONS["vs"]=="intel-15" then
 		buildoptions {
 			"/Qwd869",              -- remark #869: parameter "xxx" was never referenced
 		}
 end
-	configuration { "vs201*" }
-		buildoptions {
-			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
-			"/wd4457", -- warning C4457: declaration of 'xxx' hides function parameter
-		}
 	configuration { "winstore*" }
 		forcedincludes {
 			MAME_DIR .. "src/osd/uwp/uwpcompat.h"
@@ -782,6 +789,7 @@ end
 			-- MAME_DIR .. "3rdparty/lzma/C/XzEnc.c",
 			-- MAME_DIR .. "3rdparty/lzma/C/XzIn.c",
 		}
+
 
 --------------------------------------------------
 -- LUA library objects
@@ -887,6 +895,7 @@ links {
 	ext_lib("lua"),
 }
 end
+
 
 --------------------------------------------------
 -- small lua library objects
@@ -994,9 +1003,12 @@ links {
 end
 
 end
+
+
 --------------------------------------------------
 -- portmidi library objects
 --------------------------------------------------
+
 if _OPTIONS["NO_USE_MIDI"]~="1" then
 if not _OPTIONS["with-system-portmidi"] then
 project "portmidi"
@@ -1013,6 +1025,7 @@ project "portmidi"
 			"/wd4100", -- warning C4100: 'xxx' : unreferenced formal parameter
 			"/wd4127", -- warning C4127: conditional expression is constant
 			"/wd4244", -- warning C4244: 'argument' : conversion from 'xxx' to 'xxx', possible loss of data
+			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
 			"/wd4706", -- warning C4706: assignment within conditional expression
 		}
 if _OPTIONS["vs"]=="intel-15" then
@@ -1023,11 +1036,6 @@ if _OPTIONS["vs"]=="intel-15" then
 			"/Qwd2557",             -- remark #2557: comparison between signed and unsigned operands
 		}
 end
-
-	configuration { "vs201*" }
-		buildoptions {
-			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
-		}
 
 	configuration { "linux*" }
 		defines {
@@ -1081,6 +1089,7 @@ links {
 }
 end
 end
+
 
 --------------------------------------------------
 -- BX library objects
@@ -1160,6 +1169,7 @@ project "bx"
 		MAME_DIR .. "3rdparty/bx/src/url.cpp",
 	}
 
+
 --------------------------------------------------
 -- BIMG library objects
 --------------------------------------------------
@@ -1198,6 +1208,14 @@ project "bimg"
 
 	configuration { }
 
+	if _OPTIONS["targetos"]=="macosx" or _OPTIONS["targetos"]=="linux" or _OPTIONS["targetos"]=="windows" or _OPTIONS["targetos"]=="asmjs" then
+		if _OPTIONS["gcc"]~=nil and (string.find(_OPTIONS["gcc"], "clang") or string.find(_OPTIONS["gcc"], "asmjs")) then
+			buildoptions_cpp {
+				"-Wno-unused-const-variable",
+			}
+		end
+	end
+
 	defines {
 		"__STDC_LIMIT_MACROS",
 		"__STDC_FORMAT_MACROS",
@@ -1206,12 +1224,27 @@ project "bimg"
 
 	includedirs {
 		MAME_DIR .. "3rdparty/bimg/include",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/include",
 	}
 
 	files {
 		MAME_DIR .. "3rdparty/bimg/src/image.cpp",
 		MAME_DIR .. "3rdparty/bimg/src/image_gnf.cpp",
+
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/astc_file.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/codec.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/endpoint_codec.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/footprint.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/integer_sequence_codec.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/intermediate_astc_block.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/logical_astc_block.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/partition.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/physical_astc_block.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/quantization.cc",
+		MAME_DIR .. "3rdparty/bimg/3rdparty/astc-codec/src/decoder/weight_infill.cc",
 	}
+
 
 --------------------------------------------------
 -- BGFX library objects
@@ -1227,6 +1260,7 @@ project "bgfx"
 			"/wd4244", -- warning C4244: 'argument' : conversion from 'xxx' to 'xxx', possible loss of data
 			"/wd4611", -- warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable
 			"/wd4310", -- warning C4310: cast truncates constant value
+			"/wd4701", -- warning C4701: potentially uninitialized local variable 'xxx' used
 		}
 
 	configuration { "vsllvm" }
@@ -1335,18 +1369,37 @@ end
 		end
 	end
 
+	if _OPTIONS["targetos"]=="macosx" and _OPTIONS["gcc"]~=nil then
+		if string.find(_OPTIONS["gcc"], "clang") and (version < 80000) then
+			defines {
+				"TARGET_OS_OSX=1",
+			}
+		end
+	end
+
 	defines {
 		"__STDC_LIMIT_MACROS",
 		"__STDC_FORMAT_MACROS",
 		"__STDC_CONSTANT_MACROS",
 		"BGFX_CONFIG_MAX_FRAME_BUFFERS=128",
 	}
+
+	if _OPTIONS["targetos"]=="linux" or _OPTIONS["targetos"]=="netbsd" or _OPTIONS["targetos"]=="openbsd" then
+		if _OPTIONS["NO_X11"]=="1" then
+			defines {
+				"BGFX_CONFIG_RENDERER_OPENGLES=1",
+				"BGFX_CONFIG_RENDERER_OPENGL=0",
+			}
+		end
+	end
+
 	files {
 		MAME_DIR .. "3rdparty/bgfx/src/bgfx.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/debug_renderdoc.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/dxgi.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/glcontext_egl.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/glcontext_glx.cpp",
+		MAME_DIR .. "3rdparty/bgfx/src/glcontext_html5.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/glcontext_wgl.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/nvapi.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/renderer_d3d11.cpp",
@@ -1355,6 +1408,7 @@ end
 		MAME_DIR .. "3rdparty/bgfx/src/renderer_gl.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/renderer_gnm.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/renderer_noop.cpp",
+		MAME_DIR .. "3rdparty/bgfx/src/renderer_nvn.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/renderer_vk.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/shader.cpp",
 		MAME_DIR .. "3rdparty/bgfx/src/shader_dx9bc.cpp",
@@ -1375,11 +1429,16 @@ end
 			MAME_DIR .. "3rdparty/bgfx/src/glcontext_nsgl.mm",
 			MAME_DIR .. "3rdparty/bgfx/src/renderer_mtl.mm",
 		}
+		buildoptions {
+			"-x objective-c++",
+		}
 	end
+
 
 --------------------------------------------------
 -- PortAudio library objects
 --------------------------------------------------
+
 if _OPTIONS["NO_USE_PORTAUDIO"]~="1" then
 if not _OPTIONS["with-system-portaudio"] then
 project "portaudio"
@@ -1394,6 +1453,8 @@ project "portaudio"
 			"/wd4389", -- warning C4389: 'operator' : signed/unsigned mismatch
 			"/wd4189", -- warning C4189: 'xxx' : local variable is initialized but not referenced
 			"/wd4127", -- warning C4127: conditional expression is constant
+			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
+			"/wd4312", -- warning C4312: 'type cast': conversion from 'UINT' to 'HWAVEIN' of greater size
 		}
 	if _OPTIONS["vs"]=="intel-15" then
 		buildoptions {
@@ -1403,10 +1464,6 @@ project "portaudio"
 			"/Qwd1879",             -- warning #1879: unimplemented pragma ignored
 		}
 	end
-	configuration { "vs2015*" }
-		buildoptions {
-			"/wd4456", -- warning C4456: declaration of 'xxx' hides previous local declaration
-		}
 
 	configuration { "vsllvm" }
 		buildoptions {
@@ -1549,6 +1606,7 @@ links {
 }
 end
 end
+
 
 --------------------------------------------------
 -- SDL2 library
@@ -2060,9 +2118,11 @@ end
 
 end
 
+
 --------------------------------------------------
 -- linenoise library
 --------------------------------------------------
+
 if (_OPTIONS["osd"] ~= "uwp") then
 project "linenoise"
 	uuid "7320ffc8-2748-4add-8864-ae29b72a8511"
@@ -2097,9 +2157,9 @@ project "utf8proc"
 	uuid "1f881f09-0395-4483-ac37-2935fb092187"
 	kind "StaticLib"
 
-  defines {
-	"UTF8PROC_DLLEXPORT="
-  }
+	defines {
+		"UTF8PROC_DLLEXPORT="
+	}
 
 	configuration "Debug"
 		defines {
@@ -2125,3 +2185,23 @@ links {
 }
 end
 
+
+--------------------------------------------------
+-- wdlfft library objects (from Cockos WDL)
+--------------------------------------------------
+
+project "wdlfft"
+	uuid "74ca017e-fa0d-48b8-81d6-8081a37be14c"
+	kind "StaticLib"
+
+	configuration { "gmake or ninja" }
+		buildoptions_c {
+			"-Wno-strict-prototypes",
+		}
+
+	configuration { }
+
+	files {
+		MAME_DIR .. "3rdparty/wdlfft/fft.c",
+		MAME_DIR .. "3rdparty/wdlfft/fft.h"
+	}

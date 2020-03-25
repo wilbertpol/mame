@@ -54,16 +54,7 @@ public:
 	auto hsync_wr_callback() { return m_write_hsync.bind(); }
 	auto fsync_wr_callback() { return m_write_fsync.bind(); }
 
-	template <typename Object> void set_get_char_rom(Object &&cb) { m_charrom_cb = std::forward<Object>(cb); }
-	void set_get_char_rom(get_char_rom_delegate cb) { m_charrom_cb = cb; }
-	template <class FunctionClass> void set_get_char_rom(const char *devname, uint8_t (FunctionClass::*cb)(uint8_t, int), const char *name)
-	{
-		set_get_char_rom(get_char_rom_delegate(cb, name, devname, static_cast<FunctionClass *>(nullptr)));
-	}
-	template <class FunctionClass> void set_get_char_rom(uint8_t (FunctionClass::*cb)(uint8_t, int), const char *name)
-	{
-		set_get_char_rom(get_char_rom_delegate(cb, name, nullptr, static_cast<FunctionClass *>(nullptr)));
-	}
+	template <typename... T> void set_get_char_rom(T &&... args) { m_charrom_cb.set(std::forward<T>(args)...); }
 
 protected:
 	mc6847_friend_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock,
@@ -178,7 +169,7 @@ protected:
 
 		// artifacting config
 		void setup_config(device_t *device);
-		void poll_config() { m_artifacting = (m_config!=nullptr) ? m_config->read() : 0; }
+		bool poll_config();
 		void set_pal_artifacting( bool palartifacting ) { m_palartifacting = palartifacting; }
 		bool get_pal_artifacting() { return m_palartifacting; }
 		void create_color_blend_table( const pixel_t *palette );

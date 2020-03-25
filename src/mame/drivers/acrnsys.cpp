@@ -101,8 +101,8 @@ private:
 	void kbd_put(u8 data);
 	void kbd_put_pb(u8 data);
 
-	DECLARE_READ8_MEMBER(kbd_r);
-	DECLARE_WRITE_LINE_MEMBER(bus_nmi_w);
+	uint8_t kbd_r();
+	void bus_nmi_w(int state);
 
 	void a6502_mem(address_map &map);
 	void a6809_mem(address_map &map);
@@ -131,7 +131,7 @@ void acrnsys_state::a6809_mem(address_map &map)
 {
 	map.unmap_value_high();
 	map(0x0000, 0x03ff).ram();
-	map(0x0900, 0x090f).mirror(0xf0).rw(m_via6522, FUNC(via6522_device::read), FUNC(via6522_device::write));
+	map(0x0900, 0x090f).mirror(0xf0).m(m_via6522, FUNC(via6522_device::map));
 	map(0xf800, 0xffff).rom().region("maincpu", 0);
 }
 
@@ -139,7 +139,7 @@ void acrnsys_state::a6502a_mem(address_map &map)
 {
 	map.unmap_value_low();
 	map(0x0000, 0x07ff).ram();
-	map(0x0e00, 0x0e0f).mirror(0x1f0).rw(m_via6522, FUNC(via6522_device::read), FUNC(via6522_device::write));
+	map(0x0e00, 0x0e0f).mirror(0x1f0).m(m_via6522, FUNC(via6522_device::map));
 	map(0xe000, 0xffff).rom().region("maincpu", 0);
 }
 
@@ -155,7 +155,7 @@ void acrnsys_state::machine_reset()
 }
 
 
-WRITE_LINE_MEMBER(acrnsys_state::bus_nmi_w)
+void acrnsys_state::bus_nmi_w(int state)
 {
 	m_maincpu->set_input_line(INPUT_LINE_NMI, state);
 }
@@ -326,7 +326,7 @@ void acrnsys_state::kbd_put(uint8_t data)
 	m_kbd_data = data | 0x80;
 }
 
-READ8_MEMBER(acrnsys_state::kbd_r)
+uint8_t acrnsys_state::kbd_r()
 {
 	uint8_t data = m_kbd_data;
 
@@ -410,7 +410,7 @@ void acrnsys_state::a6809(machine_config &config)
 	INPUT_MERGER_ANY_HIGH(config, m_irqs).output_handler().set_inputline(m_maincpu, M6809_IRQ_LINE);
 
 	VIA6522(config, m_via6522, 4_MHz_XTAL / 4);
-	m_via6522->writepa_handler().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	m_via6522->writepa_handler().set("cent_data_out", FUNC(output_latch_device::write));
 	m_via6522->ca2_handler().set("centronics", FUNC(centronics_device::write_strobe));
 	//m_via6522->cb2_handler().set(FUNC(acrnsys_state::cass_w));
 	m_via6522->irq_handler().set(m_irqs, FUNC(input_merger_device::in_w<0>));

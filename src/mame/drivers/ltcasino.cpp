@@ -77,6 +77,8 @@ Other: Hitachi HD46821P 1MHz NMOS Peripheral Interface Adapter (PIA) x 2
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
+
 #include "ltcasino.lh"
 #include "ltcasinn.lh"
 
@@ -373,7 +375,7 @@ TILE_GET_INFO_MEMBER(ltcasino_state::ltcasino_tile_info)
 
 	code |= BIT(attr, 7) << 8;
 
-	SET_TILE_INFO_MEMBER(0, code, 0, 0);
+	tileinfo.set(0, code, 0, 0);
 }
 
 TILE_GET_INFO_MEMBER(ltcasino_state::ltcasin2_tile_info)
@@ -384,7 +386,7 @@ TILE_GET_INFO_MEMBER(ltcasino_state::ltcasin2_tile_info)
 
 	code |= BIT(attr, 7) << 8;
 
-	SET_TILE_INFO_MEMBER(0, code, ((attr & 0x70) >> 1) | (attr & 7), 0);
+	tileinfo.set(0, code, ((attr & 0x70) >> 1) | (attr & 7), 0);
 }
 
 uint32_t ltcasino_state::screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect)
@@ -428,13 +430,13 @@ void ltcasino_state::init_mv4in1()
 
 void ltcasino_state::machine_start_ltcasino()
 {
-	m_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(ltcasino_state::ltcasino_tile_info), this), TILEMAP_SCAN_ROWS, 8, 8, 64, 32);
+	m_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(ltcasino_state::ltcasino_tile_info)), TILEMAP_SCAN_ROWS, 8, 8, 64, 32);
 	m_lamps.resolve();
 }
 
 void ltcasino_state::machine_start_ltcasin2()
 {
-	m_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(ltcasino_state::ltcasin2_tile_info), this), TILEMAP_SCAN_ROWS, 8, 8, 64, 32);
+	m_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(ltcasino_state::ltcasin2_tile_info)), TILEMAP_SCAN_ROWS, 8, 8, 64, 32);
 	m_lamps.resolve();
 }
 

@@ -279,7 +279,7 @@ void seta2_state::mj4simai_map(address_map &map)
 	map(0x200000, 0x20ffff).ram();                             // RAM
 	map(0x600000, 0x600001).r(FUNC(seta2_state::mj4simai_p1_r));             // P1
 	map(0x600002, 0x600003).r(FUNC(seta2_state::mj4simai_p2_r));             // P2
-	map(0x600005, 0x600005).lw8("keyboard_row_w", [this](u8 data){ m_keyboard_row = data; } );      // select keyboard row to read
+	map(0x600005, 0x600005).lw8(NAME([this] (u8 data){ m_keyboard_row = data; }));      // select keyboard row to read
 	map(0x600006, 0x600007).r("watchdog", FUNC(watchdog_timer_device::reset16_r));
 	map(0x600100, 0x600101).portr("SYSTEM");             //
 	map(0x600200, 0x600201).nopw();                        // Leds? Coins?
@@ -599,8 +599,8 @@ void staraudi_state::staraudi_map(address_map &map)
 
 	map(0x400000, 0x45ffff).rw(FUNC(staraudi_state::tileram_r), FUNC(staraudi_state::tileram_w)).share("tileram"); // Tile RAM
 
-//  AM_RANGE(0x500000, 0x53ffff) AM_RAM                             // Camera RAM (r8g8)
-//  AM_RANGE(0x540000, 0x57ffff) AM_RAM                             // Camera RAM (00b8)
+//  map(0x500000, 0x53ffff).ram();                             // Camera RAM (r8g8)
+//  map(0x540000, 0x57ffff).ram();                             // Camera RAM (00b8)
 	map(0x500000, 0x57ffff).ram().share("rgbram");
 
 	map(0x600001, 0x600001).w(FUNC(staraudi_state::camera_w));        // Camera Outputs
@@ -680,7 +680,7 @@ void seta2_state::telpacfl_map(address_map &map)
 	map(0xb40000, 0xb4ffff).ram().w(m_palette, FUNC(palette_device::write16)).share("palette");    // Palette
 	map(0xb60000, 0xb6003f).ram().w(FUNC(seta2_state::vregs_w)).share("vregs"); // Video Registers
 	map(0xd00006, 0xd00007).r("watchdog", FUNC(watchdog_timer_device::reset16_r));
-//  AM_RANGE(0xe00000, 0xe00001) AM_WRITE
+//  map(0xe00000, 0xe00001).w(FUNC(seta2_state::));
 	map(0xe00010, 0xe0001f).w(FUNC(seta2_state::sound_bank_w)).umask16(0x00ff);              // Samples Banks
 }
 
@@ -2330,6 +2330,7 @@ void seta2_state::seta2(machine_config &config)
 void seta2_state::gundamex(machine_config &config)
 {
 	seta2(config);
+	m_maincpu->set_clock(XTAL(32'530'470)/2); // verified
 	m_maincpu->set_addrmap(AS_PROGRAM, &seta2_state::gundamex_map);
 
 	downcast<tmp68301_device &>(*m_maincpu).in_parallel_callback().set(FUNC(seta2_state::gundamex_eeprom_r));
@@ -2339,16 +2340,21 @@ void seta2_state::gundamex(machine_config &config)
 
 	// video hardware
 	m_screen->set_visarea(0x00, 0x180-1, 0x000, 0x0e0-1);
+
+	subdevice<x1_010_device>("x1snd")->set_clock(XTAL(32'530'470)/2); // verified; reference : https://youtu.be/6f-znVzcrmg
 }
 
 
 void seta2_state::grdians(machine_config &config)
 {
 	seta2(config);
+	m_maincpu->set_clock(XTAL(32'530'470)/2); // verified
 	m_maincpu->set_addrmap(AS_PROGRAM, &seta2_state::grdians_map);
 
 	// video hardware
 	m_screen->set_visarea(0x00, 0x130-1, 0x00, 0xe8 -1);
+
+	subdevice<x1_010_device>("x1snd")->set_clock(XTAL(32'530'470)/2); // verified; reference : https://youtu.be/Ung9XeLisV0
 }
 
 
@@ -2433,7 +2439,7 @@ void staraudi_state::staraudi(machine_config &config)
 	m_maincpu->set_addrmap(AS_PROGRAM, &staraudi_state::staraudi_map);
 
 	SHARP_LH28F016S_16BIT(config, "flash");
-	UPD4992(config, m_rtc);
+	UPD4992(config, m_rtc, 32'768);
 
 	// video hardware
 	m_screen->set_vblank_time(ATTOSECONDS_IN_USEC(2500));  // not accurate

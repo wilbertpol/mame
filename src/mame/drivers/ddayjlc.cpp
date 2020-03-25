@@ -67,6 +67,7 @@ $842f = lives
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 
 class ddayjlc_state : public driver_device
@@ -162,20 +163,20 @@ TILE_GET_INFO_MEMBER(ddayjlc_state::get_tile_info_bg)
 	color |= (attr & 0x40) >> 3;
 
 	tileinfo.category = BIT(attr,7);
-	SET_TILE_INFO_MEMBER(2, code, color, 0);
+	tileinfo.set(2, code, color, 0);
 }
 
 TILE_GET_INFO_MEMBER(ddayjlc_state::get_tile_info_fg)
 {
 	int code = m_videoram[tile_index] + (m_char_bank << 8);
 
-	SET_TILE_INFO_MEMBER(1, code, 0, 0);
+	tileinfo.set(1, code, 0, 0);
 }
 
 void ddayjlc_state::video_start()
 {
-	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(ddayjlc_state::get_tile_info_bg),this), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
-	m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(ddayjlc_state::get_tile_info_fg),this), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
+	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(ddayjlc_state::get_tile_info_bg)), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
+	m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(ddayjlc_state::get_tile_info_fg)), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
 
 	m_bg_tilemap->set_transparent_pen(0);
 	m_fg_tilemap->set_transparent_pen(0);
@@ -453,7 +454,7 @@ static INPUT_PORTS_START( ddayjlc )
 	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_COIN1 )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_COIN2 )
 	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_SERVICE1 )
-	PORT_BIT( 0x60, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, ddayjlc_state,prot_r, nullptr)
+	PORT_BIT( 0x60, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(ddayjlc_state, prot_r)
 	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_UNKNOWN )
 
 	PORT_START("DSW1")
@@ -608,7 +609,7 @@ void ddayjlc_state::ddayjlc(machine_config &config)
 	Z80(config, m_audiocpu, 12000000/4);
 	m_audiocpu->set_addrmap(AS_PROGRAM, &ddayjlc_state::sound_map);
 
-	config.m_minimum_quantum = attotime::from_hz(6000);
+	config.set_maximum_quantum(attotime::from_hz(6000));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));

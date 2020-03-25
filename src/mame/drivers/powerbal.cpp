@@ -23,6 +23,7 @@ Magic Sticks:
 #include "sound/okim6295.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 
 class powerbal_state : public playmark_state
@@ -526,7 +527,7 @@ TILE_GET_INFO_MEMBER(powerbal_state::powerbal_get_bg_tile_info)
 	if (m_videoram1[tile_index] & 0x800)
 		code |= 0x8000;
 
-	SET_TILE_INFO_MEMBER(1, code, colr >> 12, 0);
+	tileinfo.set(1, code, colr >> 12, 0);
 }
 
 void powerbal_state::draw_sprites_powerbal(bitmap_ind16 &bitmap, const rectangle &cliprect )
@@ -557,7 +558,7 @@ void powerbal_state::draw_sprites_powerbal(bitmap_ind16 &bitmap, const rectangle
 
 VIDEO_START_MEMBER(powerbal_state,powerbal)
 {
-	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(powerbal_state::powerbal_get_bg_tile_info),this), TILEMAP_SCAN_ROWS, 8, 8, 64, 32);
+	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(powerbal_state::powerbal_get_bg_tile_info)), TILEMAP_SCAN_ROWS, 8, 8, 64, 32);
 
 	m_xoffset = -20;
 
@@ -566,7 +567,7 @@ VIDEO_START_MEMBER(powerbal_state,powerbal)
 
 VIDEO_START_MEMBER(powerbal_state,atombjt)
 {
-	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(powerbal_state::powerbal_get_bg_tile_info),this), TILEMAP_SCAN_COLS, 8, 8, 64, 32);
+	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(powerbal_state::powerbal_get_bg_tile_info)), TILEMAP_SCAN_COLS, 8, 8, 64, 32);
 
 	m_xoffset = 32;
 	m_yoffset = 8;

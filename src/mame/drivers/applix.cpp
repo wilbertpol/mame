@@ -48,7 +48,6 @@
 #include "machine/z80scc.h"
 #include "sound/dac.h"
 #include "sound/volt_reg.h"
-#include "sound/wave.h"
 #include "video/mc6845.h"
 
 #include "emupal.h"
@@ -470,11 +469,11 @@ void applix_state::applix_mem(address_map &map)
 	map(0x600180, 0x6001ff).w(FUNC(applix_state::analog_latch_w));
 	map(0x700000, 0x700007).mirror(0x78).rw("scc", FUNC(scc8530_device::ab_dc_r), FUNC(scc8530_device::ab_dc_w)).umask16(0xff00).cswidth(16);
 	map(0x700080, 0x7000ff).r(FUNC(applix_state::applix_inputs_r));
-	map(0x700100, 0x70011f).mirror(0x60).rw(m_via, FUNC(via6522_device::read), FUNC(via6522_device::write)).umask16(0xff00).cswidth(16);
+	map(0x700100, 0x70011f).mirror(0x60).m(m_via, FUNC(via6522_device::map)).umask16(0xff00).cswidth(16);
 	map(0x700180, 0x700180).mirror(0x7c).rw(m_crtc, FUNC(mc6845_device::status_r), FUNC(mc6845_device::address_w)).cswidth(16);
 	map(0x700182, 0x700182).mirror(0x7c).rw(m_crtc, FUNC(mc6845_device::register_r), FUNC(mc6845_device::register_w)).cswidth(16);
 	map(0xffffc0, 0xffffc1).rw(FUNC(applix_state::fdc_data_r), FUNC(applix_state::fdc_data_w));
-	//AM_RANGE(0xffffc2, 0xffffc3) AM_READWRITE(fdc_int_r,fdc_int_w) // optional
+	//map(0xffffc2, 0xffffc3).rw(FUNC(applix_state::fdc_int_r) , FUNC(applix_state::fdc_int_w)); // optional
 	map(0xffffc8, 0xffffcd).r(FUNC(applix_state::fdc_stat_r));
 	map(0xffffd0, 0xffffd1).w(FUNC(applix_state::fdc_cmd_w));
 	//600000, 6FFFFF  io ports and latches
@@ -892,15 +891,13 @@ void applix_state::applix(machine_config &config)
 	vref.add_route(0, "ldac", 1.0, DAC_VREF_POS_INPUT).add_route(0, "ldac", -1.0, DAC_VREF_NEG_INPUT);
 	vref.add_route(0, "rdac", 1.0, DAC_VREF_POS_INPUT).add_route(0, "rdac", -1.0, DAC_VREF_NEG_INPUT);
 
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "lspeaker", 0.10);
-
 	/* Devices */
 	MC6845(config, m_crtc, 30_MHz_XTAL / 16); // MC6545 @ 1.875 MHz
 	m_crtc->set_screen("screen");
 	m_crtc->set_show_border_area(true);
 	m_crtc->set_char_width(8);
-	m_crtc->set_update_row_callback(FUNC(applix_state::crtc_update_row), this);
-	m_crtc->set_begin_update_callback(FUNC(applix_state::crtc_update_border), this);
+	m_crtc->set_update_row_callback(FUNC(applix_state::crtc_update_row));
+	m_crtc->set_begin_update_callback(FUNC(applix_state::crtc_update_border));
 	m_crtc->out_vsync_callback().set(FUNC(applix_state::vsync_w));
 
 	VIA6522(config, m_via, 30_MHz_XTAL / 4 / 10); // VIA uses 68000 E clock
@@ -921,6 +918,7 @@ void applix_state::applix(machine_config &config)
 
 	CASSETTE(config, m_cass);
 	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cass->add_route(ALL_OUTPUTS, "lspeaker", 0.10);
 
 	WD1772(config, m_fdc, 16_MHz_XTAL / 2); //connected to Z80H clock pin
 	FLOPPY_CONNECTOR(config, "fdc:0", applix_floppies, "35dd", applix_state::floppy_formats).enable_sound(true);
@@ -945,6 +943,8 @@ void applix_state::applix(machine_config &config)
 	serial_b.rxd_handler().set("scc", FUNC(scc8530_device::rxb_w));
 	serial_b.cts_handler().set("scc", FUNC(scc8530_device::ctsb_w));
 	serial_b.cts_handler().set("scc", FUNC(scc8530_device::dcdb_w));
+
+	SOFTWARE_LIST(config, "flop_list").set_original("applix_flop");
 }
 
 /* ROM definition */

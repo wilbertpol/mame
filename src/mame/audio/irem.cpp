@@ -20,6 +20,7 @@ DEFINE_DEVICE_TYPE(IREM_M52_LARGE_AUDIO,  m52_large_audio_device,  "m52_large_au
 
 irem_audio_device::irem_audio_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: device_t(mconfig, type, tag, owner, clock)
+	, m_audio_SINH(*this, "snd_nl:sinh")
 	, m_cpu(*this, "iremsound")
 	, m_adpcm1(*this, "msm1")
 	, m_adpcm2(*this, "msm2")
@@ -56,8 +57,6 @@ m52_large_audio_device::m52_large_audio_device(const machine_config &mconfig, co
 
 void irem_audio_device::device_start()
 {
-	m_audio_SINH = subdevice<netlist_mame_logic_input_device>("snd_nl:sinh");
-
 	save_item(NAME(m_port1));
 	save_item(NAME(m_port2));
 	save_item(NAME(m_soundlatch));
@@ -227,12 +226,12 @@ WRITE8_MEMBER( irem_audio_device::m52_adpcm_w )
 {
 	if (offset & 1)
 	{
-		m_adpcm1->write_data(data);
+		m_adpcm1->data_w(data);
 	}
 	if (offset & 2)
 	{
 		if (m_adpcm2 != nullptr)
-			m_adpcm2->write_data(data);
+			m_adpcm2->data_w(data);
 	}
 }
 
@@ -241,7 +240,7 @@ WRITE8_MEMBER( irem_audio_device::m62_adpcm_w )
 {
 	msm5205_device *adpcm = (offset & 1) ? m_adpcm2.target() : m_adpcm1.target();
 	if (adpcm != nullptr)
-		adpcm->write_data(data);
+		adpcm->data_w(data);
 }
 
 

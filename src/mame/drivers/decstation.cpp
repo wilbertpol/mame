@@ -27,7 +27,7 @@
             Serial: DEC "DZ" quad-UART for keyboard/mouse, SCC8530 for modem/printer
             SCSI: NCR53C94
             Ethernet: AMD7990 "LANCE" controller
-            Audio: AMD AM79C30
+            Audio/ISDN: AMD AM79C30
             Color 1024x768 8bpp video on-board
             2 TURBOchannel slots
 
@@ -65,8 +65,8 @@
 #include "machine/z80scc.h"
 #include "machine/ncr5390.h"
 #include "machine/nscsi_bus.h"
-#include "machine/nscsi_cd.h"
-#include "machine/nscsi_hd.h"
+#include "bus/nscsi/cd.h"
+#include "bus/nscsi/hd.h"
 #include "machine/dec_lk201.h"
 #include "machine/am79c90.h"
 #include "machine/dc7085.h"
@@ -531,9 +531,7 @@ void decstation_state::threemin_map(address_map &map)
 
 void decstation_state::ncr5394(device_t *device)
 {
-	devcb_base *devcb;
-	(void)devcb;
-	MCFG_DEVICE_CLOCK(10000000)
+	downcast<ncr53c94_device *>(device)->set_clock(10000000);
 }
 
 static void dec_scsi_devices(device_slot_interface &device)

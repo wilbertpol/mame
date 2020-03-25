@@ -322,7 +322,7 @@ public:
 
 	void init_nss();
 
-	DECLARE_CUSTOM_INPUT_MEMBER(game_over_flag_r);
+	DECLARE_READ_LINE_MEMBER(game_over_flag_r);
 
 private:
 	required_device<cpu_device> m_bioscpu;
@@ -652,7 +652,7 @@ void nss_state::machine_start()
 }
 
 
-CUSTOM_INPUT_MEMBER(nss_state::game_over_flag_r)
+READ_LINE_MEMBER(nss_state::game_over_flag_r)
 {
 	return m_game_over_flag;
 }
@@ -665,7 +665,7 @@ static INPUT_PORTS_START( snes )
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_COIN1 )
 
 	PORT_START("FP")
-	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, nss_state,game_over_flag_r, nullptr)
+	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(nss_state, game_over_flag_r)
 	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_BUTTON13 ) PORT_NAME("Restart Button")
 	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_BUTTON12 ) PORT_NAME("Page Up Button")
 	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_BUTTON11 ) PORT_NAME("Page Down Button")
@@ -842,7 +842,7 @@ void nss_state::nss(machine_config &config)
 	SPC700(config, m_soundcpu, XTAL(24'576'000) / 12);
 	m_soundcpu->set_addrmap(AS_PROGRAM, &nss_state::spc_mem);
 
-	config.m_perfect_cpu_quantum = subtag("maincpu");
+	config.set_perfect_quantum(m_maincpu);
 
 	/* nss hardware */
 	Z80(config, m_bioscpu, 4000000);
@@ -867,7 +867,8 @@ void nss_state::nss(machine_config &config)
 
 	// SNES PPU
 	SCREEN(config, m_screen, SCREEN_TYPE_RASTER);
-	m_screen->set_raw(DOTCLK_NTSC, SNES_HTOTAL, 0, SNES_SCR_WIDTH, SNES_VTOTAL_NTSC, 0, SNES_SCR_HEIGHT_NTSC);
+	m_screen->set_raw(DOTCLK_NTSC * 2, SNES_HTOTAL * 2, 0, SNES_SCR_WIDTH * 2, SNES_VTOTAL_NTSC, 0, SNES_SCR_HEIGHT_NTSC);
+	m_screen->set_video_attributes(VIDEO_VARIABLE_WIDTH);
 	m_screen->set_screen_update(FUNC(snes_state::screen_update));
 	m_screen->screen_vblank().set(FUNC(nss_state::nss_vblank_irq));
 

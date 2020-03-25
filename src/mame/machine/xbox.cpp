@@ -3,6 +3,7 @@
 
 #include "emu.h"
 #include "machine/pci.h"
+#include "machine/idectrl.h"
 #include "includes/xbox_pci.h"
 #include "includes/xbox.h"
 
@@ -35,7 +36,7 @@ bool xbox_base_state::find_bios_hash(int bios, uint32_t &crc32)
 	{
 		if (ROMENTRY_ISFILE(re))
 		{
-			if (ROM_GETBIOSFLAGS(re) == (bios + 1))
+			if (ROM_GETBIOSFLAGS(re) == (uint32_t)(bios + 1))
 			{
 				const std::string &h = re.hashdata();
 				util::hash_collection hc(h.c_str());
@@ -553,26 +554,6 @@ IRQ_CALLBACK_MEMBER(xbox_base_state::irq_callback)
 	return r;
 }
 
-WRITE_LINE_MEMBER(xbox_base_state::ohci_usb_interrupt_changed)
-{
-	mcpxlpc->irq1(state);
-}
-
-WRITE_LINE_MEMBER(xbox_base_state::nv2a_interrupt_changed)
-{
-	mcpxlpc->irq3(state);
-}
-
-WRITE_LINE_MEMBER(xbox_base_state::smbus_interrupt_changed)
-{
-	mcpxlpc->irq11(state);
-}
-
-WRITE_LINE_MEMBER(xbox_base_state::ide_interrupt_changed)
-{
-	mcpxlpc->irq14(state);
-}
-
 /*
  * SMbus devices
  */
@@ -822,7 +803,7 @@ void xbox_base_state::machine_start()
 	if (machine().debug_flags & DEBUG_FLAG_ENABLED)
 	{
 		using namespace std::placeholders;
-		machine().debugger().console().register_command("xbox", CMDFLAG_NONE, 0, 1, 4, std::bind(&xbox_base_state::xbox_debug_commands, this, _1, _2));
+		machine().debugger().console().register_command("xbox", CMDFLAG_CUSTOM_HELP, 0, 1, 4, std::bind(&xbox_base_state::xbox_debug_commands, this, _1, _2));
 	}
 	subdevice<xbox_eeprom_device>("pci:01.1:154")->hack_eeprom =
 		[&](void)
@@ -875,27 +856,27 @@ void xbox_base_state::xbox_base(machine_config &config)
 	PENTIUM3(config, m_maincpu, 733333333); /* Wrong! family 6 model 8 stepping 10 */
 	m_maincpu->set_irq_acknowledge_callback(FUNC(xbox_base_state::irq_callback));
 
-	config.m_minimum_quantum = attotime::from_hz(6000);
+	config.set_maximum_quantum(attotime::from_hz(6000));
 
 	PCI_ROOT(config,        ":pci", 0);
 	NV2A_HOST(config,       ":pci:00.0", 0, m_maincpu);
 	NV2A_RAM(config,        ":pci:00.3", 0, 128); // 128 megabytes
 	MCPX_ISALPC(config,     ":pci:01.0", 0, 0).interrupt_output().set(FUNC(xbox_base_state::maincpu_interrupt));
 	XBOX_SUPERIO(config,    ":pci:01.0:0", 0);
-	MCPX_SMBUS(config,      ":pci:01.1", 0).interrupt_handler().set(FUNC(xbox_base_state::smbus_interrupt_changed));
+	MCPX_SMBUS(config,      ":pci:01.1", 0).interrupt_handler().set(":pci:01.0", FUNC(mcpx_isalpc_device::irq11)); //.set(FUNC(xbox_base_state::smbus_interrupt_changed));
 	XBOX_PIC16LC(config,    ":pci:01.1:110", 0); // these 3 are on smbus number 1
 	XBOX_CX25871(config,    ":pci:01.1:145", 0);
 	XBOX_EEPROM(config,     ":pci:01.1:154", 0);
-	MCPX_OHCI(config,       ":pci:02.0", 0).interrupt_handler().set(FUNC(xbox_base_state::ohci_usb_interrupt_changed));
+	MCPX_OHCI(config,       ":pci:02.0", 0).interrupt_handler().set(":pci:01.0", FUNC(mcpx_isalpc_device::irq1));  //.set(FUNC(xbox_base_state::ohci_usb_interrupt_changed));
 	MCPX_OHCI(config,       ":pci:03.0", 0);
 	MCPX_ETH(config,        ":pci:04.0", 0);
 	MCPX_APU(config,        ":pci:05.0", 0, m_maincpu);
 	MCPX_AC97_AUDIO(config, ":pci:06.0", 0);
 	MCPX_AC97_MODEM(config, ":pci:06.1", 0);
 	PCI_BRIDGE(config,      ":pci:08.0", 0, 0x10de01b8, 0);
-	MCPX_IDE(config,        ":pci:09.0", 0).pri_interrupt_handler().set(FUNC(xbox_base_state::ide_interrupt_changed));
+	MCPX_IDE(config,        ":pci:09.0", 0).pri_interrupt_handler().set(":pci:01.0", FUNC(mcpx_isalpc_device::irq14));  //.set(FUNC(xbox_base_state::ide_interrupt_changed));
 	NV2A_AGP(config,        ":pci:1e.0", 0, 0x10de01b7, 0);
-	NV2A_GPU(config,        ":pci:1e.0:00.0", 0, m_maincpu).interrupt_handler().set(FUNC(xbox_base_state::nv2a_interrupt_changed));
+	NV2A_GPU(config,        ":pci:1e.0:00.0", 0, m_maincpu).interrupt_handler().set(":pci:01.0", FUNC(mcpx_isalpc_device::irq3)); //.set(FUNC(xbox_base_state::nv2a_interrupt_changed));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));

@@ -76,7 +76,7 @@ public:
 
 	void r2dtank(machine_config &config);
 
-	DECLARE_CUSTOM_INPUT_MEMBER(get_ttl74123_output);
+	DECLARE_READ_LINE_MEMBER(ttl74123_output_r);
 
 protected:
 	virtual void machine_start() override;
@@ -239,7 +239,7 @@ WRITE_LINE_MEMBER(r2dtank_state::ttl74123_output_changed)
 }
 
 
-CUSTOM_INPUT_MEMBER(r2dtank_state::get_ttl74123_output)
+READ_LINE_MEMBER(r2dtank_state::ttl74123_output_r)
 {
 	return m_ttl74123_output;
 }
@@ -348,7 +348,6 @@ void r2dtank_state::r2dtank_main_map(address_map &map)
 
 void r2dtank_state::r2dtank_audio_map(address_map &map)
 {
-	map(0x0000, 0x007f).ram();     /* internal RAM */
 	map(0xd000, 0xd003).rw("pia_audio", FUNC(pia6821_device::read), FUNC(pia6821_device::write));
 	map(0xf000, 0xf000).rw(FUNC(r2dtank_state::audio_command_r), FUNC(r2dtank_state::audio_answer_w));
 	map(0xf800, 0xffff).rom();
@@ -372,7 +371,7 @@ static INPUT_PORTS_START( r2dtank )
 	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_COCKTAIL
 	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_START1 )
 	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_START2 )
-	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, r2dtank_state,get_ttl74123_output, nullptr)
+	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(r2dtank_state, ttl74123_output_r)
 
 	PORT_START("IN1")
 	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT ) PORT_COCKTAIL
@@ -466,7 +465,7 @@ void r2dtank_state::r2dtank(machine_config &config)
 	crtc.set_screen("screen");
 	crtc.set_show_border_area(false);
 	crtc.set_char_width(8);
-	crtc.set_update_row_callback(FUNC(r2dtank_state::crtc_update_row), this);
+	crtc.set_update_row_callback(FUNC(r2dtank_state::crtc_update_row));
 	crtc.out_de_callback().set("74123", FUNC(ttl74123_device::a_w));
 
 	/* 74LS123 */

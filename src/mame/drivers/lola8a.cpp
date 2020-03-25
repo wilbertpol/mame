@@ -54,7 +54,6 @@ TO DO
 #include "cpu/i8085/i8085.h"
 #include "imagedev/cassette.h"
 #include "sound/ay8910.h"
-#include "sound/wave.h"
 #include "video/mc6845.h"
 #include "emupal.h"
 #include "screen.h"
@@ -315,14 +314,14 @@ void lola8a_state::lola8a(machine_config &config)
 	crtc.set_screen("screen");
 	crtc.set_show_border_area(false);
 	crtc.set_char_width(8);
-	crtc.set_update_row_callback(FUNC(lola8a_state::crtc_update_row), this);
+	crtc.set_update_row_callback(FUNC(lola8a_state::crtc_update_row));
 	crtc.out_vsync_callback().set(FUNC(lola8a_state::crtc_vsync));
 
 	PALETTE(config, m_palette, palette_device::BRG_3BIT);
 
 	/* Cassette */
 	CASSETTE(config, m_cass);
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "mono", 0.05);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 }
 
 /* ROM definition */

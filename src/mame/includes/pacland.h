@@ -9,6 +9,7 @@
 #include "sound/namco.h"
 #include "emupal.h"
 #include "screen.h"
+#include "tilemap.h"
 
 class pacland_state : public driver_device
 {
@@ -29,7 +30,7 @@ public:
 	{ }
 
 	required_device<cpu_device> m_maincpu;
-	required_device<hd63701_cpu_device> m_mcu;
+	required_device<hd63701v0_cpu_device> m_mcu;
 	required_device<namco_cus30_device> m_cus30;
 	required_device<gfxdecode_device> m_gfxdecode;
 	required_device<screen_device> m_screen;

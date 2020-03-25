@@ -19,12 +19,21 @@
     - "old" version of BASIC ROM
     - Aquarius II
 
+Dick Smith catalog numbers, taken from advertisements:
+
+X-6000 : Aquarius Computer (2K RAM)
+X-6005 : Mini Expander
+X-6010 : Data Recorder
+X-6015 : 16K RAM cart
+X-6020 : 32K RAM cart
+X-6025 : Thermal Printer
+X-6026 : Roll of paper for the printer
+
 ***************************************************************************/
 
 #include "emu.h"
 #include "includes/aquarius.h"
 
-#include "sound/wave.h"
 #include "softlist.h"
 #include "speaker.h"
 
@@ -220,7 +229,7 @@ void aquarius_state::aquarius_mem(address_map &map)
 
 void aquarius_state::aquarius_io(address_map &map)
 {
-//  AM_RANGE(0x7e, 0x7f) AM_MIRROR(0xff00) AM_READWRITE(modem_r, modem_w)
+//  map(0x7e, 0x7f).mirror(0xff00).rw(FUNC(aquarius_state::modem_r), FUNC(aquarius_state::modem_w));
 	map(0xf6, 0xf6).mirror(0xff00).rw("ay8910", FUNC(ay8910_device::data_r), FUNC(ay8910_device::data_w));
 	map(0xf7, 0xf7).mirror(0xff00).w("ay8910", FUNC(ay8910_device::address_w));
 	map(0xfc, 0xfc).mirror(0xff00).rw(FUNC(aquarius_state::cassette_r), FUNC(aquarius_state::cassette_w));
@@ -374,7 +383,6 @@ void aquarius_state::aquarius(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker).add_route(ALL_OUTPUTS, "mono", 0.25);
-	WAVE(config, "wave", m_cassette).add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	ay8910_device &ay8910(AY8910(config, "ay8910", XTAL(3'579'545)/2)); // ??? AY-3-8914
 	ay8910.port_a_read_callback().set_ioport("RIGHT");
@@ -384,6 +392,7 @@ void aquarius_state::aquarius(machine_config &config)
 	/* cassette */
 	CASSETTE(config, m_cassette);
 	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	/* cartridge */
 	GENERIC_CARTSLOT(config, m_cart, generic_linear_slot, "aquarius_cart");

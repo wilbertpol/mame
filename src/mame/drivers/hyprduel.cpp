@@ -445,7 +445,6 @@ void hyprduel_state::i4220_config(machine_config &config)
 	screen.set_visarea(0, 320-1, FIRST_VISIBLE_LINE, LAST_VISIBLE_LINE);
 	screen.set_screen_update("vdp", FUNC(imagetek_i4100_device::screen_update));
 	screen.screen_vblank().set("vdp", FUNC(imagetek_i4100_device::screen_eof));
-	screen.set_palette(":vdp:palette");
 }
 
 void hyprduel_state::hyprduel(machine_config &config)
@@ -555,10 +554,10 @@ void hyprduel_state::init_hyprduel()
 	m_int_num = 0x02;
 
 	/* cpu synchronization (severe timings) */
-	m_maincpu->space(AS_PROGRAM).install_write_handler(0xc0040e, 0xc00411, write16_delegate(FUNC(hyprduel_state::hyprduel_cpusync_trigger1_w),this));
-	m_subcpu->space(AS_PROGRAM).install_read_handler(0xc00408, 0xc00409, read16_delegate(FUNC(hyprduel_state::hyprduel_cpusync_trigger1_r),this));
-	m_maincpu->space(AS_PROGRAM).install_write_handler(0xc00408, 0xc00409, write16_delegate(FUNC(hyprduel_state::hyprduel_cpusync_trigger2_w),this));
-	m_subcpu->space(AS_PROGRAM).install_read_handler(0xfff34c, 0xfff34d, read16_delegate(FUNC(hyprduel_state::hyprduel_cpusync_trigger2_r),this));
+	m_maincpu->space(AS_PROGRAM).install_write_handler(0xc0040e, 0xc00411, write16_delegate(*this, FUNC(hyprduel_state::hyprduel_cpusync_trigger1_w)));
+	m_subcpu->space(AS_PROGRAM).install_read_handler(0xc00408, 0xc00409, read16_delegate(*this, FUNC(hyprduel_state::hyprduel_cpusync_trigger1_r)));
+	m_maincpu->space(AS_PROGRAM).install_write_handler(0xc00408, 0xc00409, write16_delegate(*this, FUNC(hyprduel_state::hyprduel_cpusync_trigger2_w)));
+	m_subcpu->space(AS_PROGRAM).install_read_handler(0xfff34c, 0xfff34d, read16_delegate(*this, FUNC(hyprduel_state::hyprduel_cpusync_trigger2_r)));
 }
 
 void hyprduel_state::init_magerror()
@@ -567,6 +566,6 @@ void hyprduel_state::init_magerror()
 }
 
 
-GAME( 1993, hyprduel,  0,        hyprduel, hyprduel, hyprduel_state, init_hyprduel, ROT0, "Technosoft",          "Hyper Duel (Japan set 1)", MACHINE_SUPPORTS_SAVE )
-GAME( 1993, hyprduel2, hyprduel, hyprduel, hyprduel, hyprduel_state, init_hyprduel, ROT0, "Technosoft",          "Hyper Duel (Japan set 2)", MACHINE_SUPPORTS_SAVE )
+GAME( 1993, hyprduel,  0,        hyprduel, hyprduel, hyprduel_state, init_hyprduel, ROT0, "Technosoft",          "Hyper Duel (Japan set 1)", MACHINE_NO_COCKTAIL | MACHINE_SUPPORTS_SAVE )
+GAME( 1993, hyprduel2, hyprduel, hyprduel, hyprduel, hyprduel_state, init_hyprduel, ROT0, "Technosoft",          "Hyper Duel (Japan set 2)", MACHINE_NO_COCKTAIL | MACHINE_SUPPORTS_SAVE )
 GAME( 1994, magerror,  0,        magerror, magerror, hyprduel_state, init_magerror, ROT0, "Technosoft / Jaleco", "Magical Error wo Sagase",  MACHINE_SUPPORTS_SAVE )

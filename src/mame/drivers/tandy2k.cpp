@@ -86,10 +86,10 @@ READ8_MEMBER( tandy2k_state::videoram_r )
 	uint16_t data = program.read_word(addr);
 
 	// character
-	m_drb0->write(space, 0, data & 0xff);
+	m_drb0->write(data & 0xff);
 
 	// attributes
-	m_drb1->write(space, 0, data >> 8);
+	m_drb1->write(data >> 8);
 
 	return data & 0xff;
 }
@@ -213,7 +213,7 @@ READ8_MEMBER( tandy2k_state::kbint_clr_r )
 		m_kb->busy_w(1);
 		m_pic1->ir0_w(CLEAR_LINE);
 
-		return m_pc_keyboard->read(space, 0);
+		return m_pc_keyboard->read();
 	}
 
 	return 0xff;
@@ -392,9 +392,9 @@ void tandy2k_state::tandy2k_io(address_map &map)
 void tandy2k_state::tandy2k_hd_io(address_map &map)
 {
 	tandy2k_io(map);
-//  AM_RANGE(0x000e0, 0x000ff) AM_WRITE8(hdc_dack_w, 0x00ff)
-//  AM_RANGE(0x0026c, 0x0026d) AM_DEVREADWRITE8(WD1010_TAG, wd1010_device, hdc_reset_r, hdc_reset_w, 0x00ff)
-//  AM_RANGE(0x0026e, 0x0027f) AM_DEVREADWRITE8(WD1010_TAG, wd1010_device, wd1010_r, wd1010_w, 0x00ff)
+//  map(0x000e0, 0x000ff).w(FUNC(tandy2k_state::hdc_dack_w).umask16(0x00ff));
+//  map(0x0026c, 0x0026c).rw(WD1010_TAG, FUNC(wd1010_device::hdc_reset_r), FUNC(wd1010_device::hdc_reset_w));
+//  map(0x0026e, 0x0027e).rw(WD1010_TAG, FUNC(wd1010_device::wd1010_r), FUNC(wd1010_device::wd1010_w));
 }
 
 void tandy2k_state::vpac_mem(address_map &map)
@@ -443,15 +443,15 @@ static INPUT_PORTS_START( tandy2k )
 
 	PORT_START("MOUSEBTN")
 	PORT_BIT( 0xff8f, IP_ACTIVE_HIGH, IPT_UNUSED )
-	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_CODE(MOUSECODE_BUTTON1) PORT_CHANGED_MEMBER(DEVICE_SELF, tandy2k_state, input_changed, nullptr)
-	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON2 ) PORT_CODE(MOUSECODE_BUTTON2) PORT_CHANGED_MEMBER(DEVICE_SELF, tandy2k_state, input_changed, nullptr)
+	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_CODE(MOUSECODE_BUTTON1) PORT_CHANGED_MEMBER(DEVICE_SELF, tandy2k_state, input_changed, 0)
+	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON2 ) PORT_CODE(MOUSECODE_BUTTON2) PORT_CHANGED_MEMBER(DEVICE_SELF, tandy2k_state, input_changed, 0)
 	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_UNUSED )  /* this would be button three but AFAIK no tandy mouse ever had one */
 
 	PORT_START("MOUSEX")
-	PORT_BIT( 0xffff, 0x00, IPT_MOUSE_X ) PORT_SENSITIVITY(50) PORT_KEYDELTA(0) PORT_CHANGED_MEMBER(DEVICE_SELF, tandy2k_state, input_changed, nullptr)
+	PORT_BIT( 0xffff, 0x00, IPT_MOUSE_X ) PORT_SENSITIVITY(50) PORT_KEYDELTA(0) PORT_CHANGED_MEMBER(DEVICE_SELF, tandy2k_state, input_changed, 0)
 
 	PORT_START("MOUSEY")
-	PORT_BIT( 0xffff, 0x00, IPT_MOUSE_Y ) PORT_SENSITIVITY(50) PORT_KEYDELTA(0) PORT_CHANGED_MEMBER(DEVICE_SELF, tandy2k_state, input_changed, nullptr)
+	PORT_BIT( 0xffff, 0x00, IPT_MOUSE_Y ) PORT_SENSITIVITY(50) PORT_KEYDELTA(0) PORT_CHANGED_MEMBER(DEVICE_SELF, tandy2k_state, input_changed, 0)
 INPUT_PORTS_END
 
 INPUT_CHANGED_MEMBER(tandy2k_state::input_changed)
@@ -1025,7 +1025,7 @@ void tandy2k_state::tandy2k(machine_config &config)
 
 	// devices
 	I8255A(config, m_i8255a);
-	m_i8255a->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	m_i8255a->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::write));
 	m_i8255a->in_pb_callback().set(FUNC(tandy2k_state::ppi_pb_r));
 	m_i8255a->out_pc_callback().set(FUNC(tandy2k_state::ppi_pc_w));
 

@@ -50,9 +50,6 @@ public:
 
 	void remap(int space_id, offs_t start, offs_t end) override;
 
-	// to access io ports
-	DECLARE_READ8_MEMBER(read_fdc37c93x);
-	DECLARE_WRITE8_MEMBER(write_fdc37c93x);
 	// for the internal floppy controller
 	DECLARE_WRITE_LINE_MEMBER(irq_floppy_w);
 	DECLARE_WRITE_LINE_MEMBER(drq_floppy_w);
@@ -93,20 +90,15 @@ public:
 	void map_keyboard(address_map &map);
 	void unmap_keyboard(address_map &map);
 
-	DECLARE_READ8_MEMBER(disabled_read);
-	DECLARE_WRITE8_MEMBER(disabled_write);
-	DECLARE_READ8_MEMBER(lpt_read);
-	DECLARE_WRITE8_MEMBER(lpt_write);
-	DECLARE_READ8_MEMBER(serial1_read);
-	DECLARE_WRITE8_MEMBER(serial1_write);
-	DECLARE_READ8_MEMBER(serial2_read);
-	DECLARE_WRITE8_MEMBER(serial2_write);
-	DECLARE_READ8_MEMBER(rtc_read);
-	DECLARE_WRITE8_MEMBER(rtc_write);
-	DECLARE_READ8_MEMBER(at_keybc_r);
-	DECLARE_WRITE8_MEMBER(at_keybc_w);
-	DECLARE_READ8_MEMBER(keybc_status_r);
-	DECLARE_WRITE8_MEMBER(keybc_command_w);
+	// to access io ports
+	uint8_t read(offs_t offset);
+	void write(offs_t offset, uint8_t data);
+	uint8_t disabled_read();
+	void disabled_write(uint8_t data);
+	uint8_t at_keybc_r(offs_t offset);
+	void at_keybc_w(offs_t offset, uint8_t data);
+	uint8_t keybc_status_r();
+	void keybc_command_w(uint8_t data);
 
 	DECLARE_FLOPPY_FORMATS(floppy_formats);
 

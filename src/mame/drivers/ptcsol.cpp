@@ -124,7 +124,6 @@
 #include "machine/clock.h"
 #include "machine/keyboard.h"
 #include "sound/spkrdev.h"
-#include "sound/wave.h"
 
 #include "emupal.h"
 #include "screen.h"
@@ -251,7 +250,7 @@ void sol20_state::device_timer(emu_timer &timer, device_timer_id id, int param, 
 		sol20_boot(ptr, param);
 		break;
 	default:
-		assert_always(false, "Unknown id in sol20_state::device_timer");
+		throw emu_fatalerror("Unknown id in sol20_state::device_timer");
 	}
 }
 
@@ -759,16 +758,16 @@ void sol20_state::sol20(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, "speaker").add_route(ALL_OUTPUTS, "mono", 2.00); // music board
-	WAVE(config, "wave", m_cass1).add_route(ALL_OUTPUTS, "mono", 0.05); // cass1 speaker
-	WAVE(config, "wave2", m_cass2).add_route(ALL_OUTPUTS, "mono", 0.05); // cass2 speaker
 
 	// devices
 	CASSETTE(config, m_cass1).set_formats(sol20_cassette_formats);
 	m_cass1->set_default_state(CASSETTE_PLAY | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cass1->add_route(ALL_OUTPUTS, "mono", 0.05); // cass1 speaker
 	m_cass1->set_interface("sol20_cass");
 
 	CASSETTE(config, m_cass2).set_formats(sol20_cassette_formats);
 	m_cass2->set_default_state(CASSETTE_PLAY | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cass2->add_route(ALL_OUTPUTS, "mono", 0.05); // cass2 speaker
 	m_cass2->set_interface("sol20_cass");
 
 	AY51013(config, m_uart); // TMS6011NC

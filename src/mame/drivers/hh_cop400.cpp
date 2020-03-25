@@ -500,10 +500,10 @@ void einvaderc_state::einvaderc(machine_config &config)
 	m_maincpu->write_l().set(FUNC(einvaderc_state::write_l));
 
 	/* video hardware */
-	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_SVG));
-	screen.set_refresh_hz(60);
-	screen.set_size(913, 1080);
-	screen.set_visarea_full();
+	screen_device &mask(SCREEN(config, "mask", SCREEN_TYPE_SVG));
+	mask.set_refresh_hz(60);
+	mask.set_size(919, 1080);
+	mask.set_visarea_full();
 
 	PWM_DISPLAY(config, m_display).set_size(10, 8);
 	m_display->set_segmask(7, 0x7f);
@@ -520,8 +520,8 @@ ROM_START( einvaderc )
 	ROM_REGION( 0x0800, "maincpu", 0 )
 	ROM_LOAD( "copl444-hrz_n_inv_ii", 0x0000, 0x0800, CRC(76400f38) SHA1(0e92ab0517f7b7687293b189d30d57110df20fe0) )
 
-	ROM_REGION( 80636, "screen", 0)
-	ROM_LOAD( "einvaderc.svg", 0, 80636, CRC(a52d0166) SHA1(f69397ebcc518701f30a47b4d62e5a700825375a) )
+	ROM_REGION( 82104, "mask", 0)
+	ROM_LOAD( "einvaderc.svg", 0, 82104, CRC(0013227f) SHA1(44a3ac48c947369231f010559331ad16fcbef7be) )
 ROM_END
 
 
@@ -619,7 +619,7 @@ static INPUT_PORTS_START( unkeinv )
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 )
 
 	PORT_START("IN.1")
-	PORT_BIT( 0x0f, 0x00, IPT_POSITIONAL ) PORT_POSITIONS(12) PORT_SENSITIVITY(10) PORT_KEYDELTA(1) PORT_CENTERDELTA(0) PORT_CHANGED_MEMBER(DEVICE_SELF, unkeinv_state, position_changed, nullptr)
+	PORT_BIT( 0x0f, 0x00, IPT_POSITIONAL ) PORT_POSITIONS(12) PORT_SENSITIVITY(10) PORT_KEYDELTA(1) PORT_CENTERDELTA(0) PORT_CHANGED_MEMBER(DEVICE_SELF, unkeinv_state, position_changed, 0)
 INPUT_PORTS_END
 
 void unkeinv_state::unkeinv(machine_config &config)
@@ -678,7 +678,7 @@ public:
 
 	u8 m_motor_pos;
 	TIMER_DEVICE_CALLBACK_MEMBER(motor_sim_tick);
-	DECLARE_CUSTOM_INPUT_MEMBER(motor_switch);
+	DECLARE_READ_LINE_MEMBER(motor_switch_r);
 
 	DECLARE_WRITE8_MEMBER(write_l);
 	DECLARE_WRITE8_MEMBER(write_d);
@@ -703,7 +703,7 @@ void lchicken_state::machine_start()
 
 // handlers
 
-CUSTOM_INPUT_MEMBER(lchicken_state::motor_switch)
+READ_LINE_MEMBER(lchicken_state::motor_switch_r)
 {
 	return m_motor_pos > 0xe8; // approximation
 }
@@ -782,7 +782,7 @@ static INPUT_PORTS_START( lchicken )
 	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNUSED )
 	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNUSED )
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNUSED )
-	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, lchicken_state, motor_switch, nullptr)
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(lchicken_state, motor_switch_r)
 INPUT_PORTS_END
 
 void lchicken_state::lchicken(machine_config &config)
@@ -1006,7 +1006,7 @@ static INPUT_PORTS_START( funrlgl )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNUSED )
 
 	PORT_START("RESET")
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_START ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_cop400_state, reset_button, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_START ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_cop400_state, reset_button, 0)
 INPUT_PORTS_END
 
 void funrlgl_state::funrlgl(machine_config &config)

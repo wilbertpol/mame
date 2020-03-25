@@ -115,7 +115,7 @@ void menu_audit::custom_render(void *selectedref, float top, float bottom, float
 	case phase::CONSENT:
 		draw_text_box(
 				std::begin(m_prompt), std::end(m_prompt),
-				x, x2, y - top, y - UI_BOX_TB_BORDER,
+				x, x2, y - top, y - ui().box_tb_border(),
 				ui::text_layout::CENTER, ui::text_layout::NEVER, false,
 				ui().colors().text_color(), UI_GREEN_COLOR, 1.0f);
 		break;
@@ -140,7 +140,7 @@ void menu_audit::custom_render(void *selectedref, float top, float bottom, float
 void menu_audit::populate(float &customtop, float &custombottom)
 {
 	item_append(_("Start Audit"), "", 0, ITEMREF_START);
-	customtop = (ui().get_line_height() * 2.0f) + (UI_BOX_TB_BORDER * 3.0f);
+	customtop = (ui().get_line_height() * 2.0f) + (ui().box_tb_border() * 3.0f);
 }
 
 void menu_audit::handle()
@@ -228,7 +228,7 @@ void menu_audit::save_available_machines()
 {
 	// attempt to open the output file
 	emu_file file(ui().options().ui_path(), OPEN_FLAG_WRITE | OPEN_FLAG_CREATE | OPEN_FLAG_CREATE_PATHS);
-	if (file.open(emulator_info::get_configname(), "_avail.ini") == osd_file::error::NONE)
+	if (file.open(std::string(emulator_info::get_configname()) + "_avail.ini") == osd_file::error::NONE)
 	{
 		// generate header
 		file.printf("#\n%s%s\n#\n\n", UI_VERSION_TAG, emulator_info::get_bare_build_version());

@@ -232,12 +232,12 @@ READ8_MEMBER( rz1_state::upd934g_b_data_r )
 
 WRITE8_MEMBER( rz1_state::upd934g_c_w )
 {
-	m_pg[0]->write(space, offset >> 8, data);
+	m_pg[0]->write(offset >> 8, data);
 }
 
 WRITE8_MEMBER( rz1_state::upd934g_b_w )
 {
-	m_pg[1]->write(space, offset >> 8, data);
+	m_pg[1]->write(offset >> 8, data);
 }
 
 READ8_MEMBER( rz1_state::port_a_r )
@@ -369,7 +369,7 @@ void rz1_state::rz1(machine_config &config)
 
 	HD44780(config, m_hd44780, 0);
 	m_hd44780->set_lcd_size(1, 16);
-	m_hd44780->set_pixel_update_cb(FUNC(rz1_state::lcd_pixel_update), this);
+	m_hd44780->set_pixel_update_cb(FUNC(rz1_state::lcd_pixel_update));
 
 	config.set_default_layout(layout_rz1);
 

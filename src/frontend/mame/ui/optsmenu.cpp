@@ -77,8 +77,8 @@ void menu_simple_game_options::populate(float &customtop, float &custombottom)
 	item_append(menu_item_type::SEPARATOR);
 	item_append(_("Save Configuration"), "", 0, (void *)(uintptr_t)SAVE_CONFIG);
 
-	custombottom = 2.0f * ui().get_line_height() + 3.0f * UI_BOX_TB_BORDER;
-	customtop = ui().get_line_height() + 3.0f * UI_BOX_TB_BORDER;
+	custombottom = 2.0f * ui().get_line_height() + 3.0f * ui().box_tb_border();
+	customtop = ui().get_line_height() + 3.0f * ui().box_tb_border();
 }
 
 //-------------------------------------------------
@@ -141,7 +141,7 @@ void menu_simple_game_options::custom_render(void *selectedref, float top, float
 	char const *const toptext[] = { _("Settings") };
 	draw_text_box(
 			std::begin(toptext), std::end(toptext),
-			origx1, origx2, origy1 - top, origy1 - UI_BOX_TB_BORDER,
+			origx1, origx2, origy1 - top, origy1 - ui().box_tb_border(),
 			ui::text_layout::CENTER, ui::text_layout::TRUNCATE, false,
 			ui().colors().text_color(), UI_GREEN_COLOR, 1.0f);
 }
@@ -266,7 +266,7 @@ void menu_game_options::handle_item_event(event const &menu_event)
 						if (machine_filter::CUSTOM == filter.get_type())
 						{
 							emu_file file(ui().options().ui_path(), OPEN_FLAG_WRITE | OPEN_FLAG_CREATE | OPEN_FLAG_CREATE_PATHS);
-							if (file.open("custom_", emulator_info::get_configname(), "_filter.ini") == osd_file::error::NONE)
+							if (file.open(util::string_format("custom_%s_filter.ini", emulator_info::get_configname())) == osd_file::error::NONE)
 							{
 								filter.save_ini(file, 0);
 								file.close();
@@ -282,7 +282,7 @@ void menu_game_options::handle_item_event(event const &menu_event)
 		break;
 	case CUSTOM_MENU:
 		if (menu_event.iptkey == IPT_UI_SELECT)
-			menu::stack_push<menu_custom_ui>(ui(), container());
+			menu::stack_push<menu_custom_ui>(ui(), container(), [this] () { reset(reset_options::REMEMBER_REF); });
 		break;
 	default:
 		menu_simple_game_options::handle_item_event(menu_event);

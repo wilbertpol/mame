@@ -43,6 +43,7 @@ but requires a special level III player for proper control. Video: CAV. Audio: A
 #include "machine/x2212.h"
 #include "emupal.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 
 class firefox_state : public driver_device
@@ -68,8 +69,6 @@ public:
 		m_mainbank(*this, "mainbank")
 	{ }
 
-	DECLARE_CUSTOM_INPUT_MEMBER(mainflag_r);
-	DECLARE_CUSTOM_INPUT_MEMBER(soundflag_r);
 	void firefox(machine_config &config);
 
 private:
@@ -236,7 +235,7 @@ WRITE8_MEMBER(firefox_state::firefox_disc_data_w)
 
 TILE_GET_INFO_MEMBER(firefox_state::bgtile_get_info)
 {
-	SET_TILE_INFO_MEMBER(0, m_tileram[tile_index], 0, 0);
+	tileinfo.set(0, m_tileram[tile_index], 0, 0);
 }
 
 
@@ -249,7 +248,7 @@ WRITE8_MEMBER(firefox_state::tileram_w)
 
 void firefox_state::video_start()
 {
-	m_bgtiles = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(firefox_state::bgtile_get_info),this), TILEMAP_SCAN_ROWS, 8,8, 64,64);
+	m_bgtiles = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(firefox_state::bgtile_get_info)), TILEMAP_SCAN_ROWS, 8,8, 64,64);
 	m_bgtiles->set_transparent_pen(0);
 	m_bgtiles->set_scrolldy(m_screen->visible_area().top(), 0);
 }
@@ -257,35 +256,32 @@ void firefox_state::video_start()
 
 uint32_t firefox_state::screen_update_firefox(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect)
 {
-	int sprite;
 	int gfxtop = screen.visible_area().top();
 
 	bitmap.fill(m_palette->pen_color(256), cliprect);
 
-	for( sprite = 0; sprite < 32; sprite++ )
+	for (int sprite = 0; sprite < 32; sprite++)
 	{
-		uint8_t *sprite_data = m_spriteram + ( 0x200 * m_sprite_bank ) + ( sprite * 16 );
-		int flags = sprite_data[ 0 ];
-		int y = sprite_data[ 1 ] + ( 256 * ( ( flags >> 0 ) & 1 ) );
-		int x = sprite_data[ 2 ] + ( 256 * ( ( flags >> 1 ) & 1 ) );
+		uint8_t *sprite_data = m_spriteram + (0x200 * m_sprite_bank) + (sprite * 16);
+		int flags = sprite_data[0];
+		int y = sprite_data[1] + (256 * ((flags >> 0) & 1));
+		int x = sprite_data[2] + (256 * ((flags >> 1) & 1));
 
-		if( x != 0 )
+		if (x != 0)
 		{
-			int row;
-
-			for( row = 0; row < 8; row++ )
+			for (int row = 0; row < 8; row++)
 			{
-				int color = ( flags >> 2 ) & 0x03;
+				int color = (flags >> 2) & 0x03;
 				int flipy = flags & 0x10;
 				int flipx = flags & 0x20;
-				int code = sprite_data[ 15 - row ] + ( 256 * ( ( flags >> 6 ) & 3 ) );
+				int code = sprite_data[15 - row] + (256 * ((flags >> 6) & 3));
 
-				m_gfxdecode->gfx( 1 )->transpen(bitmap,cliprect, code, color, flipx, flipy, x + 8, gfxtop + 500 - y - ( row * 16 ), 0 );
+				m_gfxdecode->gfx(1)->transpen(bitmap, cliprect, code, color, flipx, flipy, x + 8, gfxtop + 500 - y - (row * 16), 0);
 			}
 		}
 	}
 
-	m_bgtiles->draw(screen, bitmap, cliprect, 0, 0 );
+	m_bgtiles->draw(screen, bitmap, cliprect, 0, 0);
 
 	return 0;
 }
@@ -331,16 +327,6 @@ WRITE8_MEMBER(firefox_state::firefox_objram_bank_w)
  *  Main <-> sound communication
  *
  *************************************/
-
-CUSTOM_INPUT_MEMBER(firefox_state::mainflag_r)
-{
-	return m_soundlatch->pending_r() ? 1 : 0;
-}
-
-CUSTOM_INPUT_MEMBER(firefox_state::soundflag_r)
-{
-	return m_soundlatch2->pending_r() ? 1 : 0;
-}
 
 WRITE_LINE_MEMBER(firefox_state::sound_reset_w)
 {
@@ -391,8 +377,8 @@ WRITE8_MEMBER(firefox_state::riot_porta_w)
 
 WRITE8_MEMBER(firefox_state::nvram_w)
 {
-	m_nvram_1c->write(space, offset, data >> 4);
-	m_nvram_1d->write(space, offset, data & 0xf);
+	m_nvram_1c->write(offset, data >> 4);
+	m_nvram_1d->write(offset, data & 0xf);
 }
 
 READ8_MEMBER(firefox_state::nvram_r)
@@ -542,8 +528,8 @@ static INPUT_PORTS_START( firefox )
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("rdin1")
-	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, firefox_state,mainflag_r, nullptr)
-	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, firefox_state,soundflag_r, nullptr)
+	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_READ_LINE_DEVICE_MEMBER("soundlatch", generic_latch_8_device, pending_r)
+	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_READ_LINE_DEVICE_MEMBER("soundlatch2", generic_latch_8_device, pending_r)
 	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_VBLANK("screen")
 	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_SERVICE )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
@@ -647,8 +633,8 @@ GFXDECODE_END
  *
  *************************************/
 
-MACHINE_CONFIG_START(firefox_state::firefox)
-
+void firefox_state::firefox(machine_config &config)
+{
 	/* basic machine hardware */
 	MC6809E(config, m_maincpu, MASTER_XTAL/8); // 68B09E
 	m_maincpu->set_addrmap(AS_PROGRAM, &firefox_state::main_map);
@@ -658,7 +644,7 @@ MACHINE_CONFIG_START(firefox_state::firefox)
 	M6502(config, m_audiocpu, MASTER_XTAL/8);
 	m_audiocpu->set_addrmap(AS_PROGRAM, &firefox_state::audio_map);
 
-	config.m_minimum_quantum = attotime::from_hz(60000);
+	config.set_maximum_quantum(attotime::from_hz(60000));
 
 	adc0809_device &adc(ADC0809(config, "adc", MASTER_XTAL/16)); // nominally 900 kHz
 	adc.in_callback<0>().set_ioport("PITCH");
@@ -693,11 +679,9 @@ MACHINE_CONFIG_START(firefox_state::firefox)
 	PHILIPS_22VP931(config, m_laserdisc, 0);
 	m_laserdisc->set_overlay(64*8, 525, FUNC(firefox_state::screen_update_firefox));
 	m_laserdisc->set_overlay_clip(7*8, 53*8-1, 44, 480+44);
-	m_laserdisc->set_overlay_palette(m_palette);
 	m_laserdisc->add_route(0, "lspeaker", 0.50);
 	m_laserdisc->add_route(1, "rspeaker", 0.50);
-
-	MCFG_LASERDISC_SCREEN_ADD_NTSC("screen", "laserdisc")
+	m_laserdisc->add_ntsc_screen(config, "screen");
 
 	X2212(config, "nvram_1c").set_auto_save(true);
 	X2212(config, "nvram_1d").set_auto_save(true);
@@ -737,7 +721,7 @@ MACHINE_CONFIG_START(firefox_state::firefox)
 	TMS5220(config, m_tms, MASTER_XTAL/2/11);
 	m_tms->add_route(ALL_OUTPUTS, "lspeaker", 0.75);
 	m_tms->add_route(ALL_OUTPUTS, "rspeaker", 0.75);
-MACHINE_CONFIG_END
+}
 
 
 

@@ -1,14 +1,12 @@
 // license:GPL-2.0+
 // copyright-holders:Couriersud
-/*
- * poptions.h
- *
- */
-
-#pragma once
 
 #ifndef PMAIN_H_
 #define PMAIN_H_
+
+///
+/// \file poptions.h
+///
 
 #include "palloc.h"
 #include "poptions.h"
@@ -16,10 +14,10 @@
 #include "pstring.h"
 #include "putil.h"
 
-#include <cwchar>
 #include <memory>
 
 #ifdef _WIN32
+#include <cwchar>
 #define PMAIN(appclass) \
 extern "C" int wmain(int argc, wchar_t *argv[]) { return plib::app::mainrun<appclass, wchar_t>(argc, argv); }
 #else
@@ -29,10 +27,9 @@ int main(int argc, char **argv) { return plib::app::mainrun<appclass, char>(argc
 
 
 namespace plib {
-/***************************************************************************
-    Application
-***************************************************************************/
 
+	/// \brief Application class.
+	///
 	class app : public options
 	{
 	public:
@@ -44,9 +41,6 @@ namespace plib {
 
 		virtual pstring usage() = 0;
 		virtual int execute() = 0;
-
-		plib::pstdout pout_strm;
-		plib::pstderr perr_strm;
 
 		plib::putf8_fmt_writer pout;
 		plib::putf8_fmt_writer perr;
@@ -70,4 +64,4 @@ namespace plib {
 
 
 
-#endif /* PMAIN_H_ */
+#endif // PMAIN_H_

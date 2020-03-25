@@ -2,8 +2,6 @@
 // copyright-holders:Kevin Horton, Jonathan Gevaryahu, Sandro Ronco, hap
 /******************************************************************************
 
-* fidel_card.cpp, subdriver of machine/fidelbase.cpp, machine/chessbase.cpp
-
 Fidelity electronic card games
 - *Bridge Challenger (BRC)
 - Advanced Bridge Challenger (UBC)
@@ -16,9 +14,6 @@ Fidelity electronic card games
 
 NOTE: The card scanner is simulated, but the player is kind of forced to cheat
 and has to peek at the card before it is scanned.
-
-TODO:
-- Z80 WAIT pin is not fully emulated, affecting VBRC speech busy state
 
 *******************************************************************************
 
@@ -164,13 +159,15 @@ Two card decks exist (red and blue), each has the same set of barcodes.
 ******************************************************************************/
 
 #include "emu.h"
-#include "includes/fidelbase.h"
-
 #include "cpu/z80/z80.h"
 #include "cpu/mcs48/mcs48.h"
 #include "machine/i8243.h"
 #include "machine/clock.h"
+#include "machine/timer.h"
+#include "sound/dac.h"
+#include "sound/s14001a.h"
 #include "sound/volt_reg.h"
+#include "video/pwm.h"
 #include "speaker.h"
 
 // internal artwork
@@ -181,22 +178,27 @@ Two card decks exist (red and blue), each has the same set of barcodes.
 
 namespace {
 
-class card_state : public fidelbase_state
+class card_state : public driver_device
 {
 public:
 	card_state(const machine_config &mconfig, device_type type, const char *tag) :
-		fidelbase_state(mconfig, type, tag),
+		driver_device(mconfig, type, tag),
+		m_maincpu(*this, "maincpu"),
 		m_mcu(*this, "mcu"),
-		m_i8243(*this, "i8243")
+		m_i8243(*this, "i8243"),
+		m_display(*this, "display"),
+		m_speech(*this, "speech"),
+		m_dac(*this, "dac"),
+		m_inputs(*this, "IN.%u", 0)
 	{ }
 
-	// machine drivers
+	// machine configs
 	void ubc(machine_config &config);
 	void vbrc(machine_config &config);
 	void bv3(machine_config &config);
 	void gin(machine_config &config);
 
-	virtual DECLARE_INPUT_CHANGED_MEMBER(reset_button) override;
+	DECLARE_INPUT_CHANGED_MEMBER(reset_button);
 	DECLARE_INPUT_CHANGED_MEMBER(start_scan);
 
 protected:
@@ -206,8 +208,13 @@ private:
 	void brc_base(machine_config &config);
 
 	// devices/pointers
+	required_device<cpu_device> m_maincpu;
 	required_device<i8041a_device> m_mcu;
 	required_device<i8243_device> m_i8243;
+	required_device<pwm_display_device> m_display;
+	optional_device<s14001a_device> m_speech;
+	optional_device<dac_bit_interface> m_dac;
+	required_ioport_array<8> m_inputs;
 
 	// address maps
 	void main_map(address_map &map);
@@ -215,6 +222,8 @@ private:
 
 	TIMER_DEVICE_CALLBACK_MEMBER(barcode_shift) { m_barcode >>= 1; }
 	u32 m_barcode;
+	u16 m_vfd_data;
+	u8 m_inp_mux;
 
 	// I/O handlers
 	void update_display();
@@ -227,26 +236,30 @@ private:
 
 void card_state::machine_start()
 {
-	fidelbase_state::machine_start();
-
-	// zerofill/register for savestates
+	// zerofill
 	m_barcode = 0;
+	m_vfd_data = 0;
+	m_inp_mux = 0;
+
+	// register for savestates
 	save_item(NAME(m_barcode));
+	save_item(NAME(m_vfd_data));
+	save_item(NAME(m_inp_mux));
 }
 
 
+
 /******************************************************************************
-    Devices, I/O
+    I/O
 ******************************************************************************/
 
 // misc handlers
 
 void card_state::update_display()
 {
-	// 14seg led segments, d15(12) is extra led
-	u16 outdata = bitswap<16>(m_7seg_data,12,13,1,6,5,2,0,7,15,11,10,14,4,3,9,8);
-	set_display_segmask(0xff, 0x3fff);
-	display_matrix(16, 8, outdata, m_led_select);
+	// 14seg VFD segments, d15(12) is extra LED
+	u16 outdata = bitswap<16>(m_vfd_data,12,13,1,6,5,2,0,7,15,11,10,14,4,3,9,8);
+	m_display->matrix(m_inp_mux, outdata);
 }
 
 WRITE8_MEMBER(card_state::speech_w)
@@ -254,7 +267,7 @@ WRITE8_MEMBER(card_state::speech_w)
 	if (m_speech == nullptr)
 		return;
 
-	m_speech->data_w(space, 0, data & 0x3f);
+	m_speech->data_w(data & 0x3f);
 	m_speech->start_w(1);
 	m_speech->start_w(0);
 }
@@ -266,7 +279,7 @@ template<int P>
 void card_state::ioexp_port_w(uint8_t data)
 {
 	// P4x-P7x: digit segment data
-	m_7seg_data = (m_7seg_data & ~(0xf << (4*P))) | ((data & 0xf) << (4*P));
+	m_vfd_data = (m_vfd_data & ~(0xf << (4*P))) | ((data & 0xf) << (4*P));
 	update_display();
 
 	// P71 is tone (not on speech model)
@@ -279,16 +292,22 @@ void card_state::ioexp_port_w(uint8_t data)
 
 WRITE8_MEMBER(card_state::mcu_p1_w)
 {
-	// P10-P17: select digits, input mux
-	m_inp_mux = m_led_select = data;
+	// P10-P17: input mux, digit select
+	m_inp_mux = data;
 	update_display();
 }
 
 READ8_MEMBER(card_state::mcu_p2_r)
 {
 	// P20-P23: I8243 P2
+	u8 data = m_i8243->p2_r() & 0x0f;
+
 	// P24-P27: multiplexed inputs (active low)
-	return (m_i8243->p2_r() & 0x0f) | (read_inputs(8) << 4 ^ 0xf0);
+	for (int i = 0; i < 8; i++)
+		if (BIT(m_inp_mux, i))
+			data |= m_inputs[i]->read() << 4;
+
+	return data ^ 0xf0;
 }
 
 READ_LINE_MEMBER(card_state::mcu_t0_r)
@@ -328,7 +347,7 @@ INPUT_CHANGED_MEMBER(card_state::start_scan)
 	if (!newval)
 		return;
 
-	u32 code = (u32)(uintptr_t)param;
+	u32 code = (u32)param;
 	m_barcode = 0;
 
 	// convert bits to rising/falling edges
@@ -465,7 +484,7 @@ static INPUT_PORTS_START( brc )
 	PORT_BIT(0x08, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_CODE(KEYCODE_B) PORT_NAME("Clubs")
 
 	PORT_START("RESET") // is not on matrix IN.7 d0
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_CODE(KEYCODE_Q) PORT_CHANGED_MEMBER(DEVICE_SELF, card_state, reset_button, nullptr) PORT_NAME("RE")
+	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_CODE(KEYCODE_Q) PORT_CHANGED_MEMBER(DEVICE_SELF, card_state, reset_button, 0) PORT_NAME("RE")
 INPUT_PORTS_END
 
 static INPUT_PORTS_START( bv3 )
@@ -504,7 +523,7 @@ static INPUT_PORTS_START( bv3 )
 	PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_CODE(KEYCODE_Z) PORT_NAME("Dealer")
 
 	PORT_MODIFY("RESET")
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_CODE(KEYCODE_Q) PORT_CHANGED_MEMBER(DEVICE_SELF, card_state, reset_button, nullptr) PORT_NAME("Reset")
+	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_CODE(KEYCODE_Q) PORT_CHANGED_MEMBER(DEVICE_SELF, card_state, reset_button, 0) PORT_NAME("Reset")
 INPUT_PORTS_END
 
 static INPUT_PORTS_START( gin )
@@ -537,7 +556,7 @@ INPUT_PORTS_END
 
 
 /******************************************************************************
-    Machine Drivers
+    Machine Configs
 ******************************************************************************/
 
 void card_state::brc_base(machine_config &config)
@@ -546,7 +565,7 @@ void card_state::brc_base(machine_config &config)
 	Z80(config, m_maincpu, 5_MHz_XTAL/2);
 	m_maincpu->set_addrmap(AS_PROGRAM, &card_state::main_map);
 	m_maincpu->set_addrmap(AS_IO, &card_state::main_io);
-	config.m_perfect_cpu_quantum = subtag("maincpu");
+	config.set_perfect_quantum(m_maincpu);
 
 	I8041A(config, m_mcu, 5_MHz_XTAL);
 	m_mcu->p1_out_cb().set(FUNC(card_state::mcu_p1_w));
@@ -567,7 +586,9 @@ void card_state::brc_base(machine_config &config)
 
 	TIMER(config, "barcode_shift").configure_periodic(FUNC(card_state::barcode_shift), attotime::from_msec(2));
 
-	TIMER(config, "display_decay").configure_periodic(FUNC(card_state::display_decay_tick), attotime::from_msec(1));
+	/* video hardware */
+	PWM_DISPLAY(config, m_display).set_size(8, 16);
+	m_display->set_segmask(0xff, 0x3fff);
 	config.set_default_layout(layout_fidel_brc);
 }
 

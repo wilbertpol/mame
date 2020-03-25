@@ -20,6 +20,7 @@
 #include "machine/timer.h"
 #include "emupal.h"
 #include "screen.h"
+#include "tilemap.h"
 
 /* star circuit */
 #define STAR_COUNT  252
@@ -155,10 +156,10 @@ public:
 	DECLARE_WRITE_LINE_MEMBER(galaxold_7474_9m_2_q_callback);
 	DECLARE_WRITE_LINE_MEMBER(galaxold_7474_9m_1_callback);
 	DECLARE_READ8_MEMBER(rescueb_a002_r) { return 0xfc; }
-	DECLARE_CUSTOM_INPUT_MEMBER(_4in1_fake_port_r);
-	DECLARE_CUSTOM_INPUT_MEMBER(vpool_lives_r);
-	DECLARE_CUSTOM_INPUT_MEMBER(ckongg_coinage_r);
-	DECLARE_CUSTOM_INPUT_MEMBER(dkongjrm_coinage_r);
+	template <int Mask> DECLARE_READ_LINE_MEMBER(_4in1_fake_port_r);
+	template <int Mask> DECLARE_READ_LINE_MEMBER(vpool_lives_r);
+	template <int Mask> DECLARE_CUSTOM_INPUT_MEMBER(ckongg_coinage_r);
+	template <int Mask> DECLARE_CUSTOM_INPUT_MEMBER(dkongjrm_coinage_r);
 
 	void init_bullsdrtg();
 	void init_ladybugg();
@@ -281,6 +282,7 @@ public:
 	void hexpoola(machine_config &config);
 	void dkongjrm(machine_config &config);
 	void tazzmang(machine_config &config);
+	void scrambleo(machine_config &config);
 	void scrambler(machine_config &config);
 	void spcwarp(machine_config &config);
 	void dkongjrmc(machine_config &config);
@@ -326,6 +328,7 @@ public:
 	void scramb2_map(address_map &map);
 	void scramb3_map(address_map &map);
 	void scramblb_map(address_map &map);
+	void scrambleo_map(address_map &map);
 	void scrambler_map(address_map &map);
 	void spcwarp_map(address_map &map);
 	void tazzmang_map(address_map &map);

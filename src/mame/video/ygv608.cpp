@@ -322,9 +322,109 @@ ygv608_device::ygv608_device( const machine_config &mconfig, const char *tag, de
 	  device_palette_interface(mconfig, *this),
 	  device_video_interface(mconfig, *this),
 	  m_io_space_config("io", ENDIANNESS_BIG, 8, 6, 0, address_map_constructor(FUNC(ygv608_device::regs_map), this)),
+	  m_namcond1_gfxbank(0),
+	  m_tilemap_A(nullptr),
+	  m_tilemap_B(nullptr),
+	  m_work_bitmap(0),
+	  m_bits16(0),
+	  m_page_x(0),
+	  m_page_y(0),
+	  m_pny_shift(0),
+	  m_na8_mask(0),
+	  m_col_shift(0),
+	  m_base_y_shift(0),
+	  m_screen_resize(false),
+	  m_tilemap_resize(false),
+	  m_color_state_r(0),
+	  m_color_state_w(0),
+	  m_p0_state(0),
+	  m_pattern_name_base_r(0),
+	  m_pattern_name_base_w(0),
+	  m_screen_status(0),
+	  m_dma_status(0),
+	  m_register_address(0),
+	  m_register_autoinc_r(false),
+	  m_register_autoinc_w(false),
+	  m_raster_irq_mask(false),
+	  m_vblank_irq_mask(false),
+	  m_raster_irq_hpos(0),
+	  m_raster_irq_vpos(0),
+	  m_raster_irq_mode(false),
+	  m_scroll_address(0),
+	  m_palette_address(0),
+	  m_sprite_address(0),
+	  m_sprite_bank(0),
+	  m_xtile_ptr(0),
+	  m_ytile_ptr(0),
+	  m_xtile_autoinc(false),
+	  m_ytile_autoinc(false),
+	  m_plane_select_access(false),
+	  m_mosaic_aplane(0),
+	  m_mosaic_bplane(0),
+	  m_sprite_disable(0),
+	  m_sprite_aux_mode(0),
+	  m_sprite_aux_reg(0),
+	  m_border_color(0),
+	  m_saar(false),
+	  m_saaw(false),
+	  m_scar(false),
+	  m_scaw(false),
+	  m_cpar(false),
+	  m_cpaw(false),
+	  m_ba_plane_scroll_select(false),
+	  m_dspe(false),
+	  m_md(0),
+	  m_zron(false),
+	  m_flip(false),
+	  m_dckm(false),
+	  m_page_size(false),
+	  m_h_display_size(0),
+	  m_v_display_size(0),
+	  m_roz_wrap_disable(false),
+	  m_scroll_wrap_disable(false),
+	  m_pattern_size(0),
+	  m_h_div_size(0),
+	  m_v_div_size(0),
+	  m_planeA_trans_enable(false),
+	  m_planeB_trans_enable(false),
+	  m_priority_mode(0),
+	  m_cbdr(false),
+	  m_yse(false),
+	  m_scm(0),
+	  m_planeA_color_fetch(0),
+	  m_planeB_color_fetch(0),
+	  m_sprite_color_fetch(0),
 	  m_vblank_handler(*this),
-	  m_raster_handler(*this)
+	  m_raster_handler(*this),
+	  m_vblank_timer(nullptr),
+	  m_raster_timer(nullptr),
+	  m_ax(0),
+	  m_dx(0),
+	  m_dxy(0),
+	  m_ay(0),
+	  m_dy(0),
+	  m_dyx(0),
+	  m_raw_ax(0),
+	  m_raw_dx(0),
+	  m_raw_dxy(0),
+	  m_raw_ay(0),
+	  m_raw_dy(0),
+	  m_raw_dyx(0)
 {
+	std::fill(std::begin(m_pattern_name_table), std::end(m_pattern_name_table), 0);
+	std::fill(std::begin(m_tilemap_A_cache_8), std::end(m_tilemap_A_cache_8), nullptr);
+	std::fill(std::begin(m_tilemap_A_cache_16), std::end(m_tilemap_A_cache_16), nullptr);
+	std::fill(std::begin(m_tilemap_B_cache_8), std::end(m_tilemap_B_cache_8), nullptr);
+	std::fill(std::begin(m_tilemap_B_cache_16), std::end(m_tilemap_B_cache_16), nullptr);
+
+	for (int i = 0; i < 2; i++)
+	{
+		std::fill(std::begin(m_scroll_data_table[i]), std::end(m_scroll_data_table[i]), 0);
+		std::fill(std::begin(m_base_addr[i]), std::end(m_base_addr[i]), 0);
+	}
+
+	for (int i = 0; i < 256; i++)
+		std::fill(std::begin(m_colour_palette[i]), std::end(m_colour_palette[i]), 0);
 }
 
 //-------------------------------------------------
@@ -359,21 +459,21 @@ void ygv608_device::device_start()
 	save_item(NAME(m_namcond1_gfxbank));
 
 	/* create tilemaps of all sizes and combinations */
-	m_tilemap_A_cache_8[0] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_A_8),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  8,8, 32,32);
-	m_tilemap_A_cache_8[1] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_A_8),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  8,8, 64,32);
-	m_tilemap_A_cache_8[2] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_A_8),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  8,8, 32,64);
+	m_tilemap_A_cache_8[0] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_A_8)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  8,8, 32,32);
+	m_tilemap_A_cache_8[1] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_A_8)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  8,8, 64,32);
+	m_tilemap_A_cache_8[2] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_A_8)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  8,8, 32,64);
 
-	m_tilemap_A_cache_16[0] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_A_16),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  16,16, 32,32);
-	m_tilemap_A_cache_16[1] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_A_16),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  16,16, 64,32);
-	m_tilemap_A_cache_16[2] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_A_16),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  16,16, 32,64);
+	m_tilemap_A_cache_16[0] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_A_16)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  16,16, 32,32);
+	m_tilemap_A_cache_16[1] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_A_16)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  16,16, 64,32);
+	m_tilemap_A_cache_16[2] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_A_16)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  16,16, 32,64);
 
-	m_tilemap_B_cache_8[0] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_B_8),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  8,8, 32,32);
-	m_tilemap_B_cache_8[1] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_B_8),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  8,8, 64,32);
-	m_tilemap_B_cache_8[2] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_B_8),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  8,8, 32,64);
+	m_tilemap_B_cache_8[0] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_B_8)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  8,8, 32,32);
+	m_tilemap_B_cache_8[1] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_B_8)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  8,8, 64,32);
+	m_tilemap_B_cache_8[2] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_B_8)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  8,8, 32,64);
 
-	m_tilemap_B_cache_16[0] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_B_16),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  16,16, 32,32);
-	m_tilemap_B_cache_16[1] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_B_16),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  16,16, 64,32);
-	m_tilemap_B_cache_16[2] = &machine().tilemap().create(*this, tilemap_get_info_delegate(FUNC(ygv608_device::get_tile_info_B_16),this), tilemap_mapper_delegate(FUNC(ygv608_device::get_tile_offset),this),  16,16, 32,64);
+	m_tilemap_B_cache_16[0] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_B_16)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  16,16, 32,32);
+	m_tilemap_B_cache_16[1] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_B_16)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  16,16, 64,32);
+	m_tilemap_B_cache_16[2] = &machine().tilemap().create(*this, tilemap_get_info_delegate(*this, FUNC(ygv608_device::get_tile_info_B_16)), tilemap_mapper_delegate(*this, FUNC(ygv608_device::get_tile_offset)),  16,16, 32,64);
 
 	m_tilemap_A = nullptr;
 	m_tilemap_B = nullptr;
@@ -487,11 +587,11 @@ TILE_GET_INFO_MEMBER( ygv608_device::get_tile_info_A_8 )
 
 	if( col >= m_page_x )
 	{
-		SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else if( row >= m_page_y )
 	{
-		SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else
 	{
@@ -569,7 +669,7 @@ TILE_GET_INFO_MEMBER( ygv608_device::get_tile_info_A_8 )
 			j += m_namcond1_gfxbank * 0x8000;
 		}
 
-		SET_TILE_INFO_MEMBER(set, j, attr & 0x0F, f );
+		tileinfo.set(set, j, attr & 0x0F, f );
 	}
 }
 
@@ -588,15 +688,15 @@ TILE_GET_INFO_MEMBER( ygv608_device::get_tile_info_B_8 )
 
 	if (m_md & MD_1PLANE )
 	{
-		SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else if (col >= m_page_x)
 	{
-		SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else if (row >= m_page_y)
 	{
-		SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else
 	{
@@ -674,7 +774,7 @@ TILE_GET_INFO_MEMBER( ygv608_device::get_tile_info_B_8 )
 			j += m_namcond1_gfxbank * 0x8000;
 		}
 
-		SET_TILE_INFO_MEMBER(set, j, attr, f );
+		tileinfo.set(set, j, attr, f );
 	}
 }
 
@@ -692,87 +792,87 @@ TILE_GET_INFO_MEMBER( ygv608_device::get_tile_info_A_16 )
 	int             base = row >> m_base_y_shift;
 
 	if( col >= m_page_x ) {
-	SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else if( row >= m_page_y ) {
-	SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else {
-	int sx, sy, page;
-	int j;
-	int i = ( ( ( row << m_pny_shift ) + col ) << m_bits16 );
-	int f = 0;
-	i += pattern_name_base;
+		int sx, sy, page;
+		int j;
+		int i = ( ( ( row << m_pny_shift ) + col ) << m_bits16 );
+		int f = 0;
+		i += pattern_name_base;
 
-	j = m_pattern_name_table[i];
-	if( m_bits16 ) {
-		j += ((int)(m_pattern_name_table[i+1] & m_na8_mask )) << 8;
-		// attribute only valid in 16 color mode
-		if( set == GFX_16X16_4BIT )
-			attr = m_pattern_name_table[i+1] >> 4;
+		j = m_pattern_name_table[i];
+		if( m_bits16 ) {
+			j += ((int)(m_pattern_name_table[i+1] & m_na8_mask )) << 8;
+			// attribute only valid in 16 color mode
+			if( set == GFX_16X16_4BIT )
+				attr = m_pattern_name_table[i+1] >> 4;
 
-		if (m_flip == true)
-		{
-		if (m_pattern_name_table[i+1] & (1<<3)) f |= TILE_FLIPX;
-		if (m_pattern_name_table[i+1] & (1<<2)) f |= TILE_FLIPY;
+			if (m_flip == true)
+			{
+			if (m_pattern_name_table[i+1] & (1<<3)) f |= TILE_FLIPX;
+			if (m_pattern_name_table[i+1] & (1<<2)) f |= TILE_FLIPY;
+			}
 		}
-	}
 
-	/* calculate page according to scroll data */
-	/* - assuming full-screen scroll only for now... */
-	if (m_v_div_size) {
-		page = 0;
-	}
-	else {
-		sy = (int)m_scroll_data_table[0][translated_column] +
-		   (((int)m_scroll_data_table[0][translated_column+1] & 0x0f ) << 8);
-		sx = (int)m_scroll_data_table[0][0x80] +
-		   (((int)m_scroll_data_table[0][0x81] & 0x0f ) << 8);
-
-		if (m_md == MD_2PLANE_16BIT) {
-			page = ( ( sx + col * 16 ) % 2048 ) / 512;
-			page += ( ( sy + row * 16 ) / 512 ) * 4;
-		}
-		else if (m_page_size) {
-			page = ( sx + col * 16 ) / 512;
-			page += ( ( sy + row * 16 ) / 1024 ) * 8;
+		/* calculate page according to scroll data */
+		/* - assuming full-screen scroll only for now... */
+		if (m_v_div_size) {
+			page = 0;
 		}
 		else {
-			page = ( sx + col * 16 ) / 1024;
-			page += ( ( sy + row * 16 ) / 512 ) * 4;
+			sy = (int)m_scroll_data_table[0][translated_column] +
+			   (((int)m_scroll_data_table[0][translated_column+1] & 0x0f ) << 8);
+			sx = (int)m_scroll_data_table[0][0x80] +
+			   (((int)m_scroll_data_table[0][0x81] & 0x0f ) << 8);
+
+			if (m_md == MD_2PLANE_16BIT) {
+				page = ( ( sx + col * 16 ) % 2048 ) / 512;
+				page += ( ( sy + row * 16 ) / 512 ) * 4;
+			}
+			else if (m_page_size) {
+				page = ( sx + col * 16 ) / 512;
+				page += ( ( sy + row * 16 ) / 1024 ) * 8;
+			}
+			else {
+				page = ( sx + col * 16 ) / 1024;
+				page += ( ( sy + row * 16 ) / 512 ) * 4;
+			}
 		}
-	}
 
-	page &= 0x1f;
+		page &= 0x1f;
 
-	/* add page, base address to pattern name */
-	j += ( (int)m_scroll_data_table[0][0xc0+page] << 8 );
-	j += ( m_base_addr[0][base] << 8 );
+		/* add page, base address to pattern name */
+		j += ( (int)m_scroll_data_table[0][0xc0+page] << 8 );
+		j += ( m_base_addr[0][base] << 8 );
 
-	if( j >= layout_total(set) ) {
-	logerror( "A_16X16: tilemap=%d\n", j );
-		j = 0;
-	}
+		if( j >= layout_total(set) ) {
+		logerror( "A_16X16: tilemap=%d\n", j );
+			j = 0;
+		}
 
-	if (m_planeA_color_fetch != 0)
-	{
-		// attribute only valid in 16 color mode
-		if( set == GFX_16X16_4BIT )
-			attr = ( j >> ( m_planeA_color_fetch * 2 ) ) & 0x0f;
-	}
+		if (m_planeA_color_fetch != 0)
+		{
+			// attribute only valid in 16 color mode
+			if( set == GFX_16X16_4BIT )
+				attr = ( j >> ( m_planeA_color_fetch * 2 ) ) & 0x0f;
+		}
 
-	// banking
-	if (set == GFX_16X16_4BIT)
-	{
-		j += m_namcond1_gfxbank * 0x4000;
-	}
-	else // 8x8x8
-	{
-		j += m_namcond1_gfxbank * 0x2000;
-	}
+		// banking
+		if (set == GFX_16X16_4BIT)
+		{
+			j += m_namcond1_gfxbank * 0x4000;
+		}
+		else // 8x8x8
+		{
+			j += m_namcond1_gfxbank * 0x2000;
+		}
 
 
-	SET_TILE_INFO_MEMBER(set, j, attr, f );
+		tileinfo.set(set, j, attr, f );
 	}
 }
 
@@ -790,88 +890,88 @@ TILE_GET_INFO_MEMBER( ygv608_device::get_tile_info_B_16 )
 	int             base = row >> m_base_y_shift;
 
 	if(m_md & MD_1PLANE ) {
-	SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	if( col >= m_page_x ) {
-	SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else if( row >= m_page_y ) {
-	SET_TILE_INFO_MEMBER(set, 0, 0, 0 );
+		tileinfo.set(set, 0, 0, 0 );
 	}
 	else {
-	int sx, sy, page;
-	int j;
-	int i = ( ( ( row << m_pny_shift ) + col ) << m_bits16 );
-	int f = 0;
-	i += pattern_name_base;
+		int sx, sy, page;
+		int j;
+		int i = ( ( ( row << m_pny_shift ) + col ) << m_bits16 );
+		int f = 0;
+		i += pattern_name_base;
 
-	j = m_pattern_name_table[i];
-	if( m_bits16 ) {
-		j += ((int)(m_pattern_name_table[i+1] & m_na8_mask )) << 8;
-		attr = m_pattern_name_table[i+1] >> 4; /*& 0x00; 0xf0;*/
+		j = m_pattern_name_table[i];
+		if( m_bits16 ) {
+			j += ((int)(m_pattern_name_table[i+1] & m_na8_mask )) << 8;
+			attr = m_pattern_name_table[i+1] >> 4; /*& 0x00; 0xf0;*/
 
-		if (m_flip == true)
-		{
-			if (m_pattern_name_table[i+1] & (1<<3)) f |= TILE_FLIPX;
-			if (m_pattern_name_table[i+1] & (1<<2)) f |= TILE_FLIPY;
+			if (m_flip == true)
+			{
+				if (m_pattern_name_table[i+1] & (1<<3)) f |= TILE_FLIPX;
+				if (m_pattern_name_table[i+1] & (1<<2)) f |= TILE_FLIPY;
+			}
 		}
-	}
 
-	/* calculate page according to scroll data */
-	/* - assuming full-screen scroll only for now... */
-	if (m_v_div_size) {
-		page = 0;
-	}
-	else {
-		sy = (int)m_scroll_data_table[1][translated_column] +
-		   (((int)m_scroll_data_table[1][translated_column+1] & 0x0f ) << 8);
-		sx = (int)m_scroll_data_table[1][0x80] +
-		   (((int)m_scroll_data_table[1][0x81] & 0x0f ) << 8);
-
-		if (m_md == MD_2PLANE_16BIT) {
-			page = ( ( sx + col * 16 ) % 2048 ) / 512;
-			page += ( ( sy + row * 16 ) / 512 ) * 4;
-		}
-		else if (m_page_size) {
-			page = ( sx + col * 16 ) / 512;
-			page += ( ( sy + row * 16 ) / 1024 ) * 8;
+		/* calculate page according to scroll data */
+		/* - assuming full-screen scroll only for now... */
+		if (m_v_div_size) {
+			page = 0;
 		}
 		else {
-			page = ( sx + col * 16 ) / 1024;
-			page += ( ( sy + row * 16 ) / 512 ) * 4;
+			sy = (int)m_scroll_data_table[1][translated_column] +
+			   (((int)m_scroll_data_table[1][translated_column+1] & 0x0f ) << 8);
+			sx = (int)m_scroll_data_table[1][0x80] +
+			   (((int)m_scroll_data_table[1][0x81] & 0x0f ) << 8);
+
+			if (m_md == MD_2PLANE_16BIT) {
+				page = ( ( sx + col * 16 ) % 2048 ) / 512;
+				page += ( ( sy + row * 16 ) / 512 ) * 4;
+			}
+			else if (m_page_size) {
+				page = ( sx + col * 16 ) / 512;
+				page += ( ( sy + row * 16 ) / 1024 ) * 8;
+			}
+			else {
+				page = ( sx + col * 16 ) / 1024;
+				page += ( ( sy + row * 16 ) / 512 ) * 4;
+			}
 		}
-	}
 
-	page &= 0x1f;
+		page &= 0x1f;
 
-	/* add page, base address to pattern name */
-	j += ( (int)m_scroll_data_table[1][0xc0+page] << 8 );
-	j += ( m_base_addr[1][base] << 8 );
+		/* add page, base address to pattern name */
+		j += ( (int)m_scroll_data_table[1][0xc0+page] << 8 );
+		j += ( m_base_addr[1][base] << 8 );
 
-	if( j >= layout_total(set) ) {
-	logerror( "B_16X16: tilemap=%d\n", j );
-		j = 0;
-	}
+		if( j >= layout_total(set) ) {
+			logerror( "B_16X16: tilemap=%d\n", j );
+			j = 0;
+		}
 
-	if (m_planeB_color_fetch != 0)
-	{
-		uint8_t color = (m_planeB_color_fetch);
+		if (m_planeB_color_fetch != 0)
+		{
+			uint8_t color = (m_planeB_color_fetch);
 
-		/* assume 16 colour mode for now... */
-		attr = ( j >> (color * 2)) & 0x0f;
-	}
+			/* assume 16 colour mode for now... */
+			attr = ( j >> (color * 2)) & 0x0f;
+		}
 
-	// banking
-	if (set == GFX_16X16_4BIT)
-	{
-		j += m_namcond1_gfxbank * 0x4000;
-	}
-	else // 8x8x8
-	{
-		j += m_namcond1_gfxbank * 0x2000;
-	}
+		// banking
+		if (set == GFX_16X16_4BIT)
+		{
+			j += m_namcond1_gfxbank * 0x4000;
+		}
+		else // 8x8x8
+		{
+			j += m_namcond1_gfxbank * 0x2000;
+		}
 
-	SET_TILE_INFO_MEMBER(set, j, attr, f );
+		tileinfo.set(set, j, attr, f );
 	}
 }
 

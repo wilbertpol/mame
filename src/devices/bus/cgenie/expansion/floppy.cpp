@@ -83,7 +83,8 @@ const tiny_rom_entry *cgenie_fdc_device::device_rom_region() const
 //  device_add_mconfig - add device configuration
 //-------------------------------------------------
 
-MACHINE_CONFIG_START(cgenie_fdc_device::device_add_mconfig)
+void cgenie_fdc_device::device_add_mconfig(machine_config &config)
+{
 	TIMER(config, "timer").configure_periodic(FUNC(cgenie_fdc_device::timer_callback), attotime::from_msec(25));
 
 	WD2793(config, m_fdc, 4_MHz_XTAL / 4);
@@ -96,12 +97,10 @@ MACHINE_CONFIG_START(cgenie_fdc_device::device_add_mconfig)
 
 //  SOFTWARE_LIST(config, "floppy_list").set_original("cgenie_flop");
 
-	MCFG_GENERIC_SOCKET_ADD("socket", generic_plain_slot, "cgenie_flop_rom")
-	MCFG_GENERIC_EXTENSIONS("bin,rom")
-	MCFG_GENERIC_LOAD(cgenie_fdc_device, socket_load)
+	GENERIC_SOCKET(config, "socket", generic_plain_slot, "cgenie_flop_rom", "bin,rom").set_device_load(FUNC(cgenie_fdc_device::socket_load));
 
 	SOFTWARE_LIST(config, "rom_list").set_original("cgenie_flop_rom");
-MACHINE_CONFIG_END
+}
 
 
 //**************************************************************************
@@ -148,9 +147,7 @@ void cgenie_fdc_device::device_reset()
 
 	// map extra socket
 	if (m_socket->exists())
-	{
-		m_slot->m_program->install_read_handler(0xe000, 0xefff, read8sm_delegate(FUNC(generic_slot_device::read_rom), (generic_slot_device *) m_socket));
-	}
+		m_slot->m_program->install_read_handler(0xe000, 0xefff, read8sm_delegate(*m_socket, FUNC(generic_slot_device::read_rom)));
 }
 
 
@@ -174,7 +171,7 @@ TIMER_DEVICE_CALLBACK_MEMBER( cgenie_fdc_device::timer_callback )
 	m_slot->int_w(ASSERT_LINE);
 }
 
-DEVICE_IMAGE_LOAD_MEMBER( cgenie_fdc_device, socket_load )
+DEVICE_IMAGE_LOAD_MEMBER( cgenie_fdc_device::socket_load )
 {
 	uint32_t size = m_socket->common_get_size("rom");
 

@@ -1,18 +1,12 @@
 // license:GPL-2.0+
 // copyright-holders:Couriersud
-/*
- * poptions.cpp
- *
- */
 
 #include "poptions.h"
 #include "pexception.h"
+#include "pstrutil.h"
 #include "ptypes.h"
 
 namespace plib {
-/***************************************************************************
-    Options
-***************************************************************************/
 
 	option_base::option_base(options &parent, const pstring &help)
 	: m_help(help)
@@ -83,10 +77,8 @@ namespace plib {
 						{
 							throw pexception("other args can only be specified once!");
 						}
-						else
-						{
-							m_other_args = ov;
-						}
+
+						m_other_args = ov;
 					}
 					else
 						throw pexception("found option with neither short or long tag!" );
@@ -111,14 +103,14 @@ namespace plib {
 			if (!seen_other_args && plib::startsWith(arg, "--"))
 			{
 				auto v = psplit(arg.substr(2),"=");
-				if (v.size() && v[0] != pstring(""))
+				if (!v.empty() && v[0] != "")
 				{
 					opt = getopt_long(v[0]);
 					has_equal_arg = (v.size() > 1);
 					if (has_equal_arg)
 					{
 						for (std::size_t j = 1; j < v.size() - 1; j++)
-							opt_arg = opt_arg + v[j] + "=";
+							opt_arg += (v[j] + "=");
 						opt_arg += v[v.size()-1];
 					}
 				}

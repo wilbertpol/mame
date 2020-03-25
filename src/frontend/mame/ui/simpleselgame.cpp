@@ -24,7 +24,7 @@
 #include "mame.h"
 #include "uiinput.h"
 
-#include <ctype.h>
+#include <cctype>
 
 
 namespace ui {
@@ -37,6 +37,7 @@ simple_menu_select_game::simple_menu_select_game(mame_ui_manager &mui, render_co
 	: menu(mui, container)
 	, m_error(false), m_rerandomize(false)
 	, m_search()
+	, m_skip_main_items(0)
 	, m_driverlist(driver_list::total() + 1)
 	, m_drivlist()
 	, m_cached_driver(nullptr)
@@ -275,12 +276,12 @@ void simple_menu_select_game::populate(float &customtop, float &custombottom)
 	{
 		item_append(menu_item_type::SEPARATOR);
 		item_append(_("Configure Options"), "", 0, (void *)1);
-		skip_main_items = 1;
+		m_skip_main_items = 1;
 	}
 
 	// configure the custom rendering
-	customtop = ui().get_line_height() + 3.0f * UI_BOX_TB_BORDER;
-	custombottom = 4.0f * ui().get_line_height() + 3.0f * UI_BOX_TB_BORDER;
+	customtop = ui().get_line_height() + 3.0f * ui().box_tb_border();
+	custombottom = 4.0f * ui().get_line_height() + 3.0f * ui().box_tb_border();
 }
 
 
@@ -302,12 +303,12 @@ void simple_menu_select_game::custom_render(void *selectedref, float top, float 
 	// draw the top box
 	draw_text_box(
 			tempbuf, tempbuf + 1,
-			origx1, origx2, origy1 - top, origy1 - UI_BOX_TB_BORDER,
+			origx1, origx2, origy1 - top, origy1 - ui().box_tb_border(),
 			ui::text_layout::CENTER, ui::text_layout::TRUNCATE, false,
 			ui().colors().text_color(), ui().colors().background_color(), 1.0f);
 
 	// determine the text to render below
-	driver = ((uintptr_t)selectedref > skip_main_items) ? (const game_driver *)selectedref : nullptr;
+	driver = ((uintptr_t)selectedref > m_skip_main_items) ? (const game_driver *)selectedref : nullptr;
 	if (driver)
 	{
 		// first line is game name
@@ -384,7 +385,7 @@ void simple_menu_select_game::custom_render(void *selectedref, float top, float 
 	// draw the bottom box
 	draw_text_box(
 			tempbuf, tempbuf + 4,
-			origx1, origx2, origy2 + UI_BOX_TB_BORDER, origy2 + bottom,
+			origx1, origx2, origy2 + ui().box_tb_border(), origy2 + bottom,
 			ui::text_layout::CENTER, ui::text_layout::TRUNCATE, true,
 			ui().colors().text_color(), driver ? m_cached_color : ui().colors().background_color(), 1.0f);
 }

@@ -1043,7 +1043,7 @@ void aristmk4_state::slots_mem(address_map &map)
 	map(0x500d, 0x500d).portr("500d");
 	map(0x500e, 0x500e).portr("500e");
 	map(0x500f, 0x500f).portr("500f");
-	map(0x5010, 0x501f).rw("via6522_0", FUNC(via6522_device::read), FUNC(via6522_device::write));
+	map(0x5010, 0x501f).m("via6522_0", FUNC(via6522_device::map));
 	map(0x5200, 0x5200).r(FUNC(aristmk4_state::cashcade_r));
 	map(0x5201, 0x5201).portr("5201");
 	map(0x52c0, 0x52c0).r(FUNC(aristmk4_state::bv_p0));
@@ -1087,7 +1087,7 @@ void aristmk4_state::poker_mem(address_map &map)
 	map(0x500d, 0x500d).portr("500d");
 	map(0x500e, 0x500e).portr("500e");
 	map(0x500f, 0x500f).portr("500f");
-	map(0x5010, 0x501f).rw("via6522_0", FUNC(via6522_device::read), FUNC(via6522_device::write));
+	map(0x5010, 0x501f).m("via6522_0", FUNC(via6522_device::map));
 	map(0x5200, 0x5200).r(FUNC(aristmk4_state::cashcade_r));
 	map(0x5201, 0x5201).portr("5201");
 	map(0x52c0, 0x52c0).r(FUNC(aristmk4_state::bv_p0));
@@ -1754,7 +1754,7 @@ void aristmk4_state::device_timer(emu_timer &timer, device_timer_id id, int para
 	switch (id)
 	{
 	case TIMER_POWER_FAIL: power_fail(); break;
-	default: assert_always(false, "Unknown id in aristmk4_state::device_timer");
+	default: throw emu_fatalerror("Unknown id in aristmk4_state::device_timer");
 	}
 }
 

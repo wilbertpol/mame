@@ -16,7 +16,6 @@
 #include "bus/abckb/abc800kb.h"
 #include "machine/e0516.h"
 #include "machine/z80ctc.h"
-#include "machine/z80dart.h"
 #include "machine/z80sio.h"
 #include "machine/ram.h"
 #include "machine/timer.h"
@@ -129,7 +128,7 @@ public:
 	TIMER_DEVICE_CALLBACK_MEMBER( ctc_tick );
 	TIMER_DEVICE_CALLBACK_MEMBER( cassette_input_tick );
 
-	DECLARE_QUICKLOAD_LOAD_MEMBER( bac );
+	DECLARE_QUICKLOAD_LOAD_MEMBER(quickload_cb);
 
 	// memory state
 	bool m_fetch_charram;        // opcode fetched from character RAM region (0x7800-0x7fff)

@@ -35,6 +35,7 @@ More information can be found at http://www.seasip.info/AmstradXT/1640tech/index
 #include "bus/isa/isa.h"
 #include "bus/isa/isa_cards.h"
 #include "bus/pc_joy/pc_joy.h"
+#include "bus/rs232/rs232.h"
 
 #include "machine/pckeybrd.h"
 #include "machine/pc_lpt.h"
@@ -297,7 +298,7 @@ READ8_MEMBER( amstrad_pc_state::pc1640_port60_r )
 		if (m_port61&0x80)
 			data=m_port60;
 		else
-			data = m_keyboard->read(space, 0);
+			data = m_keyboard->read();
 		break;
 
 	case 1:
@@ -315,7 +316,7 @@ READ8_MEMBER( amstrad_pc_state::pc1640_port60_r )
 
 READ8_MEMBER( amstrad_pc_state::pc200_port378_r )
 {
-	uint8_t data = m_lpt1->read(space, offset);
+	uint8_t data = m_lpt1->read(offset);
 
 	if (offset == 1)
 		data = (data & ~7) | (ioport("DSW0")->read() & 7);
@@ -327,7 +328,7 @@ READ8_MEMBER( amstrad_pc_state::pc200_port378_r )
 
 READ8_MEMBER( amstrad_pc_state::pc200_port278_r )
 {
-	uint8_t data = m_lpt2->read(space, offset);
+	uint8_t data = m_lpt2->read(offset);
 
 	if (offset == 1)
 		data = (data & ~7) | (ioport("DSW0")->read() & 7);
@@ -340,7 +341,7 @@ READ8_MEMBER( amstrad_pc_state::pc200_port278_r )
 
 READ8_MEMBER( amstrad_pc_state::pc1640_port378_r )
 {
-	uint8_t data = m_lpt1->read(space, offset);
+	uint8_t data = m_lpt1->read(offset);
 
 	if (offset == 1)
 		data=(data & ~7) | (ioport("DSW0")->read() & 7);
@@ -487,9 +488,8 @@ INPUT_PORTS_END
 
 void amstrad_pc_state::cfg_com(device_t *device)
 {
-	/* has it's own mouse */
-	device = device->subdevice("serport0");
-	MCFG_SLOT_DEFAULT_OPTION(nullptr)
+	/* has its own mouse */
+	device->subdevice<rs232_port_device>("serport0")->set_default_option(nullptr);
 }
 
 void amstrad_pc_state::cfg_fdc(device_t *device)
@@ -511,7 +511,9 @@ void amstrad_pc_state::pc200(machine_config &config)
 	m_maincpu->set_addrmap(AS_IO, &amstrad_pc_state::pc200_io);
 	m_maincpu->set_irq_acknowledge_callback("mb:pic8259", FUNC(pic8259_device::inta_cb));
 
-	PCNOPPI_MOTHERBOARD(config, "mb", 0).set_cputag(m_maincpu);
+	PCNOPPI_MOTHERBOARD(config, m_mb, 0).set_cputag(m_maincpu);
+	m_mb->int_callback().set_inputline(m_maincpu, 0);
+	m_mb->nmi_callback().set_inputline(m_maincpu, INPUT_LINE_NMI);
 
 	// FIXME: determine ISA bus clock
 	ISA8_SLOT(config, "aga", 0, "mb:isa", pc_isa8_cards, "aga_pc200", true);

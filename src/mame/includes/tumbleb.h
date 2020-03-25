@@ -10,6 +10,7 @@
 #include "video/decospr.h"
 #include "emupal.h"
 #include "screen.h"
+#include "tilemap.h"
 
 class tumbleb_state : public driver_device
 {
@@ -43,6 +44,7 @@ public:
 	void magipur(machine_config &config);
 	void suprtrio(machine_config &config);
 	void htchctch(machine_config &config);
+	void htchctch_mcu(machine_config &config);
 	void sdfight(machine_config &config);
 	void chokchok(machine_config &config);
 	void cookbib_mcu(machine_config &config);

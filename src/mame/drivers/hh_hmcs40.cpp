@@ -218,7 +218,7 @@ void hh_hmcs40_state::set_interrupt(int line, int state)
 
 INPUT_CHANGED_MEMBER(hh_hmcs40_state::single_interrupt_line)
 {
-	set_interrupt((int)(uintptr_t)param, newval);
+	set_interrupt((int)param, newval);
 }
 
 
@@ -575,19 +575,19 @@ void bfriskyt_state::update_int1()
 
 static INPUT_PORTS_START( bfriskyt )
 	PORT_START("IN.0") // D11 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, 0)
 
 	PORT_START("IN.1") // D12 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, 0)
 
 	PORT_START("IN.2") // D13 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, 0)
 
 	PORT_START("IN.3") // D14 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, 0)
 
 	PORT_START("IN.4") // D15 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bfriskyt_state, input_changed, 0)
 
 	PORT_START("IN.5") // INT0
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_START ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 0)
@@ -822,16 +822,16 @@ void bzaxxon_state::update_int1()
 
 static INPUT_PORTS_START( bzaxxon )
 	PORT_START("IN.0") // D7 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bzaxxon_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bzaxxon_state, input_changed, 0)
 
 	PORT_START("IN.1") // D8 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, bzaxxon_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, bzaxxon_state, input_changed, 0)
 
 	PORT_START("IN.2") // D9 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bzaxxon_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bzaxxon_state, input_changed, 0)
 
 	PORT_START("IN.3") // D10 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, bzaxxon_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, bzaxxon_state, input_changed, 0)
 
 	PORT_START("IN.4") // INT0
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 0)
@@ -947,16 +947,16 @@ void zackman_state::update_int0()
 
 static INPUT_PORTS_START( zackman )
 	PORT_START("IN.0") // D11 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, zackman_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, zackman_state, input_changed, 0)
 
 	PORT_START("IN.1") // D12 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, zackman_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, zackman_state, input_changed, 0)
 
 	PORT_START("IN.2") // D13 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, zackman_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, zackman_state, input_changed, 0)
 
 	PORT_START("IN.3") // D14 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, zackman_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, zackman_state, input_changed, 0)
 
 	PORT_START("IN.4") // INT1
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 1)
@@ -1073,16 +1073,16 @@ void bpengo_state::update_int0()
 
 static INPUT_PORTS_START( bpengo )
 	PORT_START("IN.0") // D12 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, bpengo_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, bpengo_state, input_changed, 0)
 
 	PORT_START("IN.1") // D13 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, bpengo_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, bpengo_state, input_changed, 0)
 
 	PORT_START("IN.2") // D14 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bpengo_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bpengo_state, input_changed, 0)
 
 	PORT_START("IN.3") // D15 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bpengo_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bpengo_state, input_changed, 0)
 
 	PORT_START("IN.4") // INT1
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 1)
@@ -1206,19 +1206,19 @@ void bbtime_state::update_int0()
 
 static INPUT_PORTS_START( bbtime )
 	PORT_START("IN.0") // D10 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, 0)
 
 	PORT_START("IN.1") // D11 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, 0)
 
 	PORT_START("IN.2") // D12 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, 0)
 
 	PORT_START("IN.3") // D13 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, 0)
 
 	PORT_START("IN.4") // D14 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_CHANGED_MEMBER(DEVICE_SELF, bbtime_state, input_changed, 0)
 
 	PORT_START("IN.5") // INT1
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 1)
@@ -1721,7 +1721,7 @@ void pairmtch_state::pairmtch(machine_config &config)
 	m_audiocpu->read_r<2>().set(m_soundlatch[0], FUNC(generic_latch_8_device::read));
 	m_audiocpu->write_d().set(FUNC(pairmtch_state::speaker_w));
 
-	config.m_perfect_cpu_quantum = subtag("maincpu");
+	config.set_perfect_quantum(m_maincpu);
 
 	/* video hardware */
 	PWM_DISPLAY(config, m_display).set_size(6, 12);
@@ -1975,8 +1975,6 @@ static INPUT_PORTS_START( cdkong )
 	PORT_BIT( 0x7ff8, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-static s16 cdkong_speaker_levels[0x8000];
-
 void cdkong_state::cdkong(machine_config &config)
 {
 	/* basic machine hardware */
@@ -2006,9 +2004,10 @@ void cdkong_state::cdkong(machine_config &config)
 	TIMER(config, "speaker_decay").configure_periodic(FUNC(cdkong_state::speaker_decay_sim), attotime::from_msec(1));
 
 	// set volume levels (set_output_gain is too slow for sub-frame intervals)
+	static s16 speaker_levels[0x8000];
 	for (int i = 0; i < 0x8000; i++)
-		cdkong_speaker_levels[i] = i;
-	m_speaker->set_levels(0x8000, cdkong_speaker_levels);
+		speaker_levels[i] = i;
+	m_speaker->set_levels(0x8000, speaker_levels);
 }
 
 // roms
@@ -2114,7 +2113,7 @@ static INPUT_PORTS_START( cgalaxn )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT )
 
 	PORT_START("IN.1") // R11 port R0x
-	PORT_CONFNAME( 0x01, 0x01, DEF_STR( Players ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, cgalaxn_state, player_switch, nullptr)
+	PORT_CONFNAME( 0x01, 0x01, DEF_STR( Players ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, cgalaxn_state, player_switch, 0)
 	PORT_CONFSETTING(    0x01, "1" )
 	PORT_CONFSETTING(    0x00, "2" )
 	PORT_BIT( 0x0e, IP_ACTIVE_HIGH, IPT_UNUSED )
@@ -2930,29 +2929,29 @@ READ8_MEMBER(eturtles_state::cop_ack_r)
 
 static INPUT_PORTS_START( eturtles )
 	PORT_START("IN.0") // D1 INT0/1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_COCKTAIL PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_COCKTAIL PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 
 	PORT_START("IN.1") // D2 INT0/1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_COCKTAIL PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_COCKTAIL PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 
 	PORT_START("IN.2") // D3 INT0/1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_COCKTAIL PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_COCKTAIL PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 
 	PORT_START("IN.3") // D4 INT0/1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_COCKTAIL PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_COCKTAIL PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 
 	PORT_START("IN.4") // D5 INT0/1
-	PORT_CONFNAME( 0x01, 0x01, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_CONFNAME( 0x01, 0x01, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 	PORT_CONFSETTING(    0x01, "1" )
 	PORT_CONFSETTING(    0x00, "2" )
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 
 	PORT_START("IN.5") // D6 INT0/1
-	PORT_CONFNAME( 0x03, 0x00, DEF_STR( Players ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_CONFNAME( 0x03, 0x00, DEF_STR( Players ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 	PORT_CONFSETTING(    0x02, "0 (Demo)" )
 	PORT_CONFSETTING(    0x00, "1" )
 	PORT_CONFSETTING(    0x01, "2" )
@@ -2978,7 +2977,7 @@ void eturtles_state::eturtles(machine_config &config)
 	m_audiocpu->read_l().set(FUNC(eturtles_state::cop_latch_r));
 	m_audiocpu->read_g().set(FUNC(eturtles_state::cop_ack_r));
 
-	config.m_perfect_cpu_quantum = subtag("maincpu");
+	config.set_perfect_quantum(m_maincpu);
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_SVG));
@@ -3053,27 +3052,27 @@ READ8_MEMBER(estargte_state::cop_data_r)
 
 static INPUT_PORTS_START( estargte )
 	PORT_START("IN.0") // D1 INT0/1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON5 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr) PORT_NAME("Inviso")
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr) PORT_NAME("Smart Bomb")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON5 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0) PORT_NAME("Inviso")
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0) PORT_NAME("Smart Bomb")
 
 	PORT_START("IN.1") // D2 INT0/1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON4 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr) PORT_NAME("Fire")
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr) PORT_NAME("Change Direction")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON4 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0) PORT_NAME("Fire")
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0) PORT_NAME("Change Direction")
 
 	PORT_START("IN.2") // D3 INT0/1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 
 	PORT_START("IN.3") // D4 INT0/1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON3 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr) PORT_NAME("Thrust")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON3 ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0) PORT_NAME("Thrust")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.4") // D5 INT0/1
-	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Players ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Players ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 	PORT_CONFSETTING(    0x00, "0 (Demo)" ) // yes, same value as 1-player, hold the Inviso button at boot to enter demo mode
 	PORT_CONFSETTING(    0x00, "1" )
 	PORT_CONFSETTING(    0x01, "2" )
-	PORT_CONFNAME( 0x02, 0x02, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, nullptr)
+	PORT_CONFNAME( 0x02, 0x02, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, eturtles_state, input_changed, 0)
 	PORT_CONFSETTING(    0x00, "1" )
 	PORT_CONFSETTING(    0x02, "2" )
 
@@ -3100,7 +3099,7 @@ void estargte_state::estargte(machine_config &config)
 	m_audiocpu->write_d().set(FUNC(eturtles_state::cop_irq_w));
 	m_audiocpu->read_l().set(FUNC(estargte_state::cop_data_r));
 
-	config.m_perfect_cpu_quantum = subtag("maincpu");
+	config.set_perfect_quantum(m_maincpu);
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_SVG));
@@ -3331,16 +3330,16 @@ void gckong_state::update_int1()
 
 static INPUT_PORTS_START( gckong )
 	PORT_START("IN.0") // D5 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gckong_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gckong_state, input_changed, 0)
 
 	PORT_START("IN.1") // D6 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, gckong_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, gckong_state, input_changed, 0)
 
 	PORT_START("IN.2") // D7 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gckong_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gckong_state, input_changed, 0)
 
 	PORT_START("IN.3") // D8 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, gckong_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, gckong_state, input_changed, 0)
 
 	PORT_START("IN.4") // INT0
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 0)
@@ -3459,19 +3458,19 @@ void gdigdug_state::update_int1()
 
 static INPUT_PORTS_START( gdigdug )
 	PORT_START("IN.0") // D11 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_SELECT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_SELECT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, 0)
 
 	PORT_START("IN.1") // D12 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, 0)
 
 	PORT_START("IN.2") // D13 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, 0)
 
 	PORT_START("IN.3") // D14 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, 0)
 
 	PORT_START("IN.4") // D15 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, gdigdug_state, input_changed, 0)
 
 	PORT_START("IN.5") // INT0
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 0)
@@ -3647,8 +3646,6 @@ static INPUT_PORTS_START( mwcbaseb )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_1) PORT_CODE(KEYCODE_1_PAD) PORT_NAME("P1 1")
 INPUT_PORTS_END
 
-static const s16 mwcbaseb_speaker_levels[] = { 0, 0x3fff, -0x4000, 0, -0x4000, 0, -0x8000, -0x4000 };
-
 void mwcbaseb_state::mwcbaseb(machine_config &config)
 {
 	/* basic machine hardware */
@@ -3674,7 +3671,8 @@ void mwcbaseb_state::mwcbaseb(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker).add_route(ALL_OUTPUTS, "mono", 0.25);
-	m_speaker->set_levels(8, mwcbaseb_speaker_levels);
+	static const s16 speaker_levels[] = { 0, 0x3fff, -0x4000, 0, -0x4000, 0, -0x8000, -0x4000 };
+	m_speaker->set_levels(8, speaker_levels);
 }
 
 // roms
@@ -3770,22 +3768,22 @@ void msthawk_state::update_int0()
 
 static INPUT_PORTS_START( msthawk )
 	PORT_START("IN.0") // D10 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_SELECT ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, nullptr) PORT_NAME("Score")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_SELECT ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, 0) PORT_NAME("Score")
 
 	PORT_START("IN.1") // D11 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, nullptr) PORT_NAME("Land")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, 0) PORT_NAME("Land")
 
 	PORT_START("IN.2") // D12 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, 0)
 
 	PORT_START("IN.3") // D13 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, 0)
 
 	PORT_START("IN.4") // D14 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, 0)
 
 	PORT_START("IN.5") // D15 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, msthawk_state, input_changed, 0)
 
 	PORT_START("IN.6") // INT1
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 1) PORT_NAME("Fire")
@@ -4002,16 +4000,16 @@ void kingman_state::update_int0()
 
 static INPUT_PORTS_START( kingman )
 	PORT_START("IN.0") // D12 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, kingman_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_CHANGED_MEMBER(DEVICE_SELF, kingman_state, input_changed, 0)
 
 	PORT_START("IN.1") // D13 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, kingman_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_CHANGED_MEMBER(DEVICE_SELF, kingman_state, input_changed, 0)
 
 	PORT_START("IN.2") // D14 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, kingman_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_CHANGED_MEMBER(DEVICE_SELF, kingman_state, input_changed, 0)
 
 	PORT_START("IN.3") // D15 INT0
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, kingman_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_CHANGED_MEMBER(DEVICE_SELF, kingman_state, input_changed, 0)
 
 	PORT_START("IN.4") // INT1
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 1)
@@ -4128,16 +4126,16 @@ void tmtron_state::update_int1()
 
 static INPUT_PORTS_START( tmtron )
 	PORT_START("IN.0") // D12 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_16WAY PORT_CHANGED_MEMBER(DEVICE_SELF, tmtron_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_DOWN ) PORT_16WAY PORT_CHANGED_MEMBER(DEVICE_SELF, tmtron_state, input_changed, 0)
 
 	PORT_START("IN.1") // D13 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_16WAY PORT_CHANGED_MEMBER(DEVICE_SELF, tmtron_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_16WAY PORT_CHANGED_MEMBER(DEVICE_SELF, tmtron_state, input_changed, 0)
 
 	PORT_START("IN.2") // D14 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_16WAY PORT_CHANGED_MEMBER(DEVICE_SELF, tmtron_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_UP ) PORT_16WAY PORT_CHANGED_MEMBER(DEVICE_SELF, tmtron_state, input_changed, 0)
 
 	PORT_START("IN.3") // D15 INT1
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_16WAY PORT_CHANGED_MEMBER(DEVICE_SELF, tmtron_state, input_changed, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_16WAY PORT_CHANGED_MEMBER(DEVICE_SELF, tmtron_state, input_changed, 0)
 
 	PORT_START("IN.4") // INT0
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_hmcs40_state, single_interrupt_line, 0)

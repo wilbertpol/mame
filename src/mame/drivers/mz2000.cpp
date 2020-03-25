@@ -28,7 +28,6 @@
 #include "machine/wd_fdc.h"
 #include "machine/z80pio.h"
 #include "sound/beep.h"
-#include "sound/wave.h"
 
 #include "emupal.h"
 #include "screen.h"
@@ -425,7 +424,7 @@ void mz2000_state::mz80b_io(address_map &map)
 	map(0xe4, 0xe7).rw(m_pit8253, FUNC(pit8253_device::read), FUNC(pit8253_device::write));
 	map(0xe8, 0xeb).rw("z80pio_1", FUNC(z80pio_device::read_alt), FUNC(z80pio_device::write_alt));
 	map(0xf0, 0xf3).w(FUNC(mz2000_state::timer_w));
-//  AM_RANGE(0xf4, 0xf4) AM_WRITE(vram_bank_w)
+//  map(0xf4, 0xf4).w(FUNC(mz2000_state::vram_bank_w));
 }
 
 void mz2000_state::mz2000_io(address_map &map)
@@ -902,6 +901,9 @@ void mz2000_state::mz2000(machine_config &config)
 	m_pit8253->set_clk<1>(31250); /* needed by "Art Magic" to boot */
 	m_pit8253->set_clk<2>(31250);
 
+	SPEAKER(config, "mono").front_center();
+	BEEP(config, "beeper", 4096).add_route(ALL_OUTPUTS,"mono",0.15);
+
 	MB8877(config, m_mb8877a, 1_MHz_XTAL);
 
 	FLOPPY_CONNECTOR(config, "mb8877a:0", mz2000_floppies, "dd", mz2000_state::floppy_formats);
@@ -914,9 +916,11 @@ void mz2000_state::mz2000(machine_config &config)
 	CASSETTE(config, m_cass);
 	m_cass->set_formats(mz700_cassette_formats);
 	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 	m_cass->set_interface("mz_cass");
 
 	SOFTWARE_LIST(config, "cass_list").set_original("mz2000_cass");
+	SOFTWARE_LIST(config, "cass_list2").set_original("mz2200_cass");
 
 	/* video hardware */
 	SCREEN(config, m_screen, SCREEN_TYPE_RASTER);
@@ -929,12 +933,6 @@ void mz2000_state::mz2000(machine_config &config)
 
 	GFXDECODE(config, "gfxdecode", m_palette, gfx_mz2000);
 	PALETTE(config, m_palette, palette_device::BRG_3BIT);
-
-	SPEAKER(config, "mono").front_center();
-
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "mono", 0.25);
-
-	BEEP(config, "beeper", 4096).add_route(ALL_OUTPUTS,"mono",0.15);
 }
 
 void mz2000_state::mz80b(machine_config &config)

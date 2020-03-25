@@ -18,9 +18,9 @@
 
 *****************************************************************************/
 
-#include <string.h>
-#include <stdarg.h>
-#include <ctype.h>
+#include <cstring>
+#include <cstdarg>
+#include <cctype>
 
 #include "imgtool.h"
 #include "formats/imageutl.h"
@@ -277,6 +277,7 @@ static imgtoolerr_t basic_writefile(const basictokens *tokens,
 				{
 					for (i = 0; (token == nullptr) && (i < tokens->num_entries); i++)
 					{
+						bool found = false;
 						token_table = &tokens->entries[i];
 						for (j = 0; (token == nullptr) && (j < token_table->num_tokens); j++)
 						{
@@ -286,8 +287,12 @@ static imgtoolerr_t basic_writefile(const basictokens *tokens,
 								token_shift = token_table->shift;
 								token_value = token_table->base + j;
 								pos += strlen(token);
+								found = true;
+								break;
 							}
 						}
+						if (found)
+							break;
 					}
 				}
 

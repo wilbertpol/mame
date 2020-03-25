@@ -463,7 +463,7 @@ void md_base_state::megadriv_map(address_map &map)
 	map(0xc00000, 0xc0001f).rw(m_vdp, FUNC(sega315_5313_device::vdp_r), FUNC(sega315_5313_device::vdp_w));
 	map(0xd00000, 0xd0001f).rw(m_vdp, FUNC(sega315_5313_device::vdp_r), FUNC(sega315_5313_device::vdp_w)); // the earth defend
 	map(0xe00000, 0xe0ffff).ram().mirror(0x1f0000).share("megadrive_ram");
-//  AM_RANGE(0xff0000, 0xffffff) AM_READONLY
+//  map(0xff0000, 0xffffff).readonly();
 	/*       0xe00000 - 0xffffff) == MAIN RAM (64kb, Mirrored, most games use ff0000 - ffffff) */
 }
 
@@ -703,21 +703,37 @@ WRITE8_MEMBER(md_base_state::megadriv_z80_vdp_write )
 		case 0x15:
 		case 0x17:
 			// accessed by either segapsg_device or sn76496_device
-			m_vdp->vdp_w(space, offset >> 1, data, 0x00ff);
+			m_vdp->vdp_w(offset >> 1, data, 0x00ff);
 			break;
 
 		default:
 			osd_printf_debug("unhandled z80 vdp write %02x %02x\n",offset,data);
 	}
-
 }
-
 
 
 READ8_MEMBER(md_base_state::megadriv_z80_vdp_read )
 {
-	osd_printf_debug("megadriv_z80_vdp_read %02x\n",offset);
-	return machine().rand();
+	u8 ret = 0;
+	u8 shift = ((~offset & 1) << 3);
+	switch (offset & ~1)
+	{
+		case 0x04: // ctrl_port_r
+		case 0x06:
+		case 0x08: // H/V counter
+		case 0x0a:
+		case 0x0c:
+		case 0x0e:
+			ret = m_vdp->vdp_r(offset >> 1, 0xff << shift) >> shift;
+			break;
+
+		default:
+			if (!machine().side_effects_disabled())
+				osd_printf_debug("unhandled z80 vdp read %02x\n",offset);
+			ret = machine().rand();
+			break;
+	}
+	return ret;
 }
 
 READ8_MEMBER(md_base_state::megadriv_z80_unmapped_read )
@@ -906,11 +922,12 @@ void md_base_state::md_ntsc(machine_config &config)
 	m_vdp->lv6_irq().set(FUNC(md_base_state::vdp_lv6irqline_callback_genesis_68k));
 	m_vdp->lv4_irq().set(FUNC(md_base_state::vdp_lv4irqline_callback_genesis_68k));
 	m_vdp->set_screen("megadriv");
-	m_vdp->add_route(ALL_OUTPUTS, "lspeaker", 0.25);
-	m_vdp->add_route(ALL_OUTPUTS, "rspeaker", 0.25);
+	m_vdp->add_route(ALL_OUTPUTS, "lspeaker", 0.50);
+	m_vdp->add_route(ALL_OUTPUTS, "rspeaker", 0.50);
 
 	screen_device &screen(SCREEN(config, "megadriv", SCREEN_TYPE_RASTER));
-	screen.set_refresh_hz(60);
+	screen.set_refresh_hz(double(MASTER_CLOCK_NTSC) / 10.0 / 262.0 / 342.0); // same as SMS?
+//  screen.set_refresh_hz(double(MASTER_CLOCK_NTSC) / 8.0 / 262.0 / 427.0); // or 427 Htotal?
 	screen.set_vblank_time(ATTOSECONDS_IN_USEC(0)); // Vblank handled manually.
 	screen.set_size(64*8, 620);
 	screen.set_visarea(0, 32*8-1, 0, 28*8-1);
@@ -924,6 +941,16 @@ void md_base_state::md_ntsc(machine_config &config)
 	SPEAKER(config, "rspeaker").front_right();
 
 	YM2612(config, m_ymsnd, MASTER_CLOCK_NTSC/7); /* 7.67 MHz */
+	m_ymsnd->add_route(0, "lspeaker", 0.50);
+	m_ymsnd->add_route(1, "rspeaker", 0.50);
+}
+
+void md_base_state::md2_ntsc(machine_config &config)
+{
+	md_ntsc(config);
+
+	// Internalized YM3438 in VDP ASIC
+	YM3438(config.replace(), m_ymsnd, MASTER_CLOCK_NTSC/7); /* 7.67 MHz */
 	m_ymsnd->add_route(0, "lspeaker", 0.50);
 	m_ymsnd->add_route(1, "rspeaker", 0.50);
 }
@@ -960,11 +987,12 @@ void md_base_state::md_pal(machine_config &config)
 	m_vdp->lv6_irq().set(FUNC(md_base_state::vdp_lv6irqline_callback_genesis_68k));
 	m_vdp->lv4_irq().set(FUNC(md_base_state::vdp_lv4irqline_callback_genesis_68k));
 	m_vdp->set_screen("megadriv");
-	m_vdp->add_route(ALL_OUTPUTS, "lspeaker", 0.25);
-	m_vdp->add_route(ALL_OUTPUTS, "rspeaker", 0.25);
+	m_vdp->add_route(ALL_OUTPUTS, "lspeaker", 0.50);
+	m_vdp->add_route(ALL_OUTPUTS, "rspeaker", 0.50);
 
 	screen_device &screen(SCREEN(config, "megadriv", SCREEN_TYPE_RASTER));
-	screen.set_refresh_hz(50);
+	screen.set_refresh_hz(double(MASTER_CLOCK_PAL) / 10.0 / 313.0 / 342.0); // same as SMS?
+//  screen.set_refresh_hz(double(MASTER_CLOCK_PAL) / 8.0 / 313.0 / 423.0); // or 423 Htotal?
 	screen.set_vblank_time(ATTOSECONDS_IN_USEC(0)); // Vblank handled manually.
 	screen.set_size(64*8, 620);
 	screen.set_visarea(0, 32*8-1, 0, 28*8-1);
@@ -977,7 +1005,17 @@ void md_base_state::md_pal(machine_config &config)
 	SPEAKER(config, "lspeaker").front_left();
 	SPEAKER(config, "rspeaker").front_right();
 
-	YM2612(config, m_ymsnd, MASTER_CLOCK_NTSC/7); /* 7.67 MHz */
+	YM2612(config, m_ymsnd, MASTER_CLOCK_PAL / 7); /* 7.67 MHz */
+	m_ymsnd->add_route(0, "lspeaker", 0.50);
+	m_ymsnd->add_route(1, "rspeaker", 0.50);
+}
+
+void md_base_state::md2_pal(machine_config &config)
+{
+	md_pal(config);
+
+	// Internalized YM3438 in VDP ASIC
+	YM3438(config.replace(), m_ymsnd, MASTER_CLOCK_PAL / 7); /* 7.67 MHz */
 	m_ymsnd->add_route(0, "lspeaker", 0.50);
 	m_ymsnd->add_route(1, "rspeaker", 0.50);
 }
@@ -985,7 +1023,7 @@ void md_base_state::md_pal(machine_config &config)
 
 WRITE8_MEMBER(md_base_state::megadriv_tas_callback)
 {
-	return; // writeback not allowed
+	// writeback not allowed
 }
 
 void md_base_state::megadriv_init_common()
@@ -1001,10 +1039,10 @@ void md_base_state::megadriv_init_common()
 		save_pointer(NAME(m_genz80.z80_prgram), 0x2000);
 	}
 
-	m_maincpu->set_tas_write_callback(write8_delegate(FUNC(md_base_state::megadriv_tas_callback),this));
+	m_maincpu->set_tas_write_callback(*this, FUNC(md_base_state::megadriv_tas_callback));
 
-	m_megadrive_io_read_data_port_ptr = read8_delegate(FUNC(md_base_state::megadrive_io_read_data_port_3button),this);
-	m_megadrive_io_write_data_port_ptr = write16_delegate(FUNC(md_base_state::megadrive_io_write_data_port_3button),this);
+	m_megadrive_io_read_data_port_ptr = read8_delegate(*this, FUNC(md_base_state::megadrive_io_read_data_port_3button));
+	m_megadrive_io_write_data_port_ptr = write16_delegate(*this, FUNC(md_base_state::megadrive_io_write_data_port_3button));
 }
 
 void md_base_state::init_megadriv_c2()

@@ -135,6 +135,7 @@ nevada TYPE2 :  64       45      51       06       32      02        31     31  
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 
 #define MASTER_CLOCK    XTAL(16'000'000)
@@ -201,8 +202,8 @@ private:
 
 	template<int N> uint8_t duart_r(offs_t offset);
 	template<int N> void duart_w(offs_t offset, uint8_t data);
-	DECLARE_READ8_MEMBER(rtc_r);
-	DECLARE_WRITE8_MEMBER(rtc_w);
+	uint8_t rtc_r(offs_t offset);
+	void rtc_w(offs_t offset, uint8_t data);
 	DECLARE_READ16_MEMBER(io_board_r);
 	DECLARE_WRITE16_MEMBER(io_board_w);
 	DECLARE_WRITE16_MEMBER (io_board_x);
@@ -291,7 +292,7 @@ TILE_GET_INFO_MEMBER( nevada_state::get_bg_tile_info )
 	//int bank = (attr & 0x02) >> 1;
 	//int color = (attr & 0x3c) >> 2;
 
-	SET_TILE_INFO_MEMBER(0, code, 0, 0);
+	tileinfo.set(0, code, 0, 0);
 
 }
 
@@ -299,7 +300,7 @@ TILE_GET_INFO_MEMBER( nevada_state::get_bg_tile_info )
 /***************************************************************************/
 void nevada_state::video_start()
 {
-	m_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(nevada_state::get_bg_tile_info),this),TILEMAP_SCAN_ROWS,8,8,31,31);
+	m_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(nevada_state::get_bg_tile_info)), TILEMAP_SCAN_ROWS, 8,8, 31,31);
 }
 
 /***************************************************************************/
@@ -360,14 +361,14 @@ void nevada_state::duart_w(offs_t offset, uint8_t data)
 /*********************    RTC SECTION       ********************************/
 /***************************************************************************/
 
-READ8_MEMBER(nevada_state::rtc_r)
+uint8_t nevada_state::rtc_r(offs_t offset)
 {
-	return m_rtc->read(space, offset >> 3);
+	return m_rtc->read(offset >> 3);
 }
 
-WRITE8_MEMBER(nevada_state::rtc_w)
+void nevada_state::rtc_w(offs_t offset, uint8_t data)
 {
-	m_rtc->write(space, offset >> 3, data);
+	m_rtc->write(offset >> 3, data);
 }
 
 

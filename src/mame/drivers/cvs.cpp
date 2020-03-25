@@ -159,7 +159,7 @@ READ8_MEMBER(cvs_state::cvs_s2636_0_or_character_ram_r)
 	if (m_s2650_flag)
 		return m_character_ram[(0 * 0x800) | 0x400 | m_character_ram_page_start | offset];
 	else
-		return m_s2636[0]->read_data(space, offset);
+		return m_s2636[0]->read_data(offset);
 }
 
 WRITE8_MEMBER(cvs_state::cvs_s2636_0_or_character_ram_w)
@@ -171,7 +171,7 @@ WRITE8_MEMBER(cvs_state::cvs_s2636_0_or_character_ram_w)
 		m_gfxdecode->gfx(1)->mark_dirty((offset / 8) % 256);
 	}
 	else
-		m_s2636[0]->write_data(space, offset, data);
+		m_s2636[0]->write_data(offset, data);
 }
 
 
@@ -180,7 +180,7 @@ READ8_MEMBER(cvs_state::cvs_s2636_1_or_character_ram_r)
 	if (m_s2650_flag)
 		return m_character_ram[(1 * 0x800) | 0x400 | m_character_ram_page_start | offset];
 	else
-		return m_s2636[1]->read_data(space, offset);
+		return m_s2636[1]->read_data(offset);
 }
 
 WRITE8_MEMBER(cvs_state::cvs_s2636_1_or_character_ram_w)
@@ -192,7 +192,7 @@ WRITE8_MEMBER(cvs_state::cvs_s2636_1_or_character_ram_w)
 		m_gfxdecode->gfx(1)->mark_dirty((offset / 8) % 256);
 	}
 	else
-		m_s2636[1]->write_data(space, offset, data);
+		m_s2636[1]->write_data(offset, data);
 }
 
 
@@ -201,7 +201,7 @@ READ8_MEMBER(cvs_state::cvs_s2636_2_or_character_ram_r)
 	if (m_s2650_flag)
 		return m_character_ram[(2 * 0x800) | 0x400 | m_character_ram_page_start | offset];
 	else
-		return m_s2636[2]->read_data(space, offset);
+		return m_s2636[2]->read_data(offset);
 }
 
 WRITE8_MEMBER(cvs_state::cvs_s2636_2_or_character_ram_w)
@@ -213,7 +213,7 @@ WRITE8_MEMBER(cvs_state::cvs_s2636_2_or_character_ram_w)
 		m_gfxdecode->gfx(1)->mark_dirty((offset / 8) % 256);
 	}
 	else
-		m_s2636[2]->write_data(space, offset, data);
+		m_s2636[2]->write_data(offset, data);
 }
 
 
@@ -376,7 +376,7 @@ READ8_MEMBER(cvs_state::cvs_speech_command_r)
 {
 	/* FIXME: this was by observation on board ???
 	 *          -bit 7 is TMS status (active LO) */
-	return ((m_tms5110->ctl_r(space, 0) ^ 1) << 7) | (m_soundlatch->read() & 0x7f);
+	return ((m_tms5110->ctl_r() ^ 1) << 7) | (m_soundlatch->read() & 0x7f);
 }
 
 
@@ -394,7 +394,7 @@ WRITE8_MEMBER(cvs_state::cvs_tms5110_ctl_w)
 			(m_tms5110_ctl_data[1] << 3);   /* CTL8 */
 
 	LOG(("CVS: Speech CTL = %04x %02x %02x\n",  ctl, offset, data));
-	m_tms5110->ctl_w(space, 0, ctl);
+	m_tms5110->ctl_w(ctl);
 }
 
 
@@ -1561,7 +1561,7 @@ READ8_MEMBER(cvs_state::huncholy_prot_r)
 
 void cvs_state::init_huncholy()
 {
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0x6ff1, 0x6ff2, read8_delegate(FUNC(cvs_state::huncholy_prot_r),this));
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0x6ff1, 0x6ff2, read8_delegate(*this, FUNC(cvs_state::huncholy_prot_r)));
 
 	save_item(NAME(m_protection_counter));
 }
@@ -1586,7 +1586,7 @@ READ8_MEMBER(cvs_state::superbik_prot_r)
 void cvs_state::init_superbik()
 {
 	m_protection_counter = 0;
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0x73f1, 0x73f2, read8_delegate(FUNC(cvs_state::superbik_prot_r),this));
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0x73f1, 0x73f2, read8_delegate(*this, FUNC(cvs_state::superbik_prot_r)));
 
 	save_item(NAME(m_protection_counter));
 }
@@ -1619,7 +1619,7 @@ READ8_MEMBER(cvs_state::hero_prot_r)
 
 void cvs_state::init_hero()
 {
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0x73f0, 0x73ff, read8_delegate(FUNC(cvs_state::hero_prot_r),this));
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0x73f0, 0x73ff, read8_delegate(*this, FUNC(cvs_state::hero_prot_r)));
 }
 
 

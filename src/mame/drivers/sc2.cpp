@@ -29,6 +29,7 @@ Fidelity CC10 synonyms: RE, LV, RV, PB, ♪, CL, EN
 #include "emu.h"
 #include "cpu/z80/z80.h"
 #include "machine/z80pio.h"
+#include "machine/sensorboard.h"
 #include "video/pwm.h"
 #include "sound/dac.h"
 #include "sound/volt_reg.h"
@@ -93,7 +94,7 @@ void sc2_state::machine_start()
 
 
 /******************************************************************************
-    Devices, I/O
+    I/O
 ******************************************************************************/
 
 void sc2_state::update_display()
@@ -185,14 +186,14 @@ static INPUT_PORTS_START( sc2 )
 	PORT_START("IN.3")
 	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("K") PORT_CODE(KEYCODE_K)
 	PORT_BIT(0x02, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("W") PORT_CODE(KEYCODE_W)
-	PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("R") PORT_CODE(KEYCODE_R) PORT_CHANGED_MEMBER(DEVICE_SELF, sc2_state, reset_button, nullptr)
+	PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("R") PORT_CODE(KEYCODE_R) PORT_CHANGED_MEMBER(DEVICE_SELF, sc2_state, reset_button, 0)
 	PORT_BIT(0x08, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("P") PORT_CODE(KEYCODE_O)
 INPUT_PORTS_END
 
 
 
 /******************************************************************************
-    Machine Drivers
+    Machine Configs
 ******************************************************************************/
 
 void sc2_state::sc2(machine_config &config)
@@ -206,6 +207,10 @@ void sc2_state::sc2(machine_config &config)
 	m_pio->out_pa_callback().set(FUNC(sc2_state::pio_port_a_w));
 	m_pio->in_pb_callback().set(FUNC(sc2_state::pio_port_b_r));
 	m_pio->out_pb_callback().set(FUNC(sc2_state::pio_port_b_w));
+
+	// built-in chessboard is not electronic
+	sensorboard_device &board(SENSORBOARD(config, "board").set_type(sensorboard_device::NOSENSORS));
+	board.init_cb().set("board", FUNC(sensorboard_device::preset_chess));
 
 	/* video hardware */
 	PWM_DISPLAY(config, m_display).set_size(4, 8);

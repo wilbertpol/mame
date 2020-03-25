@@ -4,6 +4,7 @@
 // Dulmont Magnum
 // Additional info https://www.youtube.com/watch?v=st7H_vqSaQc and
 // http://www.eevblog.com/forum/blog/eevblog-949-vintage-australian-made-laptop-teardown/msg1080508/#msg1080508
+// TODO: cartridge dumps
 
 #include "emu.h"
 #include "cpu/i86/i186.h"
@@ -70,7 +71,7 @@ INPUT_CHANGED_MEMBER(magnum_state::keypress)
 {
 	if(newval != oldval)
 	{
-		m_key = ((uint8_t)(uintptr_t)(param) & 0xff) | (m_shift->read() & 0xc ? 0 : 0x80);
+		m_key = (uint8_t)(param & 0xff) | (m_shift->read() & 0xc ? 0 : 0x80);
 		m_keybirq = true;
 		check_irq();
 	}
@@ -281,7 +282,7 @@ void magnum_state::magnum_lcdc(address_map &map)
 
 void magnum_state::magnum(machine_config &config)
 {
-	I80186(config, m_maincpu, XTAL(12'000'000) / 2);
+	I80186(config, m_maincpu, XTAL(12'000'000));
 	m_maincpu->set_addrmap(AS_PROGRAM, &magnum_state::magnum_map);
 	m_maincpu->set_addrmap(AS_IO, &magnum_state::magnum_io);
 
@@ -320,7 +321,7 @@ void magnum_state::magnum(machine_config &config)
 }
 
 ROM_START( magnum )
-	ROM_REGION(0x20000, "bios", 0)
+	ROM_REGION16_LE(0x20000, "bios", 0)
 	ROM_LOAD16_BYTE("a1.7.88.bin", 0x00000, 0x4000, CRC(57882427) SHA1(97637b65ca43eb9d3bba546fb8ca701ba25ade8d))
 	ROM_LOAD16_BYTE("a1.7.81.bin", 0x00001, 0x4000, CRC(949f53a8) SHA1(b339f1495d9af7dfff0c3a2c24789631f9d1265b))
 	ROM_LOAD16_BYTE("a1.7.87.bin", 0x08000, 0x4000, CRC(25036dda) SHA1(20bc3782a66855b20cb0abe1051fa2eb50c7a860))
@@ -334,4 +335,4 @@ ROM_START( magnum )
 	ROM_LOAD("dulmontcharrom.bin", 0x0000, 0x1000, CRC(9dff89bf) SHA1(d359aeba7f0b0c81accf3bca25e7da636c033721))
 ROM_END
 
-COMP( 1983, magnum, 0, 0, magnum, magnum, magnum_state, empty_init, "Dulmont", "Magnum", MACHINE_NOT_WORKING | MACHINE_IMPERFECT_SOUND)
+COMP( 1983, magnum, 0, 0, magnum, magnum, magnum_state, empty_init, "Dulmont", "Magnum", MACHINE_IMPERFECT_SOUND)

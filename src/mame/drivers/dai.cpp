@@ -80,7 +80,7 @@ void dai_state::dai_mem(address_map &map)
 	map(0xf000, 0xf7ff).w(FUNC(dai_state::dai_stack_interrupt_circuit_w));
 	map(0xf800, 0xf8ff).ram();
 	map(0xfb00, 0xfbff).rw(FUNC(dai_state::dai_amd9511_r), FUNC(dai_state::dai_amd9511_w));
-	map(0xfc00, 0xfcff).rw(FUNC(dai_state::dai_pit_r), FUNC(dai_state::dai_pit_w)); // AM_DEVREADWRITE("pit8253", pit8253_device, read, write)
+	map(0xfc00, 0xfcff).rw(FUNC(dai_state::dai_pit_r), FUNC(dai_state::dai_pit_w)); // .rw("pit8253", FUNC(pit8253_device::read), FUNC(pit8253_device::write));
 	map(0xfd00, 0xfdff).rw(FUNC(dai_state::dai_io_discrete_devices_r), FUNC(dai_state::dai_io_discrete_devices_w));
 	map(0xfe00, 0xfeff).rw("ppi8255", FUNC(i8255_device::read), FUNC(i8255_device::write));
 	map(0xff00, 0xff0f).mirror(0xf0).m(m_tms5501, FUNC(tms5501_device::io_map));
@@ -194,7 +194,7 @@ void dai_state::dai(machine_config &config)
 	m_maincpu->set_addrmap(AS_PROGRAM, &dai_state::dai_mem);
 	m_maincpu->set_addrmap(AS_IO, &dai_state::dai_io);
 	m_maincpu->set_irq_acknowledge_callback(FUNC(dai_state::int_ack));
-	config.m_minimum_quantum = attotime::from_hz(60);
+	config.set_maximum_quantum(attotime::from_hz(60));
 
 	PIT8253(config, m_pit, 0);
 	m_pit->set_clk<0>(2000000);
@@ -221,7 +221,6 @@ void dai_state::dai(machine_config &config)
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
-	WAVE(config, "wave", m_cassette).add_route(ALL_OUTPUTS, "mono", 0.25);
 	SPEAKER(config, "lspeaker").front_left();
 	SPEAKER(config, "rspeaker").front_right();
 	DAI_SOUND(config, m_sound).add_route(0, "lspeaker", 0.50).add_route(1, "rspeaker", 0.50);
@@ -229,6 +228,7 @@ void dai_state::dai(machine_config &config)
 	/* cassette */
 	CASSETTE(config, m_cassette);
 	m_cassette->set_default_state(CASSETTE_PLAY | CASSETTE_MOTOR_DISABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 	m_cassette->set_interface("dai_cass");
 
 	/* tms5501 */

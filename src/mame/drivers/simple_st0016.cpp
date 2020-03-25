@@ -498,7 +498,7 @@ void st0016_state::mayjinsn(machine_config &config)
 	V810(config, m_subcpu, 10000000); //25 Mhz ?
 	m_subcpu->set_addrmap(AS_PROGRAM, &st0016_state::v810_mem);
 
-	config.m_minimum_quantum = attotime::from_hz(60);
+	config.set_maximum_quantum(attotime::from_hz(60));
 }
 
 void st0016_state::renju(machine_config &config)
@@ -739,5 +739,5 @@ GAME( 2001, gostop,     0,      st0016,   gostop,   st0016_state, init_renju,   
 
 /* Not working */
 GAME( 1994, mayjinsn,   0,      mayjinsn, st0016,   st0016_state, init_mayjinsn, ROT0, "Seta",             "Mayjinsen",           MACHINE_IMPERFECT_GRAPHICS|MACHINE_NOT_WORKING|MACHINE_NO_COCKTAIL)
-GAME( 1994, dcrown,     0,      st0016,   renju,    st0016_state, init_renju,    ROT0, "Nippon Data Kiki", "Dream Crown (Set 1)", MACHINE_NOT_WORKING|MACHINE_NO_COCKTAIL) // (c) 1994 Nippon Data Kiki is uploaded near the Japanese Insert coin text
-GAME( 1994, dcrowna,    dcrown, st0016,   renju,    st0016_state, init_renju,    ROT0, "Nippon Data Kiki", "Dream Crown (Set 2)", MACHINE_NOT_WORKING|MACHINE_NO_COCKTAIL) // the Insert Coin text has been translated to English and no (c) is uploaded
+GAME( 1994, dcrown,     0,      st0016,   renju,    st0016_state, init_renju,    ROT0, "Nippon Data Kiki", "Dream Crown (set 1)", MACHINE_NOT_WORKING|MACHINE_NO_COCKTAIL) // (c) 1994 Nippon Data Kiki is uploaded near the Japanese Insert coin text
+GAME( 1994, dcrowna,    dcrown, st0016,   renju,    st0016_state, init_renju,    ROT0, "Nippon Data Kiki", "Dream Crown (set 2)", MACHINE_NOT_WORKING|MACHINE_NO_COCKTAIL) // the Insert Coin text has been translated to English and no (c) is uploaded

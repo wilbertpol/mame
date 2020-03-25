@@ -165,11 +165,20 @@ resulting mess can be seen in the F4 viewer display.
 /****************************************************************************************************/
 /* Spectrum 128 specific functions */
 
-READ8_MEMBER(spectrum_state::spectrum_128_opcode_fetch_r)
+READ8_MEMBER(spectrum_state::spectrum_128_pre_opcode_fetch_r)
 {
 	/* this allows expansion devices to act upon opcode fetches from MEM addresses */
 	if (BIT(m_port_7ffd_data, 4))
-		m_exp->opcode_fetch(offset);
+	{
+		/* this allows expansion devices to act upon opcode fetches from MEM addresses
+		   for example, interface1 detection fetches requires fetches at 0008 / 0708 to
+		   enable paged ROM and then fetches at 0700 to disable it
+		*/
+		m_exp->pre_opcode_fetch(offset);
+		uint8_t retval = m_maincpu->space(AS_PROGRAM).read_byte(offset);
+		m_exp->post_opcode_fetch(offset);
+		return retval;
+	}
 
 	return m_maincpu->space(AS_PROGRAM).read_byte(offset);
 }
@@ -262,7 +271,7 @@ void spectrum_state::spectrum_128_mem(address_map &map)
 
 void spectrum_state::spectrum_128_fetch(address_map &map)
 {
-	map(0x0000, 0xffff).r(FUNC(spectrum_state::spectrum_128_opcode_fetch_r));
+	map(0x0000, 0xffff).r(FUNC(spectrum_state::spectrum_128_pre_opcode_fetch_r));
 }
 
 MACHINE_RESET_MEMBER(spectrum_state,spectrum_128)
@@ -314,7 +323,7 @@ void spectrum_state::spectrum_128(machine_config &config)
 	m_maincpu->set_addrmap(AS_IO, &spectrum_state::spectrum_128_io);
 	m_maincpu->set_addrmap(AS_OPCODES, &spectrum_state::spectrum_128_fetch);
 	m_maincpu->set_vblank_int("screen", FUNC(spectrum_state::spec_interrupt));
-	config.m_minimum_quantum = attotime::from_hz(60);
+	config.set_maximum_quantum(attotime::from_hz(60));
 
 	MCFG_MACHINE_RESET_OVERRIDE(spectrum_state, spectrum_128 )
 

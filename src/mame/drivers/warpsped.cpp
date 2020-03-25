@@ -89,6 +89,7 @@ L10, L15, L18 and G18 all read the same
 #include "cpu/z80/z80.h"
 #include "emupal.h"
 #include "screen.h"
+#include "tilemap.h"
 
 class warpspeed_state : public driver_device
 {
@@ -137,7 +138,7 @@ WRITE8_MEMBER(warpspeed_state::hardware_w)
 TILE_GET_INFO_MEMBER(warpspeed_state::get_text_tile_info)
 {
 	uint8_t code = m_videoram[tile_index] & 0x3f;
-	SET_TILE_INFO_MEMBER(0, code, 0, 0);
+	tileinfo.set(0, code, 0, 0);
 }
 
 TILE_GET_INFO_MEMBER(warpspeed_state::get_starfield_tile_info)
@@ -147,7 +148,7 @@ TILE_GET_INFO_MEMBER(warpspeed_state::get_starfield_tile_info)
 	{
 		code = memregion("starfield")->base()[tile_index >> 1] & 0x3f;
 	}
-	SET_TILE_INFO_MEMBER(1, code, 0, 0);
+	tileinfo.set(1, code, 0, 0);
 }
 
 WRITE8_MEMBER(warpspeed_state::vidram_w)
@@ -158,9 +159,9 @@ WRITE8_MEMBER(warpspeed_state::vidram_w)
 
 void warpspeed_state::video_start()
 {
-	m_text_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(warpspeed_state::get_text_tile_info),this), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
+	m_text_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(warpspeed_state::get_text_tile_info)), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
 	m_text_tilemap->set_transparent_pen(0);
-	m_starfield_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(warpspeed_state::get_starfield_tile_info),this), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
+	m_starfield_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(warpspeed_state::get_starfield_tile_info)), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
 	m_starfield_tilemap->mark_all_dirty();
 
 	save_item(NAME(m_regs));

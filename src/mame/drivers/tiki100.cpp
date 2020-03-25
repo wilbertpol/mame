@@ -720,9 +720,9 @@ void tiki100_state::tiki100(machine_config &config)
 	m_exp->busrq_wr_callback().set(FUNC(tiki100_state::busrq_w));
 	m_exp->mrq_rd_callback().set(FUNC(tiki100_state::mrq_r));
 	m_exp->mrq_wr_callback().set(FUNC(tiki100_state::mrq_w));
-	TIKI100_BUS_SLOT(config, "slot1", tiki100_cards, "8088");
-	TIKI100_BUS_SLOT(config, "slot2", tiki100_cards, "hdc");
-	TIKI100_BUS_SLOT(config, "slot3", tiki100_cards, nullptr);
+	TIKI100_BUS_SLOT(config, "slot1", m_exp, tiki100_cards, "8088");
+	TIKI100_BUS_SLOT(config, "slot2", m_exp, tiki100_cards, "hdc");
+	TIKI100_BUS_SLOT(config, "slot3", m_exp, tiki100_cards, nullptr);
 
 	/* devices */
 	Z80DART(config, m_dart, 8_MHz_XTAL / 4);
@@ -736,8 +736,8 @@ void tiki100_state::tiki100(machine_config &config)
 
 	Z80PIO(config, m_pio, 8_MHz_XTAL / 4);
 	m_pio->out_int_callback().set_inputline(m_maincpu, INPUT_LINE_IRQ0);
-	m_pio->in_pa_callback().set("cent_data_in", FUNC(input_buffer_device::bus_r));
-	m_pio->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	m_pio->in_pa_callback().set("cent_data_in", FUNC(input_buffer_device::read));
+	m_pio->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::write));
 	m_pio->in_pb_callback().set(FUNC(tiki100_state::pio_pb_r));
 	m_pio->out_pb_callback().set(FUNC(tiki100_state::pio_pb_w));
 
@@ -770,17 +770,18 @@ void tiki100_state::tiki100(machine_config &config)
 	output_latch_device &cent_data_out(OUTPUT_LATCH(config, "cent_data_out"));
 	m_centronics->set_output_latch(cent_data_out);
 
-	CASSETTE(config, m_cassette);
-	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_DISABLED | CASSETTE_SPEAKER_MUTED);
-
-	TIMER(config, "tape").configure_periodic(FUNC(tiki100_state::tape_tick), attotime::from_hz(44100));
-
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	AY8912(config, m_psg, 8_MHz_XTAL / 4);
 	m_psg->set_flags(AY8910_SINGLE_OUTPUT);
 	m_psg->port_a_write_callback().set(FUNC(tiki100_state::video_scroll_w));
 	m_psg->add_route(ALL_OUTPUTS, "mono", 0.25);
+
+	CASSETTE(config, m_cassette);
+	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_DISABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
+
+	TIMER(config, "tape").configure_periodic(FUNC(tiki100_state::tape_tick), attotime::from_hz(44100));
 
 	/* internal ram */
 	RAM(config, RAM_TAG).set_default_size("64K");

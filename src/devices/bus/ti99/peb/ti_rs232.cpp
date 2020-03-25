@@ -387,7 +387,7 @@ READ8Z_MEMBER( ti_rs232_pio_device::readz )
 		// use of it
 		m_ila = 0;
 	}
-	if (((offset & m_select_mask)==m_select_value) && m_selected)
+	if (in_dsr_space(offset, true) && m_selected)
 	{
 		if ((offset & 0x1000)==0x0000)
 		{
@@ -405,7 +405,7 @@ READ8Z_MEMBER( ti_rs232_pio_device::readz )
 */
 void ti_rs232_pio_device::write(offs_t offset, uint8_t data)
 {
-	if (((offset & m_select_mask)==m_select_value) && m_selected)
+	if (in_dsr_space(offset, true) && m_selected)
 	{
 		if ((offset & 0x1001)==0x1000)
 		{
@@ -1061,17 +1061,6 @@ void ti_rs232_pio_device::device_reset()
 
 	m_bufpos[0] = m_bufpos[1] = m_buflen[0] = m_buflen[1] = 0;
 
-	if (m_genmod)
-	{
-		m_select_mask = 0x1fe000;
-		m_select_value = 0x174000;
-	}
-	else
-	{
-		m_select_mask = 0x7e000;
-		m_select_value = 0x74000;
-	}
-
 	m_selected = false;
 
 	m_cru_base = (ioport("CRURS232")->read()==0)? 0x1300 : 0x1500;
@@ -1092,7 +1081,7 @@ INPUT_PORTS_START( ti_rs232 )
 	PORT_START( "CRURS232"  )
 	PORT_DIPNAME( 0x01, 0x00, "TI-RS232 CRU base" )
 		PORT_DIPSETTING(    0x00, "1300" )
-		PORT_DIPSETTING(    0x00, "1500" )
+		PORT_DIPSETTING(    0x01, "1500" )
 
 	PORT_START( "SERIALMAP" )
 	PORT_CONFNAME( 0x03, 0x00, "Serial cable pin mapping" )

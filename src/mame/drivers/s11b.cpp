@@ -26,7 +26,6 @@
 #include "emu.h"
 #include "includes/s11b.h"
 
-#include "cpu/m6800/m6800.h"
 #include "cpu/m6809/m6809.h"
 #include "sound/volt_reg.h"
 #include "speaker.h"
@@ -313,6 +312,7 @@ void s11b_state::s11b(machine_config &config)
 
 	/* Add the soundcard */
 	M6802(config, m_audiocpu, XTAL(4'000'000));
+	m_audiocpu->set_ram_enable(false);
 	m_audiocpu->set_addrmap(AS_PROGRAM, &s11b_state::s11b_audio_map);
 
 	SPEAKER(config, "speaker").front_center();
@@ -336,7 +336,7 @@ void s11b_state::s11b(machine_config &config)
 	/* Add the background music card */
 	MC6809E(config, m_bgcpu, XTAL(8'000'000) / 4); // MC68B09E
 	m_bgcpu->set_addrmap(AS_PROGRAM, &s11b_state::s11b_bg_map);
-	config.m_minimum_quantum = attotime::from_hz(50);
+	config.set_maximum_quantum(attotime::from_hz(50));
 
 	SPEAKER(config, "bg").front_center();
 	YM2151(config, m_ym, 3580000);
@@ -951,6 +951,19 @@ ROM_START(polic_l2)
 	ROM_LOAD("pfrc_u4.l2", 0x10000, 0x8000, CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2))
 	ROM_LOAD("pfrc_u19.l1", 0x18000, 0x8000, CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
 ROM_END
+
+ROM_START(polic_g4)
+	ROM_REGION(0x10000, "maincpu", 0)
+	ROM_LOAD("pfrc_u26.l4",  0x4000, 0x4000, CRC(1a1409e9) SHA1(775d35a22483bcf8c4b03841e0aca22b6504a48f))
+	ROM_LOAD("pfrc_u27.lg4", 0x8000, 0x8000, CRC(058322e7) SHA1(87847065c0785dbd4dff61cc256ed73ff929c40d))
+	ROM_REGION(0x20000, "audiocpu", ROMREGION_ERASEFF)
+	ROM_LOAD("pfrc_u21.l1", 0x18000, 0x8000, CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7))
+	ROM_LOAD("pfrc_u22.l1", 0x10000, 0x8000, CRC(40f5e6b2) SHA1(4af2e2658720b08d03d24c9d314a6e5074b2c747))
+	ROM_REGION(0x30000, "bgcpu", ROMREGION_ERASEFF)
+	ROM_LOAD("pfrc_u4.l2", 0x10000, 0x8000, CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2))
+	ROM_LOAD("pfrc_u19.l1", 0x18000, 0x8000, CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
+ROM_END
+
 /*--------------------
 / Space Station 1/88
 /--------------------*/
@@ -1159,6 +1172,7 @@ GAME(1989,  mousn_lx,       mousn_l4,   s11b,   s11b, s11b_state, init_s11b_inve
 GAME(1989,  polic_l4,       0,          s11b,   s11b, s11b_state, init_s11b_invert, ROT0, "Williams", "Police Force (LA-4)",                          MACHINE_IS_SKELETON_MECHANICAL)
 GAME(1989,  polic_l3,       polic_l4,   s11b,   s11b, s11b_state, init_s11b_invert, ROT0, "Williams", "Police Force (LA-3)",                          MACHINE_IS_SKELETON_MECHANICAL)
 GAME(1989,  polic_l2,       polic_l4,   s11b,   s11b, s11b_state, init_s11b_invert, ROT0, "Williams", "Police Force (LA-2)",                          MACHINE_IS_SKELETON_MECHANICAL)
+GAME(1989,  polic_g4,       polic_l4,   s11b,   s11b, s11b_state, init_s11b_invert, ROT0, "Williams", "Police Force (LG-4) Germany",                  MACHINE_IS_SKELETON_MECHANICAL)
 GAME(1988,  spstn_l5,       0,          s11b,   s11b, s11b_state, init_s11b,        ROT0, "Williams", "Space Station (L-5)",                          MACHINE_IS_SKELETON_MECHANICAL)
 GAME(1988,  swrds_l2,       0,          s11b,   s11b, s11b_state, init_s11b,        ROT0, "Williams", "Swords of Fury (L-2)",                         MACHINE_IS_SKELETON_MECHANICAL)
 GAME(1988,  swrds_l1,       swrds_l2,   s11b,   s11b, s11b_state, init_s11b,        ROT0, "Williams", "Swords of Fury (L-1)",                         MACHINE_IS_SKELETON_MECHANICAL)

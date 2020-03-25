@@ -260,7 +260,7 @@ void mc1000_state::mc1000_io(address_map &map)
 {
 	map.global_mask(0xff);
 	map(0x04, 0x04).rw(FUNC(mc1000_state::printer_r), FUNC(mc1000_state::printer_w));
-	map(0x05, 0x05).w("cent_data_out", FUNC(output_latch_device::bus_w));
+	map(0x05, 0x05).w("cent_data_out", FUNC(output_latch_device::write));
 //  map(0x10, 0x10).w(m_crtc, FUNC(mc6845_device::address_w));
 //  map(0x11, 0x11).rw(m_crtc, FUNC(mc6845_device::register_r), FUNC(mc6845_device::register_w));
 	map(0x12, 0x12).w(FUNC(mc1000_state::mc6845_ctrl_w));
@@ -580,6 +580,7 @@ void mc1000_state::mc1000(machine_config &config)
 	/* devices */
 	CASSETTE(config, m_cassette);
 	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 	m_cassette->set_interface("mc1000_cass");
 
 	SOFTWARE_LIST(config, "cass_list").set_original("mc1000_cass");

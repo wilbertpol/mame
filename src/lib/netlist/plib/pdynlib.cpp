@@ -1,9 +1,5 @@
 // license:GPL-2.0+
 // copyright-holders:Couriersud
-/*
- * dynlib.c
- *
- */
 
 #include "pdynlib.h"
 
@@ -73,7 +69,7 @@ dynlib::dynlib(const pstring &libname)
 	//else
 	//  fprintf(stderr, "win: library <%s> not found!\n", libname.c_str());
 	delete [] buffer;
-#elif defined(EMSCRIPTEN)
+#elif defined(__EMSCRIPTEN__)
 	//no-op
 #else
 	//printf("loading <%s>\n", libname.c_str());
@@ -107,7 +103,7 @@ dynlib::dynlib(const pstring &path, const pstring &libname)
 		//printf("win: library <%s> not found!\n", libname.c_str());
 	}
 	delete [] buffer;
-#elif defined(EMSCRIPTEN)
+#elif defined(__EMSCRIPTEN__)
 	//no-op
 #else
 	//printf("loading <%s>\n", libname.c_str());
@@ -136,12 +132,7 @@ dynlib::~dynlib()
 	}
 }
 
-bool dynlib::isLoaded() const
-{
-	return m_isLoaded;
-}
-
-void *dynlib::getsym_p(const pstring &name)
+void *dynlib::getsym_p(const pstring &name) const noexcept
 {
 #ifdef _WIN32
 	return (void *) GetProcAddress((HMODULE) m_lib, name.c_str());

@@ -36,6 +36,7 @@ void ncr5380n_device::map(address_map &map)
 
 ncr5380n_device::ncr5380n_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: nscsi_device(mconfig, type, tag, owner, clock)
+	, nscsi_slot_card_interface(mconfig, *this, DEVICE_SELF)
 	, m_fake_clock(10000000)
 	, tm(nullptr), status(0), istatus(0), m_mode(0)
 	, m_outdata(0), m_busstatus(0), m_dmalatch(0), m_icommand(0), m_tcommand(0), clock_conv(0), sync_offset(0), sync_period(0), bus_id(0), select_timeout(0)
@@ -186,7 +187,7 @@ void ncr5380n_device::step(bool timeout)
 		if(win != scsi_id) {
 			scsi_bus->data_w(scsi_refid, 0);
 			scsi_bus->ctrl_w(scsi_refid, 0, S_ALL);
-			fatalerror("need to wait for bus free\n");
+			logerror("need to wait for bus free\n");
 		}
 
 		state &= STATE_MASK;

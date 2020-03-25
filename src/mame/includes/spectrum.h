@@ -12,7 +12,7 @@
 #pragma once
 
 #include "machine/spec_snqk.h"
-
+#include "machine/bankdev.h"
 #include "bus/spectrum/exp.h"
 #include "imagedev/cassette.h"
 #include "imagedev/snapquik.h"
@@ -59,6 +59,8 @@ struct EVENT_LIST_ITEM
 };
 
 
+
+
 class spectrum_state : public driver_device
 {
 public:
@@ -69,6 +71,7 @@ public:
 		m_screen(*this, "screen"),
 		m_cassette(*this, "cassette"),
 		m_ram(*this, RAM_TAG),
+		m_specmem(*this, "specmem"),
 		m_speaker(*this, "speaker"),
 		m_exp(*this, "exp"),
 		m_io_line0(*this, "LINE0"),
@@ -92,11 +95,13 @@ public:
 
 	void spectrum_common(machine_config &config);
 	void spectrum(machine_config &config);
+	void spectrum_clone(machine_config &config);
 	void spectrum_128(machine_config &config);
 
 	void init_spectrum();
 
 protected:
+
 	enum
 	{
 		TIMER_IRQ_ON,
@@ -135,14 +140,18 @@ protected:
 
 	uint8_t *m_ram_0000;
 	uint8_t m_ram_disabled_by_beta;
-	DECLARE_READ8_MEMBER(opcode_fetch_r);
+	DECLARE_READ8_MEMBER(pre_opcode_fetch_r);
 	DECLARE_WRITE8_MEMBER(spectrum_rom_w);
 	DECLARE_READ8_MEMBER(spectrum_rom_r);
+	DECLARE_READ8_MEMBER(spectrum_data_r);
+	DECLARE_WRITE8_MEMBER(spectrum_data_w);
+
 	DECLARE_WRITE8_MEMBER(spectrum_port_fe_w);
 	DECLARE_READ8_MEMBER(spectrum_port_fe_r);
 	DECLARE_READ8_MEMBER(spectrum_port_ula_r);
+	DECLARE_READ8_MEMBER(spectrum_clone_port_ula_r);
 
-	DECLARE_READ8_MEMBER(spectrum_128_opcode_fetch_r);
+	DECLARE_READ8_MEMBER(spectrum_128_pre_opcode_fetch_r);
 	DECLARE_WRITE8_MEMBER(spectrum_128_bank1_w);
 	DECLARE_READ8_MEMBER(spectrum_128_bank1_r);
 	DECLARE_WRITE8_MEMBER(spectrum_128_port_7ffd_w);
@@ -166,8 +175,8 @@ protected:
 	virtual void plus3_update_memory() { }
 	virtual void ts2068_update_memory() { }
 
-	DECLARE_SNAPSHOT_LOAD_MEMBER(spectrum);
-	DECLARE_QUICKLOAD_LOAD_MEMBER(spectrum);
+	DECLARE_SNAPSHOT_LOAD_MEMBER(snapshot_cb);
+	DECLARE_QUICKLOAD_LOAD_MEMBER(quickload_cb);
 
 	required_device<cpu_device> m_maincpu;
 	required_device<screen_device> m_screen;
@@ -176,11 +185,14 @@ protected:
 	void spectrum_128_mem(address_map &map);
 	void spectrum_128_fetch(address_map &map);
 	void spectrum_io(address_map &map);
-	void spectrum_mem(address_map &map);
-	void spectrum_fetch(address_map &map);
+	void spectrum_clone_io(address_map &map);
+	void spectrum_opcodes(address_map &map);
+	void spectrum_map(address_map &map);
+	void spectrum_data(address_map &map);
 
 	required_device<cassette_image_device> m_cassette;
 	required_device<ram_device> m_ram;
+	optional_device<address_map_bank_device> m_specmem;
 	required_device<speaker_sound_device> m_speaker;
 	optional_device<spectrum_expansion_slot_device> m_exp;
 
@@ -236,6 +248,8 @@ protected:
 	void log_quickload(const char *type, uint32_t start, uint32_t length, uint32_t exec, const char *exec_format);
 	void setup_scr(uint8_t *quickdata, uint32_t quicksize);
 	void setup_raw(uint8_t *quickdata, uint32_t quicksize);
+
+	uint8_t floating_bus_r();
 };
 
 

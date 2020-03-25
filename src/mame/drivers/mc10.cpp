@@ -286,8 +286,8 @@ void mc10_state::driver_start()
 	save_item(NAME(m_pr_counter));
 
 	//for alice32 force port4 DDR to 0xff at startup
-	if (!strcmp(machine().system().name, "alice32") || !strcmp(machine().system().name, "alice90"))
-		m_maincpu->m6801_io_w(prg, 0x05, 0xff);
+	//if (!strcmp(machine().system().name, "alice32") || !strcmp(machine().system().name, "alice90"))
+		//m_maincpu->m6801_io_w(prg, 0x05, 0xff);
 }
 
 
@@ -528,6 +528,7 @@ void mc10_state::mc10(machine_config &config)
 	CASSETTE(config, m_cassette);
 	m_cassette->set_formats(coco_cassette_formats);
 	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_SPEAKER_ENABLED | CASSETTE_MOTOR_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "speaker", 0.05);
 	m_cassette->set_interface("mc10_cass");
 
 	/* printer */
@@ -570,6 +571,7 @@ void mc10_state::alice32(machine_config &config)
 	CASSETTE(config, m_cassette);
 	m_cassette->set_formats(alice32_cassette_formats);
 	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_SPEAKER_ENABLED | CASSETTE_MOTOR_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "speaker", 0.05);
 	m_cassette->set_interface("mc10_cass");
 
 	/* printer */

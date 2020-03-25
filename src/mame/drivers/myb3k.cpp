@@ -566,7 +566,7 @@ WRITE8_MEMBER( myb3k_state::myb3k_video_mode_w )
 void myb3k_state::myb3k_map(address_map &map)
 {
 	map.unmap_value_high();
-	//AM_RANGE(0x00000,0x3ffff) AM_RAM // It's either 128Kb or 256Kb RAM installed by machine_start()
+	//map(0x00000,0x3ffff).ram(); // It's either 128Kb or 256Kb RAM installed by machine_start()
 	map(0x40000, 0x7ffff).noprw();
 	map(0x80000, 0xcffff).noprw(); // Expansion Unit connected through an ISA8 cable
 	map(0xd0000, 0xeffff).ram().share("vram");  // Area 6, physical at 30000-3FFFF (128Kb RAM) or 10000-1FFFF (256KB RAM)
@@ -948,7 +948,7 @@ void myb3k_state::myb3k(machine_config &config)
 
 	/* Parallel port */
 	I8255A(config, m_ppi8255);
-	m_ppi8255->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	m_ppi8255->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::write));
 	m_ppi8255->in_pb_callback().set(FUNC(myb3k_state::ppi_portb_r));
 	m_ppi8255->out_pc_callback().set(FUNC(myb3k_state::ppi_portc_w));
 
@@ -985,7 +985,7 @@ void myb3k_state::myb3k(machine_config &config)
 	m_crtc->set_screen(m_screen);
 	m_crtc->set_show_border_area(false);
 	m_crtc->set_char_width(8);
-	m_crtc->set_update_row_callback(FUNC(myb3k_state::crtc_update_row), this);
+	m_crtc->set_update_row_callback(FUNC(myb3k_state::crtc_update_row));
 
 	/* ISA8+ Expansion bus */
 	ISA8(config, m_isabus, 0);

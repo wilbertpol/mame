@@ -105,6 +105,9 @@ i8275_device::i8275_device(const machine_config &mconfig, device_type type, cons
 	m_write_drq(*this),
 	m_write_hrtc(*this),
 	m_write_vrtc(*this),
+	m_write_lc(*this),
+	m_display_cb(*this),
+	m_refresh_hack(false),
 	m_status(0),
 	m_param_idx(0),
 	m_param_end(0),
@@ -147,11 +150,12 @@ void i8275_device::device_start()
 	screen().register_screen_bitmap(m_bitmap);
 
 	// resolve callbacks
-	m_display_cb.bind_relative_to(*owner());
 	m_write_drq.resolve_safe();
 	m_write_irq.resolve_safe();
 	m_write_hrtc.resolve_safe();
 	m_write_vrtc.resolve_safe();
+	m_write_lc.resolve_safe();
+	m_display_cb.resolve();
 
 	// allocate timers
 	m_hrtc_on_timer = timer_alloc(TIMER_HRTC_ON);
@@ -209,22 +213,22 @@ void i8275_device::vrtc_start()
 	//LOG("I8275 y %u x %u VRTC 1\n", y, x);
 	m_write_vrtc(1);
 
-	if (m_status & ST_VE)
-	{
-		// reset field attributes
-		m_field_attr = 0;
+	// reset field attributes
+	m_field_attr = 0;
 
-		m_buffer_idx = CHARACTERS_PER_ROW;
-		m_dma_stop = false;
-		m_end_of_screen = false;
+	// Intel datasheets imply DMA requests begin only after a "Start Display" command is issued.
+	// WY-100, however, expects a BRDY cycle from the 8276 after the program first configures and stops the display.
+	// This suggests that DMA bursts proceed as normal in this case, but any characters sent will not be displayed.
+	m_buffer_idx = CHARACTERS_PER_ROW;
+	m_dma_stop = false;
+	m_end_of_screen = !(m_status & ST_VE);
 
-		m_cursor_blink++;
-		m_cursor_blink &= 0x1f;
+	m_cursor_blink++;
+	m_cursor_blink &= 0x1f;
 
-		m_char_blink++;
-		m_char_blink &= 0x3f;
-		m_stored_attr = 0;
-	}
+	m_char_blink++;
+	m_char_blink &= 0x3f;
+	m_stored_attr = 0;
 }
 
 
@@ -280,12 +284,14 @@ void i8275_device::device_timer(emu_timer &timer, device_timer_id id, int param,
 
 	case TIMER_SCANLINE:
 		//LOG("I8275 y %u x %u HRTC 0\n", y, x);
+		int line_counter = OFFSET_LINE_COUNTER ? ((lc - 1) % SCANLINES_PER_ROW) : lc;
+		m_write_lc(line_counter);
 		m_write_hrtc(0);
 
 		if (m_scanline == 0)
 			vrtc_end();
 
-		if ((m_status & ST_VE) && lc == 0 && m_scanline < m_vrtc_scanline)
+		if (lc == 0 && m_scanline < m_vrtc_scanline)
 		{
 			if (!m_dma_stop && m_buffer_idx < CHARACTERS_PER_ROW)
 			{
@@ -320,7 +326,7 @@ void i8275_device::device_timer(emu_timer &timer, device_timer_id id, int param,
 		if (m_scanline == m_vrtc_scanline)
 			vrtc_start();
 
-		if ((m_status & ST_VE) && m_scanline == m_vrtc_drq_scanline)
+		if (!m_dma_stop && m_scanline == m_vrtc_drq_scanline)
 		{
 			// swap line buffers
 			m_buffer_dma = !m_buffer_dma;
@@ -331,7 +337,6 @@ void i8275_device::device_timer(emu_timer &timer, device_timer_id id, int param,
 
 		if ((m_status & ST_VE) && m_scanline < m_vrtc_scanline)
 		{
-			int line_counter = OFFSET_LINE_COUNTER ? ((lc - 1) % SCANLINES_PER_ROW) : lc;
 			bool end_of_row = false;
 			bool blank_row = (UNDERLINE >= 8) && ((lc == 0) || (lc == SCANLINES_PER_ROW - 1));
 			int fifo_idx = 0;
@@ -465,7 +470,7 @@ void i8275_device::device_timer(emu_timer &timer, device_timer_id id, int param,
 //  read -
 //-------------------------------------------------
 
-READ8_MEMBER( i8275_device::read )
+uint8_t i8275_device::read(offs_t offset)
 {
 	if (offset & 0x01)
 	{
@@ -506,7 +511,7 @@ READ8_MEMBER( i8275_device::read )
 //  write -
 //-------------------------------------------------
 
-WRITE8_MEMBER( i8275_device::write )
+void i8275_device::write(offs_t offset, uint8_t data)
 {
 	if (offset & 0x01)
 	{
@@ -609,9 +614,7 @@ WRITE8_MEMBER( i8275_device::write )
 		m_param[m_param_idx] = data;
 
 		if (m_param_idx == REG_SCN4)
-		{
 			recompute_parameters();
-		}
 
 		m_param_idx++;
 	}
@@ -622,9 +625,9 @@ WRITE8_MEMBER( i8275_device::write )
 //  dack_w -
 //-------------------------------------------------
 
-WRITE8_MEMBER( i8275_device::dack_w )
+void i8275_device::dack_w(uint8_t data)
 {
-	//LOG("I8275 y %u x %u DACK %04x:%02x %u (%u)\n", screen().vpos(), screen().hpos(), offset, data, m_buffer_idx, m_dma_idx);
+	//LOG("I8275 y %u x %u DACK %02x %u (%u)\n", screen().vpos(), screen().hpos(), data, m_buffer_idx, m_dma_idx);
 
 	m_write_drq(0);
 
@@ -724,15 +727,14 @@ void i8275_device::recompute_parameters()
 
 	int horiz_pix_total = (CHARACTERS_PER_ROW + HRTC_COUNT) * m_hpixels_per_column;
 	int vert_pix_total = (CHARACTER_ROWS_PER_FRAME + VRTC_ROW_COUNT) * SCANLINES_PER_ROW;
-	attoseconds_t refresh = screen().frame_period().attoseconds();
+	attotime refresh = clocks_to_attotime((CHARACTERS_PER_ROW + HRTC_COUNT) * vert_pix_total);
 	int max_visible_x = (CHARACTERS_PER_ROW * m_hpixels_per_column) - 1;
 	int max_visible_y = (CHARACTER_ROWS_PER_FRAME * SCANLINES_PER_ROW) - 1;
 
-	LOG("width %u height %u max_x %u max_y %u refresh %f\n", horiz_pix_total, vert_pix_total, max_visible_x, max_visible_y, 1 / ATTOSECONDS_TO_DOUBLE(refresh));
+	LOG("width %u height %u max_x %u max_y %u refresh %f\n", horiz_pix_total, vert_pix_total, max_visible_x, max_visible_y, refresh.as_hz());
 
-	rectangle visarea;
-	visarea.set(0, max_visible_x, 0, max_visible_y);
-	screen().configure(horiz_pix_total, vert_pix_total, visarea, refresh);
+	rectangle visarea(0, max_visible_x, 0, max_visible_y);
+	screen().configure(horiz_pix_total, vert_pix_total, visarea, (m_refresh_hack ? screen().frame_period() : refresh).as_attoseconds());
 
 	int hrtc_on_pos = CHARACTERS_PER_ROW * m_hpixels_per_column;
 	m_hrtc_on_timer->adjust(screen().time_until_pos(y, hrtc_on_pos), 0, screen().scan_period());

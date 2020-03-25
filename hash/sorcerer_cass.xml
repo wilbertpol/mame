@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
-
-<softwarelist name="sorcerer_cass" description="Exidy Sorcerer cassettes">
-
 <!--
+license:CC0
+
 Compiled by Robbbert
 -->
+
+<softwarelist name="sorcerer_cass" description="Exidy Sorcerer cassettes">
 
 <!--
      These come from tapes.
@@ -1180,6 +1181,19 @@ Compiled by Robbbert
 		<part name="cass" interface="sorcerer_cass">
 			<dataarea name="cass" size="16216806">
 				<rom name="wilde.wav" size="16216806" crc="0909b034" sha1="f7561886212f1ec69f285f64a86e8999b33dc105" />
+			</dataarea>
+		</part>
+	</software>
+	<!-- Added 2019-08-25 -->
+	<software name="misil">
+		<description>Defense</description>
+		<year>1981</year>
+		<publisher>&lt;unknown&gt;</publisher>
+		<info name="developer" value="Roger A. Kemp"/>
+		<info name="usage" value="Boot to Monitor, LOG" />
+		<part name="cass" interface="sorcerer_cass">
+			<dataarea name="cass" size="0x105082c">
+				<rom name="misil.wav" size="0x105082c" crc="aa61589b" sha1="a548ef24efec02745ed0346922edbdf2ad71f989" />
 			</dataarea>
 		</part>
 	</software>

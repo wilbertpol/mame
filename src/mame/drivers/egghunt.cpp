@@ -50,6 +50,7 @@ I dumped it with this configuration. In case I'll redump it desoldering pin 16 f
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 class egghunt_state : public driver_device
 {
@@ -161,7 +162,7 @@ TILE_GET_INFO_MEMBER(egghunt_state::get_bg_tile_info)
 //          code += 0;
 	}
 
-	SET_TILE_INFO_MEMBER(0, code, colour, 0);
+	tileinfo.set(0, code, colour, 0);
 }
 
 READ8_MEMBER(egghunt_state::egghunt_bgram_r)
@@ -198,7 +199,7 @@ WRITE8_MEMBER(egghunt_state::egghunt_atram_w)
 
 void egghunt_state::video_start()
 {
-	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(egghunt_state::get_bg_tile_info),this), TILEMAP_SCAN_ROWS, 8, 8, 64, 32);
+	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(egghunt_state::get_bg_tile_info)), TILEMAP_SCAN_ROWS, 8, 8, 64, 32);
 
 	save_item(NAME(m_bgram));
 	save_item(NAME(m_spram));

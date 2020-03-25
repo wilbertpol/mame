@@ -361,7 +361,7 @@ WRITE_LINE_MEMBER(borntofi_state::adpcm_int)
 	}
 	else
 	{
-		m_msm[Voice]->write_data(m_adpcm_rom[start / 2] >> ((start & 1) * 4));
+		m_msm[Voice]->data_w(m_adpcm_rom[start / 2] >> ((start & 1) * 4));
 		m_adpcm_nibble[Voice]++;
 	}
 }
@@ -689,10 +689,10 @@ INPUT_PORTS_END
                            Wheels Runner
 ***************************************************************************/
 
+template <int Player>
 CUSTOM_INPUT_MEMBER(fantland_state::wheelrun_wheel_r)
 {
-	int player = (uintptr_t)param;
-	int delta = ioport(player ? "WHEEL1" : "WHEEL0")->read();
+	int delta = m_wheel[Player]->read();
 	delta = (delta & 0x7f) - (delta & 0x80) + 4;
 
 	if      (delta > 7) delta = 7;
@@ -708,7 +708,7 @@ static INPUT_PORTS_START( wheelrun )
 	PORT_BIT( 0x02, IP_ACTIVE_LOW,  IPT_BUTTON1 ) PORT_PLAYER(1)
 	PORT_BIT( 0x04, IP_ACTIVE_LOW,  IPT_UNKNOWN )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW,  IPT_UNKNOWN )
-	PORT_BIT( 0x70, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, fantland_state,wheelrun_wheel_r, (void *)0)
+	PORT_BIT( 0x70, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(fantland_state, wheelrun_wheel_r<0>)
 	PORT_BIT( 0x80, IP_ACTIVE_LOW,  IPT_UNKNOWN )
 
 	PORT_START("53001")     /* 53001 */
@@ -716,7 +716,7 @@ static INPUT_PORTS_START( wheelrun )
 	PORT_BIT( 0x02, IP_ACTIVE_LOW,  IPT_BUTTON1 ) PORT_PLAYER(2)
 	PORT_BIT( 0x04, IP_ACTIVE_LOW,  IPT_UNKNOWN )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW,  IPT_UNKNOWN )
-	PORT_BIT( 0x70, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, fantland_state,wheelrun_wheel_r, (void *)1)
+	PORT_BIT( 0x70, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(fantland_state, wheelrun_wheel_r<1>)
 	PORT_BIT( 0x80, IP_ACTIVE_LOW,  IPT_UNKNOWN )
 
 	PORT_START("53002")     /* 53002 */
@@ -820,7 +820,7 @@ void fantland_state::fantland(machine_config &config)
 	m_audiocpu->set_periodic_int(FUNC(fantland_state::fantland_sound_irq), attotime::from_hz(8000));
 	// NMI when soundlatch is written
 
-	config.m_minimum_quantum = attotime::from_hz(8000);  // sound irq must feed the DAC at 8kHz
+	config.set_maximum_quantum(attotime::from_hz(8000));  // sound irq must feed the DAC at 8kHz
 
 	/* video hardware */
 	SCREEN(config, m_screen, SCREEN_TYPE_RASTER);

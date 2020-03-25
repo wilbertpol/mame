@@ -11,7 +11,7 @@ Skeleton driver for Qume QVT-103 video display terminal.
 #include "cpu/mcs48/mcs48.h"
 #include "machine/nvram.h"
 #include "machine/z80ctc.h"
-#include "machine/z80dart.h"
+#include "machine/z80sio.h"
 #include "video/crt9007.h"
 #include "emupal.h"
 #include "screen.h"
@@ -65,7 +65,7 @@ void qvt103_state::mem_map(address_map &map)
 	map.unmap_value_high();
 	map(0x0000, 0x5fff).rom().region("maincpu", 0);
 	map(0x6000, 0x6001).rw("kbdmcu", FUNC(i8741a_device::upi41_master_r), FUNC(i8741a_device::upi41_master_w));
-//	map(0x6000, 0x6001).lr8("test", [this]() -> u8 { return machine().rand(); }); // uncomment to pass kbd test
+//  map(0x6000, 0x6001).lr8("test", [this]() -> u8 { return machine().rand(); }); // uncomment to pass kbd test
 	map(0x8000, 0x87ff).ram().share("nvram");
 	map(0xa000, 0xa03f).rw("vpac", FUNC(crt9007_device::read), FUNC(crt9007_device::write));
 	map(0xc000, 0xdfff).ram(); // not entirely contiguous?

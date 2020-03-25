@@ -595,7 +595,7 @@ MACHINE_RESET_MEMBER(timex_state,tc2048)
 }
 
 
-DEVICE_IMAGE_LOAD_MEMBER( timex_state, timex_cart )
+DEVICE_IMAGE_LOAD_MEMBER( timex_state::cart_load )
 {
 	uint32_t size = m_dock->common_get_size("rom");
 
@@ -686,14 +686,15 @@ static GFXDECODE_START( gfx_ts2068 )
 	GFXDECODE_ENTRY( "maincpu", 0x13d00, ts2068_charlayout, 0, 8 )
 GFXDECODE_END
 
-MACHINE_CONFIG_START(timex_state::ts2068)
+void timex_state::ts2068(machine_config &config)
+{
 	spectrum_128(config);
 
 	Z80(config.replace(), m_maincpu, XTAL(14'112'000)/4);        /* From Schematic; 3.528 MHz */
 	m_maincpu->set_addrmap(AS_PROGRAM, &timex_state::ts2068_mem);
 	m_maincpu->set_addrmap(AS_IO, &timex_state::ts2068_io);
 	m_maincpu->set_vblank_int("screen", FUNC(timex_state::spec_interrupt));
-	config.m_minimum_quantum = attotime::from_hz(60);
+	config.set_maximum_quantum(attotime::from_hz(60));
 
 	MCFG_MACHINE_RESET_OVERRIDE(timex_state, ts2068 )
 
@@ -712,16 +713,14 @@ MACHINE_CONFIG_START(timex_state::ts2068)
 	AY8912(config.replace(), "ay8912", XTAL(14'112'000)/8).add_route(ALL_OUTPUTS, "mono", 0.25);        /* From Schematic; 1.764 MHz */
 
 	/* cartridge */
-	MCFG_GENERIC_CARTSLOT_ADD("dockslot", generic_plain_slot, "timex_cart")
-	MCFG_GENERIC_EXTENSIONS("dck,bin")
-	MCFG_GENERIC_LOAD(timex_state, timex_cart)
+	GENERIC_CARTSLOT(config, "dockslot", generic_plain_slot, "timex_cart", "dck,bin").set_device_load(FUNC(timex_state::cart_load));
 
 	/* Software lists */
 	SOFTWARE_LIST(config, "cart_list").set_original("timex_dock");
 
 	/* internal ram */
 	m_ram->set_default_size("48K");
-MACHINE_CONFIG_END
+}
 
 
 void timex_state::uk2086(machine_config &config)

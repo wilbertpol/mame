@@ -249,7 +249,7 @@ std::string machine_info::warnings_string() const
 	if (machine_flags() & ::machine_flags::NOT_WORKING)
 		buf << _("\nTHIS MACHINE DOESN'T WORK. The emulation for this machine is not yet complete. There is nothing you can do to fix this problem except wait for the developers to improve the emulation.\n");
 	if (machine_flags() & ::machine_flags::MECHANICAL)
-		buf << _("\nElements of this machine cannot be emulated as they requires physical interaction or consist of mechanical devices. It is not possible to fully experience this machine.\n");
+		buf << _("\nElements of this machine cannot be emulated as they require physical interaction or consist of mechanical devices. It is not possible to fully experience this machine.\n");
 
 	if ((machine_flags() & MACHINE_ERRORS) || ((m_machine.system().type.unemulated_features() | m_machine.system().type.imperfect_features()) & device_t::feature::PROTECTION))
 	{
@@ -403,35 +403,6 @@ std::string machine_info::game_info_string() const
 		}
 	}
 
-	return buf.str();
-}
-
-
-//-------------------------------------------------
-//  mandatory_images - search for devices which
-//  need an image to be loaded
-//-------------------------------------------------
-
-std::string machine_info::mandatory_images() const
-{
-	std::ostringstream buf;
-	bool is_first = true;
-
-	// make sure that any required image has a mounted file
-	for (device_image_interface &image : image_interface_iterator(m_machine.root_device()))
-	{
-		if (image.must_be_loaded())
-		{
-			if (m_machine.options().image_option(image.instance_name()).value().empty())
-			{
-				if (is_first)
-					is_first = false;
-				else
-					buf << ", ";
-				buf << "\"" << image.instance_name() << "\"";
-			}
-		}
-	}
 	return buf.str();
 }
 

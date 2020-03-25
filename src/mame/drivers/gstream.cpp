@@ -161,9 +161,9 @@ public:
 	void init_gstream();
 	void init_x2222();
 
-	DECLARE_CUSTOM_INPUT_MEMBER(gstream_mirror_service_r);
+	DECLARE_READ_LINE_MEMBER(mirror_service_r);
 	DECLARE_CUSTOM_INPUT_MEMBER(gstream_mirror_r);
-	DECLARE_CUSTOM_INPUT_MEMBER(x2222_toggle_r);
+	DECLARE_READ_LINE_MEMBER(x2222_toggle_r);
 
 private:
 	/* devices */
@@ -212,14 +212,14 @@ private:
 	void x2222_io(address_map &map);
 };
 
-CUSTOM_INPUT_MEMBER(gstream_state::x2222_toggle_r) // or the game hangs when starting, might be a status flag for the sound?
+READ_LINE_MEMBER(gstream_state::x2222_toggle_r) // or the game hangs when starting, might be a status flag for the sound?
 {
 	m_toggle ^= 0xffff;
 	return m_toggle;
 }
 
 
-CUSTOM_INPUT_MEMBER(gstream_state::gstream_mirror_service_r)
+READ_LINE_MEMBER(gstream_state::mirror_service_r)
 {
 	int result;
 
@@ -427,10 +427,10 @@ static INPUT_PORTS_START( gstream )
 	PORT_BIT( 0x0400, IP_ACTIVE_LOW, IPT_START2 )
 	PORT_BIT( 0x0800, IP_ACTIVE_LOW, IPT_SERVICE2 )
 	PORT_BIT( 0x7000, IP_ACTIVE_LOW, IPT_UNUSED )
-	PORT_BIT( 0x8000, IP_ACTIVE_LOW, IPT_CUSTOM )  PORT_CUSTOM_MEMBER(DEVICE_SELF, gstream_state,gstream_mirror_service_r, nullptr)
+	PORT_BIT( 0x8000, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(gstream_state, mirror_service_r)
 
 	PORT_START("IN2")
-	PORT_BIT( 0x004f, IP_ACTIVE_LOW, IPT_CUSTOM )  PORT_CUSTOM_MEMBER(DEVICE_SELF, gstream_state,gstream_mirror_r, nullptr)
+	PORT_BIT( 0x004f, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(gstream_state, gstream_mirror_r)
 	PORT_BIT( 0xffb0, IP_ACTIVE_LOW, IPT_UNUSED )
 INPUT_PORTS_END
 
@@ -522,7 +522,7 @@ static INPUT_PORTS_START( x2222 )
 	PORT_DIPNAME( 0x0040, 0x0040, DEF_STR( Unknown ) )
 	PORT_DIPSETTING(      0x0040, DEF_STR( Off ) )
 	PORT_DIPSETTING(      0x0000, DEF_STR( On ) )
-	PORT_BIT( 0x0080, IP_ACTIVE_LOW, IPT_CUSTOM )  PORT_CUSTOM_MEMBER(DEVICE_SELF, gstream_state,x2222_toggle_r, nullptr)
+	PORT_BIT( 0x0080, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(gstream_state, x2222_toggle_r)
 INPUT_PORTS_END
 
 
@@ -780,9 +780,14 @@ uint32_t gstream_state::screen_update(screen_device &screen, bitmap_rgb32 &bitma
 	draw_bg(bitmap, cliprect, 1, m_vram + 0x400/4);
 	draw_bg(bitmap, cliprect, 0, m_vram + 0x000/4); // move on top for x2222 , check
 
-
-	for (i = 0x0000 / 4; i < 0x4000 / 4; i += 4)
+	int clk = 0;
+	int clk_max = 432 * 262; // total usable cycle count for sprites; TODO : measure screen size, related to that?
+	for (i = 0x0000 / 4; i < 0x4000 / 4; i += 4) // can't be drawable everything
 	{
+		clk += 8+128; // uses 8 cycle per RAM, 128 cycle per drawing tile
+		if (clk >= clk_max)
+			break;
+
 		/* Upper bits are used by the tilemaps */
 		int code = m_vram[i + 0] & 0xffff;
 		int x = m_vram[i + 1] & 0x1ff;
@@ -1088,7 +1093,7 @@ READ32_MEMBER(gstream_state::x2222_speedup2_r)
 
 void gstream_state::init_gstream()
 {
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0xd1ee0, 0xd1ee3, read32_delegate(FUNC(gstream_state::gstream_speedup_r), this));
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0xd1ee0, 0xd1ee3, read32_delegate(*this, FUNC(gstream_state::gstream_speedup_r)));
 
 	m_xoffset = 2;
 }
@@ -1116,8 +1121,8 @@ void gstream_state::rearrange_sprite_data(uint8_t* ROM, uint32_t* NEW, uint32_t*
 
 void gstream_state::init_x2222()
 {
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0x7ffac, 0x7ffaf, read32_delegate(FUNC(gstream_state::x2222_speedup_r), this)); // older
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0x84e3c, 0x84e3f, read32_delegate(FUNC(gstream_state::x2222_speedup2_r), this)); // newer
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0x7ffac, 0x7ffaf, read32_delegate(*this, FUNC(gstream_state::x2222_speedup_r))); // older
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0x84e3c, 0x84e3f, read32_delegate(*this, FUNC(gstream_state::x2222_speedup2_r))); // newer
 
 	rearrange_sprite_data(memregion("sprites")->base(), (uint32_t*)memregion("gfx1")->base(), (uint32_t*)memregion("gfx1_lower")->base()  );
 	rearrange_tile_data(memregion("bg1")->base(), (uint32_t*)memregion("gfx2")->base(), (uint32_t*)memregion("gfx2_lower")->base());

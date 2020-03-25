@@ -882,7 +882,7 @@ void magictg_state::adsp_program_map(address_map &map)
 void magictg_state::adsp_data_map(address_map &map)
 {
 	map.unmap_value_high();
-//  AM_RANGE(0x0000, 0x03ff) AM_RAMBANK("databank")
+//  map(0x0000, 0x03ff).bankrw("databank");
 	map(0x0400, 0x3fdf).ram();
 	map(0x3fe0, 0x3fff).rw(FUNC(magictg_state::adsp_control_r), FUNC(magictg_state::adsp_control_w));
 }
@@ -910,7 +910,8 @@ INPUT_PORTS_END
  *
  *************************************/
 
-MACHINE_CONFIG_START(magictg_state::magictg)
+void magictg_state::magictg(machine_config &config)
+{
 	R5000BE(config, m_mips, 150000000); /* TODO: CPU type and clock are unknown */
 	//m_mips->set_icache_size(16384); /* TODO: Unknown */
 	//m_mips->set_dcache_size(16384); /* TODO: Unknown */
@@ -927,14 +928,14 @@ MACHINE_CONFIG_START(magictg_state::magictg)
 	DMADAC(config, "dac1").add_route(ALL_OUTPUTS, "rspeaker", 1.0);
 	DMADAC(config, "dac2").add_route(ALL_OUTPUTS, "lspeaker", 1.0);
 
-	MCFG_PCI_BUS_LEGACY_ADD("pcibus", 0)
-	MCFG_PCI_BUS_LEGACY_DEVICE(0, DEVICE_SELF, magictg_state, pci_dev0_r, pci_dev0_w)
-	MCFG_PCI_BUS_LEGACY_DEVICE(7, DEVICE_SELF, magictg_state, voodoo_0_pci_r, voodoo_0_pci_w)
+	pci_bus_legacy_device &pcibus(PCI_BUS_LEGACY(config, "pcibus", 0, 0));
+	pcibus.set_device(0, FUNC(magictg_state::pci_dev0_r), FUNC(magictg_state::pci_dev0_w));
+	pcibus.set_device(7, FUNC(magictg_state::voodoo_0_pci_r), FUNC(magictg_state::voodoo_0_pci_w));
 
 #if defined(USE_TWO_3DFX)
-	MCFG_PCI_BUS_LEGACY_DEVICE(8, DEVICE_SELF, magictg_state, voodoo_1_pci_r, voodoo_1_pci_w)
+	pcibus.set_device(8, FUNC(magictg_state::voodoo_1_pci_r), FUNC(magictg_state::voodoo_1_pci_w));
 #endif
-	MCFG_PCI_BUS_LEGACY_DEVICE(9, DEVICE_SELF, magictg_state, zr36120_pci_r, zr36120_pci_w) // TODO: ZR36120 device
+	pcibus.set_device(9, FUNC(magictg_state::zr36120_pci_r), FUNC(magictg_state::zr36120_pci_w)); // TODO: ZR36120 device
 
 	VOODOO_1(config, m_voodoo[0], STD_VOODOO_1_CLOCK);
 	m_voodoo[0]->set_fbmem(2);
@@ -954,7 +955,7 @@ MACHINE_CONFIG_START(magictg_state::magictg)
 	screen.set_size(1024, 1024);
 	screen.set_visarea(0, 511, 16, 447);
 	screen.set_screen_update(FUNC(magictg_state::screen_update_magictg));
-MACHINE_CONFIG_END
+}
 
 
 /*************************************

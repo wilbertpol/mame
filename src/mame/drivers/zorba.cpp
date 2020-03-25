@@ -89,7 +89,7 @@ void zorba_state::zorba_io(address_map &map)
 	map(0x22, 0x23).rw(m_uart1, FUNC(i8251_device::read), FUNC(i8251_device::write));
 	map(0x24, 0x25).rw(m_uart2, FUNC(i8251_device::read), FUNC(i8251_device::write));
 	map(0x26, 0x26).w(FUNC(zorba_state::intmask_w));
-	map(0x30, 0x30).rw(m_dma, FUNC(z80dma_device::bus_r), FUNC(z80dma_device::bus_w));
+	map(0x30, 0x30).rw(m_dma, FUNC(z80dma_device::read), FUNC(z80dma_device::write));
 	map(0x40, 0x43).rw(m_fdc, FUNC(fd1793_device::read), FUNC(fd1793_device::write));
 	map(0x50, 0x53).rw(m_pia0, FUNC(pia6821_device::read), FUNC(pia6821_device::write));
 	map(0x60, 0x63).rw(m_pia1, FUNC(pia6821_device::read), FUNC(pia6821_device::write));
@@ -166,20 +166,20 @@ void zorba_state::zorba(machine_config &config)
 	m_dma->in_iorq_callback().set(FUNC(zorba_state::io_read_byte));
 	m_dma->out_iorq_callback().set(FUNC(zorba_state::io_write_byte));
 
-	I8251(config, m_uart0, 0); // U32 COM port J2
+	I8251(config, m_uart0, 24_MHz_XTAL / 12); // U32 COM port J2
 	m_uart0->txd_handler().set("rs232", FUNC(rs232_port_device::write_txd)); // TODO: this line has a LED attached
 	m_uart0->dtr_handler().set("rs232", FUNC(rs232_port_device::write_dtr));
 	m_uart0->rts_handler().set("rs232", FUNC(rs232_port_device::write_rts));
 	m_uart0->rxrdy_handler().set(FUNC(zorba_state::tx_rx_rdy_w<1>));
 	m_uart0->txrdy_handler().set(FUNC(zorba_state::tx_rx_rdy_w<0>));
 
-	I8251(config, m_uart1, 0); // U31 printer port J3
+	I8251(config, m_uart1, 24_MHz_XTAL / 12); // U31 printer port J3
 	m_uart1->txd_handler().set("serprn", FUNC(rs232_port_device::write_txd));
 	m_uart1->rts_handler().set("serprn", FUNC(rs232_port_device::write_rts));
 	m_uart1->rxrdy_handler().set(FUNC(zorba_state::tx_rx_rdy_w<3>));
 	m_uart1->txrdy_handler().set(FUNC(zorba_state::tx_rx_rdy_w<2>));
 
-	I8251(config, m_uart2, 0); // U30 serial keyboard J6
+	I8251(config, m_uart2, 24_MHz_XTAL / 12); // U30 serial keyboard J6
 	m_uart2->txd_handler().set("keyboard", FUNC(zorba_keyboard_device::txd_w));
 	m_uart2->rxrdy_handler().set(FUNC(zorba_state::tx_rx_rdy_w<5>));
 	m_uart2->txrdy_handler().set(FUNC(zorba_state::tx_rx_rdy_w<4>));
@@ -188,7 +188,7 @@ void zorba_state::zorba(machine_config &config)
 	// port B - parallel interface
 	PIA6821(config, m_pia0, 0);
 	m_pia0->writepa_handler().set(FUNC(zorba_state::pia0_porta_w));
-	m_pia0->writepb_handler().set("parprndata", FUNC(output_latch_device::bus_w));
+	m_pia0->writepb_handler().set("parprndata", FUNC(output_latch_device::write));
 	m_pia0->cb2_handler().set("parprn", FUNC(centronics_device::write_strobe));
 
 	// IEEE488 interface
@@ -214,9 +214,10 @@ void zorba_state::zorba(machine_config &config)
 	pit.out_handler<2>().append(m_uart2, FUNC(i8251_device::write_rxc));
 
 	// CRTC
-	I8275(config, m_crtc, 14.318'181_MHz_XTAL / 7);
+	I8275(config, m_crtc, 14.318'181_MHz_XTAL / 8); // TODO: character clock divider is 9 during HRTC
 	m_crtc->set_character_width(8);
-	m_crtc->set_display_callback(FUNC(zorba_state::zorba_update_chr), this);
+	m_crtc->set_refresh_hack(true);
+	m_crtc->set_display_callback(FUNC(zorba_state::zorba_update_chr));
 	m_crtc->drq_wr_callback().set(m_dma, FUNC(z80dma_device::rdy_w));
 	m_crtc->irq_wr_callback().set("irq0", FUNC(input_merger_device::in_w<1>));
 	m_crtc->set_screen("screen");
@@ -408,7 +409,7 @@ WRITE8_MEMBER(zorba_state::io_write_byte)
 	address_space& prog_space = m_maincpu->space(AS_IO);
 
 	if (offset == 0x10)
-		m_crtc->dack_w(space, 0, data);
+		m_crtc->dack_w(data);
 	else
 		prog_space.write_byte(offset, data);
 }
@@ -500,14 +501,15 @@ I8275_DRAW_CHARACTER_MEMBER( zorba_state::zorba_update_chr )
 
 	uint8_t gfx = m_p_chargen[(linecount & 15) + (charcode << 4) + ((gpa & 1) << 11)];
 
+	if (rvv)
+		gfx ^= 0xff;
+
+	// VSP actually overrides reverse video here
 	if (vsp)
 		gfx = 0;
 
 	if (lten)
 		gfx = 0xff;
-
-	if (rvv)
-		gfx ^= 0xff;
 
 	for(i=0;i<8;i++)
 		bitmap.pix32(y, x + 7 - i) = palette[BIT(gfx, i) ? (hlgt ? 2 : 1) : 0];

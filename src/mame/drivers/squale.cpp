@@ -124,7 +124,7 @@ private:
 
 	DECLARE_WRITE_LINE_MEMBER(pia_u75_cb2_w);
 
-	DECLARE_DEVICE_IMAGE_LOAD_MEMBER( squale_cart );
+	DECLARE_DEVICE_IMAGE_LOAD_MEMBER( cart_load );
 	virtual void machine_start() override;
 	virtual void machine_reset() override;
 
@@ -599,7 +599,7 @@ WRITE_LINE_MEMBER( squale_state::pia_u72_cb2_w )
 	#endif
 }
 
-DEVICE_IMAGE_LOAD_MEMBER( squale_state, squale_cart )
+DEVICE_IMAGE_LOAD_MEMBER( squale_state::cart_load )
 {
 	uint32_t size = m_cart->common_get_size("rom");
 
@@ -781,7 +781,8 @@ void squale_state::machine_reset()
 {
 }
 
-MACHINE_CONFIG_START(squale_state::squale)
+void squale_state::squale(machine_config &config)
+{
 	/* basic machine hardware */
 	MC6809(config, m_maincpu, CPU_CLOCK);
 	m_maincpu->set_addrmap(AS_PROGRAM, &squale_state::squale_mem);
@@ -828,6 +829,8 @@ MACHINE_CONFIG_START(squale_state::squale)
 	m_ef9365->set_palette_tag("palette");
 	m_ef9365->set_nb_bitplanes(4);
 	m_ef9365->set_display_mode(ef9365_device::DISPLAY_MODE_256x256);
+	m_ef9365->irq_handler().set_inputline(m_maincpu, M6809_IRQ_LINE);
+
 	TIMER(config, "squale_sl").configure_scanline(FUNC(squale_state::squale_scanline), "screen", 0, 10);
 
 	/* Floppy */
@@ -837,10 +840,9 @@ MACHINE_CONFIG_START(squale_state::squale)
 	SOFTWARE_LIST(config, "flop525_list").set_original("squale");
 
 	/* Cartridge slot */
-	MCFG_GENERIC_CARTSLOT_ADD("cartslot", generic_linear_slot, "squale_cart")
-	MCFG_GENERIC_LOAD(squale_state, squale_cart)
+	GENERIC_CARTSLOT(config, "cartslot", generic_linear_slot, "squale_cart").set_device_load(FUNC(squale_state::cart_load));
 	SOFTWARE_LIST(config, "cart_list").set_original("squale_cart");
-MACHINE_CONFIG_END
+}
 
 /* ROM definition */
 ROM_START( squale )

@@ -38,6 +38,7 @@ voice.rom - VOICE ROM
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 
 class good_state : public driver_device
@@ -86,7 +87,7 @@ TILE_GET_INFO_MEMBER(good_state::get_fg_tile_info)
 {
 	int tileno = m_fg_tilemapram[tile_index * 2];
 	int attr = m_fg_tilemapram[tile_index * 2 + 1] & 0xf;
-	SET_TILE_INFO_MEMBER(0, tileno, attr, 0);
+	tileinfo.set(0, tileno, attr, 0);
 }
 
 WRITE16_MEMBER(good_state::bg_tilemapram_w)
@@ -99,15 +100,15 @@ TILE_GET_INFO_MEMBER(good_state::get_bg_tile_info)
 {
 	int tileno = m_bg_tilemapram[tile_index * 2];
 	int attr = m_bg_tilemapram[tile_index * 2 + 1] & 0xf;
-	SET_TILE_INFO_MEMBER(1, tileno, attr, 0);
+	tileinfo.set(1, tileno, attr, 0);
 }
 
 
 
 void good_state::video_start()
 {
-	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(good_state::get_bg_tile_info),this), TILEMAP_SCAN_ROWS, 16, 16, 32, 32);
-	m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(good_state::get_fg_tile_info),this), TILEMAP_SCAN_ROWS, 16, 16, 32, 32);
+	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(good_state::get_bg_tile_info)), TILEMAP_SCAN_ROWS, 16, 16, 32, 32);
+	m_fg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(good_state::get_fg_tile_info)), TILEMAP_SCAN_ROWS, 16, 16, 32, 32);
 	m_fg_tilemap->set_transparent_pen(0xf);
 }
 
@@ -122,7 +123,7 @@ void good_state::good_map(address_map &map)
 {
 	map(0x000000, 0x01ffff).rom();
 
-	//AM_RANGE(0x270000, 0x270007) AM_RAM // scroll?
+	//map(0x270000, 0x270007).ram(); // scroll?
 	map(0x270001, 0x270001).rw("oki", FUNC(okim6295_device::read), FUNC(okim6295_device::write));
 
 	map(0x280000, 0x280001).portr("IN0");

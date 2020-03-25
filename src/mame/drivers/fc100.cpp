@@ -43,7 +43,6 @@ TODO:
 #include "machine/i8251.h"
 #include "machine/timer.h"
 #include "sound/ay8910.h"
-#include "sound/wave.h"
 #include "video/mc6847.h"
 
 #include "emupal.h"
@@ -125,7 +124,7 @@ void fc100_state::fc100_mem(address_map &map)
 {
 	map.unmap_value_high();
 	map(0x0000, 0x5fff).rom().region("roms", 0);
-	//AM_RANGE(0x6000, 0x6fff)      // mapped by the cartslot
+	//map(0x6000, 0x6fff)      // mapped by the cartslot
 	map(0x7800, 0x7fff).bankr("bankr").bankw("bankw"); // Banked RAM/ROM
 	map(0x8000, 0xbfff).ram(); // expansion ram pack - if omitted you get a 'Pages?' prompt at boot
 	map(0xc000, 0xffff).ram().share("videoram");
@@ -136,16 +135,16 @@ void fc100_state::fc100_io(address_map &map)
 	map.unmap_value_high();
 	map.global_mask(0xff);
 	map(0x00, 0x0F).r(FUNC(fc100_state::port00_r));
-	// AM_RANGE(0x10, 0x10) AM_WRITE(port10_w)  // vdg, unknown effects
+	// map(0x10, 0x10).w(FUNC(fc100_state::port10_w));  // vdg, unknown effects
 	map(0x21, 0x21).w("psg", FUNC(ay8910_device::data_w));
 	map(0x22, 0x22).r("psg", FUNC(ay8910_device::data_r));
 	map(0x23, 0x23).w("psg", FUNC(ay8910_device::address_w));
 	map(0x31, 0x31).w(FUNC(fc100_state::port31_w));
 	map(0x33, 0x33).w(FUNC(fc100_state::port33_w));
-	map(0x40, 0x40).w("cent_data_out", FUNC(output_latch_device::bus_w));
+	map(0x40, 0x40).w("cent_data_out", FUNC(output_latch_device::write));
 	map(0x42, 0x42).nopw(); // bit 0 could be printer select
 	map(0x43, 0x43).w(FUNC(fc100_state::port43_w));
-	map(0x44, 0x44).r("cent_status_in", FUNC(input_buffer_device::bus_r));
+	map(0x44, 0x44).r("cent_status_in", FUNC(input_buffer_device::read));
 	map(0x60, 0x61).w(FUNC(fc100_state::port60_w));
 	map(0x70, 0x71).w(FUNC(fc100_state::port70_w));
 	map(0xb0, 0xb0).rw(m_uart, FUNC(i8251_device::data_r), FUNC(i8251_device::data_w));
@@ -466,7 +465,7 @@ void fc100_state::machine_start()
 	m_inv = 0;
 
 	if (m_cart->exists())
-		m_maincpu->space(AS_PROGRAM).install_read_handler(0x6000, 0x6fff, read8sm_delegate(FUNC(generic_slot_device::read_rom),(generic_slot_device*)m_cart));
+		m_maincpu->space(AS_PROGRAM).install_read_handler(0x6000, 0x6fff, read8sm_delegate(*m_cart, FUNC(generic_slot_device::read_rom)));
 
 	save_item(NAME(m_ag));
 	save_item(NAME(m_gm2));
@@ -531,7 +530,6 @@ void fc100_state::fc100(machine_config &config)
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "mono", 0.05);
 	ay8910_device &psg(AY8910(config, "psg", XTAL(7'159'090)/3/2));  /* AY-3-8910 - clock not verified */
 	psg.port_a_read_callback().set_ioport("JOY0");
 	psg.port_b_read_callback().set_ioport("JOY1");
@@ -543,6 +541,7 @@ void fc100_state::fc100(machine_config &config)
 	CASSETTE(config, m_cass);
 	m_cass->set_formats(fc100_cassette_formats);
 	m_cass->set_default_state(CASSETTE_PLAY | CASSETTE_MOTOR_DISABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	I8251(config, m_uart, 0);
 	m_uart->txd_handler().set([this] (bool state) { m_cassbit = state; });

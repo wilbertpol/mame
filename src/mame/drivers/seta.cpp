@@ -117,7 +117,7 @@ TODO:
 - Some games: battery backed portion of RAM (e.g. downtown, kiwame, zombraid)
 - the zombraid crosshair hack can go if the nvram regions are figured out.
 - Some games: programmable timer that generates IRQ. See e.g. gundhara:
-  lev 4 is triggerd by writes at d00000-6 and drives the sound.
+  lev 4 is triggered by writes at d00000-6 and drives the sound.
   See also msgundam.
 
 - tndrcade: lots of flickering sprites
@@ -488,7 +488,7 @@ Lithium battery x1
                             Daioh
 
 DAIOH
-Alumer 1993, Sammy license
+Allumer 1993, Sammy license
 P0-092A
 
 
@@ -670,9 +670,9 @@ CONN1 = 8 pin header for gun connection
 
 68HC000N -16N
 
-2)   Alumer  X1-012
-2)   Alumer  X1-011
-2)   Alumer  X1-014
+2)   Allumer  X1-012
+2)   Allumer  X1-011
+2)   Allumer  X1-014
 
 X1-010
 X1-007
@@ -819,7 +819,7 @@ RST1  : Reset
 
 CN1   : 7-Pin header to drive lights underneath buttons to show what cards are available to play
 CN2   : 8-Pin header to drive lights underneath buttons to show what cards are available to play
-CN3   : 5-Pin header connected to aucilliary PCB to drive lights about the cabinet
+CN3   : 5-Pin header connected to auxiliary PCB to drive lights about the cabinet
 
 PAL   :FU-011 @ U50
        FU-012 @ U51
@@ -1483,18 +1483,14 @@ TIMER_CALLBACK_MEMBER(seta_state::uPD71054_timer_callback)
 void seta_state::uPD71054_timer_init()
 {
 	uPD71054_state *uPD71054 = &m_uPD71054;
-	int no;
 
 	uPD71054->write_select = 0;
 
-	for (no = 0; no < USED_TIMER_NUM; no++)
-	{
+	for (int no = 0; no < USED_TIMER_NUM; no++)
 		uPD71054->max[no] = 0xffff;
-	}
-	for (no = 0; no < USED_TIMER_NUM; no++)
-	{
+
+	for (int no = 0; no < USED_TIMER_NUM; no++)
 		uPD71054->timer[no] = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(seta_state::uPD71054_timer_callback),this));
-	}
 }
 
 
@@ -1511,9 +1507,9 @@ void seta_state::timer_regs_w(offs_t offset, u16 data)
 
 	switch (offset)
 	{
-		case 0x0000:
-		case 0x0001:
-		case 0x0002:
+	case 0x0000:
+	case 0x0001:
+	case 0x0002:
 		if (uPD71054->write_select == 0)
 		{
 			uPD71054->max[offset] = (uPD71054->max[offset] & 0xff00) + data;
@@ -1531,12 +1527,12 @@ void seta_state::timer_regs_w(offs_t offset, u16 data)
 			uPD71054_update_timer(m_maincpu.target(), offset);
 		}
 		break;
-		case 0x0003:
+	case 0x0003:
 		switch ((data >> 4) & 3)
 		{
-			case 2: uPD71054->write_select = 1; break;
-			case 1:
-			case 3: uPD71054->write_select = 0; break;
+		case 2: uPD71054->write_select = 1; break;
+		case 1:
+		case 3: uPD71054->write_select = 0; break;
 		}
 		break;
 	}
@@ -2526,7 +2522,7 @@ READ16_MEMBER(setaroul_state::rtc_r)
 		++offset;
 	if (offset / 2 >= 7)
 		return 0;
-	return (m_rtc->read(space, offset / 2, mem_mask) >> ((offset & 1) * 4)) & 0xf;
+	return (m_rtc->read(offset / 2) >> ((offset & 1) * 4)) & 0xf;
 }
 
 WRITE16_MEMBER(setaroul_state::rtc_w)
@@ -3204,7 +3200,7 @@ READ16_MEMBER(jockeyc_state::rtc_r)
 		++offset;
 	if (offset / 2 >= 7)
 		return 0;
-	return (m_rtc->read(space, offset / 2, mem_mask) >> ((offset & 1) * 4)) & 0xf;
+	return (m_rtc->read(offset / 2) >> ((offset & 1) * 4)) & 0xf;
 }
 
 WRITE16_MEMBER(jockeyc_state::rtc_w)
@@ -3608,9 +3604,9 @@ void seta_state::calibr50_soundlatch2_w(u8 data)
 
 void seta_state::calibr50_sub_map(address_map &map)
 {
-	map(0x0000, 0x1fff).lrw8("x1_soundram_rw",
-								 [this](offs_t offset) { return m_x1->read(offset ^ 0x1000); },
-								 [this](offs_t offset, u8 data) { m_x1->write(offset ^ 0x1000, data); }); // Sound
+	map(0x0000, 0x1fff).lrw8(
+								 NAME([this](offs_t offset) { return m_x1->read(offset ^ 0x1000); }),
+								 NAME([this](offs_t offset, u8 data) { m_x1->write(offset ^ 0x1000, data); })); // Sound
 	map(0x4000, 0x4000).r(m_soundlatch[0], FUNC(generic_latch_8_device::read));             // From Main CPU
 	map(0x4000, 0x4000).w(FUNC(seta_state::calibr50_sub_bankswitch_w));        // Bankswitching
 	map(0x8000, 0xbfff).bankr("subbank");                        // Banked ROM
@@ -3822,26 +3818,57 @@ INPUT_PORTS_END
 /***************************************************************************
                                 Athena no Hatena?
 ***************************************************************************/
+/*
+        Athena no Hatena is a quiz game that uses only four buttons for inputs.
+        However, the hidden "Test Program" menu makes use of the standard
+        stick/3-button input layout. With the default input mapping, the menus
+        are unusable as the three SHOT buttons are unmapped. So we have two
+        input configurations to allow the debug menu to be usable.
+
+        More information about the Test Program menu:
+        http://sudden-desu.net/entry/athena-no-hatena-debug-menu-and-functions
+*/
 
 static INPUT_PORTS_START( atehate )
+	PORT_START("INPUT_TYPE")
+	PORT_CONFNAME(0x01,0x00,"Input Type")
+	PORT_CONFSETTING(0x00, "Default Control Panel")
+	PORT_CONFSETTING(0x01, "Joystick/3 Button Control Panel (for Debug)")
+
 	PORT_START("P1")    // Player 1
-	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_BUTTON3 ) PORT_PLAYER(1)
-	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_BUTTON4 ) PORT_PLAYER(1)
-	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_PLAYER(1)
-	PORT_BIT( 0x0008, IP_ACTIVE_LOW, IPT_BUTTON2 ) PORT_PLAYER(1)
-	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_UNKNOWN )
-	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_UNKNOWN )
-	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT  ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_JOYSTICK_UP    ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0008, IP_ACTIVE_LOW, IPT_JOYSTICK_DOWN  ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON1        ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON2        ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_BUTTON3        ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+
+	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_BUTTON3 ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_BUTTON4 ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0008, IP_ACTIVE_LOW, IPT_BUTTON2 ) PORT_PLAYER(1) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_UNKNOWN )                PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_UNKNOWN )                PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_UNKNOWN )                PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
 	PORT_BIT( 0x0080, IP_ACTIVE_LOW, IPT_START1  )
 
 	PORT_START("P2")    // Player 2
-	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_BUTTON3 ) PORT_PLAYER(2)
-	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_BUTTON4 ) PORT_PLAYER(2)
-	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_PLAYER(2)
-	PORT_BIT( 0x0008, IP_ACTIVE_LOW, IPT_BUTTON2 ) PORT_PLAYER(2)
-	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_UNKNOWN )
-	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_UNKNOWN )
-	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT  ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_JOYSTICK_UP    ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0008, IP_ACTIVE_LOW, IPT_JOYSTICK_DOWN  ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON1        ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON2        ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_BUTTON3        ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x01)
+
+	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_BUTTON3 ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_BUTTON4 ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0008, IP_ACTIVE_LOW, IPT_BUTTON2 ) PORT_PLAYER(2) PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_UNKNOWN )                PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_UNKNOWN )                PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
+	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_UNKNOWN )                PORT_CONDITION("INPUT_TYPE", 0x01, EQUALS, 0x00)
 	PORT_BIT( 0x0080, IP_ACTIVE_LOW, IPT_START2  )
 
 	PORT_START("COINS") // Coins
@@ -3956,10 +3983,10 @@ static INPUT_PORTS_START( blandia )
 
 
 	PORT_DIPNAME( 0x0300, 0x0300, DEF_STR( Lives ) ) PORT_DIPLOCATION("SW1:1,2")
-	PORT_DIPSETTING(      0x0200, "1" )
-	PORT_DIPSETTING(      0x0300, "2" )
-	PORT_DIPSETTING(      0x0100, "3" )
-	PORT_DIPSETTING(      0x0000, "4" )
+	PORT_DIPSETTING(      0x0200, "1, 1 Round" ) // Test mode shows 1 in both blandia and blandiap
+	PORT_DIPSETTING(      0x0300, "1, 2 Rounds" ) // Test mode shows 0 in blandia, 2 in blandiap (neither match actual behaviour)
+	PORT_DIPSETTING(      0x0100, "2" ) // Test mode shows 2 in blandia, 3 in blandiap (blandiap test mode is wrong)
+	PORT_DIPSETTING(      0x0000, "3" ) // Test mode shows 3 in blandia, 4 in blandiap (blandiap test mode is wrong)
 	PORT_DIPNAME( 0x0c00, 0x0c00, DEF_STR( Difficulty ) ) PORT_DIPLOCATION("SW1:3,4")
 	PORT_DIPSETTING(      0x0800, DEF_STR( Easy )    )
 	PORT_DIPSETTING(      0x0c00, DEF_STR( Normal )  )
@@ -4440,10 +4467,10 @@ static INPUT_PORTS_START( setaroul )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_SERVICE2 ) PORT_NAME("Attendant Pay") // att.pay (clears error)
 	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_COIN3    ) PORT_NAME("Note")          // note    (same as 100 coins)
 	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_COIN2    ) PORT_NAME("Coupon")        // cupon   (same as  10 coins)
-	PORT_BIT( 0xc0, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, setaroul_state, coin_sensors_r, nullptr)
+	PORT_BIT( 0xc0, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(setaroul_state, coin_sensors_r)
 
 	PORT_START("COIN1") // start the coin drop sequence (see coin_sensors_r)
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_COIN1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, setaroul_state, coin_drop_start, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_COIN1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, setaroul_state, coin_drop_start, 0)
 
 	PORT_START("DOOR") // d4000b.b
 	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
@@ -4935,10 +4962,10 @@ INPUT_PORTS_END
 
 static INPUT_PORTS_START( jjsquawk )
 	PORT_START("P1") //Player 1 - $400000.w
-	JOY_TYPE1_2BUTTONS(1)
+	JOY_TYPE1_3BUTTONS(1)
 
 	PORT_START("P2") //Player 2 - $400002.w
-	JOY_TYPE1_2BUTTONS(2)
+	JOY_TYPE1_3BUTTONS(2)
 
 	PORT_START("COINS") //Coins - $400004.w
 	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_COIN1 ) PORT_IMPULSE(5)
@@ -6317,6 +6344,12 @@ static INPUT_PORTS_START( twineagl )
 	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_UNKNOWN  )
 	PORT_BIT( 0x0080, IP_ACTIVE_LOW, IPT_UNKNOWN  )
 
+	// default taken off original Japanese DIP sheet
+	// Cabinet is user choice
+	// We use Licensor Option 2 instead of 1 just to avoid the "For use in Japan"
+	// TODO: the copyright dips actually don't have any effect on a real (European) PCB
+	// Most likely these are overwritten by the lead JPs that the board has
+	// (4x3 near SW2 at J2, 2x3 near two empty ROM sockets U31/U37 at C10).
 	PORT_START("DSW") //2 DSWs - $600001 & 3.b
 	PORT_DIPNAME( 0x0001, 0x0001, "Copyright / License" )   PORT_DIPLOCATION("SW1:1") /* Always "Seta" if sim. players = 1 */
 	PORT_DIPSETTING(      0x0000, "Taito America / Romstar" )   PORT_CONDITION("DSW",0x4000,NOTEQUALS,0x4000)
@@ -6348,12 +6381,12 @@ static INPUT_PORTS_START( twineagl )
 	PORT_DIPSETTING(      0x0080, DEF_STR( 1C_3C ) )        PORT_CONDITION("DSW",0x8000,NOTEQUALS,0x8000)
 	PORT_DIPSETTING(      0x0040, DEF_STR( 1C_4C ) )        PORT_CONDITION("DSW",0x8000,NOTEQUALS,0x8000)
 	PORT_DIPSETTING(      0x0000, DEF_STR( 1C_6C ) )        PORT_CONDITION("DSW",0x8000,NOTEQUALS,0x8000)
-	PORT_DIPNAME( 0x0300, 0x0100, DEF_STR( Difficulty ) )   PORT_DIPLOCATION("SW2:1,2")
+	PORT_DIPNAME( 0x0300, 0x0300, DEF_STR( Difficulty ) )   PORT_DIPLOCATION("SW2:1,2")
 	PORT_DIPSETTING(      0x0300, DEF_STR( Normal )  )
 	PORT_DIPSETTING(      0x0200, DEF_STR( Easy )    )
 	PORT_DIPSETTING(      0x0100, DEF_STR( Hard )    )
 	PORT_DIPSETTING(      0x0000, DEF_STR( Hardest ) )
-	PORT_DIPNAME( 0x0c00, 0x0000, DEF_STR( Bonus_Life ) )   PORT_DIPLOCATION("SW2:3,4")
+	PORT_DIPNAME( 0x0c00, 0x0c00, DEF_STR( Bonus_Life ) )   PORT_DIPLOCATION("SW2:3,4")
 	PORT_DIPSETTING(      0x0c00, "Never" )
 	PORT_DIPSETTING(      0x0800, "500K Only" )
 	PORT_DIPSETTING(      0x0400, "1000K Only" )
@@ -6536,10 +6569,10 @@ INPUT_PORTS_END
 
 static INPUT_PORTS_START( usclssic )
 	PORT_START("TRACKX")
-	PORT_BIT( 0xfff, 0x000, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, usclssic_state, trackball_x_r, nullptr)
+	PORT_BIT( 0xfff, 0x000, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(usclssic_state, trackball_x_r)
 
 	PORT_START("TRACKY")
-	PORT_BIT( 0xfff, 0x000, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, usclssic_state, trackball_y_r, nullptr)
+	PORT_BIT( 0xfff, 0x000, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(usclssic_state, trackball_y_r)
 
 	PORT_START("TRACK1_X")     /* muxed port 0 */
 	PORT_BIT( 0xfff, 0x000, IPT_TRACKBALL_X ) PORT_SENSITIVITY(70) PORT_KEYDELTA(30) PORT_RESET
@@ -7895,7 +7928,7 @@ void seta_state::tndrcade(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -7947,7 +7980,7 @@ void seta_state::twineagl(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -7993,7 +8026,7 @@ void seta_state::downtown(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8074,7 +8107,7 @@ void usclssic_state::usclssic(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(usclssic_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(usclssic_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8134,7 +8167,7 @@ void seta_state::calibr50(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8183,7 +8216,7 @@ void seta_state::metafox(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8223,7 +8256,7 @@ void seta_state::atehate(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8266,7 +8299,7 @@ void seta_state::blandia(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8301,7 +8334,7 @@ void seta_state::blandiap(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8341,7 +8374,7 @@ void seta_state::blockcar(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8415,7 +8448,7 @@ void seta_state::daioh(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8470,7 +8503,7 @@ void seta_state::drgnunit(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8535,12 +8568,12 @@ void setaroul_state::setaroul(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_RANDOM);
 
 	/* devices */
-	UPD4992(config, m_rtc); // ! Actually D4911C !
+	UPD4992(config, m_rtc, 32'768); // ! Actually D4911C !
 	ACIA6850(config, "acia0", 0);
 	TICKET_DISPENSER(config, "hopper", attotime::from_msec(150), TICKET_MOTOR_ACTIVE_HIGH, TICKET_STATUS_ACTIVE_LOW);
 
@@ -8586,7 +8619,7 @@ void seta_state::eightfrc(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8630,7 +8663,7 @@ void seta_state::extdwnhl(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8695,7 +8728,7 @@ void seta_state::gundhara(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8764,7 +8797,7 @@ void seta_state::jjsquawk(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8796,7 +8829,7 @@ void seta_state::jjsquawb(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8840,7 +8873,7 @@ void seta_state::kamenrid(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8879,7 +8912,7 @@ void seta_state::orbs(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8920,7 +8953,7 @@ void seta_state::keroppij(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -8973,7 +9006,7 @@ void seta_state::krzybowl(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9015,7 +9048,7 @@ void seta_state::madshark(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	WATCHDOG_TIMER(config, "watchdog");
 
@@ -9065,7 +9098,7 @@ void seta_state::magspeed(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9108,7 +9141,7 @@ void seta_state::msgundam(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9152,7 +9185,7 @@ void seta_state::oisipuzl(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9193,7 +9226,7 @@ void seta_state::triplfun(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9240,7 +9273,7 @@ void kiwame_state::kiwame(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(kiwame_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(kiwame_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9284,7 +9317,7 @@ void seta_state::rezon(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9323,7 +9356,7 @@ void seta_state::thunderl(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9397,7 +9430,7 @@ void seta_state::wiggie(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9437,7 +9470,7 @@ void seta_state::wits(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9474,7 +9507,7 @@ void seta_state::umanclub(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9515,7 +9548,7 @@ void seta_state::utoukond(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9573,7 +9606,7 @@ void seta_state::wrofaero(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9615,7 +9648,7 @@ void seta_state::zingzip(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	WATCHDOG_TIMER(config, "watchdog");
 
@@ -9669,7 +9702,7 @@ void seta_state::pairlove(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9717,7 +9750,7 @@ void seta_state::crazyfgt(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	/* video hardware */
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
@@ -9786,13 +9819,13 @@ void jockeyc_state::jockeyc(machine_config &config)
 
 	SETA001_SPRITE(config, m_seta001, 0);
 	m_seta001->set_gfxdecode_tag(m_gfxdecode);
-	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback), this);
+	m_seta001->set_gfxbank_callback(FUNC(seta_state::setac_gfxbank_callback));
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_RANDOM);
 
 	MCFG_MACHINE_START_OVERRIDE(jockeyc_state, jockeyc)
 	/* devices */
-	UPD4992(config, m_rtc); // ! Actually D4911C !
+	UPD4992(config, m_rtc, 32'768); // ! Actually D4911C !
 	ACIA6850(config, "acia0", 0);
 	TICKET_DISPENSER(config, "hopper1", attotime::from_msec(150), TICKET_MOTOR_ACTIVE_HIGH, TICKET_STATUS_ACTIVE_LOW);
 	TICKET_DISPENSER(config, "hopper2", attotime::from_msec(150), TICKET_MOTOR_ACTIVE_HIGH, TICKET_STATUS_ACTIVE_LOW);
@@ -11887,10 +11920,10 @@ void seta_state::init_twineagl()
 {
 	init_bank6502();
 	/* debug? */
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0x800000, 0x8000ff, read16_delegate(FUNC(seta_state::twineagl_debug_r),this));
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0x800000, 0x8000ff, read16_delegate(*this, FUNC(seta_state::twineagl_debug_r)));
 
 	/* This allows 2 simultaneous players and the use of the "Copyright" Dip Switch. */
-	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0x200100, 0x20010f, read16_delegate(FUNC(seta_state::twineagl_200100_r),this), write16_delegate(FUNC(seta_state::twineagl_200100_w),this));
+	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0x200100, 0x20010f, read16_delegate(*this, FUNC(seta_state::twineagl_200100_r)), write16_delegate(*this, FUNC(seta_state::twineagl_200100_w)));
 }
 
 
@@ -11924,7 +11957,7 @@ void seta_state::init_downtown()
 	m_downtown_protection = make_unique_clear<u16[]>(0x200/2);
 	save_pointer(NAME(m_downtown_protection),0x200/2);
 
-	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0x200000, 0x2001ff, read16_delegate(FUNC(seta_state::downtown_protection_r),this), write16_delegate(FUNC(seta_state::downtown_protection_w),this));
+	m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0x200000, 0x2001ff, read16_delegate(*this, FUNC(seta_state::downtown_protection_r)), write16_delegate(*this, FUNC(seta_state::downtown_protection_w)));
 }
 
 
@@ -11945,7 +11978,7 @@ READ16_MEMBER(seta_state::arbalest_debug_r)
 void seta_state::init_arbalest()
 {
 	init_bank6502();
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0x80000, 0x8000f, read16_delegate(FUNC(seta_state::arbalest_debug_r),this));
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0x80000, 0x8000f, read16_delegate(*this, FUNC(seta_state::arbalest_debug_r)));
 }
 
 
@@ -11974,7 +12007,7 @@ READ16_MEMBER(seta_state::metafox_protection_r)
 void seta_state::init_metafox()
 {
 	init_bank6502();
-	m_maincpu->space(AS_PROGRAM).install_read_handler(0x21c000, 0x21ffff,read16_delegate(FUNC(seta_state::metafox_protection_r),this));
+	m_maincpu->space(AS_PROGRAM).install_read_handler(0x21c000, 0x21ffff,read16_delegate(*this, FUNC(seta_state::metafox_protection_r)));
 }
 
 
@@ -12082,7 +12115,7 @@ GAME( 1989, metafox,   0,        metafox,   metafox,   seta_state,     init_meta
 
 /* 68000 */
 
-GAME( 1989?,setaroul,  0,        setaroul,  setaroul,  setaroul_state, empty_init,     ROT270, "Visco",                     "The Roulette (Visco)", 0 )
+GAME( 1989?,setaroul,  0,        setaroul,  setaroul,  setaroul_state, empty_init,     ROT270, "Visco",                     "The Roulette (Visco)", MACHINE_CLICKABLE_ARTWORK )
 
 GAME( 1989, drgnunit,  0,        drgnunit,  drgnunit,  seta_state,     empty_init,     ROT0,   "Seta",                      "Dragon Unit / Castle of Dragon", 0 )
 
@@ -12095,9 +12128,9 @@ GAME( 1990, thunderlbl2,thunderl,thunderlbl,thunderl,  seta_state,     empty_ini
 GAME( 1994, wiggie,    0,        wiggie,    thunderl,  seta_state,     init_wiggie,    ROT270, "Promat",                    "Wiggie Waggie", MACHINE_IMPERFECT_GRAPHICS ) // hack of Thunder & Lightning
 GAME( 1994, superbar,  wiggie,   superbar,  thunderl,  seta_state,     init_wiggie,    ROT270, "Promat",                    "Super Bar", MACHINE_IMPERFECT_GRAPHICS ) // hack of Thunder & Lightning
 
-GAME( 1990, jockeyc,   0,        jockeyc,   jockeyc,   jockeyc_state,  empty_init,     ROT0,   "Seta (Visco license)",      "Jockey Club (v1.18)", 0 )
-GAME( 1993, inttoote2, jockeyc,  jockeyc,   jockeyc,   jockeyc_state,  empty_init,     ROT0,   "bootleg (Coinmaster)",      "International Toote II (v1.24, P387.V01)", 0 )
-GAME( 1998, inttoote,  jockeyc,  inttoote,  inttoote,  jockeyc_state,  init_inttoote,  ROT0,   "bootleg (Coinmaster)",      "International Toote (Germany, P523.V01)", MACHINE_NOT_WORKING | MACHINE_UNEMULATED_PROTECTION )
+GAME( 1990, jockeyc,   0,        jockeyc,   jockeyc,   jockeyc_state,  empty_init,     ROT0,   "Seta (Visco license)",      "Jockey Club (v1.18)", MACHINE_CLICKABLE_ARTWORK )
+GAME( 1993, inttoote2, jockeyc,  jockeyc,   jockeyc,   jockeyc_state,  empty_init,     ROT0,   "bootleg (Coinmaster)",      "International Toote II (v1.24, P387.V01)", MACHINE_CLICKABLE_ARTWORK )
+GAME( 1998, inttoote,  jockeyc,  inttoote,  inttoote,  jockeyc_state,  init_inttoote,  ROT0,   "bootleg (Coinmaster)",      "International Toote (Germany, P523.V01)", MACHINE_NOT_WORKING | MACHINE_UNEMULATED_PROTECTION | MACHINE_CLICKABLE_ARTWORK )
 
 GAME( 1991, rezon,     0,        rezon,     rezon,     seta_state,     init_rezon,     ROT0,   "Allumer",                   "Rezon", 0 )
 GAME( 1992, rezont,    rezon,    rezon,     rezont,    seta_state,     init_rezon,     ROT0,   "Allumer (Taito license)",   "Rezon (Taito)", 0 )

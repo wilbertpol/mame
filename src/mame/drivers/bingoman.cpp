@@ -49,7 +49,7 @@
 
   1x Trimmer/pot @ r34
 
-  a shitload of jumpers...
+  a large amount of jumpers...
 
   There are 3 games P03, P07 and P14 (2 roms each), plus main code.
   Also 2 sound ROMs.
@@ -289,7 +289,7 @@ void bingoman_state::bingoman_prg_map(address_map &map)
 
 void bingoman_state::bingoman_io_map(address_map &map)
 {
-//  ADDRESS_MAP_GLOBAL_MASK(0xff)
+//  map.global_mask(0xff);
 }
 
 static INPUT_PORTS_START( bingoman )

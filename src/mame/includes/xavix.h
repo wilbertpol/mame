@@ -199,7 +199,7 @@ protected:
 private:
 
 	// screen updates
-	uint32_t screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
+	uint32_t screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect);
 
 	void xavix_map(address_map &map);
 
@@ -534,11 +534,11 @@ private:
 	required_device<gfxdecode_device> m_gfxdecode;
 
 	void update_pen(int pen, uint8_t shval, uint8_t lval);
-	void draw_tile_line(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect, int tile, int bpp, int xpos, int ypos, int drawheight, int drawwidth, int flipx, int flipy, int pal, int zval, int line);
-	void draw_tilemap(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect, int which);
-	void draw_tilemap_line(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect, int which, int line);
-	void draw_sprites(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
-	void draw_sprites_line(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect, int line);
+	void draw_tile_line(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect, int tile, int bpp, int xpos, int ypos, int drawheight, int drawwidth, int flipx, int flipy, int pal, int zval, int line);
+	void draw_tilemap(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect, int which);
+	void draw_tilemap_line(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect, int which, int line);
+	void draw_sprites(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect);
+	void draw_sprites_line(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect, int line);
 	void decode_inline_header(int &flipx, int &flipy, int &test, int& pal, int debug_packets);
 
 	bitmap_ind16 m_zbuffer;
@@ -635,6 +635,7 @@ public:
 	void xavix2000_i2c_24c02(machine_config &config);
 
 	void xavix2002_i2c_24c04(machine_config &config);
+	void xavix2002_i2c_mrangbat(machine_config& config);
 
 	void init_epo_efdx()
 	{
@@ -642,8 +643,6 @@ public:
 		hackaddress1 = 0x958a;
 		hackaddress2 = 0x8524;
 	}
-
-	DECLARE_CUSTOM_INPUT_MEMBER(i2c_r);
 
 protected:
 	virtual void write_io1(uint8_t data, uint8_t direction) override;
@@ -701,7 +700,7 @@ public:
 		: xavix_i2c_state(mconfig, type, tag)
 	{ }
 
-	DECLARE_CUSTOM_INPUT_MEMBER(camera_r);
+	DECLARE_READ_LINE_MEMBER(camera_r);
 
 protected:
 	//virtual void write_io1(uint8_t data, uint8_t direction) override;
@@ -714,7 +713,7 @@ public:
 		: xavix_i2c_state(mconfig, type, tag)
 	{ }
 
-	DECLARE_CUSTOM_INPUT_MEMBER(camera_r);
+	DECLARE_READ_LINE_MEMBER(camera_r);
 };
 
 
@@ -730,7 +729,7 @@ public:
 	void xavix_mtrk(machine_config &config);
 	void xavix_mtrkp(machine_config &config);
 
-	CUSTOM_INPUT_MEMBER( mtrk_wheel_r );
+	DECLARE_READ_LINE_MEMBER( mtrk_wheel_r );
 
 protected:
 	required_device<xavix_mtrk_wheel_device> m_wheel;
@@ -754,15 +753,18 @@ protected:
 class xavix_cart_state : public xavix_state
 {
 public:
-	xavix_cart_state(const machine_config &mconfig, device_type type, const char *tag)
-		: xavix_state(mconfig, type, tag),
+	xavix_cart_state(const machine_config &mconfig, device_type type, const char *tag) :
+		xavix_state(mconfig, type, tag),
 		m_cartslot(*this, "cartslot")
-	{ }
+	{
+		m_cartlimit = 0x400000;
+	}
 
 	void xavix_cart(machine_config &config);
 	void xavix_cart_ekara(machine_config &config);
 	void xavix_cart_popira(machine_config &config);
 	void xavix_cart_ddrfammt(machine_config &config);
+	void xavix_cart_evio(machine_config &config);
 
 protected:
 
@@ -772,7 +774,7 @@ protected:
 	{
 		if (offset & 0x8000)
 		{
-			if (offset & 0x400000)
+			if ((offset & 0x7fffff) >= m_cartlimit)
 			{
 				return m_rgn[(offset) & (m_rgnlen - 1)];
 			}
@@ -796,7 +798,7 @@ protected:
 
 	virtual uint8_t opcodes_800000_r(offs_t offset) override
 	{
-		if (offset & 0x400000)
+		if ((offset & 0x7fffff) >= m_cartlimit)
 		{
 			return m_rgn[(offset) & (m_rgnlen - 1)];
 		}
@@ -839,7 +841,7 @@ protected:
 		}
 		else
 		{
-			if (offset & 0x400000)
+			if ((offset & 0x7fffff) >= m_cartlimit)
 			{
 				return m_rgn[(offset) & (m_rgnlen - 1)];
 			}
@@ -882,7 +884,7 @@ protected:
 
 		if (databank >= 0x80)
 		{
-			if (offset & 0x400000)
+			if ((offset & 0x7fffff) >= m_cartlimit)
 			{
 				return m_rgn[(offset) & (m_rgnlen - 1)];
 			}
@@ -902,7 +904,7 @@ protected:
 		{
 			if ((offset & 0xffff) >= 0x8000)
 			{
-				if (offset & 0x400000)
+				if ((offset & 0x7fffff) >= m_cartlimit)
 				{
 					return m_rgn[(offset) & (m_rgnlen - 1)];
 				}
@@ -925,7 +927,23 @@ protected:
 		}
 	}
 
+	int m_cartlimit;
 	required_device<ekara_cart_slot_device> m_cartslot;
+};
+
+
+class xavix_cart_gcslottv_state : public xavix_cart_state
+{
+public:
+	xavix_cart_gcslottv_state(const machine_config &mconfig, device_type type, const char *tag) :
+		xavix_cart_state(mconfig, type, tag)
+	{
+		m_cartlimit = 0x800000;
+	}
+
+	void xavix_cart_gcslottv(machine_config &config);
+
+protected:
 };
 
 class xavix_i2c_cart_state : public xavix_cart_state
@@ -938,8 +956,6 @@ public:
 
 	void xavix_i2c_taiko(machine_config &config);
 	void xavix_i2c_jpopira(machine_config &config);
-
-	DECLARE_CUSTOM_INPUT_MEMBER(i2c_r);
 
 protected:
 	virtual void write_io1(uint8_t data, uint8_t direction) override;
@@ -957,7 +973,7 @@ public:
 
 	void xavix_cart_popira2(machine_config &config);
 
-	DECLARE_CUSTOM_INPUT_MEMBER(i2c_r);
+	DECLARE_READ_LINE_MEMBER(i2c_r);
 
 protected:
 	virtual void write_io1(uint8_t data, uint8_t direction) override;
@@ -981,8 +997,8 @@ public:
 		m_extraiowrite(0)
 	{ }
 
-	DECLARE_CUSTOM_INPUT_MEMBER(ekara_multi0_r);
-	DECLARE_CUSTOM_INPUT_MEMBER(ekara_multi1_r);
+	DECLARE_READ_LINE_MEMBER(ekara_multi0_r);
+	DECLARE_READ_LINE_MEMBER(ekara_multi1_r);
 
 //  void xavix_ekara(machine_config &config);
 

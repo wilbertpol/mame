@@ -17,7 +17,6 @@
 #include "machine/z80ctc.h"
 #include "machine/z80pio.h"
 #include "machine/z80sio.h"
-#include "machine/z80dart.h"
 #include "machine/z80dma.h"
 #include "machine/wd_fdc.h"
 #include "machine/clock.h"
@@ -43,7 +42,7 @@ public:
 
 	void init_altos5();
 
-	DECLARE_QUICKLOAD_LOAD_MEMBER(altos5);
+	DECLARE_QUICKLOAD_LOAD_MEMBER(quickload_cb);
 
 private:
 	DECLARE_READ8_MEMBER(memory_read_byte);
@@ -103,14 +102,14 @@ void altos5_state::mem_map(address_map &map)
 void altos5_state::io_map(address_map &map)
 {
 	map.global_mask(0xff);
-	map(0x00, 0x03).rw(m_dma, FUNC(z80dma_device::bus_r), FUNC(z80dma_device::bus_w));
+	map(0x00, 0x03).rw(m_dma, FUNC(z80dma_device::read), FUNC(z80dma_device::write));
 	map(0x04, 0x07).rw(m_fdc, FUNC(fd1797_device::read), FUNC(fd1797_device::write));
 	map(0x08, 0x0b).rw(m_pio0, FUNC(z80pio_device::read), FUNC(z80pio_device::write));
 	map(0x0c, 0x0f).rw("ctc", FUNC(z80ctc_device::read), FUNC(z80ctc_device::write));
 	map(0x10, 0x13).rw("pio1", FUNC(z80pio_device::read), FUNC(z80pio_device::write));
 	map(0x14, 0x17).w(FUNC(altos5_state::port14_w));
 	map(0x1c, 0x1f).rw("dart", FUNC(z80dart_device::ba_cd_r), FUNC(z80dart_device::ba_cd_w));
-	//AM_RANGE(0x20, 0x23) // Hard drive
+	//map(0x20, 0x23) // Hard drive
 	map(0x2c, 0x2f).rw("sio", FUNC(z80sio_device::ba_cd_r), FUNC(z80sio_device::ba_cd_w));
 }
 
@@ -321,7 +320,7 @@ WRITE8_MEMBER( altos5_state::port09_w )
 
 ************************************************************/
 
-QUICKLOAD_LOAD_MEMBER( altos5_state, altos5 )
+QUICKLOAD_LOAD_MEMBER(altos5_state::quickload_cb)
 {
 	address_space& prog_space = m_maincpu->space(AS_PROGRAM);
 
@@ -409,7 +408,8 @@ void altos5_state::init_altos5()
 	membank("bankwf")->configure_entries(0, 50, &RAM[0], 0x1000);
 }
 
-MACHINE_CONFIG_START(altos5_state::altos5)
+void altos5_state::altos5(machine_config &config)
+{
 	/* basic machine hardware */
 	Z80(config, m_maincpu, 8_MHz_XTAL / 2);
 	m_maincpu->set_addrmap(AS_PROGRAM, &altos5_state::mem_map);
@@ -474,8 +474,8 @@ MACHINE_CONFIG_START(altos5_state::altos5)
 	FLOPPY_CONNECTOR(config, "fdc:1", altos5_floppies, "525qd", floppy_image_device::default_floppy_formats).enable_sound(true);
 
 	SOFTWARE_LIST(config, "flop_list").set_original("altos5");
-	MCFG_QUICKLOAD_ADD("quickload", altos5_state, altos5, "com,cpm", attotime::from_seconds(3))
-MACHINE_CONFIG_END
+	QUICKLOAD(config, "quickload", "com,cpm", attotime::from_seconds(3)).set_load_callback(FUNC(altos5_state::quickload_cb));
+}
 
 
 /* ROM definition */

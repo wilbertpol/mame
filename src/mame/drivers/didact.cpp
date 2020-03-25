@@ -12,7 +12,7 @@
  * "Modulab v2" appears to have been owned or licensed to Esselte and enhanced with more modular monitor routines
  * in a project driven by Alf Karlsson.
  *
- * The Esselte 1000 was an educational package based on Apple II plus software and litterature
+ * The Esselte 1000 was an educational package based on Apple II plus software and literature
  * but the relation to Didact is at this point unknown so it is probably a pure Esselte software production.
  *
  * Misc links about the boards supported by this driver.
@@ -52,6 +52,7 @@
 #include "imagedev/cassette.h"
 #include "bus/rs232/rs232.h"
 #include "screen.h"
+#include "speaker.h"
 
 // Generated artwork includes
 #include "mp68a.lh"
@@ -94,6 +95,7 @@ class didact_state : public driver_device
 	public:
 	didact_state(const machine_config &mconfig, device_type type, const char * tag)
 		: driver_device(mconfig, type, tag)
+		, m_cass(*this, "cassette")
 		, m_io_lines(*this, "LINE%u", 0U)
 		, m_lines{ 0, 0, 0, 0 }
 		, m_rs232(*this, "rs232")
@@ -105,6 +107,7 @@ class didact_state : public driver_device
 protected:
 	virtual void machine_start() override { m_led.resolve(); }
 
+	optional_device<cassette_image_device> m_cass;
 	required_ioport_array<5> m_io_lines;
 	uint8_t m_lines[4];
 	uint8_t m_reset;
@@ -323,6 +326,7 @@ void md6802_state::md6802_map(address_map &map)
 
 // Just a statement that the real mp68a hardware was designed with 6820 and not 6821
 // They are functional equivalents BUT has different electrical characteristics.
+// 2019-07-27 Cassette added: saves ok, load is unreliable, probably an original design problem.
 #define pia6820_device pia6821_device
 #define PIA6820 PIA6821
 class mp68a_state : public didact_state
@@ -434,6 +438,7 @@ READ8_MEMBER( mp68a_state::pia2_kbB_r )
 		LOGKBD(" SHIFT is released\n");
 	}
 
+	pb |= (m_cass->input() < 0.04) ? 0x20 : 0;
 	LOGKBD("%02x\n", pb);
 
 	return pb;
@@ -442,6 +447,7 @@ READ8_MEMBER( mp68a_state::pia2_kbB_r )
 WRITE8_MEMBER( mp68a_state::pia2_kbB_w )
 {
 	LOG("--->%s(%02x)\n", FUNCNAME, data);
+	m_cass->output(BIT(data, 4) ? -1.0 : +1.0);
 }
 
 READ_LINE_MEMBER( mp68a_state::pia2_cb1_r )
@@ -643,7 +649,6 @@ void modulab_state::machine_start()
 // This address map is traced from pcb
 void modulab_state::modulab_map(address_map &map)
 {
-	//map(0x0000, 0x007f).ram() // Schematics holds RAM enable low so that the M6802 internal RAM is disabled.
 	map(0x0000, 0x03ff).ram().mirror(0xe000); // RAM0 always present 2114
 	map(0x0400, 0x07ff).ram().mirror(0xe000); // RAM1 optional 2114
 	// map(0x0800, 0x13ff).ram().mirror(0xe000); // expansion port area consisting of 3 chip selects each selecting 0x3ff byte addresses
@@ -686,7 +691,7 @@ static INPUT_PORTS_START( modulab )
 	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_KEYBOARD ) PORT_NAME("C/B") PORT_CODE(KEYCODE_X) PORT_CHAR('X')
 
 	PORT_START("LINE4") /* Special KEY ROW for reset key */
-	PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("Reset") PORT_CODE(KEYCODE_F12) PORT_CHANGED_MEMBER(DEVICE_SELF, modulab_state, trigger_reset, nullptr)
+	PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("Reset") PORT_CODE(KEYCODE_F12) PORT_CHANGED_MEMBER(DEVICE_SELF, modulab_state, trigger_reset, 0)
 	PORT_BIT(0xfb, 0x00, IPT_UNUSED )
 INPUT_PORTS_END
 
@@ -720,8 +725,8 @@ static INPUT_PORTS_START( md6802 )
 	PORT_BIT(0xf0, 0x00, IPT_UNUSED )
 
 	PORT_START("LINE4") /* Special KEY ROW for reset and Shift/'*' keys */
-	PORT_BIT(0x08, 0x00, IPT_KEYBOARD) PORT_NAME("*") PORT_CODE(KEYCODE_LSHIFT) PORT_CODE(KEYCODE_RSHIFT) PORT_CHAR('*') PORT_CHANGED_MEMBER(DEVICE_SELF, md6802_state, trigger_shift, nullptr)
-	PORT_BIT(0x04, 0x00, IPT_KEYBOARD) PORT_NAME("Reset") PORT_CODE(KEYCODE_F12) PORT_CHANGED_MEMBER(DEVICE_SELF, md6802_state, trigger_reset, nullptr)
+	PORT_BIT(0x08, 0x00, IPT_KEYBOARD) PORT_NAME("*") PORT_CODE(KEYCODE_LSHIFT) PORT_CODE(KEYCODE_RSHIFT) PORT_CHAR('*') PORT_CHANGED_MEMBER(DEVICE_SELF, md6802_state, trigger_shift, 0)
+	PORT_BIT(0x04, 0x00, IPT_KEYBOARD) PORT_NAME("Reset") PORT_CODE(KEYCODE_F12) PORT_CHANGED_MEMBER(DEVICE_SELF, md6802_state, trigger_reset, 0)
 	PORT_BIT(0xf3, 0x00, IPT_UNUSED )
 INPUT_PORTS_END
 
@@ -755,9 +760,9 @@ static INPUT_PORTS_START( mp68a )
 	PORT_BIT(0xf0, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("LINE4") /* Special KEY ROW for reset and Shift/'*' keys, they are hard wired */
-	PORT_BIT(0x08, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("*") PORT_CODE(KEYCODE_LSHIFT) PORT_CODE(KEYCODE_RSHIFT) PORT_CHAR('*') PORT_CHANGED_MEMBER(DEVICE_SELF, mp68a_state, trigger_shift, nullptr)
+	PORT_BIT(0x08, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("*") PORT_CODE(KEYCODE_LSHIFT) PORT_CODE(KEYCODE_RSHIFT) PORT_CHAR('*') PORT_CHANGED_MEMBER(DEVICE_SELF, mp68a_state, trigger_shift, 0)
 	//PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("Reset") PORT_CODE(KEYCODE_F12)
-	PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("Reset") PORT_CODE(KEYCODE_F12) PORT_CHANGED_MEMBER(DEVICE_SELF, mp68a_state, trigger_reset, nullptr)
+	PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("Reset") PORT_CODE(KEYCODE_F12) PORT_CHANGED_MEMBER(DEVICE_SELF, mp68a_state, trigger_reset, 0)
 	PORT_BIT(0xf3, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
@@ -775,8 +780,9 @@ INPUT_CHANGED_MEMBER(didact_state::trigger_reset)
 
 void modulab_state::modulab(machine_config &config)
 {
-	M6802(config, m_maincpu, XTAL(4'000'000));
-	m_maincpu->set_addrmap(AS_PROGRAM, &modulab_state::modulab_map);
+	m6802_cpu_device &maincpu(M6802(config, m_maincpu, XTAL(4'000'000)));
+	maincpu.set_ram_enable(false); // Schematics holds RAM enable low so that the M6802 internal RAM is disabled.
+	maincpu.set_addrmap(AS_PROGRAM, &modulab_state::modulab_map);
 	config.set_default_layout(layout_modulab);
 
 	/* Devices */
@@ -799,8 +805,9 @@ void modulab_state::modulab(machine_config &config)
 
 void md6802_state::md6802(machine_config &config)
 {
-	M6802(config, m_maincpu, XTAL(4'000'000));
-	m_maincpu->set_addrmap(AS_PROGRAM, &md6802_state::md6802_map);
+	m6802_cpu_device &maincpu(M6802(config, m_maincpu, XTAL(4'000'000)));
+	maincpu.set_ram_enable(false);
+	maincpu.set_addrmap(AS_PROGRAM, &md6802_state::md6802_map);
 	config.set_default_layout(layout_md6802);
 
 	/* Devices */
@@ -882,6 +889,12 @@ void mp68a_state::mp68a(machine_config &config)
 	DM9368(config, m_digits[3], 0).update_cb().set(FUNC(mp68a_state::digit_w<3>));
 	DM9368(config, m_digits[4], 0).update_cb().set(FUNC(mp68a_state::digit_w<4>));
 	DM9368(config, m_digits[5], 0).update_cb().set(FUNC(mp68a_state::digit_w<5>));
+
+	/* Cassette */
+	SPEAKER(config, "mono").front_center();
+	CASSETTE(config, m_cass);
+	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 }
 
 ROM_START( modulab )

@@ -49,6 +49,7 @@ static char const *const aic6250_phase[] = { "DATA OUT", "*", "DATA IN", "*", "C
 
 aic6250_device::aic6250_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: nscsi_device(mconfig, type, tag, owner, clock)
+	, nscsi_slot_card_interface(mconfig, *this, DEVICE_SELF)
 	, m_int_cb(*this)
 	, m_breq_cb(*this)
 	, m_port_a_r_cb(*this)
@@ -88,7 +89,7 @@ void aic6250_device::map(address_map &map)
 	map(0xf, 0xf).rw(FUNC(aic6250_device::scsi_latch_data_r), FUNC(aic6250_device::scsi_bsy_rst_w));
 }
 
-READ8_MEMBER(aic6250_device::read)
+u8 aic6250_device::read(address_space &space, offs_t offset)
 {
 	u8 data = space.unmap();
 
@@ -122,7 +123,7 @@ READ8_MEMBER(aic6250_device::read)
 	return data;
 }
 
-WRITE8_MEMBER(aic6250_device::write)
+void aic6250_device::write(offs_t offset, u8 data)
 {
 	if (offset)
 	{

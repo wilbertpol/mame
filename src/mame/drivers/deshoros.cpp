@@ -162,7 +162,7 @@ INPUT_CHANGED_MEMBER(destiny_state::coin_inserted)
 		m_maincpu->set_input_line(INPUT_LINE_NMI, ASSERT_LINE);
 
 	// coincounter on coin insert
-	if (((int)(uintptr_t)param) == 0)
+	if (param == 0)
 		machine().bookkeeping().coin_counter_w(0, newval);
 }
 
@@ -182,12 +182,12 @@ void destiny_state::main_map(address_map &map)
 	map(0x9003, 0x9003).portr("KEY1");
 	map(0x9004, 0x9004).portr("KEY2");
 	map(0x9005, 0x9005).portr("DIPSW").w(FUNC(destiny_state::out_w));
-//  AM_RANGE(0x9006, 0x9006) AM_NOP // printer motor on
-//  AM_RANGE(0x9007, 0x9007) AM_NOP // printer data
+//  map(0x9006, 0x9006).noprw(); // printer motor on
+//  map(0x9007, 0x9007).noprw(); // printer data
 	map(0x900a, 0x900b).w(FUNC(destiny_state::sound_w));
 	map(0x900c, 0x900c).w(FUNC(destiny_state::bank_select_w));
-//  AM_RANGE(0x900d, 0x900d) AM_NOP // printer motor off
-//  AM_RANGE(0x900e, 0x900e) AM_NOP // printer motor jam reset
+//  map(0x900d, 0x900d).noprw(); // printer motor off
+//  map(0x900e, 0x900e).noprw(); // printer motor jam reset
 	map(0xc000, 0xffff).rom();
 }
 
@@ -243,10 +243,10 @@ static INPUT_PORTS_START( destiny )
 	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_UNUSED )
 	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_UNUSED )
 	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_UNUSED )
-	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_COIN1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, destiny_state, coin_inserted, (void *)0)
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_COIN1 ) PORT_CHANGED_MEMBER(DEVICE_SELF, destiny_state, coin_inserted, 0)
 
 	PORT_START("SERVICE")
-	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_SERVICE ) PORT_CHANGED_MEMBER(DEVICE_SELF, destiny_state, coin_inserted, (void *)1)
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_SERVICE ) PORT_CHANGED_MEMBER(DEVICE_SELF, destiny_state, coin_inserted, 1)
 INPUT_PORTS_END
 
 

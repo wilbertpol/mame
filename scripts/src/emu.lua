@@ -105,7 +105,7 @@ files {
 	MAME_DIR .. "src/emu/divtlb.h",
 	MAME_DIR .. "src/emu/drawgfx.cpp",
 	MAME_DIR .. "src/emu/drawgfx.h",
-	MAME_DIR .. "src/emu/drawgfxm.h",
+	MAME_DIR .. "src/emu/drawgfxt.ipp",
 	MAME_DIR .. "src/emu/driver.cpp",
 	MAME_DIR .. "src/emu/driver.h",
 	MAME_DIR .. "src/emu/drivenum.cpp",
@@ -159,7 +159,7 @@ files {
 	MAME_DIR .. "src/emu/inputdev.h",
 	MAME_DIR .. "src/emu/ioport.cpp",
 	MAME_DIR .. "src/emu/ioport.h",
-	MAME_DIR .. "src/emu/inpttype.h",
+	MAME_DIR .. "src/emu/inpttype.ipp",
 	MAME_DIR .. "src/emu/logmacro.h",
 	MAME_DIR .. "src/emu/machine.cpp",
 	MAME_DIR .. "src/emu/machine.h",
@@ -259,6 +259,12 @@ files {
 	MAME_DIR .. "src/emu/video/rgbvmx.h",
 }
 
+pchsource(MAME_DIR .. "src/emu/main.cpp")
+-- 3 files do not inlcude emu.h
+nopch(MAME_DIR .. "src/emu/emualloc.cpp")
+nopch(MAME_DIR .. "src/emu/attotime.cpp")
+nopch(MAME_DIR .. "src/emu/debug/textbuf.cpp")
+
 dependency {
 	--------------------------------------------------
 	-- additional dependencies
@@ -277,11 +283,11 @@ dependency {
 }
 
 custombuildtask {
-	{ MAME_DIR .. "scripts/font/NotoSans-Bold.bdc", GEN_DIR .. "emu/uismall.fh",     {  MAME_DIR .. "scripts/build/file2str.py" }, {"@echo Converting NotoSans-Bold.bdc...", PYTHON .. " $(1) $(<) $(@) font_uismall uint8_t" }},
+	{ MAME_DIR .. "scripts/font/NotoSans-Bold.bdc", GEN_DIR .. "emu/uismall.fh", { MAME_DIR .. "scripts/build/file2str.py" }, { "@echo Converting NotoSans-Bold.bdc...", PYTHON .. " $(1) $(<) $(@) font_uismall uint8_t" } },
 }
 
 custombuildtask {
-	{ MAME_DIR .. "src/frontend/mame/ui/uicmd14.png"        , GEN_DIR .. "emu/ui/uicmd14.fh",  {  MAME_DIR.. "scripts/build/png2bdc.py",  MAME_DIR .. "scripts/build/file2str.py" }, {"@echo Converting uicmd14.png...", PYTHON .. " $(1) $(<) temp_cmd.bdc", PYTHON .. " $(2) temp_cmd.bdc $(@) font_uicmd14 uint8_t" }},
+	{ MAME_DIR .. "src/frontend/mame/ui/uicmd14.png", GEN_DIR .. "emu/ui/uicmd14.fh", { MAME_DIR.. "scripts/build/png2bdc.py",  MAME_DIR .. "scripts/build/file2str.py" }, { "@echo Converting uicmd14.png...", PYTHON .. " $(1) $(<) temp_cmd.bdc", PYTHON .. " $(2) temp_cmd.bdc $(@) font_uicmd14 uint8_t" } },
 
 	layoutbuildtask("emu/layout", "dualhovu"),
 	layoutbuildtask("emu/layout", "dualhsxs"),
@@ -306,6 +312,9 @@ includedirs {
 files {
 	MAME_DIR .. "src/emu/drivers/empty.cpp",
 }
+
+pchsource(MAME_DIR .. "src/emu/drivers/empty.cpp")
+
 dependency {
 	{ "$(OBJDIR)/src/emu/drivers/empty.o", "$(GCH)", true  },
 }

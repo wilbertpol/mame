@@ -273,8 +273,6 @@ Namco System 21 Video Hardware
 
 #define ENABLE_LOGGING      0
 
-#define NAMCOS21_NUM_COLORS 0x8000
-
 class namcos21_c67_state : public driver_device
 {
 public:
@@ -369,6 +367,8 @@ uint32_t namcos21_c67_state::screen_update(screen_device &screen, bitmap_ind16 &
 	int pivot = 3;
 	int pri;
 	bitmap.fill(0xff, cliprect );
+	screen.priority().fill(0, cliprect);
+	m_c355spr->get_sprites(cliprect); // TODO : buffered?
 
 	m_c355spr->draw(screen, bitmap, cliprect, 2 );
 
@@ -780,30 +780,29 @@ void namcos21_c67_state::configure_c148_standard(machine_config &config)
 // starblad, solvalou, aircomb, cybsled base state
 void namcos21_c67_state::namcos21(machine_config &config)
 {
-	M68000(config, m_maincpu, 12288000); /* Master */
+	M68000(config, m_maincpu, 49.152_MHz_XTAL / 4); /* Master */
 	m_maincpu->set_addrmap(AS_PROGRAM, &namcos21_c67_state::master_map);
 	TIMER(config, "scantimer").configure_scanline(FUNC(namcos21_c67_state::screen_scanline), "screen", 0, 1);
 
-	M68000(config, m_slave, 12288000); /* Slave */
+	M68000(config, m_slave, 49.152_MHz_XTAL / 4); /* Slave */
 	m_slave->set_addrmap(AS_PROGRAM, &namcos21_c67_state::slave_map);
 
-	MC6809E(config, m_audiocpu, 3072000); /* Sound */
+	MC6809E(config, m_audiocpu, 49.152_MHz_XTAL / 24); /* Sound */
 	m_audiocpu->set_addrmap(AS_PROGRAM, &namcos21_c67_state::sound_map);
 	m_audiocpu->set_periodic_int(FUNC(namcos21_c67_state::irq0_line_hold), attotime::from_hz(2*60));
-	m_audiocpu->set_periodic_int(FUNC(namcos21_c67_state::irq1_line_hold), attotime::from_hz(120));
 
 	configure_c68_namcos21(config);
 
 	NAMCOS21_DSP_C67(config, m_namcos21_dsp_c67, 0);
 	m_namcos21_dsp_c67->set_renderer_tag("namcos21_3d");
 
-	config.m_minimum_quantum = attotime::from_hz(12000);
+	config.set_maximum_quantum(attotime::from_hz(12000));
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_1);
 
 	SCREEN(config, m_screen, SCREEN_TYPE_RASTER);
 	// TODO: basic parameters to get 60.606060 Hz, x2 is for interlace
-	m_screen->set_raw(12288000*2, 768, 0, 496, 264*2, 0, 480);
+	m_screen->set_raw(49.152_MHz_XTAL / 2, 768, 0, 496, 264*2, 0, 480);
 	m_screen->set_screen_update(FUNC(namcos21_c67_state::screen_update));
 	m_screen->set_palette(m_palette);
 
@@ -815,7 +814,7 @@ void namcos21_c67_state::namcos21(machine_config &config)
 	configure_c148_standard(config);
 	NAMCO_C139(config, m_sci, 0);
 
-	PALETTE(config, m_palette).set_format(palette_device::xBRG_888, NAMCOS21_NUM_COLORS);
+	PALETTE(config, m_palette).set_format(palette_device::xBRG_888, 0x10000/2);
 
 	NAMCO_C355SPR(config, m_c355spr, 0);
 	m_c355spr->set_screen(m_screen);
@@ -824,16 +823,18 @@ void namcos21_c67_state::namcos21(machine_config &config)
 	m_c355spr->set_tile_callback(namco_c355spr_device::c355_obj_code2tile_delegate());
 	m_c355spr->set_palxor(0xf); // reverse mapping
 	m_c355spr->set_color_base(0x1000);
+	m_c355spr->set_external_prifill(true);
 
 	SPEAKER(config, "lspeaker").front_left();
 	SPEAKER(config, "rspeaker").front_right();
 
 	C140(config, m_c140, 8000000/374);
 	m_c140->set_bank_type(c140_device::C140_TYPE::SYSTEM21);
+	m_c140->int1_callback().set_inputline(m_audiocpu, M6809_FIRQ_LINE);
 	m_c140->add_route(0, "lspeaker", 0.50);
 	m_c140->add_route(1, "rspeaker", 0.50);
 
-	YM2151(config, "ymsnd", 3579580).add_route(0, "lspeaker", 0.30).add_route(1, "rspeaker", 0.30);
+	YM2151(config, "ymsnd", 3.579545_MHz_XTAL).add_route(0, "lspeaker", 0.30).add_route(1, "rspeaker", 0.30);
 }
 
 void namcos21_c67_state::aircomb(machine_config &config)

@@ -52,7 +52,6 @@ Note that left-most digit is not wired up, and therefore will always be blank.
 #include "machine/74145.h"
 #include "machine/timer.h"
 #include "imagedev/cassette.h"
-#include "sound/wave.h"
 #include "speaker.h"
 
 #include "acrnsys1.lh"
@@ -74,9 +73,9 @@ public:
 
 private:
 	virtual void machine_start() override;
-	DECLARE_READ8_MEMBER(ins8154_b1_port_a_r);
-	DECLARE_WRITE8_MEMBER(ins8154_b1_port_a_w);
-	DECLARE_WRITE8_MEMBER(acrnsys1_led_segment_w);
+	uint8_t ins8154_b1_port_a_r();
+	void ins8154_b1_port_a_w(uint8_t data);
+	void acrnsys1_led_segment_w(uint8_t data);
 	TIMER_DEVICE_CALLBACK_MEMBER(kansas_w);
 	TIMER_DEVICE_CALLBACK_MEMBER(kansas_r);
 	void acrnsys1_map(address_map &map);
@@ -108,7 +107,7 @@ void acrnsys1_state::machine_start()
     KEYBOARD HANDLING
 ***************************************************************************/
 // bit 7 is cassin
-READ8_MEMBER( acrnsys1_state::ins8154_b1_port_a_r )
+uint8_t acrnsys1_state::ins8154_b1_port_a_r()
 {
 	uint8_t data = 0x7f, i, key_line = m_ttl74145->read();
 
@@ -127,7 +126,7 @@ READ8_MEMBER( acrnsys1_state::ins8154_b1_port_a_r )
 }
 
 // bit 6 is cassout
-WRITE8_MEMBER( acrnsys1_state::ins8154_b1_port_a_w )
+void  acrnsys1_state::ins8154_b1_port_a_w(uint8_t data)
 {
 	m_digit = data & 0x47;
 	m_ttl74145->write(m_digit & 7);
@@ -168,7 +167,7 @@ TIMER_DEVICE_CALLBACK_MEMBER(acrnsys1_state::kansas_r)
     LED DISPLAY
 ***************************************************************************/
 
-WRITE8_MEMBER( acrnsys1_state::acrnsys1_led_segment_w )
+void  acrnsys1_state::acrnsys1_led_segment_w(uint8_t data)
 {
 	uint16_t const key_line = m_ttl74145->read();
 
@@ -274,7 +273,6 @@ void acrnsys1_state::acrnsys1(machine_config &config)
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	/* devices */
 	ins8154_device &b1(INS8154(config, "b1"));
@@ -286,6 +284,7 @@ void acrnsys1_state::acrnsys1(machine_config &config)
 
 	CASSETTE(config, m_cass);
 	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_SPEAKER_ENABLED | CASSETTE_MOTOR_ENABLED);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	TIMER(config, "kansas_w").configure_periodic(FUNC(acrnsys1_state::kansas_w), attotime::from_hz(4800));
 	TIMER(config, "kansas_r").configure_periodic(FUNC(acrnsys1_state::kansas_r), attotime::from_hz(40000));

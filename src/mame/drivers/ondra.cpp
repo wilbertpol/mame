@@ -15,7 +15,6 @@
 #include "cpu/z80/z80.h"
 #include "imagedev/cassette.h"
 #include "machine/ram.h"
-#include "sound/wave.h"
 #include "emupal.h"
 #include "screen.h"
 #include "softlist.h"
@@ -35,8 +34,8 @@ void ondra_state::ondra_io(address_map &map)
 	map.global_mask(0x0b);
 	map.unmap_value_high();
 	map(0x03, 0x03).w(FUNC(ondra_state::ondra_port_03_w));
-	//AM_RANGE(0x09, 0x09) AM_WRITE(ondra_port_09_w)
-	//AM_RANGE(0x0a, 0x0a) AM_WRITE(ondra_port_0a_w)
+	//map(0x09, 0x09).w(FUNC(ondra_state::ondra_port_09_w);
+	//map(0x0a, 0x0a).w(FUNC(ondra_state::ondra_port_0a_w);
 }
 
 /* Input ports */
@@ -144,10 +143,10 @@ void ondra_state::ondra(machine_config &config)
 
 	// sound hardware
 	SPEAKER(config, "mono").front_center();
-	WAVE(config, "wave", m_cassette).add_route(ALL_OUTPUTS, "mono", 0.25);
 
 	CASSETTE(config, m_cassette);
 	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 	m_cassette->set_interface("ondra_cass");
 
 	SOFTWARE_LIST(config, "cass_list").set_original("ondra");

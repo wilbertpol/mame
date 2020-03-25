@@ -52,7 +52,6 @@ Official test program from pages 4 to 8 of the operator's manual:
 #include "machine/timer.h"
 #include "imagedev/cassette.h"
 #include "sound/beep.h"
-#include "sound/wave.h"
 #include "speaker.h"
 
 #include "h8.lh"
@@ -204,7 +203,7 @@ void h8_state::h8_io(address_map &map)
 /* Input ports */
 static INPUT_PORTS_START( h8 )
 	PORT_START("X0")
-	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_KEYBOARD ) PORT_NAME("0") PORT_CODE(KEYCODE_0) PORT_CHAR('0') PORT_CHANGED_MEMBER(DEVICE_SELF, h8_state, button_0, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_KEYBOARD ) PORT_NAME("0") PORT_CODE(KEYCODE_0) PORT_CHAR('0') PORT_CHANGED_MEMBER(DEVICE_SELF, h8_state, button_0, 0)
 	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_KEYBOARD ) PORT_NAME("1 SP") PORT_CODE(KEYCODE_1) PORT_CHAR('1')
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_KEYBOARD ) PORT_NAME("2 AF") PORT_CODE(KEYCODE_2) PORT_CHAR('2')
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_KEYBOARD ) PORT_NAME("3 BC") PORT_CODE(KEYCODE_3) PORT_CHAR('3')
@@ -334,7 +333,6 @@ void h8_state::h8(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	BEEP(config, m_beep, H8_BEEP_FRQ).add_route(ALL_OUTPUTS, "mono", 1.00);
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "mono", 0.25);
 
 	/* Devices */
 	I8251(config, m_uart, 0);
@@ -346,6 +344,7 @@ void h8_state::h8(machine_config &config)
 
 	CASSETTE(config, m_cass);
 	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 	m_cass->set_interface("h8_cass");
 
 	TIMER(config, "kansas_w").configure_periodic(FUNC(h8_state::kansas_w), attotime::from_hz(4800));

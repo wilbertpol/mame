@@ -1,18 +1,20 @@
 <?xml version="1.0"?>
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
+<!--
+license:CC0
 
-<!-- Acorn BBC Micro Model B Tapes -->
+Acorn BBC Micro Model B Tapes
 
-<!-- I believe all the Cassette images here are original, so some require the manuals for additional copy protection -->
+I believe all the Cassette images here are original, so some require the manuals for additional copy protection
 
-<!-- Loading Instructions:
+    Loading Instructions:
 
       If the system has a disk drive (which the BBC Model B does by default in MAME) you must type *TAPE, then use the relevant command to load the software, usually CHAIN"" or *RUN, though some earlier titles from Micro Power require *LOAD.
 
       To start/stop the tape you must use the MAME menus, so you'll have to turn full keyboard mode off with Scroll Lock, then navigate the menus, turning Scroll Lock back on when you're finished.
--->
 
-<!-- This list was compiled from the archive at http://www.stairwaytohell.com/. Additional titles will be added as they are made available at http://stardot.org.uk/ forum. -->
+This list was compiled from the archive at http://www.stairwaytohell.com/. Additional titles will be added as they are made available at http://stardot.org.uk/ forum.
+-->
 
 <softwarelist name="bbcb_cass" description="Acorn BBC Micro Model B cassettes">
 
@@ -9694,7 +9696,7 @@
 
 	<software name="psycast2at" cloneof="psycast2">
 		<description>Psycastria 2 (Atlantis)</description>
-		<year>19??</year>
+		<year>1990</year>
 		<publisher>Atlantis</publisher>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21424">
@@ -15249,8 +15251,8 @@
 
 	<software name="educsp1">
 		<description>Educational Special No.1</description>
-		<year>198?</year>
-		<publisher>Database</publisher>
+		<year>1984</year>
+		<publisher>Database Publications</publisher>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="50217">
 				<rom name="educationalspecialno1(database).uef" size="50217" crc="5d08b9e7" sha1="29daa7cc880d71082b3bca07df87241b3949d98d" />
@@ -17478,7 +17480,7 @@
 	</software>
 
 	<software name="mu39">
-		<description>Micro User Vol.3, No.9</description>
+		<description>Micro User Vol.3, No.9: Whodunnit</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
 		<part name="cass" interface="bbc_cass">

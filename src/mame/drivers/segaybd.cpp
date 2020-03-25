@@ -64,6 +64,7 @@ MB89372 - Uses 3 serial data transfer protocols: ASYNC, COP & BOP. Has a built
 #include "machine/mb8421.h"
 #include "machine/msm6253.h"
 #include "machine/nvram.h"
+#include "machine/segaic16.h"
 #include "machine/315_5296.h"
 #include "sound/segapcm.h"
 #include "sound/ym2151.h"
@@ -591,7 +592,7 @@ void segaybd_state::main_map(address_map &map)
 	map(0x080000, 0x080007).mirror(0x001ff8).rw("multiplier_main", FUNC(sega_315_5248_multiplier_device::read), FUNC(sega_315_5248_multiplier_device::write));
 	map(0x082001, 0x082001).mirror(0x001ffe).w("soundlatch", FUNC(generic_latch_8_device::write));
 	map(0x084000, 0x08401f).mirror(0x001fe0).rw("divider_main", FUNC(sega_315_5249_divider_device::read), FUNC(sega_315_5249_divider_device::write));
-//  AM_RANGE(0x086000, 0x087fff) /DEA0
+//  map(0x086000, 0x087fff) /DEA0
 	map(0x0c0000, 0x0cffff).ram().share("shareram");
 	map(0x100000, 0x10001f).rw("io", FUNC(sega_315_5296_device::read), FUNC(sega_315_5296_device::write)).umask16(0x00ff);
 	map(0x100040, 0x100047).rw("adc", FUNC(msm6253_device::d7_r), FUNC(msm6253_device::address_w)).umask16(0x00ff);
@@ -640,7 +641,7 @@ void segaybd_state::sound_map(address_map &map)
 {
 	map.unmap_value_high();
 	map(0x0000, 0xefff).rom();
-	map(0xf000, 0xf0ff).mirror(0x0700).rw("pcm", FUNC(segapcm_device::sega_pcm_r), FUNC(segapcm_device::sega_pcm_w));
+	map(0xf000, 0xf0ff).mirror(0x0700).rw("pcm", FUNC(segapcm_device::read), FUNC(segapcm_device::write));
 	map(0xf800, 0xffff).ram();
 }
 
@@ -1288,7 +1289,7 @@ void segaybd_state::yboard(machine_config &config)
 	m_soundcpu->set_addrmap(AS_IO, &segaybd_state::sound_portmap);
 
 	NVRAM(config, "backupram", nvram_device::DEFAULT_ALL_0);
-	config.m_minimum_quantum = attotime::from_hz(6000);
+	config.set_maximum_quantum(attotime::from_hz(6000));
 
 	MB3773(config, "watchdog"); // IC95
 
@@ -2071,11 +2072,11 @@ ROM_START( pdrift )
 
 	ROM_REGION( 0x200000, "pcm", ROMREGION_ERASEFF )    // SegaPCM samples
 	ROM_LOAD( "mpr-11754.107",  0x000000, 0x80000, CRC(ebeb8484) SHA1(269f33cb1a9be126bada858e25291385d48686a2) )
-	ROM_LOAD( "epr-11756.105",  0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
+	ROM_LOAD( "epr-11756.106",  0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
 	ROM_RELOAD(                 0x0a0000, 0x20000 )
 	ROM_RELOAD(                 0x0c0000, 0x20000 )
 	ROM_RELOAD(                 0x0e0000, 0x20000 )
-	ROM_LOAD( "epr-11755.106",  0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
+	ROM_LOAD( "epr-11755.105",  0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
 	ROM_RELOAD(                 0x120000, 0x20000 )
 	ROM_RELOAD(                 0x140000, 0x20000 )
 	ROM_RELOAD(                 0x160000, 0x20000 )
@@ -2154,11 +2155,11 @@ ROM_START( pdrifta )
 
 	ROM_REGION( 0x200000, "pcm", ROMREGION_ERASEFF )    // SegaPCM samples
 	ROM_LOAD( "mpr-11754.107",  0x000000, 0x80000, CRC(ebeb8484) SHA1(269f33cb1a9be126bada858e25291385d48686a2) )
-	ROM_LOAD( "epr-11756.105",  0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
+	ROM_LOAD( "epr-11756.106",  0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
 	ROM_RELOAD(                 0x0a0000, 0x20000 )
 	ROM_RELOAD(                 0x0c0000, 0x20000 )
 	ROM_RELOAD(                 0x0e0000, 0x20000 )
-	ROM_LOAD( "epr-11755.106",  0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
+	ROM_LOAD( "epr-11755.105",  0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
 	ROM_RELOAD(                 0x120000, 0x20000 )
 	ROM_RELOAD(                 0x140000, 0x20000 )
 	ROM_RELOAD(                 0x160000, 0x20000 )
@@ -2238,11 +2239,11 @@ ROM_START( pdrifte )
 
 	ROM_REGION( 0x200000, "pcm", ROMREGION_ERASEFF )    // SegaPCM samples
 	ROM_LOAD( "mpr-11754.107",  0x000000, 0x80000, CRC(ebeb8484) SHA1(269f33cb1a9be126bada858e25291385d48686a2) )
-	ROM_LOAD( "epr-11756.105",  0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
+	ROM_LOAD( "epr-11756.106",  0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
 	ROM_RELOAD(                 0x0a0000, 0x20000 )
 	ROM_RELOAD(                 0x0c0000, 0x20000 )
 	ROM_RELOAD(                 0x0e0000, 0x20000 )
-	ROM_LOAD( "epr-11755.106",  0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
+	ROM_LOAD( "epr-11755.105",  0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
 	ROM_RELOAD(                 0x120000, 0x20000 )
 	ROM_RELOAD(                 0x140000, 0x20000 )
 	ROM_RELOAD(                 0x160000, 0x20000 )
@@ -2260,6 +2261,7 @@ ROM_END
 //  CPU: 68000 (317-????)
 //   CPU BD POWER DRIFT   837-6695-08 (or 837-6695-09)
 //   VIDEO BD POWER DRIFT 837-6696-01 (or 837-6696-02)
+//                GAME BD 834-6697-02 POWER DRIFT
 //
 ROM_START( pdriftj )
 	ROM_REGION( 0x080000, "maincpu", 0 ) // M
@@ -2324,11 +2326,11 @@ ROM_START( pdriftj )
 
 	ROM_REGION( 0x200000, "pcm", ROMREGION_ERASEFF )    // SegaPCM samples
 	ROM_LOAD( "mpr-11754.107",  0x000000, 0x80000, CRC(ebeb8484) SHA1(269f33cb1a9be126bada858e25291385d48686a2) )
-	ROM_LOAD( "epr-11756.105",  0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
+	ROM_LOAD( "epr-11756.106",  0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
 	ROM_RELOAD(                 0x0a0000, 0x20000 )
 	ROM_RELOAD(                 0x0c0000, 0x20000 )
 	ROM_RELOAD(                 0x0e0000, 0x20000 )
-	ROM_LOAD( "epr-11755.106",  0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
+	ROM_LOAD( "epr-11755.105",  0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
 	ROM_RELOAD(                 0x120000, 0x20000 )
 	ROM_RELOAD(                 0x140000, 0x20000 )
 	ROM_RELOAD(                 0x160000, 0x20000 )
@@ -2409,11 +2411,11 @@ ROM_START(pdriftl)
 
 	ROM_REGION(0x200000, "pcm", ROMREGION_ERASEFF)    // SegaPCM samples
 	ROM_LOAD("mpr-11754.107", 0x000000, 0x80000, CRC(ebeb8484) SHA1(269f33cb1a9be126bada858e25291385d48686a2) )
-	ROM_LOAD("epr-11756.105", 0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
+	ROM_LOAD("epr-11756.106", 0x080000, 0x20000, CRC(12e43f8a) SHA1(0f9a11ba6b7c1a352daa1146a01ce147945e91e4) )
 	ROM_RELOAD(               0x0a0000, 0x20000)
 	ROM_RELOAD(               0x0c0000, 0x20000)
 	ROM_RELOAD(               0x0e0000, 0x20000)
-	ROM_LOAD("epr-11755.106", 0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
+	ROM_LOAD("epr-11755.105", 0x100000, 0x20000, CRC(c2db1244) SHA1(c98fe17c9f04a639a862cc2a86fab17d1f5d025c) )
 	ROM_RELOAD(               0x120000, 0x20000)
 	ROM_RELOAD(               0x140000, 0x20000)
 	ROM_RELOAD(               0x160000, 0x20000)

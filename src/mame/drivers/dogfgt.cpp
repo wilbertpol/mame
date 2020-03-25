@@ -35,11 +35,11 @@ WRITE8_MEMBER(dogfgt_state::soundlatch_w)
 
 WRITE8_MEMBER(dogfgt_state::soundcontrol_w)
 {
-	/* bit 5 goes to 8910 #0 BDIR pin  */
+	/* bit 5 goes to YM2149 #0 BDIR pin  */
 	if ((m_last_snd_ctrl & 0x20) == 0x20 && (data & 0x20) == 0x00)
 		m_ay[0]->data_address_w(m_last_snd_ctrl >> 4, m_soundlatch);
 
-	/* bit 7 goes to 8910 #1 BDIR pin  */
+	/* bit 7 goes to YM2149 #1 BDIR pin  */
 	if ((m_last_snd_ctrl & 0x80) == 0x80 && (data & 0x80) == 0x00)
 		m_ay[1]->data_address_w(m_last_snd_ctrl >> 6, m_soundlatch);
 
@@ -237,7 +237,7 @@ void dogfgt_state::dogfgt(machine_config &config)
 	M6502(config, m_subcpu, 1500000); /* 1.5 MHz ???? */
 	m_subcpu->set_addrmap(AS_PROGRAM, &dogfgt_state::sub_map);
 
-	config.m_minimum_quantum = attotime::from_hz(6000);
+	config.set_maximum_quantum(attotime::from_hz(6000));
 
 	/* video hardware */
 	SCREEN(config, m_screen, SCREEN_TYPE_RASTER);
@@ -254,8 +254,8 @@ void dogfgt_state::dogfgt(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 
-	AY8910(config, m_ay[0], 1500000).add_route(ALL_OUTPUTS, "mono", 0.30);
-	AY8910(config, m_ay[1], 1500000).add_route(ALL_OUTPUTS, "mono", 0.30);
+	YM2149(config, m_ay[0], 1500000).add_route(ALL_OUTPUTS, "mono", 0.30);
+	YM2149(config, m_ay[1], 1500000).add_route(ALL_OUTPUTS, "mono", 0.30);
 }
 
 

@@ -165,7 +165,7 @@ WRITE_LINE_MEMBER(renegade_state::adpcm_int)
 	else
 	{
 		uint8_t const data = m_adpcmrom[m_adpcm_pos / 2];
-		m_msm->write_data(m_adpcm_pos & 1 ? data & 0xf : data >> 4);
+		m_msm->data_w(m_adpcm_pos & 1 ? data & 0xf : data >> 4);
 		m_adpcm_pos++;
 	}
 }
@@ -303,7 +303,7 @@ static INPUT_PORTS_START( renegade )
 
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_BUTTON3 ) PORT_PLAYER(1) /* attack right */
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_BUTTON3 ) PORT_PLAYER(2) /* attack right */
-	PORT_BIT( 0x30, IP_ACTIVE_HIGH, IPT_CUSTOM) PORT_CUSTOM_MEMBER(DEVICE_SELF, renegade_state, mcu_status_r, nullptr)
+	PORT_BIT( 0x30, IP_ACTIVE_HIGH, IPT_CUSTOM) PORT_CUSTOM_MEMBER(renegade_state, mcu_status_r)
 	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_CUSTOM ) PORT_VBLANK("screen")
 	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_SERVICE1 )
 

@@ -30,6 +30,7 @@
 #include "ui/state.h"
 #include "ui/viewgfx.h"
 #include "imagedev/cassette.h"
+#include "../osd/modules/lib/osdobj_common.h"
 
 
 /***************************************************************************
@@ -164,7 +165,8 @@ mame_ui_manager::mame_ui_manager(running_machine &machine)
 	, m_popup_text_end(0)
 	, m_mouse_bitmap(32, 32)
 	, m_mouse_arrow_texture(nullptr)
-	, m_mouse_show(false) {}
+	, m_mouse_show(false)
+	, m_target_font_height(0) {}
 
 mame_ui_manager::~mame_ui_manager()
 {
@@ -177,8 +179,10 @@ void mame_ui_manager::init()
 	ui::menu::init(machine(), options());
 	ui_gfx_init(machine());
 
-	get_font_rows(&machine());
 	m_ui_colors.refresh(options());
+
+	// update font row info from setting
+	update_target_font_height();
 
 	// more initialization
 	using namespace std::placeholders;
@@ -194,6 +198,16 @@ void mame_ui_manager::init()
 	memcpy(dst,mouse_bitmap,32*32*sizeof(uint32_t));
 	m_mouse_arrow_texture = machine().render().texture_alloc();
 	m_mouse_arrow_texture->set_bitmap(m_mouse_bitmap, m_mouse_bitmap.cliprect(), TEXFORMAT_ARGB32);
+}
+
+
+//-------------------------------------------------
+//  update_target_font_height
+//-------------------------------------------------
+
+void mame_ui_manager::update_target_font_height()
+{
+	m_target_font_height = 1.0f / options().font_rows();
 }
 
 
@@ -260,6 +274,26 @@ void mame_ui_manager::set_handler(ui_callback_type callback_type, const std::fun
 
 
 //-------------------------------------------------
+//  output_joined_collection
+//-------------------------------------------------
+
+template<typename TColl, typename TEmitMemberFunc, typename TEmitDelimFunc>
+static void output_joined_collection(const TColl &collection, TEmitMemberFunc emit_member, TEmitDelimFunc emit_delim)
+{
+	bool is_first = true;
+
+	for (const auto &member : collection)
+	{
+		if (is_first)
+			is_first = false;
+		else
+			emit_delim();
+		emit_member(member);
+	}
+}
+
+
+//-------------------------------------------------
 //  display_startup_screens - display the
 //  various startup screens
 //-------------------------------------------------
@@ -270,13 +304,14 @@ void mame_ui_manager::display_startup_screens(bool first_time)
 	int str = machine().options().seconds_to_run();
 	bool show_gameinfo = !machine().options().skip_gameinfo();
 	bool show_warnings = true, show_mandatory_fileman = true;
+	bool video_none = strcmp(downcast<osd_options &>(machine().options()).video(), OSDOPTVAL_NONE) == 0;
 
 	// disable everything if we are using -str for 300 or fewer seconds, or if we're the empty driver,
-	// or if we are debugging
-	if (!first_time || (str > 0 && str < 60*5) || &machine().system() == &GAME_NAME(___empty) || (machine().debug_flags & DEBUG_FLAG_ENABLED) != 0)
+	// or if we are debugging, or if there's no mame window to send inputs to
+	if (!first_time || (str > 0 && str < 60*5) || &machine().system() == &GAME_NAME(___empty) || (machine().debug_flags & DEBUG_FLAG_ENABLED) != 0 || video_none)
 		show_gameinfo = show_warnings = show_mandatory_fileman = false;
 
-#if defined(EMSCRIPTEN)
+#if defined(__EMSCRIPTEN__)
 	// also disable for the JavaScript port since the startup screens do not run asynchronously
 	show_gameinfo = show_warnings = false;
 #endif
@@ -311,12 +346,17 @@ void mame_ui_manager::display_startup_screens(bool first_time)
 			break;
 
 		case 2:
-			if (show_mandatory_fileman)
-				messagebox_text = machine_info().mandatory_images();
-			if (!messagebox_text.empty())
+			std::vector<std::reference_wrapper<const std::string>> mandatory_images = mame_machine_manager::instance()->missing_mandatory_images();
+			if (!mandatory_images.empty() && show_mandatory_fileman)
 			{
-				std::string warning = std::string(_("This driver requires images to be loaded in the following device(s): ")) + messagebox_text;
-				ui::menu_file_manager::force_file_manager(*this, machine().render().ui_container(), warning.c_str());
+				std::ostringstream warning;
+				warning << _("This driver requires images to be loaded in the following device(s): ");
+
+				output_joined_collection(mandatory_images,
+					[&warning](const std::reference_wrapper<const std::string> &img)    { warning << "\"" << img.get() << "\""; },
+					[&warning]()                                                        { warning << ","; });
+
+				ui::menu_file_manager::force_file_manager(*this, machine().render().ui_container(), warning.str().c_str());
 			}
 			break;
 		}
@@ -457,7 +497,7 @@ float mame_ui_manager::get_line_height()
 	one_to_one_line_height = (float)raw_font_pixel_height / (float)target_pixel_height;
 
 	// determine the scale factor
-	scale_factor = UI_TARGET_FONT_HEIGHT / one_to_one_line_height;
+	scale_factor = target_font_height() / one_to_one_line_height;
 
 	// if our font is small-ish, do integral scaling
 	if (raw_font_pixel_height < 24)
@@ -583,7 +623,7 @@ void mame_ui_manager::draw_text_full(render_container &container, const char *or
 void mame_ui_manager::draw_text_box(render_container &container, const char *text, ui::text_layout::text_justify justify, float xpos, float ypos, rgb_t backcolor)
 {
 	// cap the maximum width
-	float maximum_width = 1.0f - UI_BOX_LR_BORDER * 2;
+	float maximum_width = 1.0f - box_lr_border() * 2;
 
 	// create a layout
 	ui::text_layout layout = create_layout(container, maximum_width, justify);
@@ -607,15 +647,15 @@ void mame_ui_manager::draw_text_box(render_container &container, ui::text_layout
 	auto actual_left = layout.actual_left();
 	auto actual_width = layout.actual_width();
 	auto actual_height = layout.actual_height();
-	auto x = std::min(std::max(xpos - actual_width / 2, UI_BOX_LR_BORDER), 1.0f - actual_width - UI_BOX_LR_BORDER);
-	auto y = std::min(std::max(ypos - actual_height / 2, UI_BOX_TB_BORDER), 1.0f - actual_height - UI_BOX_TB_BORDER);
+	auto x = std::min(std::max(xpos - actual_width / 2, box_lr_border()), 1.0f - actual_width - box_lr_border());
+	auto y = std::min(std::max(ypos - actual_height / 2, box_tb_border()), 1.0f - actual_height - box_tb_border());
 
 	// add a box around that
 	draw_outlined_box(container,
-			x - UI_BOX_LR_BORDER,
-			y - UI_BOX_TB_BORDER,
-			x + actual_width + UI_BOX_LR_BORDER,
-			y + actual_height + UI_BOX_TB_BORDER, backcolor);
+			x - box_lr_border(),
+			y - box_tb_border(),
+			x + actual_width + box_lr_border(),
+			y + actual_height + box_tb_border(), backcolor);
 
 	// emit the text
 	layout.emit(container, x - actual_left, y);
@@ -803,7 +843,7 @@ void mame_ui_manager::process_natural_keyboard()
 	{
 		// if this was a UI_EVENT_CHAR event, post it
 		if (event.event_type == ui_event::IME_CHAR)
-			machine().ioport().natkeyboard().post(event.ch);
+			machine().ioport().natkeyboard().post_char(event.ch);
 	}
 
 	// process natural keyboard keys that don't get UI_EVENT_CHARs
@@ -826,7 +866,7 @@ void mame_ui_manager::process_natural_keyboard()
 			*key_down_ptr |= key_down_mask;
 
 			// post the key
-			machine().ioport().natkeyboard().post(UCHAR_MAMEKEY_BEGIN + code.item_id());
+			machine().ioport().natkeyboard().post_char(UCHAR_MAMEKEY_BEGIN + code.item_id());
 		}
 		else if (!pressed && (*key_down_ptr & key_down_mask))
 		{
@@ -877,36 +917,8 @@ void mame_ui_manager::decrease_frameskip()
 
 bool mame_ui_manager::can_paste()
 {
-	// retrieve the clipboard text
-	char *text = osd_get_clipboard_text();
-
-	// free the string if allocated
-	if (text != nullptr)
-		free(text);
-
-	// did we have text?
-	return text != nullptr;
-}
-
-
-//-------------------------------------------------
-//  paste - does a paste from the keyboard
-//-------------------------------------------------
-
-void mame_ui_manager::paste()
-{
-	// retrieve the clipboard text
-	char *text = osd_get_clipboard_text();
-
-	// was a result returned?
-	if (text != nullptr)
-	{
-		// post the text
-		machine().ioport().natkeyboard().post_utf8(text);
-
-		// free the string
-		free(text);
-	}
+	// check to see if the clipboard is not empty
+	return !osd_get_clipboard_text().empty();
 }
 
 
@@ -1007,7 +1019,7 @@ void mame_ui_manager::image_handler_ingame()
 		if (!layout.empty())
 		{
 			float x = 0.2f;
-			float y = 0.5f * get_line_height() + 2.0f * UI_BOX_TB_BORDER;
+			float y = 0.5f * get_line_height() + 2.0f * box_tb_border();
 			draw_text_box(machine().render().ui_container(), layout, x, y, colors().background_color());
 		}
 	}
@@ -1090,7 +1102,7 @@ uint32_t mame_ui_manager::handler_ingame(render_container &container)
 	{
 		// paste command
 		if (machine().ui_input().pressed(IPT_UI_PASTE))
-			paste();
+			machine().ioport().natkeyboard().paste();
 	}
 
 	image_handler_ingame();
@@ -1221,21 +1233,6 @@ uint32_t mame_ui_manager::handler_ingame(render_container &container)
 	// toggle throttle?
 	if (machine().ui_input().pressed(IPT_UI_THROTTLE))
 		machine().video().toggle_throttle();
-
-	// toggle autofire
-	if (machine().ui_input().pressed(IPT_UI_TOGGLE_AUTOFIRE))
-	{
-		if (!machine().options().cheat())
-		{
-			machine().popmessage(_("Autofire can't be enabled"));
-		}
-		else
-		{
-			bool autofire_toggle = machine().ioport().get_autofire_toggle();
-			machine().ioport().set_autofire_toggle(!autofire_toggle);
-			machine().popmessage("Autofire %s", autofire_toggle ? _("Enabled") : _("Disabled"));
-		}
-	}
 
 	// check for fast forward
 	if (machine().ioport().type_pressed(IPT_UI_FAST_FORWARD))
@@ -2058,17 +2055,6 @@ void mame_ui_manager::draw_textured_box(render_container &container, float x0, f
 	container.add_line(x0, y1, x0, y0, UI_LINE_WIDTH, linecolor, PRIMFLAG_BLENDMODE(BLENDMODE_ALPHA));
 }
 
-//-------------------------------------------------
-//  get font rows from options
-//-------------------------------------------------
-
-int get_font_rows(running_machine *machine)
-{
-	static int value;
-
-	return ((machine != nullptr) ? value = mame_machine_manager::instance()->ui().options().font_rows() : value);
-}
-
 void mame_ui_manager::popup_time_string(int seconds, std::string message)
 {
 	// extract the text
@@ -2143,7 +2129,7 @@ void mame_ui_manager::save_main_option()
 	// attempt to open the main ini file
 	{
 		emu_file file(machine().options().ini_path(), OPEN_FLAG_READ);
-		if (file.open(emulator_info::get_configname(), ".ini") == osd_file::error::NONE)
+		if (file.open(std::string(emulator_info::get_configname()) + ".ini") == osd_file::error::NONE)
 		{
 			try
 			{
@@ -2173,7 +2159,7 @@ void mame_ui_manager::save_main_option()
 	// attempt to open the output file
 	{
 		emu_file file(machine().options().ini_path(), OPEN_FLAG_WRITE | OPEN_FLAG_CREATE | OPEN_FLAG_CREATE_PATHS);
-		if (file.open(emulator_info::get_configname(), ".ini") == osd_file::error::NONE)
+		if (file.open(std::string(emulator_info::get_configname()) + ".ini") == osd_file::error::NONE)
 		{
 			// generate the updated INI
 			std::string initext = options.output_ini();

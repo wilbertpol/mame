@@ -273,8 +273,6 @@ static INPUT_PORTS_START( touchme )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNUSED )
 INPUT_PORTS_END
 
-static const s16 touchme_speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
-
 void touchme_state::touchme(machine_config &config)
 {
 	/* basic machine hardware */
@@ -295,7 +293,8 @@ void touchme_state::touchme(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, touchme_speaker_levels);
+	static const s16 speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -381,7 +380,7 @@ static INPUT_PORTS_START( pabball )
 	PORT_CONFSETTING(    0x20, "2" )
 
 	PORT_START("RESET")
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_NAME("P1 Reset") PORT_CHANGED_MEMBER(DEVICE_SELF, hh_pic16_state, reset_button, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_NAME("P1 Reset") PORT_CHANGED_MEMBER(DEVICE_SELF, hh_pic16_state, reset_button, 0)
 INPUT_PORTS_END
 
 void pabball_state::pabball(machine_config &config)
@@ -609,8 +608,6 @@ static INPUT_PORTS_START( maniac )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_PLAYER(4)
 INPUT_PORTS_END
 
-static const s16 maniac_speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
-
 void maniac_state::maniac(machine_config &config)
 {
 	/* basic machine hardware */
@@ -627,7 +624,8 @@ void maniac_state::maniac(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, maniac_speaker_levels);
+	static const s16 speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -756,7 +754,7 @@ static INPUT_PORTS_START( matchme )
 	PORT_CONFSETTING(    0x00, "Professional" ) // PRO
 
 	PORT_START("IN.4") // another fake
-	PORT_CONFNAME( 0x01, 0x00, "Speed" ) PORT_CHANGED_MEMBER(DEVICE_SELF, matchme_state, speed_switch, nullptr)
+	PORT_CONFNAME( 0x01, 0x00, "Speed" ) PORT_CHANGED_MEMBER(DEVICE_SELF, matchme_state, speed_switch, 0)
 	PORT_CONFSETTING(    0x00, DEF_STR( Low ) )
 	PORT_CONFSETTING(    0x01, DEF_STR( High ) )
 
@@ -1158,8 +1156,6 @@ static INPUT_PORTS_START( rockpin )
 	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_BUTTON3 ) PORT_NAME("Ball")
 INPUT_PORTS_END
 
-static const s16 rockpin_speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
-
 void rockpin_state::rockpin(machine_config &config)
 {
 	/* basic machine hardware */
@@ -1184,7 +1180,8 @@ void rockpin_state::rockpin(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, rockpin_speaker_levels);
+	static const s16 speaker_levels[] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 

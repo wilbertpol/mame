@@ -39,7 +39,6 @@ MB7051 - fuse programmed prom.
 #include "sound/dac.h"
 #include "sound/mea8000.h"
 #include "sound/volt_reg.h"
-#include "sound/wave.h"
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
@@ -63,7 +62,7 @@ public:
 
 	void init_brailab4();
 
-	DECLARE_CUSTOM_INPUT_MEMBER(cass3_r);
+	DECLARE_READ_LINE_MEMBER(cass3_r);
 
 private:
 	DECLARE_READ8_MEMBER(key_r);
@@ -80,7 +79,7 @@ private:
 	DECLARE_MACHINE_RESET(brailab4);
 	DECLARE_VIDEO_START(brailab4);
 	INTERRUPT_GEN_MEMBER(homelab_frame);
-	DECLARE_QUICKLOAD_LOAD_MEMBER(homelab);
+	DECLARE_QUICKLOAD_LOAD_MEMBER(quickload_cb);
 	uint32_t screen_update_homelab2(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	uint32_t screen_update_homelab3(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 
@@ -171,7 +170,7 @@ WRITE8_MEMBER( homelab_state::brailab4_portff_w )
 	membank("bank1")->set_entry(1);
 }
 
-CUSTOM_INPUT_MEMBER( homelab_state::cass3_r )
+READ_LINE_MEMBER( homelab_state::cass3_r )
 {
 	return (m_cass->input() > 0.03);
 }
@@ -363,7 +362,7 @@ static INPUT_PORTS_START( homelab3 ) // F4 to F8 are foreign characters
 	PORT_BIT(0xf0, IP_ACTIVE_LOW, IPT_UNUSED)
 
 	PORT_START("X3")
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, homelab_state, cass3_r, " ")
+	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(homelab_state, cass3_r)
 	PORT_BIT(0x02, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("F2") PORT_CODE(KEYCODE_F2)
 	PORT_BIT(0x04, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("F1") PORT_CODE(KEYCODE_F1)
 	PORT_BIT(0xf8, IP_ACTIVE_LOW, IPT_UNUSED)
@@ -476,7 +475,7 @@ static INPUT_PORTS_START( brailab4 ) // F4 to F8 are foreign characters
 	PORT_BIT(0xf0, IP_ACTIVE_LOW, IPT_UNUSED)
 
 	PORT_START("X3")
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, homelab_state, cass3_r, " ")
+	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_READ_LINE_MEMBER(homelab_state, cass3_r)
 	PORT_BIT(0x02, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("F2") PORT_CODE(KEYCODE_F2)
 	PORT_BIT(0x04, IP_ACTIVE_LOW, IPT_KEYBOARD) PORT_NAME("F1") PORT_CODE(KEYCODE_F1)
 	PORT_BIT(0xf8, IP_ACTIVE_LOW, IPT_UNUSED)
@@ -663,7 +662,7 @@ static GFXDECODE_START( gfx_homelab )
 	GFXDECODE_ENTRY( "chargen", 0x0000, homelab_charlayout, 0, 1 )
 GFXDECODE_END
 
-QUICKLOAD_LOAD_MEMBER( homelab_state,homelab)
+QUICKLOAD_LOAD_MEMBER(homelab_state::quickload_cb)
 {
 	address_space &space = m_maincpu->space(AS_PROGRAM);
 	int i=0;
@@ -750,7 +749,8 @@ QUICKLOAD_LOAD_MEMBER( homelab_state,homelab)
 }
 
 /* Machine driver */
-MACHINE_CONFIG_START(homelab_state::homelab)
+void homelab_state::homelab(machine_config &config)
+{
 	/* basic machine hardware */
 	Z80(config, m_maincpu, XTAL(8'000'000) / 2);
 	m_maincpu->set_addrmap(AS_PROGRAM, &homelab_state::homelab2_mem);
@@ -776,13 +776,14 @@ MACHINE_CONFIG_START(homelab_state::homelab)
 	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref", 0));
 	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
 
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "speaker", 0.25);
-
 	CASSETTE(config, m_cass);
-	MCFG_QUICKLOAD_ADD("quickload", homelab_state, homelab, "htp", attotime::from_seconds(2))
-MACHINE_CONFIG_END
+	m_cass->add_route(ALL_OUTPUTS, "speaker", 0.05);
 
-MACHINE_CONFIG_START(homelab_state::homelab3)
+	QUICKLOAD(config, "quickload", "htp", attotime::from_seconds(2)).set_load_callback(FUNC(homelab_state::quickload_cb));
+}
+
+void homelab_state::homelab3(machine_config &config)
+{
 	/* basic machine hardware */
 	Z80(config, m_maincpu, XTAL(12'000'000) / 4);
 	m_maincpu->set_addrmap(AS_PROGRAM, &homelab_state::homelab3_mem);
@@ -809,13 +810,13 @@ MACHINE_CONFIG_START(homelab_state::homelab3)
 	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref", 0));
 	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
 
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "speaker", 0.25);
-
 	CASSETTE(config, m_cass);
-	MCFG_QUICKLOAD_ADD("quickload", homelab_state, homelab, "htp", attotime::from_seconds(2))
-MACHINE_CONFIG_END
+	m_cass->add_route(ALL_OUTPUTS, "speaker", 0.05);
+	QUICKLOAD(config, "quickload", "htp", attotime::from_seconds(2)).set_load_callback(FUNC(homelab_state::quickload_cb));
+}
 
-MACHINE_CONFIG_START(homelab_state::brailab4)
+void homelab_state::brailab4(machine_config &config)
+{
 	/* basic machine hardware */
 	Z80(config, m_maincpu, XTAL(12'000'000) / 4);
 	m_maincpu->set_addrmap(AS_PROGRAM, &homelab_state::brailab4_mem);
@@ -842,13 +843,12 @@ MACHINE_CONFIG_START(homelab_state::brailab4)
 	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref", 0));
 	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
 
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "speaker", 0.25);
-
 	MEA8000(config, "mea8000", 3840000).add_route(ALL_OUTPUTS, "speaker", 1.0);
 
 	CASSETTE(config, m_cass);
-	MCFG_QUICKLOAD_ADD("quickload", homelab_state, homelab, "htp", attotime::from_seconds(18))
-MACHINE_CONFIG_END
+	m_cass->add_route(ALL_OUTPUTS, "speaker", 0.05);
+	QUICKLOAD(config, "quickload", "htp", attotime::from_seconds(18)).set_load_callback(FUNC(homelab_state::quickload_cb));
+}
 
 void homelab_state::init_brailab4()
 {

@@ -230,7 +230,6 @@ TODO:
 #include "machine/ram.h"
 #include "machine/timer.h"
 #include "sound/ay8910.h"
-#include "sound/wave.h"
 #include "video/mc6845.h"
 
 #include "emupal.h"
@@ -375,7 +374,7 @@ WRITE8_MEMBER( spc1500_state::psgb_w)
 		m_ipl = ((data>>1)&1);
 		membank("bank1")->set_entry(m_ipl ? 0 : 1);
 	}
-	m_cass->set_state(BIT(data, 6) ? CASSETTE_SPEAKER_ENABLED : CASSETTE_SPEAKER_MUTED);
+	//m_cass->change_state(BIT(data, 6) ? CASSETTE_SPEAKER_ENABLED : CASSETTE_SPEAKER_MUTED, CASSETTE_MASK_SPEAKER);
 	if (m_motor && !BIT(data, 7) && (elapsed_time > 100))
 	{
 		m_cass->change_state((m_cass->get_state() & CASSETTE_MASK_MOTOR) == CASSETTE_MOTOR_DISABLED ? CASSETTE_MOTOR_ENABLED : CASSETTE_MOTOR_DISABLED, CASSETTE_MASK_MOTOR);
@@ -901,13 +900,13 @@ void spc1500_state::spc1500(machine_config &config)
 	m_vdg->set_screen("screen");
 	m_vdg->set_show_border_area(false);
 	m_vdg->set_char_width(8);
-	m_vdg->set_update_row_callback(FUNC(spc1500_state::crtc_update_row), this);
-	m_vdg->set_reconfigure_callback(FUNC(spc1500_state::crtc_reconfig), this);
+	m_vdg->set_update_row_callback(FUNC(spc1500_state::crtc_update_row));
+	m_vdg->set_reconfigure_callback(FUNC(spc1500_state::crtc_reconfig));
 
 	MCFG_VIDEO_START_OVERRIDE(spc1500_state, spc)
 
 	I8255(config, m_pio);
-	m_pio->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	m_pio->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::write));
 	m_pio->in_pb_callback().set(FUNC(spc1500_state::portb_r));
 	m_pio->out_pb_callback().set(FUNC(spc1500_state::portb_w));
 	m_pio->out_pc_callback().set(FUNC(spc1500_state::portc_w));
@@ -920,7 +919,6 @@ void spc1500_state::spc1500(machine_config &config)
 	m_sound->port_a_read_callback().set(FUNC(spc1500_state::psga_r));
 	m_sound->port_b_write_callback().set(FUNC(spc1500_state::psgb_w));
 	m_sound->add_route(ALL_OUTPUTS, "mono", 1.00);
-	WAVE(config, "wave", m_cass).add_route(ALL_OUTPUTS, "mono", 0.25);
 
 	CENTRONICS(config, m_centronics, centronics_devices, "printer");
 	m_centronics->busy_handler().set(FUNC(spc1500_state::centronics_busy_w));
@@ -931,15 +929,16 @@ void spc1500_state::spc1500(machine_config &config)
 	INPUT_BUFFER(config, "cent_status_in");
 
 	CASSETTE(config, m_cass);
+	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_SPEAKER_ENABLED | CASSETTE_MOTOR_DISABLED);
+	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
 	m_cass->set_formats(spc1000_cassette_formats);
-	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_SPEAKER_MUTED | CASSETTE_MOTOR_DISABLED);
 	m_cass->set_interface("spc1500_cass");
 
 	SOFTWARE_LIST(config, "cass_list").set_original("spc1500_cass");
 
 	/* internal ram */
 	RAM(config, RAM_TAG).set_default_size("64K");
-	}
+}
 
 /* ROM definition */
 ROM_START( spc1500 )
@@ -952,7 +951,6 @@ ROM_START( spc1500 )
 	ROM_LOAD( "ss151fnt.bin", 0x2000, 0x2000, CRC(83c2eb8d) SHA1(2adf7816206dc74b9f0d32cb3b56cbab31fa6044) )
 	ROM_LOAD( "ss152fnt.bin", 0x4000, 0x2000, CRC(f4a5a590) SHA1(c9a02756107083bf602ae7c90cfe29b8b964e0df) )
 	ROM_LOAD( "ss153fnt.bin", 0x6000, 0x2000, CRC(8677d5fa) SHA1(34bfacc855c3846744cd586c150c72e5cbe948b0) )
-
 ROM_END
 
 

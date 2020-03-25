@@ -38,6 +38,7 @@ the sound board should be fully discrete.
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+#include "tilemap.h"
 
 #include "seabattl.lh"
 
@@ -142,7 +143,7 @@ TILE_GET_INFO_MEMBER(seabattl_state::get_bg_tile_info)
 	int code = m_videoram[tile_index];
 	int color = m_colorram[tile_index];
 
-	SET_TILE_INFO_MEMBER(1, code, (color & 0x7), 0);
+	tileinfo.set(1, code, (color & 0x7), 0);
 }
 
 WRITE8_MEMBER(seabattl_state::seabattl_videoram_w)
@@ -241,7 +242,7 @@ void seabattl_state::video_start()
 {
 	m_7segs.resolve();
 	m_screen->register_screen_bitmap(m_collision_bg);
-	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(FUNC(seabattl_state::get_bg_tile_info),this), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
+	m_bg_tilemap = &machine().tilemap().create(*m_gfxdecode, tilemap_get_info_delegate(*this, FUNC(seabattl_state::get_bg_tile_info)), TILEMAP_SCAN_ROWS, 8, 8, 32, 32);
 	m_bg_tilemap->set_transparent_pen(0);
 	m_bg_tilemap->set_scrolldx(-12, 0);
 }

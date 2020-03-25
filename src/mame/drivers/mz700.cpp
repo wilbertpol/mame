@@ -84,7 +84,6 @@
 
 #include "cpu/z80/z80.h"
 #include "sound/sn76496.h"
-#include "sound/wave.h"
 
 #include "softlist.h"
 #include "speaker.h"
@@ -394,7 +393,6 @@ void mz_state::mz700(machine_config &config)
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
-	WAVE(config, "wave", "cassette").add_route(ALL_OUTPUTS, "mono", 0.05);
 	SPEAKER_SOUND(config, "speaker").add_route(ALL_OUTPUTS, "mono", 0.50);
 
 	/* ne556 timers */
@@ -421,6 +419,7 @@ void mz_state::mz700(machine_config &config)
 	CASSETTE(config, m_cassette);
 	m_cassette->set_formats(mz700_cassette_formats);
 	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 	m_cassette->set_interface("mz_cass");
 
 	SOFTWARE_LIST(config, "cass_list").set_original("mz700_cass");
@@ -458,7 +457,7 @@ void mz_state::mz800(machine_config &config)
 	pio.out_int_callback().set(FUNC(mz_state::mz800_z80pio_irq));
 	pio.in_pa_callback().set(FUNC(mz_state::mz800_z80pio_port_a_r));
 	pio.out_pa_callback().set(FUNC(mz_state::mz800_z80pio_port_a_w));
-	pio.out_pb_callback().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	pio.out_pb_callback().set("cent_data_out", FUNC(output_latch_device::write));
 
 	CENTRONICS(config, m_centronics, centronics_devices, "printer");
 

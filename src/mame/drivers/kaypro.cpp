@@ -93,7 +93,7 @@ void kaypro_state::kaypro484_io(address_map &map)
 	map(0x0c, 0x0f).rw("sio_2", FUNC(z80sio_device::ba_cd_r), FUNC(z80sio_device::ba_cd_w));
 	map(0x10, 0x13).rw(m_fdc, FUNC(fd1793_device::read), FUNC(fd1793_device::write));
 	map(0x14, 0x17).rw(FUNC(kaypro_state::kaypro484_system_port_r), FUNC(kaypro_state::kaypro484_system_port_w));
-	map(0x18, 0x1b).w("cent_data_out", FUNC(output_latch_device::bus_w));
+	map(0x18, 0x1b).w("cent_data_out", FUNC(output_latch_device::write));
 	map(0x1c, 0x1c).rw(FUNC(kaypro_state::kaypro484_status_r), FUNC(kaypro_state::kaypro484_index_w));
 	map(0x1d, 0x1d).r(m_crtc, FUNC(mc6845_device::register_r)).w(FUNC(kaypro_state::kaypro484_register_w));
 	map(0x1f, 0x1f).rw(FUNC(kaypro_state::kaypro484_videoram_r), FUNC(kaypro_state::kaypro484_videoram_w));
@@ -195,7 +195,8 @@ static void kaypro_floppies(device_slot_interface &device)
 }
 
 
-MACHINE_CONFIG_START(kaypro_state::kayproii)
+void kaypro_state::kayproii(machine_config &config)
+{
 	/* basic machine hardware */
 	Z80(config, m_maincpu, 20_MHz_XTAL / 8);
 	m_maincpu->set_addrmap(AS_PROGRAM, &kaypro_state::kaypro_map);
@@ -224,7 +225,7 @@ MACHINE_CONFIG_START(kaypro_state::kayproii)
 	BEEP(config, m_beep, 950).add_route(ALL_OUTPUTS, "mono", 1.00); /* piezo-device needs to be measured */
 
 	/* devices */
-	MCFG_QUICKLOAD_ADD("quickload", kaypro_state, kaypro, "com,cpm", attotime::from_seconds(3))
+	QUICKLOAD(config, "quickload", "com,cpm", attotime::from_seconds(3)).set_load_callback(FUNC(kaypro_state::quickload_cb));
 
 	kaypro_10_keyboard_device &kbd(KAYPRO_10_KEYBOARD(config, "kbd"));
 	kbd.rxd_cb().set("sio", FUNC(z80sio_device::rxb_w));
@@ -249,7 +250,7 @@ MACHINE_CONFIG_START(kaypro_state::kayproii)
 
 	Z80PIO(config, m_pio_g, 20_MHz_XTAL / 8);
 	m_pio_g->out_int_callback().set_inputline(m_maincpu, INPUT_LINE_IRQ0);
-	m_pio_g->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::bus_w));
+	m_pio_g->out_pa_callback().set("cent_data_out", FUNC(output_latch_device::write));
 
 	Z80PIO(config, m_pio_s, 20_MHz_XTAL / 8);
 	m_pio_s->out_int_callback().set_inputline(m_maincpu, INPUT_LINE_IRQ0);
@@ -270,7 +271,7 @@ MACHINE_CONFIG_START(kaypro_state::kayproii)
 	FLOPPY_CONNECTOR(config, "fdc:0", kaypro_floppies, "525ssdd", floppy_image_device::default_floppy_formats).enable_sound(true);
 	FLOPPY_CONNECTOR(config, "fdc:1", kaypro_floppies, "525ssdd", floppy_image_device::default_floppy_formats).enable_sound(true);
 	SOFTWARE_LIST(config, "flop_list").set_original("kayproii");
-MACHINE_CONFIG_END
+}
 
 void kaypro_state::kayproiv(machine_config &config)
 {
@@ -283,7 +284,8 @@ void kaypro_state::kayproiv(machine_config &config)
 	FLOPPY_CONNECTOR(config, "fdc:1", kaypro_floppies, "525dd", floppy_image_device::default_floppy_formats);
 }
 
-MACHINE_CONFIG_START(kaypro_state::kaypro484)
+void kaypro_state::kaypro484(machine_config &config)
+{
 	/* basic machine hardware */
 	Z80(config, m_maincpu, 16_MHz_XTAL / 4);
 	m_maincpu->set_addrmap(AS_PROGRAM, &kaypro_state::kaypro_map);
@@ -314,9 +316,9 @@ MACHINE_CONFIG_START(kaypro_state::kaypro484)
 	m_crtc->set_screen(m_screen);
 	m_crtc->set_show_border_area(false);
 	m_crtc->set_char_width(7);
-	m_crtc->set_update_row_callback(FUNC(kaypro_state::kaypro484_update_row), this);
+	m_crtc->set_update_row_callback(FUNC(kaypro_state::kaypro484_update_row));
 
-	MCFG_QUICKLOAD_ADD("quickload", kaypro_state, kaypro, "com,cpm", attotime::from_seconds(3))
+	QUICKLOAD(config, "quickload", "com,cpm", attotime::from_seconds(3)).set_load_callback(FUNC(kaypro_state::quickload_cb));
 
 	kaypro_10_keyboard_device &kbd(KAYPRO_10_KEYBOARD(config, "kbd"));
 	kbd.rxd_cb().set("sio_1", FUNC(z80sio_device::rxb_w));
@@ -364,7 +366,7 @@ MACHINE_CONFIG_START(kaypro_state::kaypro484)
 	m_fdc->set_force_ready(true);
 	FLOPPY_CONNECTOR(config, "fdc:0", kaypro_floppies, "525dd", floppy_image_device::default_floppy_formats).enable_sound(true);
 	FLOPPY_CONNECTOR(config, "fdc:1", kaypro_floppies, "525dd", floppy_image_device::default_floppy_formats).enable_sound(true);
-MACHINE_CONFIG_END
+}
 
 void kaypro_state::kaypro10(machine_config &config)
 {

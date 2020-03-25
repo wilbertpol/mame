@@ -54,6 +54,7 @@
  @MP1218   TMS1100   1980, Entex Basketball 2 (6010)
  @MP1219   TMS1100   1980, U.S. Games Super Sports-4
  @MP1221   TMS1100   1980, Entex Raise The Devil (6011)
+ *MP1231   TMS1100   1983, Tandy 3-in-1 Sports Arena (model 60-2178)
  *MP1296   TMS1100?  1982, Entex Black Knight
  @MP1312   TMS1100   1983, Gakken FX-Micom R-165/Tandy Radio Shack Science Fair Microcomputer Trainer
  *MP1359   TMS1100?  1985, Capsela CRC2000
@@ -66,10 +67,12 @@
  @MP2726   TMS1040   1979, Tomy Break Up
  *MP2788   TMS1040?  1980, Bandai Flight Time (? note: VFD-capable)
  @MP3005   TMS1730   1989, Tiger Copy Cat (model 7-522)
+ *MP3200   TMS1000   1978, Parker Brothers Electronic Mastermind
  @MP3201   TMS1000   1977, Milton Bradley Electronic Battleship (1977, model 4750A)
  @MP3208   TMS1000   1977, Milton Bradley Electronic Battleship (1977, model 4750B)
  @MP3226   TMS1000   1978, Milton Bradley Simon (Rev A)
  *MP3232   TMS1000   1979, Fonas 2-Player Baseball (no "MP" on chip label)
+ *MP3260   TMS1000   1979, Electroplay Quickfire
  @MP3300   TMS1000   1979, Milton Bradley Simon (Rev F)
  @MP3301A  TMS1000   1979, Milton Bradley Big Trak
  @MP3320A  TMS1000   1979, Coleco Head to Head: Electronic Basketball
@@ -331,7 +334,7 @@ INPUT_CHANGED_MEMBER(hh_tms1k_state::reset_button)
 
 INPUT_CHANGED_MEMBER(hh_tms1k_state::power_button)
 {
-	set_power((bool)(uintptr_t)param);
+	set_power((bool)param);
 	m_maincpu->set_input_line(INPUT_LINE_RESET, m_power_on ? CLEAR_LINE : ASSERT_LINE);
 }
 
@@ -470,8 +473,6 @@ static INPUT_PORTS_START( matchnum )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 1")
 INPUT_PORTS_END
 
-static const s16 matchnum_speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
-
 void matchnum_state::matchnum(machine_config &config)
 {
 	/* basic machine hardware */
@@ -488,7 +489,8 @@ void matchnum_state::matchnum(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, matchnum_speaker_levels);
+	static const s16 speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -582,8 +584,6 @@ static INPUT_PORTS_START( arrball )
 	PORT_CONFSETTING(    0x08, "Fast" )
 INPUT_PORTS_END
 
-static const s16 arrball_speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
-
 void arrball_state::arrball(machine_config &config)
 {
 	/* basic machine hardware */
@@ -601,7 +601,8 @@ void arrball_state::arrball(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, arrball_speaker_levels);
+	static const s16 speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -775,7 +776,7 @@ ROM_START( mathmagi )
 
 	ROM_REGION( 867, "maincpu:mpla", 0 )
 	ROM_LOAD( "tms1100_common2_micro.pla", 0, 867, BAD_DUMP CRC(7cc90264) SHA1(c6e1cf1ffb178061da9e31858514f7cd94e86990) ) // not verified
-	ROM_REGION( 365, "maincpu:opla", 0 )
+	ROM_REGION( 365, "maincpu:opla", ROMREGION_ERASE00 )
 	ROM_LOAD( "tms1100_mathmagi_output.pla", 0, 365, NO_DUMP )
 ROM_END
 
@@ -1327,18 +1328,10 @@ static INPUT_PORTS_START( zodiac )
 	PORT_BIT( 0x0c, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-// output PLA is not decapped, dumped electronically
-static const u16 zodiac_output_pla[0x20] =
-{
-	0x01, 0x08, 0xa0, 0xa8, 0x40, 0x48, 0xe0, 0xe8, 0x06, 0x10, 0xa6, 0xb0, 0x46, 0x50, 0xe6, 0xf0,
-	0x7e, 0x0c, 0xb6, 0x9e, 0xcc, 0xda, 0xfa, 0x0e, 0xfe, 0xce, 0xee, 0xbc, 0xf2, 0x3c, 0x70, 0x7c
-};
-
 void zodiac_state::zodiac(machine_config &config)
 {
 	/* basic machine hardware */
 	TMS1100(config, m_maincpu, 500000); // approximation - RC osc. R=18K, C=100pF
-	m_maincpu->set_output_pla(zodiac_output_pla);
 	m_maincpu->k().set(FUNC(zodiac_state::read_k));
 	m_maincpu->r().set(FUNC(zodiac_state::write_r));
 	m_maincpu->o().set(FUNC(zodiac_state::write_o));
@@ -1362,8 +1355,11 @@ ROM_START( zodiac )
 
 	ROM_REGION( 867, "maincpu:mpla", 0 )
 	ROM_LOAD( "tms1100_common3_micro.pla", 0, 867, BAD_DUMP CRC(03574895) SHA1(04407cabfb3adee2ee5e4218612cb06c12c540f4) ) // not verified
-	ROM_REGION( 365, "maincpu:opla", 0 )
+	ROM_REGION( 365, "maincpu:opla", ROMREGION_ERASE00 )
 	ROM_LOAD( "tms1100_zodiac_output.pla", 0, 365, NO_DUMP )
+
+	ROM_REGION16_LE( 0x40, "maincpu:opla_b", ROMREGION_ERASE00 ) // verified, electronic dump
+	ROM_LOAD16_BYTE( "tms1100_zodiac_output.bin", 0, 0x20, CRC(d35d64cb) SHA1(315e7ca9a18a06ff7dc0b95c6f119e093b15a41f) )
 ROM_END
 
 
@@ -1942,7 +1938,7 @@ static INPUT_PORTS_START( h2hbaseb )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_NAME("Swing")
 
 	PORT_START("IN.5") // fake
-	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, h2hbaseb_state, skill_switch, nullptr)
+	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, h2hbaseb_state, skill_switch, 0)
 	PORT_CONFSETTING(    0x00, "1" )
 	PORT_CONFSETTING(    0x01, "2" )
 INPUT_PORTS_END
@@ -2140,7 +2136,7 @@ public:
 		m_pinout(0)
 	{ }
 
-	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(cartridge);
+	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(cart_load);
 	u16 m_pinout; // cartridge R pins
 
 	void update_display();
@@ -2163,7 +2159,7 @@ void quizwizc_state::machine_start()
 
 // handlers
 
-DEVICE_IMAGE_LOAD_MEMBER(quizwizc_state, cartridge)
+DEVICE_IMAGE_LOAD_MEMBER(quizwizc_state::cart_load)
 {
 	if (!image.loaded_through_softlist())
 	{
@@ -2275,7 +2271,7 @@ void quizwizc_state::quizwizc(machine_config &config)
 	/* cartridge */
 	generic_cartslot_device &cartslot(GENERIC_CARTSLOT(config, "cartslot", generic_plain_slot, "quizwiz_cart"));
 	cartslot.set_must_be_loaded(true);
-	cartslot.set_device_load(device_image_load_delegate(&quizwizc_state::device_image_load_cartridge, this));
+	cartslot.set_device_load(FUNC(quizwizc_state::cart_load));
 	SOFTWARE_LIST(config, "cart_list").set_original("quizwiz");
 }
 
@@ -2328,7 +2324,7 @@ public:
 		m_pinout(0)
 	{ }
 
-	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(cartridge);
+	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(cart_load);
 	u8 m_pinout; // cartridge K pins
 
 	void update_display();
@@ -2351,7 +2347,7 @@ void tc4_state::machine_start()
 
 // handlers
 
-DEVICE_IMAGE_LOAD_MEMBER(tc4_state, cartridge)
+DEVICE_IMAGE_LOAD_MEMBER(tc4_state::cart_load)
 {
 	if (!image.loaded_through_softlist())
 	{
@@ -2463,7 +2459,7 @@ void tc4_state::tc4(machine_config &config)
 	/* cartridge */
 	generic_cartslot_device &cartslot(GENERIC_CARTSLOT(config, "cartslot", generic_plain_slot, "tc4_cart"));
 	cartslot.set_must_be_loaded(true); // system won't power on without cartridge
-	cartslot.set_device_load(device_image_load_delegate(&tc4_state::device_image_load_cartridge, this));
+	cartslot.set_device_load(FUNC(tc4_state::cart_load));
 
 	SOFTWARE_LIST(config, "cart_list").set_original("tc4");
 }
@@ -2833,8 +2829,6 @@ static INPUT_PORTS_START( cnfball )
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_16WAY PORT_NAME("P1 Left/Right")
 INPUT_PORTS_END
 
-static const s16 cnfball_speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
-
 void cnfball_state::cnfball(machine_config &config)
 {
 	/* basic machine hardware */
@@ -2853,7 +2847,8 @@ void cnfball_state::cnfball(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, cnfball_speaker_levels);
+	static const s16 speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -2967,22 +2962,10 @@ static INPUT_PORTS_START( cnfball2 )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-// output PLA is not decapped
-static const u16 cnfball2_output_pla[0x20] =
-{
-	// first half was dumped electronically
-	0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x40, 0x01, 0x08, 0x02, 0x04, 0x00,
-
-	// rest is unused, game only outputs with status bit clear
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
-};
-
 void cnfball2_state::cnfball2(machine_config &config)
 {
 	/* basic machine hardware */
 	TMS1100(config, m_maincpu, 325000); // approximation - RC osc. R=47K, C=47pF
-	m_maincpu->set_output_pla(cnfball2_output_pla);
 	m_maincpu->k().set(FUNC(cnfball2_state::read_k));
 	m_maincpu->r().set(FUNC(cnfball2_state::write_r));
 	m_maincpu->o().set(FUNC(cnfball2_state::write_o));
@@ -3006,8 +2989,11 @@ ROM_START( cnfball2 )
 
 	ROM_REGION( 867, "maincpu:mpla", 0 )
 	ROM_LOAD( "tms1100_common2_micro.pla", 0, 867, BAD_DUMP CRC(7cc90264) SHA1(c6e1cf1ffb178061da9e31858514f7cd94e86990) ) // not verified
-	ROM_REGION( 365, "maincpu:opla", 0 )
+	ROM_REGION( 365, "maincpu:opla", ROMREGION_ERASE00 )
 	ROM_LOAD( "tms1100_cnfball2_output.pla", 0, 365, NO_DUMP )
+
+	ROM_REGION16_LE( 0x40, "maincpu:opla_b", ROMREGION_ERASE00 ) // verified, electronic dump, 2nd half unused
+	ROM_LOAD16_BYTE( "tms1100_cnfball2_output.bin", 0, 0x20, CRC(c51d7404) SHA1(3a00c69b52b7d0dd12ccd66428130592c7e06240) )
 ROM_END
 
 
@@ -3122,7 +3108,7 @@ static INPUT_PORTS_START( eleciq )
 	PORT_BIT( 0x0e, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("RESET")
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_R) PORT_NAME("Reset") PORT_CHANGED_MEMBER(DEVICE_SELF, hh_tms1k_state, reset_button, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_R) PORT_NAME("Reset") PORT_CHANGED_MEMBER(DEVICE_SELF, hh_tms1k_state, reset_button, 0)
 INPUT_PORTS_END
 
 void eleciq_state::eleciq(machine_config &config)
@@ -3705,7 +3691,7 @@ static INPUT_PORTS_START( ebball3 )
 	PORT_BIT( 0x0c, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.3") // fake
-	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, ebball3_state, skill_switch, nullptr)
+	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, ebball3_state, skill_switch, 0)
 	PORT_CONFSETTING(    0x00, "Amateur" )
 	PORT_CONFSETTING(    0x01, "Professional" )
 INPUT_PORTS_END
@@ -3947,7 +3933,7 @@ static INPUT_PORTS_START( einvader )
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 )
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_16WAY
 	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_16WAY
-	PORT_CONFNAME( 0x08, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, einvader_state, skill_switch, nullptr)
+	PORT_CONFNAME( 0x08, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, einvader_state, skill_switch, 0)
 	PORT_CONFSETTING(    0x00, "Amateur" )
 	PORT_CONFSETTING(    0x08, "Professional" )
 INPUT_PORTS_END
@@ -3961,13 +3947,14 @@ void einvader_state::einvader(machine_config &config)
 	m_maincpu->o().set(FUNC(einvader_state::write_o));
 
 	/* video hardware */
-	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_SVG));
-	screen.set_refresh_hz(60);
-	screen.set_size(939, 1080);
-	screen.set_visarea_full();
+	screen_device &mask(SCREEN(config, "mask", SCREEN_TYPE_SVG));
+	mask.set_refresh_hz(60);
+	mask.set_size(945, 1080);
+	mask.set_visarea_full();
 
 	PWM_DISPLAY(config, m_display).set_size(10, 8);
 	m_display->set_segmask(0x380, 0x7f);
+	m_display->set_bri_levels(0.01, 0.1); // ufo/player explosion is brighter
 	config.set_default_layout(layout_einvader);
 
 	/* sound hardware */
@@ -3987,8 +3974,8 @@ ROM_START( einvader )
 	ROM_REGION( 365, "maincpu:opla", 0 )
 	ROM_LOAD( "tms1100_einvader_output.pla", 0, 365, CRC(490158e1) SHA1(61cace1eb09244663de98d8fb04d9459b19668fd) )
 
-	ROM_REGION( 44398, "screen", 0)
-	ROM_LOAD( "einvader.svg", 0, 44398, CRC(48de88fd) SHA1(56a2b9c997a447277b45902ab542eda54e7d5a2f) )
+	ROM_REGION( 45196, "mask", 0)
+	ROM_LOAD( "einvader.svg", 0, 45196, CRC(35a1c744) SHA1(6beb9767454b9bc8f2ccf9fee25e7be209eefd22) )
 ROM_END
 
 
@@ -3999,7 +3986,9 @@ ROM_END
 
   Entex Color Football 4
   * TMS1670 6009 MP7551 (die label MP7551)
-  * 9-digit cyan VFD display, 60 red and green LEDs behind bezel, 1-bit sound
+  * 9-digit cyan VFD display, 60 red and green LEDs behind mask, 1-bit sound
+
+  Another version exist, one with a LED(red) 7seg display.
 
 ***************************************************************************/
 
@@ -4091,12 +4080,17 @@ INPUT_PORTS_END
 void efootb4_state::efootb4(machine_config &config)
 {
 	/* basic machine hardware */
-	TMS1670(config, m_maincpu, 475000); // approximation - RC osc. R=42K, C=47pF
+	TMS1670(config, m_maincpu, 400000); // approximation - RC osc. R=42K, C=47pF
 	m_maincpu->k().set(FUNC(efootb4_state::read_k));
 	m_maincpu->r().set(FUNC(efootb4_state::write_r));
 	m_maincpu->o().set(FUNC(efootb4_state::write_o));
 
 	/* video hardware */
+	screen_device &mask(SCREEN(config, "mask", SCREEN_TYPE_SVG));
+	mask.set_refresh_hz(60);
+	mask.set_size(1920, 904);
+	mask.set_visarea_full();
+
 	PWM_DISPLAY(config, m_display).set_size(16, 7);
 	m_display->set_segmask(0xfc00, 0x7f);
 	config.set_default_layout(layout_efootb4);
@@ -4117,6 +4111,9 @@ ROM_START( efootb4 )
 	ROM_LOAD( "tms1100_common2_micro.pla", 0, 867, CRC(7cc90264) SHA1(c6e1cf1ffb178061da9e31858514f7cd94e86990) )
 	ROM_REGION( 557, "maincpu:opla", 0 )
 	ROM_LOAD( "tms1400_efootb4_output.pla", 0, 557, CRC(5c87c753) SHA1(bde9d4aa1e57a718affd969475c0a1edcf60f444) )
+
+	ROM_REGION( 67472, "mask", 0)
+	ROM_LOAD( "efootb4.svg", 0, 67472, CRC(ba0abcda) SHA1(6066e4cbae5404e4db17fae0153808b044adc823) )
 ROM_END
 
 
@@ -4363,7 +4360,7 @@ static INPUT_PORTS_START( raisedvl )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.1") // R1 (only bit 0)
-	PORT_CONFNAME( 0x31, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, raisedvl_state, skill_switch, nullptr)
+	PORT_CONFNAME( 0x31, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, raisedvl_state, skill_switch, 0)
 	PORT_CONFSETTING(    0x00, "1" )
 	PORT_CONFSETTING(    0x10, "2" )
 	PORT_CONFSETTING(    0x11, "3" )
@@ -4504,7 +4501,7 @@ static INPUT_PORTS_START( f2pbball )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_BUTTON4 ) PORT_COCKTAIL PORT_NAME("P2 Fast")
 
 	PORT_START("RESET")
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON5 ) PORT_NAME("P1 Reset") PORT_CHANGED_MEMBER(DEVICE_SELF, hh_tms1k_state, reset_button, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON5 ) PORT_NAME("P1 Reset") PORT_CHANGED_MEMBER(DEVICE_SELF, hh_tms1k_state, reset_button, 0)
 INPUT_PORTS_END
 
 void f2pbball_state::f2pbball(machine_config &config)
@@ -4647,7 +4644,7 @@ static INPUT_PORTS_START( f3in1 )
 	PORT_CONFSETTING(    0x08, "Soccer" )
 
 	PORT_START("IN.4") // fake
-	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, f3in1_state, skill_switch, nullptr)
+	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, f3in1_state, skill_switch, 0)
 	PORT_CONFSETTING(    0x00, "Regular" ) // REG
 	PORT_CONFSETTING(    0x01, "Professional" ) // PROF
 INPUT_PORTS_END
@@ -4818,7 +4815,7 @@ INPUT_PORTS_END
 void gpoker_state::gpoker(machine_config &config)
 {
 	/* basic machine hardware */
-	TMS1370(config, m_maincpu, 350000); // approximation - RC osc. R=47K, C=47pF
+	TMS1370(config, m_maincpu, 375000); // approximation - RC osc. R=47K, C=47pF
 	m_maincpu->k().set(FUNC(gpoker_state::read_k));
 	m_maincpu->r().set(FUNC(gpoker_state::write_r));
 	m_maincpu->o().set(FUNC(gpoker_state::write_o));
@@ -4947,7 +4944,7 @@ void gjackpot_state::gjackpot(machine_config &config)
 	gpoker(config);
 
 	/* basic machine hardware */
-	TMS1670(config.replace(), m_maincpu, 450000); // approximation - RC osc. R=47K, C=47pF
+	TMS1670(config.replace(), m_maincpu, 375000); // approximation - RC osc. R=47K, C=47pF
 	m_maincpu->k().set(FUNC(gpoker_state::read_k));
 	m_maincpu->r().set(FUNC(gjackpot_state::write_r));
 	m_maincpu->o().set(FUNC(gpoker_state::write_o));
@@ -5290,7 +5287,7 @@ WRITE16_MEMBER(ginv2000_state::write_r)
 
 	// R11,R12: TMS1024 S1,S0 (S2 forced high)
 	// R13: TMS1024 STD
-	m_expander->write_s(space, 0, (data >> 12 & 1) | (data >> 10 & 2) | 4);
+	m_expander->write_s((data >> 12 & 1) | (data >> 10 & 2) | 4);
 	m_expander->write_std(data >> 13 & 1);
 
 	// R1-R10: VFD grid
@@ -5301,7 +5298,7 @@ WRITE16_MEMBER(ginv2000_state::write_r)
 WRITE16_MEMBER(ginv2000_state::write_o)
 {
 	// O4-O7: TMS1024 H1-H4
-	m_expander->write_h(space, 0, data >> 4 & 0xf);
+	m_expander->write_h(data >> 4 & 0xf);
 }
 
 READ8_MEMBER(ginv2000_state::read_k)
@@ -5629,8 +5626,6 @@ static INPUT_PORTS_START( elecdet )
 	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_POWER_OFF ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_tms1k_state, power_button, false)
 INPUT_PORTS_END
 
-static const s16 elecdet_speaker_levels[4] = { 0, 0x3fff, 0x3fff, 0x7fff };
-
 void elecdet_state::elecdet(machine_config &config)
 {
 	/* basic machine hardware */
@@ -5648,7 +5643,8 @@ void elecdet_state::elecdet(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, elecdet_speaker_levels);
+	static const s16 speaker_levels[4] = { 0, 0x3fff, 0x3fff, 0x7fff };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -6117,7 +6113,7 @@ ROM_START( elecbowl )
 
 	ROM_REGION( 867, "maincpu:mpla", 0 )
 	ROM_LOAD( "tms1100_common3_micro.pla", 0, 867, BAD_DUMP CRC(03574895) SHA1(04407cabfb3adee2ee5e4218612cb06c12c540f4) ) // not verified
-	ROM_REGION( 365, "maincpu:opla", 0 )
+	ROM_REGION( 365, "maincpu:opla", ROMREGION_ERASE00 )
 	ROM_LOAD( "tms1100_elecbowl_output.pla", 0, 365, NO_DUMP )
 ROM_END
 
@@ -7139,7 +7135,7 @@ static INPUT_PORTS_START( ssimon )
 	PORT_BIT( 0x0d, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.6") // fake
-	PORT_CONFNAME( 0x03, 0x01, "Speed" ) PORT_CHANGED_MEMBER(DEVICE_SELF, ssimon_state, speed_switch, nullptr)
+	PORT_CONFNAME( 0x03, 0x01, "Speed" ) PORT_CHANGED_MEMBER(DEVICE_SELF, ssimon_state, speed_switch, 0)
 	PORT_CONFSETTING(    0x00, "Simple" )
 	PORT_CONFSETTING(    0x01, "Normal" )
 	PORT_CONFSETTING(    0x02, "Super" )
@@ -7344,8 +7340,6 @@ static INPUT_PORTS_START( bigtrak )
 	PORT_BIT( 0x0b, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-static const s16 bigtrak_speaker_levels[8] = { 0, 0x7fff/3, 0x7fff/3, 0x7fff/3*2, 0x7fff/3, 0x7fff/3*2, 0x7fff/3*2, 0x7fff };
-
 void bigtrak_state::bigtrak(machine_config &config)
 {
 	/* basic machine hardware */
@@ -7363,7 +7357,8 @@ void bigtrak_state::bigtrak(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(8, bigtrak_speaker_levels);
+	static const s16 speaker_levels[8] = { 0, 0x7fff/3, 0x7fff/3, 0x7fff/3*2, 0x7fff/3, 0x7fff/3*2, 0x7fff/3*2, 0x7fff };
+	m_speaker->set_levels(8, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -7507,7 +7502,7 @@ void mbdtower_state::update_display()
 	else
 	{
 		// display items turned off
-		m_display->matrix(0, 0);
+		m_display->clear();
 	}
 }
 
@@ -7712,8 +7707,6 @@ static INPUT_PORTS_START( arcmania )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-static const s16 arcmania_speaker_levels[8] = { 0, 0x7fff/3, 0x7fff/3, 0x7fff/3*2, 0x7fff/3, 0x7fff/3*2, 0x7fff/3*2, 0x7fff };
-
 void arcmania_state::arcmania(machine_config &config)
 {
 	/* basic machine hardware */
@@ -7729,7 +7722,8 @@ void arcmania_state::arcmania(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(8, arcmania_speaker_levels);
+	static const s16 speaker_levels[8] = { 0, 0x7fff/3, 0x7fff/3, 0x7fff/3*2, 0x7fff/3, 0x7fff/3*2, 0x7fff/3*2, 0x7fff };
+	m_speaker->set_levels(8, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -7975,8 +7969,6 @@ static INPUT_PORTS_START( merlin )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_N) PORT_CODE(KEYCODE_ENTER) PORT_CODE(KEYCODE_ENTER_PAD) PORT_NAME("New Game")
 INPUT_PORTS_END
 
-static const s16 merlin_speaker_levels[8] = { 0, 0x7fff/3, 0x7fff/3, 0x7fff/3*2, 0x7fff/3, 0x7fff/3*2, 0x7fff/3*2, 0x7fff };
-
 void merlin_state::merlin(machine_config &config)
 {
 	/* basic machine hardware */
@@ -7992,7 +7984,8 @@ void merlin_state::merlin(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(8, merlin_speaker_levels);
+	static const s16 speaker_levels[8] = { 0, 0x7fff/3, 0x7fff/3, 0x7fff/3*2, 0x7fff/3, 0x7fff/3*2, 0x7fff/3*2, 0x7fff };
+	m_speaker->set_levels(8, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -8175,8 +8168,6 @@ static INPUT_PORTS_START( stopthief )
 	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_POWER_OFF ) PORT_CHANGED_MEMBER(DEVICE_SELF, hh_tms1k_state, power_button, false)
 INPUT_PORTS_END
 
-static const s16 stopthief_speaker_levels[7] = { 0, 0x7fff/6, 0x7fff/5, 0x7fff/4, 0x7fff/3, 0x7fff/2, 0x7fff };
-
 void stopthief_state::stopthief(machine_config &config)
 {
 	/* basic machine hardware */
@@ -8194,7 +8185,8 @@ void stopthief_state::stopthief(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(7, stopthief_speaker_levels);
+	static const s16 speaker_levels[7] = { 0x7fff/7, 0x7fff/6, 0x7fff/5, 0x7fff/4, 0x7fff/3, 0x7fff/2, 0x7fff/1 };
+	m_speaker->set_levels(7, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -8582,12 +8574,6 @@ static INPUT_PORTS_START( lostreas )
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_U) PORT_NAME("Up")
 INPUT_PORTS_END
 
-static const s16 lostreas_speaker_levels[16] =
-{
-	0, 0x7fff/15, 0x7fff/14, 0x7fff/13, 0x7fff/12, 0x7fff/11, 0x7fff/10, 0x7fff/9,
-	0x7fff/8, 0x7fff/7, 0x7fff/6, 0x7fff/5, 0x7fff/4, 0x7fff/3, 0x7fff/2, 0x7fff/1
-};
-
 void lostreas_state::lostreas(machine_config &config)
 {
 	/* basic machine hardware */
@@ -8603,8 +8589,13 @@ void lostreas_state::lostreas(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(16, lostreas_speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
+
+	// set volume levels
+	static s16 speaker_levels[0x10];
+	for (int i = 0; i < 0x10; i++)
+		speaker_levels[i] = 0x7fff / (0x10 - i);
+	m_speaker->set_levels(16, speaker_levels);
 }
 
 // roms
@@ -8756,7 +8747,7 @@ ROM_START( alphie )
 
 	ROM_REGION( 867, "maincpu:mpla", 0 )
 	ROM_LOAD( "tms1000_common2_micro.pla", 0, 867, BAD_DUMP CRC(d33da3cf) SHA1(13c4ebbca227818db75e6db0d45b66ba5e207776) ) // not in patent description
-	ROM_REGION( 365, "maincpu:opla", 0 )
+	ROM_REGION( 365, "maincpu:opla", ROMREGION_ERASE00 )
 	ROM_LOAD( "tms1000_alphie_output.pla", 0, 365, NO_DUMP ) // "
 ROM_END
 
@@ -8924,20 +8915,12 @@ static INPUT_PORTS_START( tcfballa )
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_START1 ) PORT_NAME("Display")
 INPUT_PORTS_END
 
-// output PLA is not decapped, dumped electronically
-static const u16 tcfballa_output_pla[0x20] =
-{
-	0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x00, 0x46, 0x70, 0x00, 0x00, 0x00,
-	0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 void tcfballa_state::tcfballa(machine_config &config)
 {
 	tcfball(config);
 
 	/* basic machine hardware */
 	m_maincpu->set_clock(375000); // approximation - RC osc. R=47K, C=50pF
-	m_maincpu->set_output_pla(tcfballa_output_pla);
 
 	config.set_default_layout(layout_tcfballa);
 }
@@ -8950,8 +8933,11 @@ ROM_START( tcfballa )
 
 	ROM_REGION( 867, "maincpu:mpla", 0 )
 	ROM_LOAD( "tms1100_common2_micro.pla", 0, 867, BAD_DUMP CRC(7cc90264) SHA1(c6e1cf1ffb178061da9e31858514f7cd94e86990) ) // not verified
-	ROM_REGION( 365, "maincpu:opla", 0 )
+	ROM_REGION( 365, "maincpu:opla", ROMREGION_ERASE00 )
 	ROM_LOAD( "tms1100_tcfballa_output.pla", 0, 365, NO_DUMP )
+
+	ROM_REGION16_LE( 0x40, "maincpu:opla_b", ROMREGION_ERASE00 ) // verified, electronic dump
+	ROM_LOAD16_BYTE( "tms1100_tcfballa_output.bin", 0, 0x20, CRC(887ad9a5) SHA1(a2bac48f555df098c1f1f0fa663e5bcb989b8987) )
 ROM_END
 
 
@@ -9127,7 +9113,7 @@ ROM_START( tandy12 )
 
 	ROM_REGION( 867, "maincpu:mpla", 0 )
 	ROM_LOAD( "tms1100_common1_micro.pla", 0, 867, BAD_DUMP CRC(62445fc9) SHA1(d6297f2a4bc7a870b76cc498d19dbb0ce7d69fec) ) // not verified
-	ROM_REGION( 365, "maincpu:opla", 0 )
+	ROM_REGION( 365, "maincpu:opla", ROMREGION_ERASE00 )
 	ROM_LOAD( "tms1100_tandy12_output.pla", 0, 365, NO_DUMP )
 ROM_END
 
@@ -9296,7 +9282,7 @@ void speechp_state::update_display()
 WRITE16_MEMBER(speechp_state::write_r)
 {
 	// R5-R9: TSI C0-C5
-	m_speech->data_w(space, 0, data >> 5 & 0x3f);
+	m_speech->data_w(data >> 5 & 0x3f);
 
 	// R10: TSI START line
 	m_speech->start_w(data >> 10 & 1);
@@ -11290,8 +11276,6 @@ static INPUT_PORTS_START( copycat )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-static const s16 copycat_speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
-
 void copycat_state::copycat(machine_config &config)
 {
 	/* basic machine hardware */
@@ -11307,7 +11291,8 @@ void copycat_state::copycat(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, copycat_speaker_levels);
+	static const s16 speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -11396,7 +11381,8 @@ void copycatm2_state::copycatm2(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, copycat_speaker_levels);
+	static const s16 speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -11480,7 +11466,8 @@ void ditto_state::ditto(machine_config &config)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, m_speaker);
-	m_speaker->set_levels(4, copycat_speaker_levels);
+	static const s16 speaker_levels[4] = { 0, 0x7fff, -0x8000, 0 };
+	m_speaker->set_levels(4, speaker_levels);
 	m_speaker->add_route(ALL_OUTPUTS, "mono", 0.25);
 }
 
@@ -11745,7 +11732,7 @@ WRITE16_MEMBER(tbreakup_state::write_r)
 
 	// R3-R5: TMS1025 port S
 	// R2: TMS1025 STD pin
-	m_expander->write_s(space, 0, data >> 3 & 7);
+	m_expander->write_s(data >> 3 & 7);
 	m_expander->write_std(data >> 2 & 1);
 
 	// R0,R1: select digit
@@ -11756,7 +11743,7 @@ WRITE16_MEMBER(tbreakup_state::write_r)
 WRITE16_MEMBER(tbreakup_state::write_o)
 {
 	// O0-O3: TMS1025 port H
-	m_expander->write_h(space, 0, data & 0xf);
+	m_expander->write_h(data & 0xf);
 
 	// O0-O7: led state
 	m_o = data;
@@ -11785,7 +11772,7 @@ static INPUT_PORTS_START( tbreakup )
 	PORT_CONFSETTING(    0x04, "5" )
 
 	PORT_START("IN.3") // fake
-	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, tbreakup_state, skill_switch, nullptr)
+	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Difficulty ) ) PORT_CHANGED_MEMBER(DEVICE_SELF, tbreakup_state, skill_switch, 0)
 	PORT_CONFSETTING(    0x00, "Pro 1" )
 	PORT_CONFSETTING(    0x01, "Pro 2" )
 INPUT_PORTS_END
@@ -11926,8 +11913,8 @@ static INPUT_PORTS_START( phpball )
 
 	PORT_START("IN.1") // Vss!
 	PORT_BIT( 0x03, IP_ACTIVE_HIGH, IPT_UNUSED )
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_NAME("Right Flipper") PORT_CHANGED_MEMBER(DEVICE_SELF, phpball_state, flipper_button, nullptr)
-	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_NAME("Left Flipper") PORT_CHANGED_MEMBER(DEVICE_SELF, phpball_state, flipper_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_BUTTON2 ) PORT_NAME("Right Flipper") PORT_CHANGED_MEMBER(DEVICE_SELF, phpball_state, flipper_button, 0)
+	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_NAME("Left Flipper") PORT_CHANGED_MEMBER(DEVICE_SELF, phpball_state, flipper_button, 0)
 INPUT_PORTS_END
 
 void phpball_state::phpball(machine_config &config)
@@ -12070,18 +12057,10 @@ static INPUT_PORTS_START( ssports4 )
 	PORT_BIT( 0x0c, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 
-// output PLA is not decapped, dumped electronically
-static const u16 ssports4_output_pla[0x20] =
-{
-	0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x00, 0x40, 0x40, 0x40, 0x40, 0x40
-};
-
 void ssports4_state::ssports4(machine_config &config)
 {
 	/* basic machine hardware */
 	TMS1100(config, m_maincpu, 375000); // approximation - RC osc. R=47K, C=47pF
-	m_maincpu->set_output_pla(ssports4_output_pla);
 	m_maincpu->k().set(FUNC(ssports4_state::read_k));
 	m_maincpu->r().set(FUNC(ssports4_state::write_r));
 	m_maincpu->o().set(FUNC(ssports4_state::write_o));
@@ -12106,8 +12085,11 @@ ROM_START( ssports4 )
 
 	ROM_REGION( 867, "maincpu:mpla", 0 )
 	ROM_LOAD( "tms1100_common2_micro.pla", 0, 867, BAD_DUMP CRC(7cc90264) SHA1(c6e1cf1ffb178061da9e31858514f7cd94e86990) ) // not verified
-	ROM_REGION( 365, "maincpu:opla", 0 )
+	ROM_REGION( 365, "maincpu:opla", ROMREGION_ERASE00 )
 	ROM_LOAD( "tms1100_ssports4_output.pla", 0, 365, NO_DUMP )
+
+	ROM_REGION16_LE( 0x40, "maincpu:opla_b", ROMREGION_ERASE00 ) // verified, electronic dump
+	ROM_LOAD16_BYTE( "tms1100_ssports4_output.bin", 0, 0x20, CRC(cd6f162f) SHA1(3348edb697e996b5ab82be54076b9cd444e0f2b1) )
 ROM_END
 
 
@@ -12199,61 +12181,61 @@ static INPUT_PORTS_START( xl25 )
 	PORT_START("IN.0") // R0
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 1")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 6")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 11") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 11") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.1") // R1
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 2")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 7")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 12") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 12") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.2") // R2
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 3")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 8")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 13") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 13") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.3") // R3
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 4")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 9")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 14") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 14") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.4") // R4
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 5")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 10")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 15") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 15") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.5") // R5
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 16")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 21")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_1) PORT_NAME("Store / Recall") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_1) PORT_NAME("Store / Recall") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.6") // R6
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 17")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 22")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_2) PORT_NAME("Cross / Knight / Score") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_2) PORT_NAME("Cross / Knight / Score") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.7") // R7
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 18")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 23")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_3) PORT_NAME("Clear") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_3) PORT_NAME("Clear") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.8") // R8
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 19")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 24")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_4) PORT_NAME("Random") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_4) PORT_NAME("Random") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.9") // R9
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 20")
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_NAME("Square 25")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_5) PORT_NAME("Sound") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, nullptr)
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_5) PORT_NAME("Sound") PORT_CHANGED_MEMBER(DEVICE_SELF, xl25_state, k4_button, 0)
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
 

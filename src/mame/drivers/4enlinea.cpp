@@ -329,8 +329,8 @@ void isa8_cga_4enlinea_device::device_start()
 	m_vram_size = 0x4000;
 	m_vram.resize(m_vram_size);
 
-	//m_isa->install_device(0x3bf, 0x3bf, 0, 0, nullptr, write8_delegate( FUNC(isa8_cga_4enlinea_device::_4enlinea_mode_control_w), this ) );
-	m_isa->install_device(0x3d0, 0x3df, read8_delegate( FUNC(isa8_cga_4enlinea_device::_4enlinea_io_read), this ), write8_delegate( FUNC(isa8_cga_device::io_write), this ) );
+	//m_isa->install_device(0x3bf, 0x3bf, 0, 0, nullptr, write8_delegate(*this, FUNC(isa8_cga_4enlinea_device::_4enlinea_mode_control_w)));
+	m_isa->install_device(0x3d0, 0x3df, read8_delegate(*this, FUNC(isa8_cga_4enlinea_device::_4enlinea_io_read)), write8_delegate(*this, FUNC(isa8_cga_device::io_write)));
 	m_isa->install_bank(0x8000, 0xbfff, "bank1", &m_vram[0]);
 
 	/* Initialise the cga palette */
@@ -379,7 +379,7 @@ READ8_MEMBER(_4enlinea_state::serial_r)
 void _4enlinea_state::main_map(address_map &map)
 {
 	map(0x0000, 0x7fff).rom();
-//  AM_RANGE(0x8000, 0xbfff) AM_RAM // CGA VRAM
+//  map(0x8000, 0xbfff).ram(); // CGA VRAM
 	map(0xc000, 0xdfff).ram();
 
 	map(0xe000, 0xe001).r(FUNC(_4enlinea_state::serial_r));
@@ -389,7 +389,7 @@ void _4enlinea_state::main_portmap(address_map &map)
 {
 	map.global_mask(0x3ff);
 
-//  AM_RANGE(0x3d4, 0x3df) CGA regs
+//  map(0x3d4, 0x3df) CGA regs
 	map(0x3bf, 0x3bf).nopw(); // CGA mode control, TODO
 }
 
@@ -684,6 +684,35 @@ ROM_START( 4enlinea )
 	ROM_LOAD( "cuatro_en_linea_gal16v8as__nosticker.ic04", 0x0000, 0x0117, CRC(094edf29) SHA1(428a2f6568ac1032833ee0c65fa8304967a58607) )
 ROM_END
 
+/* Kursaal K7 Olympic Darts PCB
+    __________________________________________________      SUBBOARD CM3080
+    |           ________  __   ______  ______________ |     ________________
+    |  _______  | DB9   | |_| |_CN8__| |____CN7______||     |___ __________ |
+    |  |______| |_______| CN9                         |__   ||  ||HEF4020BP||
+    | ________                                         __|  ||A | _________ |
+    | |D41464C|                                        __|  ||  | |________||
+    | ________                           _____         __|  ||__| _________ |
+    | |D41464C|                         DA741CN        __|  |     |TC4011BP||
+    | ________                         _______    ___  __|  |    __________ |
+ IC4->|GAL16V8|  _______              HCF4069UBE  XT5  __|  |    |__EMPTY__||
+    | ________   |UMC   |  ________   _______________  __|  |    __________ |
+IC11->|GAL16V8|  |UM487F|  74HC273AP  |WF19054       | __|  |    |HEF4020BP||
+    |            |______|  ________   |______________| __|  |_______________|
+    | ________             74HC273AP  _______________  __|    A=74LS368ANA
+    | |74LS04N|           ___________ |Z84C00BB6     | __|
+    |  _____              | SUBBOARD ||______________| __|
+    |  |XT2_|<-14.31818MHz| CM3080   |____________     __|
+    |           ________  |          ||M27C512 ROM|    __|
+    |          HCF4069UBE |          ||___________|    __|
+    |                     |          |____________     __|
+    |                     |          ||D4464C-15L |    __|
+    |                     |__________||___________|    __|
+    | 7808CT    ________    ________  _____   _____   |
+    |           |_______|  74LS541B1 X24C16P  |BATT|  |
+    | _____  ___________  _____________       |____|  |
+    | |CN1_| |__CN5_____| |__CN4_______|              |
+    |_________________________________________________|
+*/
 ROM_START( k7_olym )
 	ROM_REGION( 0x10000, "maincpu", 0 )
 	ROM_LOAD( "odk7_v3.11_27c512.ic18", 0x00000, 0x10000, CRC(063d24fe) SHA1(ad4509438d2028ede779f5aa9a918d1020c1db41) )

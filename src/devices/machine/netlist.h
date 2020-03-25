@@ -31,52 +31,6 @@ namespace netlist {
 
 // MAME specific configuration
 
-#define MCFG_NETLIST_SETUP(_setup)                                                  \
-	downcast<netlist_mame_device &>(*device).set_setup_func(NETLIST_NAME(_setup));
-
-#if 0
-#define MCFG_NETLIST_SETUP_MEMBER(_obj, _setup)                                \
-	downcast<netlist_mame_device &>(*device).set_constructor(_obj, _setup);
-
-#define MCFG_NETLIST_ANALOG_INPUT(_basetag, _tag, _name)                            \
-	MCFG_DEVICE_ADD(_basetag ":" _tag, NETLIST_ANALOG_INPUT, 0)                     \
-	downcast<netlist_mame_analog_input_device &>(*device).set_name(_name);
-
-#define MCFG_NETLIST_ANALOG_MULT_OFFSET(_mult, _offset)                             \
-	dynamic_cast<netlist_mame_sub_interface &>(*device).set_mult_offset(_mult, _offset);
-
-#define MCFG_NETLIST_ANALOG_OUTPUT(_basetag, _tag, _IN, _class, _member, _class_tag) \
-	MCFG_DEVICE_ADD(_basetag ":" _tag, NETLIST_ANALOG_OUTPUT, 0)                    \
-	downcast<netlist_mame_analog_output_device &>(*device).set_params(_IN,              \
-		FUNC(_class :: _member), _class_tag);
-
-#define MCFG_NETLIST_LOGIC_OUTPUT(_basetag, _tag, _IN, _class, _member, _class_tag) \
-	MCFG_DEVICE_ADD(_basetag ":" _tag, NETLIST_LOGIC_OUTPUT, 0)                    \
-	downcast<netlist_mame_logic_output_device &>(*device).set_params(_IN,              \
-				netlist_mame_logic_output_device::output_delegate(& _class :: _member, \
-						# _class "::" # _member, _class_tag, (_class *)nullptr)   );
-
-#define MCFG_NETLIST_LOGIC_INPUT(_basetag, _tag, _name, _shift)             \
-	MCFG_DEVICE_ADD(_basetag ":" _tag, NETLIST_LOGIC_INPUT, 0)              \
-	downcast<netlist_mame_logic_input_device &>(*device).set_params(_name, _shift);
-
-#define MCFG_NETLIST_INT_INPUT(_basetag, _tag, _name, _shift, _mask)        \
-	MCFG_DEVICE_ADD(_basetag ":" _tag, NETLIST_INT_INPUT, 0)                \
-	downcast<netlist_mame_int_input_device &>(*device).set_params(_name, _mask, _shift);
-
-#define MCFG_NETLIST_RAM_POINTER(_basetag, _tag, _name) \
-	MCFG_DEVICE_ADD(_basetag ":" _tag, NETLIST_RAM_POINTER, 0) \
-	downcast<netlist_mame_ram_pointer_device &>(*device).set_params(_name);
-
-#define MCFG_NETLIST_STREAM_INPUT(_basetag, _chan, _name)                           \
-	MCFG_DEVICE_ADD(_basetag ":cin" # _chan, NETLIST_STREAM_INPUT, 0)               \
-	downcast<netlist_mame_stream_input_device &>(*device).set_params(_chan, _name);
-
-#define MCFG_NETLIST_STREAM_OUTPUT(_basetag, _chan, _name)                          \
-	MCFG_DEVICE_ADD(_basetag ":cout" # _chan, NETLIST_STREAM_OUTPUT, 0)             \
-	downcast<netlist_mame_stream_output_device &>(*device).set_params(_chan, _name);
-#endif
-
 #define NETLIST_LOGIC_PORT_CHANGED(_base, _tag)                                     \
 	PORT_CHANGED_MEMBER(_base ":" _tag, netlist_mame_logic_input_device, input_changed, 0)
 
@@ -116,19 +70,32 @@ public:
 
 	virtual ~netlist_mame_device();
 
-	void set_setup_func(func_type &&func) { m_setup_func = std::move(func); }
+	void set_setup_func(func_type &&func) noexcept { m_setup_func = std::move(func); }
 
-	ATTR_HOT inline netlist::setup_t &setup();
-	ATTR_HOT inline netlist_mame_t &netlist() { return *m_netlist; }
+	netlist::setup_t &setup();
+	netlist_mame_t &netlist() noexcept { return *m_netlist; }
 
-	ATTR_HOT void update_icount(netlist::netlist_time time);
-	ATTR_HOT void check_mame_abort_slice();
+	void update_icount(netlist::netlist_time_ext time) noexcept;
+	void check_mame_abort_slice() noexcept;
 
 	static void register_memregion_source(netlist::nlparse_t &setup, device_t &dev, const char *name);
 
 	int m_icount;
 
+	static constexpr const unsigned MDIV_SHIFT = 16;
+
+	netlist::netlist_time_ext nltime_ext_from_clocks(unsigned c) const noexcept
+	{
+		return (m_div * c).shr(MDIV_SHIFT);
+	}
+
+	netlist::netlist_time nltime_from_clocks(unsigned c) const noexcept
+	{
+		return static_cast<netlist::netlist_time>((m_div * c).shr(MDIV_SHIFT));
+	}
+
 protected:
+
 	netlist_mame_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock);
 
 	// Custom to netlist ...
@@ -144,20 +111,18 @@ protected:
 	virtual void device_pre_save() override;
 	virtual void device_clock_changed() override;
 
-	netlist::netlist_time m_div;
-
-	plib::unique_ptr<netlist::netlist_t> base_validity_check(validity_checker &valid) const;
+	plib::unique_ptr<netlist::netlist_state_t> base_validity_check(validity_checker &valid) const;
 
 private:
 	void save_state();
 
-	void common_dev_start(netlist::netlist_t *lnetlist) const;
+	void common_dev_start(netlist::netlist_state_t *lnetlist) const;
 
-	/* timing support here - so sound can hijack it ... */
-	netlist::netlist_time        m_rem;
-	netlist::netlist_time        m_old;
+	netlist::netlist_time_ext    m_div;
+	netlist::netlist_time_ext    m_rem;
+	netlist::netlist_time_ext    m_old;
 
-	netlist::pool_owned_ptr<netlist_mame_t> m_netlist;
+	std::unique_ptr<netlist_mame_t> m_netlist;
 
 	func_type m_setup_func;
 };
@@ -219,8 +184,8 @@ protected:
 	virtual void device_start() override;
 
 	// device_execute_interface overrides
-	virtual uint64_t execute_clocks_to_cycles(uint64_t clocks) const override;
-	virtual uint64_t execute_cycles_to_clocks(uint64_t cycles) const override;
+	virtual uint64_t execute_clocks_to_cycles(uint64_t clocks) const noexcept override;
+	virtual uint64_t execute_cycles_to_clocks(uint64_t cycles) const noexcept override;
 
 	ATTR_HOT virtual void execute_run() override;
 
@@ -365,7 +330,7 @@ protected:
 	virtual void device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr) override;
 
 private:
-	netlist::param_num_t<double> *m_param;
+	netlist::param_num_t<nl_fptype> *m_param;
 	bool   m_auto_port;
 	const char *m_param_name;
 	double m_value_for_device_timer;
@@ -383,12 +348,10 @@ public:
 	// construction/destruction
 	netlist_mame_analog_output_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
 
-	template <class FC>
-	void set_params(const char *in_name, void (FC::*callback)(const double, const attotime &),
-		const char *name, const char *tag)
+	template <typename... T> void set_params(const char *in_name, T &&... args)
 	{
 		m_in = in_name;
-		m_delegate = std::move(output_delegate(callback, name, tag, (FC *)nullptr));
+		m_delegate.set(std::forward<T>(args)...);
 	}
 
 
@@ -414,14 +377,10 @@ public:
 	// construction/destruction
 	netlist_mame_logic_output_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
 
-	void set_params(const char *in_name, output_delegate &&adelegate);
-	template <class FunctionClass> void set_params(const char *in_name, void (FunctionClass::*callback)(const int, const attotime &), const char *name)
+	template <typename... T> void set_params(const char *in_name, T &&... args)
 	{
-		set_params(in_name, output_delegate(callback, name, nullptr, static_cast<FunctionClass *>(nullptr)));
-	}
-	template <class FunctionClass> void set_params(const char *in_name, const char *devname, void (FunctionClass::*callback)(const int, const attotime &), const char *name)
-	{
-		set_params(in_name, output_delegate(callback, name, devname, static_cast<FunctionClass *>(nullptr)));
+		m_in = in_name;
+		m_delegate.set(std::forward<T>(args)...);
 	}
 
 protected:

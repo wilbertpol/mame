@@ -75,7 +75,7 @@ WRITE8_MEMBER( gottlieb_sound_r0_device::write )
 	uint8_t pb0_3 = data ^ 15;
 	uint8_t pb4_7 = ioport("SB0")->read() & 0x90;
 	m_sndcmd = pb0_3 | pb4_7;
-	m_r6530->write(space, offset, m_sndcmd);
+	m_r6530->write(offset, m_sndcmd);
 }
 
 
@@ -98,7 +98,7 @@ void gottlieb_sound_r0_device::gottlieb_sound_r0_map(address_map &map)
 
 INPUT_PORTS_START( gottlieb_sound_r0 )
 	PORT_START("SB0")
-	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_OTHER) PORT_NAME("Audio Diag") PORT_CODE(KEYCODE_0) PORT_CHANGED_MEMBER(DEVICE_SELF, gottlieb_sound_r0_device, audio_nmi, nullptr)
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_OTHER) PORT_NAME("Audio Diag") PORT_CODE(KEYCODE_0) PORT_CHANGED_MEMBER(DEVICE_SELF, gottlieb_sound_r0_device, audio_nmi, 0)
 	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_OTHER) PORT_NAME("Attract") PORT_CODE(KEYCODE_F1) PORT_TOGGLE
 	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_OTHER) PORT_NAME("Music") PORT_CODE(KEYCODE_F2) PORT_TOGGLE
 INPUT_PORTS_END
@@ -570,7 +570,7 @@ WRITE8_MEMBER( gottlieb_sound_r2_device::speech_control_w )
 
 	// bit 6 = speech chip DATA PRESENT pin; high then low to make the chip read data
 	if ((previous & 0x40) == 0 && (data & 0x40) != 0)
-		m_sp0250->write(space, 0, m_sp0250_latch);
+		m_sp0250->write(m_sp0250_latch);
 
 	// bit 7 goes to the speech chip RESET pin
 	if ((previous ^ data) & 0x80)
@@ -647,7 +647,7 @@ INPUT_PORTS_START( gottlieb_sound_r2 )
 	PORT_DIPNAME( 0x40, 0x40, "Sound Test" )            PORT_DIPLOCATION("SB2:7")
 	PORT_DIPSETTING(    0x40, DEF_STR( Off ) )
 	PORT_DIPSETTING(    0x00, DEF_STR( On ) )
-	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, gottlieb_sound_r2_device, speech_drq_custom_r, nullptr)
+	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(gottlieb_sound_r2_device, speech_drq_custom_r)
 INPUT_PORTS_END
 
 

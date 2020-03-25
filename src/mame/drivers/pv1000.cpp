@@ -173,7 +173,7 @@ private:
 	uint32_t screen_update_pv1000(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	TIMER_CALLBACK_MEMBER(d65010_irq_on_cb);
 	TIMER_CALLBACK_MEMBER(d65010_irq_off_cb);
-	DECLARE_DEVICE_IMAGE_LOAD_MEMBER( pv1000_cart );
+	DECLARE_DEVICE_IMAGE_LOAD_MEMBER( cart_load );
 	required_device<gfxdecode_device> m_gfxdecode;
 	required_device<screen_device> m_screen;
 	required_device<palette_device> m_palette;
@@ -184,7 +184,7 @@ private:
 
 void pv1000_state::pv1000_mem(address_map &map)
 {
-	//AM_RANGE(0x0000, 0x7fff)      // mapped by the cartslot
+	//map(0x0000, 0x7fff)      // mapped by the cartslot
 	map(0xb800, 0xbbff).ram().share("videoram");
 	map(0xbc00, 0xbfff).ram().w(FUNC(pv1000_state::gfxram_w)).region("gfxram", 0);
 }
@@ -302,7 +302,7 @@ static INPUT_PORTS_START( pv1000 )
 INPUT_PORTS_END
 
 
-DEVICE_IMAGE_LOAD_MEMBER( pv1000_state, pv1000_cart )
+DEVICE_IMAGE_LOAD_MEMBER( pv1000_state::cart_load )
 {
 	uint32_t size = m_cart->common_get_size("rom");
 
@@ -395,7 +395,7 @@ void pv1000_state::machine_start()
 
 	if (m_cart->exists())
 	{
-		m_maincpu->space(AS_PROGRAM).install_read_handler(0x0000, 0x7fff, read8sm_delegate(FUNC(generic_slot_device::read_rom),(generic_slot_device*)m_cart));
+		m_maincpu->space(AS_PROGRAM).install_read_handler(0x0000, 0x7fff, read8sm_delegate(*m_cart, FUNC(generic_slot_device::read_rom)));
 
 		// FIXME: this is needed for gfx decoding, but there is probably a cleaner solution!
 		std::string region_tag;
@@ -440,7 +440,8 @@ static GFXDECODE_START( gfx_pv1000 )
 GFXDECODE_END
 
 
-MACHINE_CONFIG_START(pv1000_state::pv1000)
+void pv1000_state::pv1000(machine_config &config)
+{
 	Z80(config, m_maincpu, 17897725/5);
 	m_maincpu->set_addrmap(AS_PROGRAM, &pv1000_state::pv1000_mem);
 	m_maincpu->set_addrmap(AS_IO, &pv1000_state::pv1000_io);
@@ -459,13 +460,13 @@ MACHINE_CONFIG_START(pv1000_state::pv1000)
 	PV1000(config, m_sound, 17897725).add_route(ALL_OUTPUTS, "mono", 1.00);
 
 	/* Cartridge slot */
-	MCFG_GENERIC_CARTSLOT_ADD("cartslot", generic_linear_slot, "pv1000_cart")
-	MCFG_GENERIC_MANDATORY
-	MCFG_GENERIC_LOAD(pv1000_state, pv1000_cart)
+	generic_cartslot_device &cartslot(GENERIC_CARTSLOT(config, "cartslot", generic_linear_slot, "pv1000_cart"));
+	cartslot.set_must_be_loaded(true);
+	cartslot.set_device_load(FUNC(pv1000_state::cart_load));
 
 	/* Software lists */
 	SOFTWARE_LIST(config, "cart_list").set_original("pv1000");
-MACHINE_CONFIG_END
+}
 
 
 ROM_START( pv1000 )

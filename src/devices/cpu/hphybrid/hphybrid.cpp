@@ -404,9 +404,9 @@ bool hp_hybrid_cpu_device::execute_one_bpc(uint16_t opcode , uint16_t& next_pc)
 	case 0x4000:
 		// JSM
 		m_icount -= 5;
+		next_pc = remove_mae(get_ea(opcode));
 		m_reg_R = (m_reg_R + 1) & m_addr_mask_low16;
 		WM(AEC_CASE_C , m_reg_R , m_reg_P);
-		next_pc = remove_mae(get_ea(opcode));
 		return true;
 
 	case 0x4800:
@@ -716,10 +716,7 @@ void hp_hybrid_cpu_device::emc_start()
 	state_add(HPHYBRID_R26, "R26" , m_reg_r26).noshow();
 	state_add(HPHYBRID_R27, "R27" , m_reg_r27).noshow();
 
-	save_item(NAME(m_reg_ar2[ 0 ]));
-	save_item(NAME(m_reg_ar2[ 1 ]));
-	save_item(NAME(m_reg_ar2[ 2 ]));
-	save_item(NAME(m_reg_ar2[ 3 ]));
+	save_item(NAME(m_reg_ar2));
 	save_item(NAME(m_reg_se));
 	save_item(NAME(m_reg_r25));
 	save_item(NAME(m_reg_r26));
@@ -1749,12 +1746,7 @@ void hp_5061_3001_cpu_device::device_start()
 	state_add(HPHYBRID_R35, "R35" , m_reg_aec[ 3 ]);
 	state_add(HPHYBRID_R36, "R36" , m_reg_aec[ 4 ]);
 	state_add(HPHYBRID_R37, "R37" , m_reg_aec[ 5 ]);
-	save_item(NAME(m_reg_aec[ 0 ]));
-	save_item(NAME(m_reg_aec[ 1 ]));
-	save_item(NAME(m_reg_aec[ 2 ]));
-	save_item(NAME(m_reg_aec[ 3 ]));
-	save_item(NAME(m_reg_aec[ 4 ]));
-	save_item(NAME(m_reg_aec[ 5 ]));
+	save_item(NAME(m_reg_aec));
 }
 
 void hp_5061_3001_cpu_device::device_reset()

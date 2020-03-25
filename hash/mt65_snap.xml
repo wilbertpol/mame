@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
+<!--
+license:CC0
+-->
 
 <softwarelist name="mt65_snap" description="Microtan 65 snapshots">
 
@@ -103,7 +106,7 @@
 
 	<software name="hbells">
 		<description>Hell's Bells</description>
-		<year>198?</year>
+		<year>1985</year>
 		<publisher>Geoff Macdonald</publisher>
 		<info name="usage" value="Requires Joystick" />
 		<part name="snap" interface="mt65_snap">

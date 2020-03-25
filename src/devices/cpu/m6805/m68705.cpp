@@ -119,6 +119,7 @@ DEFINE_DEVICE_TYPE(M6805R2, m6805r2_device, "m6805r2", "Motorola MC6805R2")
 DEFINE_DEVICE_TYPE(M6805R3, m6805r3_device, "m6805r3", "Motorola MC6805R3")
 DEFINE_DEVICE_TYPE(M6805U2, m6805u2_device, "m6805u2", "Motorola MC6805U2")
 DEFINE_DEVICE_TYPE(M6805U3, m6805u3_device, "m6805u3", "Motorola MC6805U3")
+DEFINE_DEVICE_TYPE(HD6805U1, hd6805u1_device, "hd6805u1", "Hitachi HD6805U1")
 
 /****************************************************************************
  * M68705 base device
@@ -220,8 +221,8 @@ m6805_hmos_device::m6805_hmos_device(machine_config const &mconfig, char const *
 	, m_port_input{ 0xff, 0xff, 0xff, 0xff }
 	, m_port_latch{ 0xff, 0xff, 0xff, 0xff }
 	, m_port_ddr{ 0x00, 0x00, 0x00, 0x00 }
-	, m_port_cb_r{ { *this },{ *this },{ *this },{ *this } }
-	, m_port_cb_w{ { *this },{ *this },{ *this },{ *this } }
+	, m_port_cb_r(*this)
+	, m_port_cb_w(*this)
 	, m_ram_size(ram_size)
 {
 }
@@ -411,8 +412,8 @@ void m6805_hmos_device::device_start()
 
 	// initialise digital I/O
 	for (u8 &input : m_port_input) input = 0xff;
-	for (devcb_read8 &cb : m_port_cb_r) cb.resolve();
-	for (devcb_write8 &cb : m_port_cb_w) cb.resolve_safe();
+	m_port_cb_r.resolve_all();
+	m_port_cb_w.resolve_all_safe();
 
 	add_port_latch_state<0>();
 	add_port_latch_state<1>();
@@ -816,6 +817,13 @@ m6805u3_device::m6805u3_device(machine_config const &mconfig, char const *tag, d
 	m_timer.set_options(m6805_timer::TIMER_PGM);
 }
 
+hd6805u1_device::hd6805u1_device(machine_config const &mconfig, char const *tag, device_t *owner, uint32_t clock)
+	: m6805_mrom_device(mconfig, tag, owner, clock, HD6805U1, 12, 96)
+{
+	// Port D has optional analog comparator but no INT2 (no MISC register, either)
+	m_timer.set_options(m6805_timer::TIMER_PGM | m6805_timer::TIMER_NPC);
+}
+
 void m6805_hmos_device::internal_map(address_map &map)
 {
 	map.unmap_value_high();
@@ -828,8 +836,8 @@ void m6805_hmos_device::internal_map(address_map &map)
 	map(0x0005, 0x0005).w(FUNC(m6805_hmos_device::port_ddr_w<1>));
 	map(0x0006, 0x0006).w(FUNC(m6805_hmos_device::port_ddr_w<2>));
 
-	map(0x0008, 0x0008).lrw8("tdr", [this]() { return m_timer.tdr_r(); }, [this](u8 data) { m_timer.tdr_w(data); });
-	map(0x0009, 0x0009).lrw8("tcr", [this]() { return m_timer.tcr_r(); }, [this](u8 data) { m_timer.tcr_w(data); });
+	map(0x0008, 0x0008).lrw8(NAME([this]() { return m_timer.tdr_r(); }), NAME([this](u8 data) { m_timer.tdr_w(data); }));
+	map(0x0009, 0x0009).lrw8(NAME([this]() { return m_timer.tcr_r(); }), NAME([this](u8 data) { m_timer.tcr_w(data); }));
 
 	// M68?05Px devices don't have Port D or the Miscellaneous register
 	if (m_port_mask[3] != 0xff)
@@ -857,6 +865,7 @@ void m6805_mrom_device::internal_map(address_map &map)
 	 *   6805S3  0000-007f  0080-00ff  0100-0eff  0f00-0ff7   0ff8-0fff
 	 *   6805U2  0000-007f  0080-00ff  07c0-0f37  0f38-0ff7   0ff8-0fff
 	 *   6805U3  0000-007f             0080-0f37  0f38-0ff7   0ff8-0fff
+	 *   6805U1  0000-007f  0080-00ff  0800-0f7f  0f80-0ff7   0ff8-0fff
 	 *
 	 * This code assumes that dumps are captured contiguously from address 0 to
 	 * the end of the address range, and are not split by range. Register, RAM

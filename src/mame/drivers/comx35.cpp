@@ -56,7 +56,7 @@ void comx35_state::image_fread_memory(device_image_interface &image, uint16_t ad
     QUICKLOAD_LOAD_MEMBER( comx35_state, comx )
 -------------------------------------------------*/
 
-QUICKLOAD_LOAD_MEMBER( comx35_state, comx )
+QUICKLOAD_LOAD_MEMBER(comx35_state::quickload_cb)
 {
 	address_space &program = m_maincpu->space(AS_PROGRAM);
 
@@ -226,7 +226,7 @@ READ8_MEMBER( comx35_state::mem_r )
 	}
 	else if (offset >= 0xf400 && offset < 0xf800)
 	{
-		data = m_vis->char_ram_r(space, offset & 0x3ff);
+		data = m_vis->char_ram_r(offset & 0x3ff);
 	}
 
 	return data;
@@ -247,11 +247,11 @@ WRITE8_MEMBER( comx35_state::mem_w )
 	}
 	else if (offset >= 0xf400 && offset < 0xf800)
 	{
-		m_vis->char_ram_w(space, offset & 0x3ff, data);
+		m_vis->char_ram_w(offset & 0x3ff, data);
 	}
 	else if (offset >= 0xf800)
 	{
-		m_vis->page_ram_w(space, offset & 0x3ff, data);
+		m_vis->page_ram_w(offset & 0x3ff, data);
 	}
 }
 
@@ -266,7 +266,7 @@ READ8_MEMBER( comx35_state::io_r )
 
 	if (offset == 3)
 	{
-		data = m_kbe->read(space, 0);
+		data = m_kbe->read();
 	}
 
 	return data;
@@ -465,7 +465,7 @@ READ_LINE_MEMBER( comx35_state::ef2_r )
 
 READ_LINE_MEMBER( comx35_state::ef4_r )
 {
-	return m_exp->ef4_r() | (m_cassette->input() > 0.0f);
+	return m_exp->ef4_r() | ((m_cassette->input() > 0.0f) ? 1 : 0);
 }
 
 WRITE_LINE_MEMBER( comx35_state::q_w )
@@ -630,10 +630,10 @@ void comx35_state::base(machine_config &config, const XTAL clock)
 	m_kbe->d11_callback().set_ioport("D11");
 	m_kbe->da_callback().set_inputline(m_maincpu, COSMAC_INPUT_LINE_EF3);
 
-	quickload_image_device &quickload(QUICKLOAD(config, "quickload"));
-	quickload.set_handler(snapquick_load_delegate(&QUICKLOAD_LOAD_NAME(comx35_state, comx), this), "comx");
+	QUICKLOAD(config, "quickload", "comx").set_load_callback(FUNC(comx35_state::quickload_cb));
 
 	CASSETTE(config, m_cassette).set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	//m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	// expansion bus
 	COMX_EXPANSION_SLOT(config, m_exp, 0, comx_expansion_cards, "eb").irq_callback().set(FUNC(comx35_state::irq_w));

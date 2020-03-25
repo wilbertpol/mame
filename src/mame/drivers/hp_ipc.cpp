@@ -10,23 +10,19 @@ Driver to-do list
 
 - softlist: merge dumps from coho.org and classiccmp.org
 - keyboard: NMI generation, autorepeat
-- HP-HIL mouse
-- RTC chip: proper month, day
-- switchable graphics resolution ("_desktop" mode uses 640x400)
-- HP-IB chip
-- CS/80, SS/80 storage protocol(s) and drives
+- RTC chip: proper month, day (possibly a different chip, 82167)
 - HP-IL printer
 - sound (needs dump of COP452)
 
 QA
-- diagnstc.td0: display test [cannot execute]
-- diagnstc.td0: complete keyboard test [keyboard stops responding]
++ diagnstc.td0: display test
+- diagnstc.td0: complete keyboard test [second connector not implemented]
 - diagnstc.td0: speaker test
 - diagnstc.td0: printer test
 + diagnstc.td0: auto: floppy disc test
 + diagnstc.td0: auto: ram test
 - diagnstc.td0: auto: rtc test [cannot execute]
-- diagnstc.td0: auto: short keyboard test [cannot execute + keyboard stops responding]
++ diagnstc.td0: auto: short keyboard test
 
 maybe
 - drive AP line of MLC from a timer
@@ -171,6 +167,7 @@ Notes:
          ROM - 16Kb (32Kx4) Some kind of very early DIP28 PROM/ROM? Same pinout as 1Kb RAM above. Holds the character font table for the printer
                Four versions of this ROM exist, one each for Japan/Arabic/Hebrew and one for all other regions
     NS58167A - National Semiconductor NS58167A Clock Controller RTC at U44. Clock input 32.768kHz (DIP24)
+               (Tony Duell's schematics show a 82167 instead)
        LM358 - National Semiconductor LM358 Operational Amplifier at U40 (DIP8)
        LM393 - Texas Instruments LM393 Dual Comparator at U34 (DIP8)
          BT1 - 3v lithium battery
@@ -859,5 +856,5 @@ ROM_END
 #define rom_hp9808a rom_hp_ipc
 
 //    YEAR  NAME     PARENT  COMPAT  MACHINE  INPUT   CLASS         INIT        COMPANY            FULLNAME                            FLAGS
-COMP( 1985, hp_ipc,  0,      0,      hp_ipc,  hp_ipc, hp_ipc_state, empty_init, "Hewlett-Packard", "Integral Personal Computer 9807A", MACHINE_NO_SOUND | MACHINE_IMPERFECT_GRAPHICS)
+COMP( 1985, hp_ipc,  0,      0,      hp_ipc,  hp_ipc, hp_ipc_state, empty_init, "Hewlett-Packard", "Integral Personal Computer 9807A", MACHINE_NO_SOUND)
 COMP( 1985, hp9808a, 0,      0,      hp9808a, hp_ipc, hp_ipc_state, empty_init, "Hewlett-Packard", "Integral Personal Computer 9808A", MACHINE_NOT_WORKING)

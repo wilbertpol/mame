@@ -202,7 +202,7 @@ void bitgraph_state::bitgraphb_mem(address_map &map)
 	map(0x010020, 0x010027).rw(FUNC(bitgraph_state::adlc_r), FUNC(bitgraph_state::adlc_w)).umask16(0xff00);
 	map(0x010028, 0x01002f).rw(FUNC(bitgraph_state::pia_r), FUNC(bitgraph_state::pia_w)).umask16(0xff00);    // EAROM, PSG
 	map(0x010030, 0x010031).w(FUNC(bitgraph_state::baud_write));
-//  AM_RANGE(0x010030, 0x010037) AM_READ8(ppu_read, 0x00ff)
+//  map(0x010030, 0x010037).r(FUNC(bitgraph_state::ppu_read)).umask16(0x00ff);
 	map(0x010038, 0x01003f).w(FUNC(bitgraph_state::ppu_write)).umask16(0x00ff);
 	map(0x380000, 0x3fffff).ram();
 }
@@ -394,26 +394,16 @@ uint32_t bitgraph_state::screen_update(screen_device &screen, bitmap_ind16 &bitm
 		for (x = 0; x < 1024 / 8; x += 2)
 		{
 			gfx = m_videoram[(x + 1) | (y << 7)];
-
-			*p++ = BIT(gfx, 7);
-			*p++ = BIT(gfx, 6);
-			*p++ = BIT(gfx, 5);
-			*p++ = BIT(gfx, 4);
-			*p++ = BIT(gfx, 3);
-			*p++ = BIT(gfx, 2);
-			*p++ = BIT(gfx, 1);
-			*p++ = BIT(gfx, 0);
+			for (int i = 7; i >= 0; i--)
+			{
+				*p++ = BIT(gfx, i);
+			}
 
 			gfx = m_videoram[x | (y << 7)];
-
-			*p++ = BIT(gfx, 7);
-			*p++ = BIT(gfx, 6);
-			*p++ = BIT(gfx, 5);
-			*p++ = BIT(gfx, 4);
-			*p++ = BIT(gfx, 3);
-			*p++ = BIT(gfx, 2);
-			*p++ = BIT(gfx, 1);
-			*p++ = BIT(gfx, 0);
+			for (int i = 7; i >= 0; i--)
+			{
+				*p++ = BIT(gfx, i);
+			}
 		}
 	}
 	return 0;

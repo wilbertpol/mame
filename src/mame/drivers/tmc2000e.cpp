@@ -257,7 +257,7 @@ WRITE8_MEMBER( tmc2000e_state::dma_w )
 	m_color = (m_colorram[offset & 0x3ff]) & 0x07; // 0x04 = R, 0x02 = B, 0x01 = G
 
 	m_cti->con_w(0); // HACK
-	m_cti->dma_w(space, offset, data);
+	m_cti->dma_w(data);
 }
 
 
@@ -311,7 +311,8 @@ void tmc2000e_state::tmc2000e(machine_config &config)
 	m_cti->add_route(ALL_OUTPUTS, "mono", 0.25);
 
 	/* devices */
-	CASSETTE(config, m_cassette).set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_MUTED);
+	CASSETTE(config, m_cassette).set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
+	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	/* internal ram */
 	RAM(config, RAM_TAG).set_default_size("8K").set_extra_options("40K");

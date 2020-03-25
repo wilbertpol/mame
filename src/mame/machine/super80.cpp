@@ -159,7 +159,7 @@ WRITE8_MEMBER( super80_state::port3f_w )
 	if (floppy)
 	{
 		floppy->mon_w(0);
-		floppy->ss_w(!BIT(data, 6));
+		floppy->ss_w(BIT(data, 6));
 	}
 
 	m_fdc->dden_w(BIT(data, 7));
@@ -237,7 +237,7 @@ void super80_state::init_super80()
     QUICKLOAD_LOAD_MEMBER( super80_state, super80 )
 -------------------------------------------------*/
 
-QUICKLOAD_LOAD_MEMBER( super80_state, super80 )
+QUICKLOAD_LOAD_MEMBER(super80_state::quickload_cb)
 {
 	uint16_t exec_addr, start_addr, end_addr;
 

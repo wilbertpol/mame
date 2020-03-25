@@ -40,7 +40,7 @@ iteagle_fpga_device::iteagle_fpga_device(const machine_config &mconfig, const ch
 	m_scc1(*this, AM85C30_TAG),
 	m_screen(*this, finder_base::DUMMY_TAG),
 	m_cpu(*this, finder_base::DUMMY_TAG),
-	m_in_cb{ { *this },{ *this },{ *this } },
+	m_in_cb(*this),
 	m_trackx_cb(*this),
 	m_tracky_cb(*this),
 	m_gunx_cb(*this),
@@ -87,6 +87,10 @@ void iteagle_fpga_device::device_start()
 	status = 0x5555;
 	command = 0x5555;
 
+	// always keep this device memory ranges active
+	command |= 3;
+	command_mask &= ~3;
+
 	add_map(sizeof(m_fpga_regs), M_IO, FUNC(iteagle_fpga_device::fpga_map));
 	// fpga defaults to base address 0x00000300
 	bank_infos[0].adr = 0x00000300 & (~(bank_infos[0].size - 1));
@@ -102,8 +106,7 @@ void iteagle_fpga_device::device_start()
 	m_timer = timer_alloc(0, nullptr);
 
 	// Switch IO
-	for (unsigned i = 0; i < IO_NUM; i++)
-		m_in_cb[i].resolve_safe(0xffff);
+	m_in_cb.resolve_all_safe(0xffff);
 	// Track IO
 	m_trackx_cb.resolve_safe(0xff);
 	m_tracky_cb.resolve_safe(0xff);
@@ -340,7 +343,7 @@ READ32_MEMBER( iteagle_fpga_device::fpga_r )
 		default:
 			if (LOG_FPGA)
 				logerror("%s:fpga_r offset %04X = %08X & %08X\n", machine().describe_context(), offset*4, result, mem_mask);
-			osd_printf_debug("%s:fpga_r offset %04X = %08X & %08X\n", machine().describe_context().c_str(), offset*4, result, mem_mask);
+			osd_printf_debug("%s:fpga_r offset %04X = %08X & %08X\n", machine().describe_context(), offset*4, result, mem_mask);
 			break;
 	}
 	if (offset!=0x4/4)
@@ -409,7 +412,7 @@ WRITE32_MEMBER( iteagle_fpga_device::fpga_w )
 					m_serial0_1.write_data((data >> 16) & 0xff, 1);
 					if (m_serial0_1.get_tx_str(1).back() == 0xd) {
 						logerror("com0: %s", m_serial0_1.get_tx_str(1).c_str());
-						osd_printf_info("com0: %s\n", m_serial0_1.get_tx_str(1).c_str());
+						osd_printf_info("com0: %s\n", m_serial0_1.get_tx_str(1));
 						m_serial0_1.clear_tx_str(1);
 					}
 				}
@@ -460,7 +463,7 @@ WRITE32_MEMBER( iteagle_fpga_device::fpga_w )
 				m_serial2_3.write_data((data >> 24) & 0xff, chan);
 				if (m_serial2_3.get_tx_str(chan).back() == 0xd) {
 					if (LOG_SERIAL) logerror("com3: %s\n", m_serial2_3.get_tx_str(chan).c_str());
-					osd_printf_debug("com3: %s\n", m_serial2_3.get_tx_str(chan).c_str());
+					osd_printf_debug("com3: %s\n", m_serial2_3.get_tx_str(chan));
 					if (m_serial2_3.get_tx_str(chan).find("ATI5") != -1)
 						m_serial2_3.write_rx_str(chan, "OK\r181\r");
 					else if (m_serial2_3.get_tx_str(chan).find("ATS0?") != -1)
@@ -484,7 +487,7 @@ WRITE32_MEMBER( iteagle_fpga_device::fpga_w )
 		default:
 			if (LOG_FPGA)
 					logerror("%s:fpga_w offset %04X = %08X & %08X\n", machine().describe_context(), offset*4, data, mem_mask);
-			osd_printf_debug("%s:fpga_w offset %04X = %08X & %08X\n", machine().describe_context().c_str(), offset*4, data, mem_mask);
+			osd_printf_debug("%s:fpga_w offset %04X = %08X & %08X\n", machine().describe_context(), offset*4, data, mem_mask);
 			break;
 	}
 }
@@ -538,7 +541,7 @@ void iteagle_am85c30::write_data(uint8_t data, int channel)
 	// Limit length
 	if (m_serial_tx[channel].size() >= 4000) {
 		if (LOG_SERIAL) printf("%s\n", m_serial_tx[channel].c_str());
-		osd_printf_debug("%s\n", m_serial_tx[channel].c_str());
+		osd_printf_debug("%s\n", m_serial_tx[channel]);
 		m_serial_tx[channel].clear();
 	}
 }
@@ -721,6 +724,10 @@ void iteagle_eeprom_device::device_start()
 	pci_device::device_start();
 	skip_map_regs(1);
 	add_map(0x10, M_IO, FUNC(iteagle_eeprom_device::eeprom_map));
+
+	// always keep this device memory ranges active
+	command |= 3;
+	command_mask &= ~3;
 }
 
 void iteagle_eeprom_device::device_reset()
@@ -819,6 +826,10 @@ void iteagle_periph_device::device_start()
 	m_rtc_regs[0xb] = 0x02; // 24-hour format
 	m_rtc->set_base(m_rtc_regs, sizeof(m_rtc_regs));
 
+	// always keep this device memory ranges active
+	command |= 3;
+	command_mask &= ~3;
+
 	// Save states
 	save_item(NAME(m_ctrl_regs));
 }
@@ -842,7 +853,7 @@ READ32_MEMBER( iteagle_periph_device::ctrl_r )
 		case 0x0/4:
 			if (LOG_PERIPH)
 				logerror("%s:fpga ctrl_r from offset %04X = %08X & %08X\n", machine().describe_context(), offset*4, result, mem_mask);
-			osd_printf_debug("%s:fpga ctrl_r from offset %04X = %08X & %08X\n", machine().describe_context().c_str(), offset*4, result, mem_mask);
+			osd_printf_debug("%s:fpga ctrl_r from offset %04X = %08X & %08X\n", machine().describe_context(), offset*4, result, mem_mask);
 			break;
 		case 0x70/4:
 			if (ACCESSING_BITS_8_15) {
@@ -878,7 +889,7 @@ READ32_MEMBER( iteagle_periph_device::ctrl_r )
 		default:
 			if (LOG_PERIPH)
 				logerror("%s:fpga ctrl_r from offset %04X = %08X & %08X\n", machine().describe_context(), offset*4, result, mem_mask);
-			osd_printf_debug("%s:fpga ctrl_r from offset %04X = %08X & %08X\n", machine().describe_context().c_str(), offset*4, result, mem_mask);
+			osd_printf_debug("%s:fpga ctrl_r from offset %04X = %08X & %08X\n", machine().describe_context(), offset*4, result, mem_mask);
 			break;
 	}
 	return result;

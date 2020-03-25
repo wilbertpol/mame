@@ -148,7 +148,7 @@ WRITE8_MEMBER(sf_state::msm_w)
 {
 	m_msm[Chip]->reset_w(BIT(data, 7));
 	/* ?? bit 6?? */
-	m_msm[Chip]->write_data(data);
+	m_msm[Chip]->data_w(data);
 	m_msm[Chip]->vclk_w(1);
 	m_msm[Chip]->vclk_w(0);
 }
@@ -172,7 +172,7 @@ void sf_state::sfan_map(address_map &map)
 	map(0xc00018, 0xc00019).w(FUNC(sf_state::bg_scroll_w));
 	map(0xc0001a, 0xc0001b).w(FUNC(sf_state::gfxctrl_w));
 	map(0xc0001d, 0xc0001d).w(FUNC(sf_state::soundcmd_w));
-//  AM_RANGE(0xc0001e, 0xc0001f) AM_WRITE(protection_w)
+//  map(0xc0001e, 0xc0001f).w(FUNC(sf_state::protection_w));
 	map(0xff8000, 0xffdfff).ram();
 	map(0xffe000, 0xffffff).ram().share("objectram");
 }
@@ -196,7 +196,7 @@ void sf_state::sfus_map(address_map &map)
 	map(0xc00018, 0xc00019).w(FUNC(sf_state::bg_scroll_w));
 	map(0xc0001a, 0xc0001b).w(FUNC(sf_state::gfxctrl_w));
 	map(0xc0001d, 0xc0001d).w(FUNC(sf_state::soundcmd_w));
-//  AM_RANGE(0xc0001e, 0xc0001f) AM_WRITE(protection_w)
+//  map(0xc0001e, 0xc0001f).w(FUNC(sf_state::protection_w));
 	map(0xff8000, 0xffdfff).ram();
 	map(0xffe000, 0xffffff).ram().share("objectram");
 }

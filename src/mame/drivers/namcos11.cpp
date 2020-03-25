@@ -238,7 +238,8 @@ Notes:
       The 2nd revision CPU board (GP-13 COH-110) uses 2x 32MBit RAMs instead of
       the 4x D482445LGW-A70 RAMs and the 2 main SONY IC's are updated revisions,
       though the functionality of them is identical. The 2 types of CPU boards can be
-      used with any System 11 motherboard, and any System 11 game.
+      used with any System 11 motherboard, and any System 11 game except Tekken which
+      requires the Revision 1 CPU board otherwise there are big graphical glitches
 
 Gun Board (Used only with Point Blank 2 so far)
 ---------
@@ -356,7 +357,6 @@ private:
 	DECLARE_WRITE16_MEMBER(c76_speedup_w);
 	TIMER_DEVICE_CALLBACK_MEMBER(mcu_irq0_cb);
 	TIMER_DEVICE_CALLBACK_MEMBER(mcu_irq2_cb);
-	TIMER_DEVICE_CALLBACK_MEMBER(mcu_adc_cb);
 
 	void c76_map(address_map &map);
 	void namcos11_map(address_map &map);
@@ -561,7 +561,7 @@ void namcos11_state::driver_start()
 	{
 		m_su_83 = 0;
 		save_item( NAME(m_su_83) );
-		m_mcu->space(AS_PROGRAM).install_readwrite_handler(0x82, 0x83, read16_delegate(FUNC(namcos11_state::c76_speedup_r),this), write16_delegate(FUNC(namcos11_state::c76_speedup_w),this));
+		m_mcu->space(AS_PROGRAM).install_readwrite_handler(0x82, 0x83, read16_delegate(*this, FUNC(namcos11_state::c76_speedup_r)), write16_delegate(*this, FUNC(namcos11_state::c76_speedup_w)));
 	}
 
 	if( m_bankedroms != nullptr )
@@ -594,11 +594,6 @@ TIMER_DEVICE_CALLBACK_MEMBER(namcos11_state::mcu_irq2_cb)
 	m_mcu->set_input_line(M37710_LINE_IRQ2, HOLD_LINE);
 }
 
-TIMER_DEVICE_CALLBACK_MEMBER(namcos11_state::mcu_adc_cb)
-{
-	m_mcu->set_input_line(M37710_LINE_ADC, HOLD_LINE);
-}
-
 void namcos11_state::coh110(machine_config &config)
 {
 	CXD8530CQ(config, m_maincpu, XTAL(67'737'600));
@@ -620,7 +615,6 @@ void namcos11_state::coh110(machine_config &config)
 	/* TODO: irq generation for these */
 	TIMER(config, "mcu_irq0").configure_periodic(FUNC(namcos11_state::mcu_irq0_cb), attotime::from_hz(60));
 	TIMER(config, "mcu_irq2").configure_periodic(FUNC(namcos11_state::mcu_irq2_cb), attotime::from_hz(60));
-	TIMER(config, "mcu_adc").configure_periodic(FUNC(namcos11_state::mcu_adc_cb), attotime::from_hz(60));
 
 	CXD8561Q(config, "gpu", XTAL(53'693'175), 0x200000, subdevice<psxcpu_device>("maincpu")).set_screen("screen");
 

@@ -8,6 +8,13 @@
 
     Uses a TC0091LVC, a variant of the one used on Taito L HW
 
+    Undumped games on similar hardware (ES-9402 or ES-9410):
+    * Gold Strike
+    * Lucky Pierrot / Wonder Circus
+    * Miracle Seven - Heaven's Gate
+    * Miracle Seven - Heaven's Gate Turbo
+    * Ukiyo Box
+
 ***************************************************************************/
 
 #include "emu.h"
@@ -216,7 +223,7 @@ static INPUT_PORTS_START( lastbank )
 	PORT_DIPSETTING(    0x08, DEF_STR( Off ) )
 	PORT_DIPSETTING(    0x00, DEF_STR( On ) )
 	PORT_BIT( 0x30, IP_ACTIVE_LOW, IPT_UNKNOWN )
-	PORT_BIT( 0xc0, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(DEVICE_SELF, lastbank_state, sound_status_r, nullptr)
+	PORT_BIT( 0xc0, IP_ACTIVE_HIGH, IPT_CUSTOM ) PORT_CUSTOM_MEMBER(lastbank_state, sound_status_r)
 
 	PORT_START("P1_KEY0")
 	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_KEYPAD ) PORT_NAME("5-6") PORT_CODE(KEYCODE_B)
@@ -406,7 +413,7 @@ void lastbank_state::lastbank(machine_config &config)
 	audiocpu.set_addrmap(AS_IO, &lastbank_state::lastbank_audio_io);
 	// yes, we have no interrupts
 
-	config.m_perfect_cpu_quantum = subtag("maincpu");
+	config.set_perfect_quantum(m_maincpu);
 
 	//MCFG_MACHINE_START_OVERRIDE(lastbank_state,lastbank)
 	//MCFG_MACHINE_RESET_OVERRIDE(lastbank_state,lastbank)
