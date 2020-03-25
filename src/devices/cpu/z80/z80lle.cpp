@@ -14,7 +14,6 @@
  *   - Implement the 2 start up cycles after a RESET
  *   - RETI: When should the daisy chain be notified?
  *   - Add support for interrupt modes 0 and 2
- *   - Verify A_DB, should it set WH for each instruction?
  *   - Group sub-instructions for readability and/or move code out into functions
  *   - These instructions are untested:
  *     - 76 / dd/fd 76 - HALT (leaving halt state is also untested)
@@ -599,7 +598,7 @@ const u16 z80lle_device::insts[5 * 256 + 4][17] = {
 	//  9 T2 AB:aann DB:xx      RD IORQ
 	// 10 T3 AB:aann DB:xx      RD IORQ
 	// 11 T4 AB:aann DB:xx      RD IORQ
-	{ PC_OUT_INC, READ_Z, A_W, WZ_OUT_INC, INPUT, DB_A | END },
+	{ PC_OUT_INC, READ_Z, A_W, WZ_OUT_INC, INPUT_A | END },
 	/* dc, 10/17 cycles, CALL C,nn, see c4 for timing */
 	{ PC_OUT_INC, READ_Z, PC_OUT_INC, READ_W, CALL_COND, SP_OUT_DEC, PCH_DB, WRITE, SP_OUT_DEC, PCL_DB, WRITE, WZ_PC | END },
 	/* dd, +4 cycles, DD prefix */
@@ -1688,7 +1687,7 @@ const u16 z80lle_device::insts[5 * 256 + 4][17] = {
 	/* dd/fd d8, 9/15 cycles, RET C */ { RET_COND, SP_OUT_INC, READ_Z, SP_OUT_INC, READ_W, WZ_PC | END },
 	/* dd/fd d9, 8 cycles, EXX */ { EXX | END },
 	/* dd/fd da, 14 cycles, JP C,nn */ { PC_OUT_INC, READ_Z, PC_OUT_INC, READ_W, JP_COND | END },
-	/* dd/fd db, 15 cycles, IN A,(n) */ { PC_OUT_INC, READ_Z, A_W, WZ_OUT_INC, INPUT, DB_A | END },
+	/* dd/fd db, 15 cycles, IN A,(n) */ { PC_OUT_INC, READ_Z, A_W, WZ_OUT_INC, INPUT_A | END },
 	/* dd/fd dc, 14/21 cycles, CALL C,nn */ { PC_OUT_INC, READ_Z, PC_OUT_INC, READ_W, CALL_COND, SP_OUT_DEC, PCH_DB, WRITE, SP_OUT_DEC, PCL_DB, WRITE, WZ_PC | END },
 	/* dd/fd dd, +4 cycles, DD prefix */ { 0 },
 	/* dd/fd de, 11 cycles, SBC n */ { PC_OUT_INC, READ, A_ACT, DB_TMP, ALU_SBC, ALU_A | END },
@@ -3219,14 +3218,17 @@ void z80lle_device::execute_run()
 			break;
 		case BC_OUT:
 			m_address_bus = m_bc.w.l;
+			m_address_bus_cb(m_address_bus);
 			m_icount -= 1;
 			break;
 		case DE_OUT:
 			m_address_bus = m_de.w.l;
+			m_address_bus_cb(m_address_bus);
 			m_icount -= 1;
 			break;
 		case HL_OUT:
 			m_address_bus = m_hl_index[m_hl_offset].w.l;
+			m_address_bus_cb(m_address_bus);
 			m_icount -= 1;
 			break;
 		case DEC_R16:
@@ -3314,16 +3316,19 @@ void z80lle_device::execute_run()
 			break;
 		case PC_OUT:
 			m_address_bus = m_pc.w.l;
+			m_address_bus_cb(m_address_bus);
 			m_icount -= 1;
 			break;
 		case PC_OUT_INC:
 			m_address_bus = m_pc.w.l;
+			m_address_bus_cb(m_address_bus);
 			m_icount -= 1;
 			m_pc.w.l++;
 			break;
 		case PC_OUT_INC_M1:
 			m_address_bus = m_pc.w.l;
 			// TODO: Assert M1
+			m_address_bus_cb(m_address_bus);
 			m_icount -= 1;
 			m_pc.w.l++;
 			break;
@@ -3378,6 +3383,15 @@ void z80lle_device::execute_run()
 			m_data_bus = m_io->read_byte(m_address_bus);
 			m_icount -= 3;
 			m_check_wait = true;
+			// TODO: Clear IORQ and RD signals
+			break;
+		case INPUT_A:
+			// TODO: Assert IORQ and RD signals
+			m_data_bus = m_io->read_byte(m_address_bus);
+			m_icount -= 3;
+			m_check_wait = true;
+			// TODO: Flags?
+			m_af.b.h = m_data_bus;
 			// TODO: Clear IORQ and RD signals
 			break;
 		case INPUT_REGD:
@@ -3725,6 +3739,7 @@ void z80lle_device::execute_run()
 			break;
 		case WZ_OUT:
 			m_address_bus = m_wz.w.l;
+			m_address_bus_cb(m_address_bus);
 			m_icount -= 1;
 			break;
 		case WZ_OUT_INC:
@@ -3841,6 +3856,7 @@ void z80lle_device::execute_run()
 			{
 				m_bc.b.h--;
 				m_address_bus = m_bc.w.l;
+				m_address_bus_cb(m_address_bus);
 				m_wz.w.l = m_bc.w.l - 1;
 				m_hl_index[m_hl_offset].w.l--;
 				m_af.b.l = SZ[m_bc.b.h];
@@ -3857,6 +3873,7 @@ void z80lle_device::execute_run()
 			{
 				m_bc.b.h--;
 				m_address_bus = m_bc.w.l;
+				m_address_bus_cb(m_address_bus);
 				m_wz.w.l = m_bc.w.l + 1;
 				m_hl_index[m_hl_offset].w.l++;
 				m_af.b.l = SZ[m_bc.b.h];

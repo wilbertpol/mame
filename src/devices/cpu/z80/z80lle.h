@@ -41,6 +41,7 @@ public:
 	auto irqack_cb() { return m_irqack_cb.bind(); }
 	auto refresh_cb() { return m_refresh_cb.bind(); }
 	auto halt_cb() { return m_halt_cb.bind(); }
+	auto address_bus_cb() { return m_address_bus_cb.bind(); }
 	void set_m1_wait_states(u8 m1_wait_states) { m_m1_wait_states = m1_wait_states; }
 
 protected:
@@ -81,6 +82,7 @@ protected:
 	devcb_write_line m_irqack_cb;
 	devcb_write8 m_refresh_cb;
 	devcb_write_line m_halt_cb;
+	devcb_write16 m_address_bus_cb;
 
 	// Sub instructions
 	enum {
@@ -157,6 +159,7 @@ protected:
 		IND,         // Set flags and update pointers and counter, takes no cycles
 		INI,         // Set flags and update pointers and counter, takes no cycles
 		INPUT,       // Read data bus from input, takes 3 cycles
+		INPUT_A,     // Read data bus from input, store in A, takes 3 cycles
 		INPUT_REGD,  // Read data bus from input, store in 8 bit register, takes 3 cycles
 		JR_COND,     // Check condition (Z, NZ, etc) for JR and perform jump, 5 cycles when branch taken
 		JP_COND,     // Check condition for JP and perform jump
