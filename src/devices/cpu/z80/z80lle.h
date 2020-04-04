@@ -41,6 +41,11 @@ public:
 	auto irqack_cb() { return m_irqack_cb.bind(); }
 	auto refresh_cb() { return m_refresh_cb.bind(); }
 	auto halt_cb() { return m_halt_cb.bind(); }
+	auto mreq_cb() { return m_mreq_cb.bind(); }
+	auto iorq_cb() { return m_iorq_cb.bind(); }
+	auto rd_cb() { return m_rd_cb.bind(); }
+	auto wr_cb() { return m_wr_cb.bind(); }
+	auto m1_cb() { return m_m1_cb.bind(); }
 	auto address_bus_cb() { return m_address_bus_cb.bind(); }
 	void set_m1_wait_states(u8 m1_wait_states) { m_m1_wait_states = m1_wait_states; }
 
@@ -52,10 +57,10 @@ protected:
 	virtual void device_reset() override;
 
 	// device_execute_interface overrides
-	virtual uint32_t execute_min_cycles() const override { return 2; }
-	virtual uint32_t execute_max_cycles() const override { return 16; }
-	virtual uint32_t execute_input_lines() const override { return 4; }
-	virtual uint32_t execute_default_irq_vector(int inputnum) const override { return 0xff; }
+	virtual u32 execute_min_cycles() const noexcept override { return 2; }
+	virtual u32 execute_max_cycles() const noexcept override { return 16; }
+	virtual u32 execute_input_lines() const noexcept override { return 4; }
+	virtual u32 execute_default_irq_vector(int inputnum) const noexcept override { return 0xff; }
 	virtual void execute_run() override;
 	virtual void execute_set_input(int inputnum, int state) override;
 
@@ -82,6 +87,11 @@ protected:
 	devcb_write_line m_irqack_cb;
 	devcb_write8 m_refresh_cb;
 	devcb_write_line m_halt_cb;
+	devcb_write_line m_mreq_cb;
+	devcb_write_line m_iorq_cb;
+	devcb_write_line m_rd_cb;
+	devcb_write_line m_wr_cb;
+	devcb_write_line m_m1_cb;
 	devcb_write16 m_address_bus_cb;
 
 	// Sub instructions
@@ -127,12 +137,15 @@ protected:
 		CPL,         // CPL
 		DAA,         // DAA
 		DB_A,        // Store data bus in A
-		DB_REGD,     // Store data bus in 8bit register (bits ..xxx...)
-		DB_REGD0,    // Store data bus in 8bit register (bits ..xxx...), not to index registers
+		DB_IR,       // Store data bus in IR
+		DB_R16H,     // Store data bus in high 8 bits of 16 bit register, takes no cycles
+		DB_R16L,     // Store data bus in low 8 bits of 16 bit register, takes no cycles
+		DB_REGD,     // Store data bus in 8bit register (bits ..xxx...), takes no cycles
+		DB_REGD0,    // Store data bus in 8bit register (bits ..xxx...), not to index registers, takes no cycles
 		DB_REGD_INPUT, // Store data bus in 8bit register (bits ..xxx...)
 		DB_TMP,      // Store data bus in TMP
-		DB_W,        // Store data bus in W
-		DB_Z,        // Store data bus in Z
+		DB_W,        // Store data bus in W, takes no cycles
+		DB_Z,        // Store data bus in Z, takes no cycles
 		DE_OUT,      // Put DE on address bus, takes 1 cycle
 		DE_WZ,       // Store DE in WZ
 		DEC_R8,      // Decrement an 8 bit register
@@ -158,9 +171,9 @@ protected:
 		INC_SP,      // Increment SP (for POP)
 		IND,         // Set flags and update pointers and counter, takes no cycles
 		INI,         // Set flags and update pointers and counter, takes no cycles
-		INPUT,       // Read data bus from input, takes 3 cycles
-		INPUT_A,     // Read data bus from input, store in A, takes 3 cycles
-		INPUT_REGD,  // Read data bus from input, store in 8 bit register, takes 3 cycles
+		INPUT_A,     // Read data bus from input, store in A, takes no cycles
+		INPUT_REGD,  // Read data bus from input, store in 8 bit register, takes no cycles
+		INPUT_S,     // Assert IORQ and RD signals for input cycle, takes 3 cycles
 		JR_COND,     // Check condition (Z, NZ, etc) for JR and perform jump, 5 cycles when branch taken
 		JP_COND,     // Check condition for JP and perform jump
 		L_DB,        // register L to data bus
@@ -175,7 +188,7 @@ protected:
 		NMI,         // NMI
 		OUTD,        // Set flags and update pointers and counter and prepare for I/O, takes 1 cycles
 		OUTI,        // Set flags and update pointers and counter and prepare for I/O, takes 1 cycles
-		OUTPUT,      // Write data bus to output, takes 3 cycles
+		OUTPUT_S,    // Assert IORQ an WR signals for output, takes 3 cycles
 		PC_OUT,      // Put PC on address bus, takes 1 cycle
 		PC_OUT_INC,  // Put PC on address bus, takes 1 cycle, increment PC
 		PC_OUT_INC_M1,  // Put PC on address bus, assert M1, takes 1 cycle, increment PC
@@ -183,18 +196,10 @@ protected:
 		PCL_DB,      // Put PC 8 low bits on data bus
 		R16H_DB,     // Put high 8 bits of 16 bit register on data bus
 		R16L_DB,     // Put low 8 bits of 16 bit register on data bus
-		READ,        // Read memory from m_address_bus, storing result in m_data_bus, takes 2 cycles
-		READ_A,      // Read memory from m_address_bus, storing result in A, takes 2 cycles
-		READ_OP,     // M1 - read memory, takes 1 cycle
-		READ_OP2,    // Opcode read as part of DD/FD CB dd xx instructions, takes 2 cycles
+		READ_OP_S,   // Assert MREQ and RD signals for opcodde read, takes 1 cycle
+		READ_OP2_S,  // Assert MREQ and signals for opcode read as part of DD/FD CB dd xx instructions, takes 2 cycles
 		READ_OP_IRQ, // Special opcode reading while taking an interrupt
-		READ_R16H,   // Read memory from m_address_bus, storing result in high 8 bits of 16 bit register, takes 2 cycles
-		READ_R16L,   // Read memory from m_address_bus, storing result in low 8 bits of 16 bit register, takes 2 cycles
-		READ_REGD,   // Read memory from m_address_bus, storing result in 8 bit register, takes 2 cycles
-		READ_REGD0,  // Read memory from m_address_bus, storing result in 8 bit register, takes 2 cycles (Also H and L for DD/FD prefixed instructions)
-		READ_TMP,    // Read memory from m_address_bus, storing result in temp, takes 2 cycles
-		READ_W,      // Read memory from m_address_bus, storing result in W, takes 2 cycles
-		READ_Z,      // Read memory from m_address_bus, storing result in Z, takes 2 cycles
+		READ_S,      // Assert MREQ and RD signals for read cycle, takes 2 cycles
 		REFRESH,     // Refresh RAM, takes 2 cycles
 		REGD_DB,     // 8 bit source register (bits ..xxx...) to data bus
 		REGD_TMP,    // 8 bit destination register (bits ..xxx...) to TMP
@@ -220,7 +225,8 @@ protected:
 		SP_OUT_DEC,  // Decrement SP and put SP on address bus, takes 1 cycle
 		SP_OUT_INC,  // Put SP on address bus and increment, takes 1 cycle
 		TMP_REG,     // TMP to 8 bit register
-		WRITE,       // Write data bus to memory, takes 2 cycles
+		WRITE_S1,    // Assert MREQ signal for write, takes 1 cycle
+		WRITE_S2,    // Assert WR signal for write, takes 1 cycle
 		WZ_HL,       // Store contents of WZ in HL
 		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
 		WZ_OUT_INC,  // Put WZ on address bus and increment WZ, takes 1 cycle
@@ -337,6 +343,12 @@ protected:
 	bool              m_after_ei;           // are we in the EI shadow?
 	bool              m_after_ldair;        // same, but for LD A,I or LD A,R
 	int               m_icount;
+	bool              m_mreq;               // MREQ output line state (active low)
+	bool              m_iorq;               // IORQ output line state (active low)
+	bool              m_rd;                 // RD output line state (active low)
+	bool              m_wr;                 // WR output line state (active low)
+	bool              m_m1;                 // M1 output line state (active low)
+	bool              m_opcode_read;        // Should we read from opcode_cache
 
 	// Temporary state for the debugger
 	u8                m_rtemp;
@@ -381,6 +393,7 @@ protected:
 	void alu_xor();
 	void bc_wz();
 	void db_a();
+	void db_ir();
 	void db_r16h();
 	void db_r16l();
 	void db_regd();
@@ -393,11 +406,24 @@ protected:
 	void dec_sp();
 	void inc_sp();
 	void read();
+	void read_op_s();
+	void read_s();
 	void regd_tmp();
 	void regs_tmp();
 	void sp_out();
 	void tmp_reg();
 	void wz_out_inc();
+
+	inline void set_m1() { m_m1 = true; m_m1_cb(!m_m1); }
+	inline void clear_m1() { m_m1 = false; m_m1_cb(!m_m1); }
+	inline void set_mreq() { m_mreq = true; m_mreq_cb(!m_mreq); }
+	inline void clear_mreq() { m_mreq = false; m_mreq_cb(!m_mreq); }
+	inline void set_iorq() { m_iorq = true; m_iorq_cb(!m_iorq); }
+	inline void clear_iorq() { m_iorq = false; m_iorq_cb(!m_iorq); }
+	inline void set_rd() { m_rd = true; m_rd_cb(!m_rd); }
+	inline void clear_rd() { m_rd = false; m_rd_cb(!m_rd); }
+	inline void set_wr() { m_wr = true; m_wr_cb(!m_wr); }
+	inline void clear_wr() { m_wr = false; m_wr_cb(!m_wr); }
 };
 
 DECLARE_DEVICE_TYPE(Z80LLE, z80lle_device)
