@@ -10,6 +10,7 @@
  *
  *
  *   TODO:
+ *   - Split the RFSH and MREQ cycles of REFRESH
  *   - Double check WAIT, WAIT line is sampled on falling edge of T2
  *   - Implement the 2 start up cycles after a RESET
  *   - RETI: When should the daisy chain be notified?
@@ -2900,6 +2901,7 @@ void z80lle_device::device_start()
 	m_rd_cb.resolve_safe();
 	m_wr_cb.resolve_safe();
 	m_m1_cb.resolve_safe();
+	m_address_bus_cb.resolve_safe();
 }
 
 
@@ -3193,6 +3195,9 @@ void z80lle_device::execute_run()
 		case DB_R16H:
 			db_r16h();
 			break;
+		case DB_R16L:
+			db_r16l();
+			break;
 		case DB_W:
 			db_w();
 			break;
@@ -3402,6 +3407,7 @@ void z80lle_device::execute_run()
 		case PC_OUT:
 			m_address_bus = m_pc.w.l;
 			m_address_bus_cb(m_address_bus);
+			set_m1();
 			m_icount -= 1;
 			break;
 		case PC_OUT_INC:
@@ -4216,7 +4222,7 @@ z80lle_device::z80lle_device(const machine_config &mconfig, device_type type, co
 	: cpu_device(mconfig, type, tag, owner, clock)
 	, z80_daisy_chain_interface(mconfig, *this)
 	, m_program_config("program", ENDIANNESS_LITTLE, 8, 16, 0)
-	, m_decrypted_opcodes_config("decrypted_opcodes", ENDIANNESS_LITTLE, 8, 16, 0)
+	, m_opcodes_config("opcodes", ENDIANNESS_LITTLE, 8, 16, 0)
 	, m_io_config("io", ENDIANNESS_LITTLE, 8, 16, 0)
 	, m_irqack_cb(*this)
 	, m_refresh_cb(*this)
@@ -4236,7 +4242,7 @@ device_memory_interface::space_config_vector z80lle_device::memory_space_config(
 	if(has_configured_map(AS_OPCODES))
 		return space_config_vector {
 			std::make_pair(AS_PROGRAM, &m_program_config),
-			std::make_pair(AS_OPCODES, &m_decrypted_opcodes_config),
+			std::make_pair(AS_OPCODES, &m_opcodes_config),
 			std::make_pair(AS_IO,      &m_io_config)
 		};
 	else

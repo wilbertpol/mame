@@ -77,7 +77,7 @@ protected:
 
 	// address spaces
 	const address_space_config m_program_config;
-	const address_space_config m_decrypted_opcodes_config;
+	const address_space_config m_opcodes_config;
 	const address_space_config m_io_config;
 	address_space *m_program;
 	address_space *m_opcodes;
