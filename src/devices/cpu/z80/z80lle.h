@@ -38,6 +38,10 @@ class z80lle_device : public cpu_device, public z80_daisy_chain_interface
 public:
 	z80lle_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
 
+	template <typename... T> void set_memory_map(T &&... args) { set_addrmap(AS_PROGRAM, std::forward<T>(args)...); }
+	template <typename... T> void set_m1_map(T &&... args) { set_addrmap(AS_OPCODES, std::forward<T>(args)...); }
+	template <typename... T> void set_io_map(T &&... args) { set_addrmap(AS_IO, std::forward<T>(args)...); }
+	void set_m1_wait_states(u8 m1_wait_states) { m_m1_wait_states = m1_wait_states; }
 	auto irqack_cb() { return m_irqack_cb.bind(); }
 	auto refresh_cb() { return m_refresh_cb.bind(); }
 	auto halt_cb() { return m_halt_cb.bind(); }
@@ -47,7 +51,6 @@ public:
 	auto wr_cb() { return m_wr_cb.bind(); }
 	auto m1_cb() { return m_m1_cb.bind(); }
 	auto address_bus_cb() { return m_address_bus_cb.bind(); }
-	void set_m1_wait_states(u8 m1_wait_states) { m_m1_wait_states = m1_wait_states; }
 
 protected:
 	z80lle_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock);
@@ -97,37 +100,12 @@ protected:
 	// Sub instructions
 	enum {
 		UNKNOWN=0,
-		A_ACT,       // register A to ACT input for ALU
 		A_DB,        // register A to data bus, also writes to W always?
 		A_W,         // register A to W
 		ADC16,       // 16bit addition with carry, takes 7 cycles
 		ADD16,       // 16bit addition, takes 7 cycles
-		ALU_A,       // ALU output to A
-		ALU_DB,      // ALU output to data bus
-		ALU_ADC,     // ALU operation: ADC
-		ALU_ADD,     // ALU operation: ADD
-		ALU_AND,     // ALU operation: AND
-		ALU_BIT,     // ALU operation: BIT
-		ALU_RES,     // ALU operation: RES
-		ALU_SET,     // ALU operation: SET
-		ALU_CP,      // ALU operation: CP
-		ALU_DEC,     // ALU operation: DEC (decrements TMP input)
-		ALU_INC,     // ALU operation: INC (increments TMP input)
-		ALU_OR,      // ALU operation: OR
 		ALU_REGS,    // ALU output to source register (bits .....xxx)
-		ALU_REGS0,   // ALU output to source register (bits .....xxx), not to index registers
 		ALU_REGD,    // ALU output to destination register (bits ..xxx...)
-		ALU_RL,      // ALU operation: RL
-		ALU_RLC,     // ALU operation: RLC
-		ALU_RR,      // ALU operation: RR
-		ALU_RRC,     // ALU operation: RRC
-		ALU_SBC,     // ALU operation: SBC
-		ALU_SLA,     // ALU operation: SLA
-		ALU_SLL,     // ALU operation: SLL
-		ALU_SRA,     // ALU operation: SRA
-		ALU_SRL,     // ALU operation: SRL
-		ALU_SUB,     // ALU operation: SUB
-		ALU_XOR,     // ALU operation: XOR
 		BC_OUT,      // Put BC on address bus, takes 1 cycle
 		BC_WZ,       // Store BC in WZ
 		CALL_COND,   // Check condition for CALL, takes 1 cycle when condition is true
@@ -137,7 +115,6 @@ protected:
 		CPL,         // CPL
 		DAA,         // DAA
 		DB_A,        // Store data bus in A
-		DB_IR,       // Store data bus in IR
 		DB_R16H,     // Store data bus in high 8 bits of 16 bit register, takes no cycles
 		DB_R16L,     // Store data bus in low 8 bits of 16 bit register, takes no cycles
 		DB_REGD,     // Store data bus in 8bit register (bits ..xxx...), takes no cycles
@@ -225,8 +202,7 @@ protected:
 		SP_OUT_DEC,  // Decrement SP and put SP on address bus, takes 1 cycle
 		SP_OUT_INC,  // Put SP on address bus and increment, takes 1 cycle
 		TMP_REG,     // TMP to 8 bit register
-		WRITE_S1,    // Assert MREQ signal for write, takes 1 cycle
-		WRITE_S2,    // Assert WR signal for write, takes 1 cycle
+		WRITE_S,     // Assert MREQ and WR signals for write, takes 2 cycle
 		WZ_HL,       // Store contents of WZ in HL
 		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
 		WZ_OUT_INC,  // Put WZ on address bus and increment WZ, takes 1 cycle
@@ -238,34 +214,57 @@ protected:
 		ZERO_DB,     // put all zeroes on the data bus
 
 		// Testing optimizations
-		ADD_R8, // A_ACT, REGS_TMP, ALU_ADD, ALU_A
-		ADD_TMP, // A_ACT, ALU_ADD, ALU_A
-		ADC_R8, // A_ACT, REGS_TMP, ALU_ADC, ALU_A
-		ADC_TMP, // A_ACT, ALU_ADC, ALU_A
-		SUB_R8, // A_ACT, REGS_TMP, ALU_SUB, ALU_A
-		SUB_TMP, // A_ACT, ALU_SUB, ALU_A
-		SBC_R8, // A_ACT, REGS_TMP, ALU_SBC, ALU_A
-		SBC_TMP, // A_ACT, ALU_SBC, ALU_A
-		AND_R8, // A_ACT, REGS_TMP, ALU_AND, ALU_A
-		AND_TMP, // A_ACT, ALU_AND, ALU_A
-		XOR_R8, // A_ACT, REGS_TMP, ALU_XOR, ALU_A
-		XOR_TMP, // A_ACT, ALU_XOR, ALU_A
-		OR_R8, // A_ACT, REGS_TMP, ALU_OR, ALU_A
-		OR_TMP, // A_ACT, ALU_OR, ALU_A
-		CP_R8, // A_ACT, REGS_TMP, ALU_CP
-		CP_TMP, // A_ACT, ALU_CP
-		BIT_R8, // REGS_TMP, ALU_BIT
-		REGS_TMP_REG, // REGS_TMP, TMP_REG
-		RES_R8, // REGS_TMP, ALU_RES, ALU_REGS
-		RL_R8, // REGS_TMP, ALU_RL, ALU_REGS
-		RLC_R8, // REGS_TMP, ALU_RLC, ALU_REGS
-		RR_R8, // REGS_TMP, ALU_RR, ALU_REGS
-		RRC_R8, // REGS_TMP, ALU_RRC, ALU_REGS
-		SET_R8, // REGS_TMP, ALU_SET, ALU_REGS
-		SLA_R8, // REGS_TMP, ALU_SLA, ALU_REGS
-		SLL_R8, // REGS_TMP, ALU_SLL, ALU_REGS
-		SRA_R8, // REGS_TMP, ALU_SRA, ALU_REGS
-		SRL_R8, // REGS_TMP, ALU_SRL, ALU_REGS
+		ADD_DB, // Perform ADD operation on A and data bus
+		ADD_R8, // Perform ADD operation on A and 8 bit register
+		ADC_DB, // Perform ADC operation on A and data bus
+		ADC_R8, // Perform ADC operation on A and 8 bit register
+		SUB_DB, // Perform SUB operation on A and data bus
+		SUB_R8, // Perform SUB operation on A and 8 bit register
+		SBC_DB, // Perform SBC operation on A and data bus
+		SBC_R8, // Perform SBC operation on A and 8 bit register
+		AND_DB, // Perform AND operation on A and data bus
+		AND_R8, // Perform AND operation on A and 8 bit register
+		XOR_DB, // Perform XOR operation on A and data bus
+		XOR_R8, // Perform XOR operation on A an 8 bit register
+		OR_DB,  // Perform OR operation on A and data bus
+		OR_R8,  // Perform OR operation on A and 8 bit register
+		CP_DB,  // Perform CP operation on A and data bus
+		CP_R8,  // Perform CP operation on A and 8 bit register
+		BIT_DB, // Perform BIT operation on data bus, takes 1 cycle
+		BIT_R8, // Perform BIT operation on 8 bit register
+		REGS_TMP_REG,
+		RES_DB, // Perform RES operation on data bus, takes 2 cycles
+		RES_DB_REGS0, // Perform RES operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		RES_R8, // Perform RES operation on 8 bit register
+		RL_DB,  // Perform RL operation on data bus, takes 2 cycles
+		RL_DB_REGS0,  // Perform RL operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		RL_R8,  // Perform RL operation on 8 bit register
+		RLC_DB, // Perform RLC operation on data bus, takes 2 cycles
+		RLC_DB_REGS0, // Perform RLC operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		RLC_R8, // Perform RLC operation on 8 bit register
+		RR_DB,  // Perform RR operation on data bus, takes 2 cycles
+		RR_DB_REGS0,  // Perform RR operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		RR_R8,  // Perform RR operation on 8 bit register
+		RRC_DB, // Perform RRC operation on data bus, takes 2 cycles
+		RRC_DB_REGS0, // Perform RRC operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		RRC_R8, // Perform RRC operation on 8 bit register
+		SET_DB, // Perform SET operation on data bus, takes 2 cycles
+		SET_DB_REGS0, // Perform SET operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		SET_R8, // Perform SET operation on 8 bit register
+		SLA_DB, // Perform SLA operation on data bus, takes 2 cycles
+		SLA_DB_REGS0, // Perform SLA operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		SLA_R8, // Perform SLA operation on 8 bit register
+		SLL_DB, // Perform SLL operation on data bus, takes 2 cycles
+		SLL_DB_REGS0, // Perform SLL operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		SLL_R8, // Perform SLL operation on 8 bit register
+		SRA_DB, // Perform SRA operation on data bus, takes 2 cycles
+		SRA_DB_REGS0, // Perform SRA operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		SRA_R8, // Perform SRA operation on 8 bit register
+		SRL_DB, // Perform SRL operation on data bus, takes 2 cycles
+		SRL_DB_REGS0, // Perform SRL operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		SRL_R8, // Perform SRL operation on 8 bit register
+		DEC_DB, // Perforn DEC operation on data bus, takes 2 cycles
+		INC_DB, // Perform INC operation on data bus, takes 2 cycles
 	};
 
 	// Flag result lookup tables
@@ -311,7 +310,6 @@ protected:
 	u16               m_instruction;
 	u8                m_m1_wait_states; // Wait states during an M1 cycle (default 0)
 	u8                m_ir;
-	u8                m_act;    // ACT input into ALU
 	u8                m_tmp;    // TMP input into ALU
 	u8                m_alu;    // ALU output
 	PAIR              m_prvpc;
@@ -366,8 +364,6 @@ protected:
 	}
 	void leave_halt();
 	void check_interrupts();
-	void a_act();
-	void alu_a();
 	void alu_adc();
 	void alu_add();
 	void alu_and();
@@ -378,6 +374,7 @@ protected:
 	void alu_or();
 	void alu_regd();
 	void alu_regs();
+	void alu_regs0();
 	void alu_res();
 	void alu_rl();
 	void alu_rlc();
