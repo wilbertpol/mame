@@ -123,7 +123,6 @@ protected:
 		DB_TMP,      // Store data bus in TMP
 		DB_W,        // Store data bus in W, takes no cycles
 		DB_Z,        // Store data bus in Z, takes no cycles
-		DE_OUT,      // Put DE on address bus, takes 1 cycle
 		DE_WZ,       // Store DE in WZ
 		DEC_R8,      // Decrement an 8 bit register
 		DEC_R16,     // Decrement a 16 bit register, takes 2 cycles
@@ -139,7 +138,6 @@ protected:
 		EXX,         // Swap BC, DE, HL and BC2, DE2, HL2
 		HALT,        // HALT
 		H_DB,        // register H to data bus
-		HL_OUT,      // Put HL on address bus, takes 1 cycle
 		HL_PC,       // Store HL in PC
 		HL_WZ,       // Store HL in WZ
 		IM,          // IM
@@ -173,11 +171,18 @@ protected:
 		PCL_DB,      // Put PC 8 low bits on data bus
 		R16H_DB,     // Put high 8 bits of 16 bit register on data bus
 		R16L_DB,     // Put low 8 bits of 16 bit register on data bus
+		READ_OP1_S,  // Put PC on address bus, increment PC, assert M1, MREQ, and RD signals, takes 2 cycles
 		READ_OP_S,   // Assert MREQ and RD signals for opcodde read, takes 1 cycle
 		READ_OP2_S,  // Assert MREQ and signals for opcode read as part of DD/FD CB dd xx instructions, takes 2 cycles
 		READ_OP_IRQ, // Special opcode reading while taking an interrupt
 		READ_S,      // Assert MREQ and RD signals for read cycle, takes 2 cycles
+		READ_S_HL,   // Put HL on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
+		READ_S_PC,   // Put PC on address bus, increment PC, assert MREQ and RD signals for read cycle, takes 3 cycles
+		READ_S_SP_INC,   // Put SP on address bus, increment SP, assert MREQ and RD signals for read cycle, takes 3 cycles
+		READ_S_WZ,   // Put WZ on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
+		READ_S_WZ_INC, // Put WZ on address bus, increment WZ, assert MREQ and RD signals for read cycle, takes 3 cycles
 		REFRESH,     // Refresh RAM, takes 2 cycles
+		REFRESH_DECODE, // Refresh RAM and decode instruction, takes 2 cycles
 		REGD_DB,     // 8 bit source register (bits ..xxx...) to data bus
 		REGD_TMP,    // 8 bit destination register (bits ..xxx...) to TMP
 		REGS_DB,     // 8 bit source register (bits .....xxx) to data bus
@@ -199,12 +204,13 @@ protected:
 		SBC16,       // 16bit subtraction with carry, takes 7 cycles
 		SCF,         // SCF
 		SP_OUT,      // Put SP on address bus, takes 1 cycle
-		SP_OUT_DEC,  // Decrement SP and put SP on address bus, takes 1 cycle
-		SP_OUT_INC,  // Put SP on address bus and increment, takes 1 cycle
 		TMP_REG,     // TMP to 8 bit register
-		WRITE_S,     // Assert MREQ and WR signals for write, takes 2 cycle
+		WRITE_S,     // Assert MREQ and WR signals for write, takes 2 cycles
+		WRITE_S_DE,  // Put DE on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		WRITE_S_HL,  // Put HL on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		WRITE_S_SP_DEC, // Decrement SP, put SP on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		WRITE_S_WZ,  // Put WZ on address bus, assert MREQ and WR signals for write, takes 3 cycles
 		WZ_HL,       // Store contents of WZ in HL
-		WZ_OUT,      // Put WZ on address bus, takes 1 cycle
 		WZ_OUT_INC,  // Put WZ on address bus and increment WZ, takes 1 cycle
 		BC_WZ_OUT_INC,  // Store BC in WZ, put WZ on address bus and increment WZ, takes 1 cycle
 		DE_WZ_OUT_INC,  // Store DE in WZ, put WZ on address bus and increment WZ, takes 1 cycle
@@ -364,6 +370,11 @@ protected:
 	}
 	void leave_halt();
 	void check_interrupts();
+	void a_db();
+	void a_w();
+	void adc16();
+	void add16();
+	void sbc16();
 	void alu_adc();
 	void alu_add();
 	void alu_and();
@@ -402,6 +413,10 @@ protected:
 	void de_wz();
 	void dec_sp();
 	void inc_sp();
+	void bc_out();
+	void de_out();
+	void hl_out();
+	void pc_out_inc();
 	void read();
 	void read_op_s();
 	void read_s();
@@ -409,7 +424,10 @@ protected:
 	void regs_tmp();
 	void sp_out();
 	void tmp_reg();
+	void write_s();
+	void wz_out();
 	void wz_out_inc();
+	void decode();
 
 	inline void set_m1() { m_m1 = true; m_m1_cb(!m_m1); }
 	inline void clear_m1() { m_m1 = false; m_m1_cb(!m_m1); }
