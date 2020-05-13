@@ -435,17 +435,17 @@ void z80lle_device::setup_instructions() {
 		{ [this] () { ccf(); } },
 
 		// 40, 4 cycles, LD B,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_bc.b.h = m_bc.b.h; } },
 		// 41, 4 cycles, LD B,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_bc.b.h = m_bc.b.l; } },
 		// 42, 4 cycles, LD B,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_bc.b.h = m_de.b.h; } },
 		// 43, 4 cycles, LD B,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_bc.b.h = m_de.b.l; } },
 		// 44, 4 cycles, LD B,H
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_bc.b.h = m_hl_index[m_hl_offset].b.h; } },
 		// 45, 4 cycles, LD B,L
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_bc.b.h = m_hl_index[m_hl_offset].b.l; } },
 		// 46, 7 cycles, LD B,(HL)
 		// 5 T1 AB:hhll DB:--
 		// 6 T2 AB:hhll DB:xx MREQ RD
@@ -455,104 +455,105 @@ void z80lle_device::setup_instructions() {
 			[this] () { m_bc.b.h = m_data_bus; }
 		},
 		// 47, 4 cycles, LD B,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_bc.b.h = m_af.b.h; } },
 		// 48, 4 cycles, LD C,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_bc.b.l = m_bc.b.h; } },
 		// 49, 4 cycles, LD C,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_bc.b.l = m_bc.b.l; } },
 		// 4a, 4 cycles, LD C,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_bc.b.l = m_de.b.h; } },
 		// 4b, 4 cycles, LD C,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_bc.b.l = m_de.b.l; } },
 		// 4c, 4 cycles, LD C,H
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_bc.b.l = m_hl_index[m_hl_offset].b.h; } },
 		// 4d, 4 cycles, LD C,L
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_bc.b.l = m_hl_index[m_hl_offset].b.l; } },
 		// 4e, 7 cycles, LD C,(HL)
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
 			[this] () { m_bc.b.l = m_data_bus; }
 		},
 		// 4f, 4 cycles, LD C,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_bc.b.l = m_af.b.h; } },
 
 		// 50, 4 cycles, LD D,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_de.b.h = m_bc.b.h; } },
 		// 51, 4 cycles, LD D,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_de.b.h = m_bc.b.l; } },
 		// 52, 4 cycles, LD D,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_de.b.h = m_de.b.h; } },
 		// 53, 4 cycles, LD D,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_de.b.h = m_de.b.l; } },
 		// 54, 4 cycles, LD D,H
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_de.b.h = m_hl_index[m_hl_offset].b.h; } },
 		// 55, 4 cycles, LD D,L
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_de.b.h = m_hl_index[m_hl_offset].b.l; } },
 		// 56, 7 cycles, LD D,(HL)
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
 			[this] () { m_de.b.h = m_data_bus; }
 		},
 		// 57, 4 cycles, LD D,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_de.b.h = m_af.b.h; } },
 		// 58, 4 cycles, LD E,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_de.b.l = m_bc.b.h; } },
 		// 59, 4 cycles, LD E,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_de.b.l = m_bc.b.l; } },
 		// 5a, 4 cycles, LD E,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_de.b.l = m_de.b.h; } },
 		// 5b, 4 cycles, LD E,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_de.b.l = m_de.b.l; } },
 		// 5c, 4 cycles, LD E,H
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_de.b.l = m_hl_index[m_hl_offset].b.h; } },
 		// 5d, 4 cycles, LD E,L
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_de.b.l = m_hl_index[m_hl_offset].b.l; } },
 		// 5e, 7 cycles, LD E,(HL)
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
 			[this] () { m_de.b.l = m_data_bus; }
 		},
 		// 5f, 4 cycles, LD E,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_de.b.l = m_af.b.h; } },
 
 		// 60, 4 cycles, LD H,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_bc.b.h; } },
 		// 61, 4 cycles, LD H,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_bc.b.l; } },
 		// 62, 4 cycles, LD H,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_de.b.h; } },
 		// 63, 4 cycles, LD H,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_de.b.l; } },
 		// 64, 4 cycles, LD H,H
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_hl_index[m_hl_offset].b.h; } },
 		// 65, 4 cycles, LD H,L
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_hl_index[m_hl_offset].b.l; } },
 		// 66, 7 cycles, LD H,(HL)
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
 			[this] () { m_hl_index[m_hl_offset].b.h = m_data_bus; }
 		},
 		// 67, 4 cycles, LD H,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_af.b.h; } },
+
 		// 68, 4 cycles, LD L,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_bc.b.h; } },
 		// 69, 4 cycles, LD L,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_bc.b.l; } },
 		// 6a, 4 cycles, LD L,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_de.b.h; } },
 		// 6b, 4 cycles, LD L,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_de.b.l; } },
 		// 6c, 4 cycles, LD L,H
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_hl_index[m_hl_offset].b.h; } },
 		// 6d, 4 cycles, LD L,L
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_hl_index[m_hl_offset].b.l; } },
 		// 6e, 7 cycles, LD L,(HL)
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
 			[this] () { m_hl_index[m_hl_offset].b.l = m_data_bus; }
 		},
 		// 6f, 4 cycles, LD L,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_af.b.h; } },
 
 		// 70, 7 cycles, LD (HL),B
 		// 5 T1 AB:hhll DB:--
@@ -591,24 +592,24 @@ void z80lle_device::setup_instructions() {
 		},
 
 		// 78, 4 cycles, LD A,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_af.b.h = m_bc.b.h; } },
 		// 79, 4 cycles, LD A,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_af.b.h = m_bc.b.l; } },
 		// 7a, 4 cycles, LD A,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_af.b.h = m_de.b.h; } },
 		// 7b, 4 cycles, LD A,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_af.b.h = m_de.b.l; } },
 		// 7c, 4 cycles, LD A,H
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_af.b.h = m_hl_index[m_hl_offset].b.h; } },
 		// 7d, 4 cycles, LD A,L
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_af.b.h = m_hl_index[m_hl_offset].b.l; } },
 		// 7e, 7 cycles, LD A,(HL)
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
 			[this] () { m_af.b.h = m_data_bus; }
 		},
 		// 7f, 4 cycles, LD A,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_af.b.h = m_af.b.h; } },
 
 		// 80, 4 cycles, ADD B
 		{ [this] () { alu_add(m_bc.b.h); } },
@@ -2339,7 +2340,7 @@ void z80lle_device::setup_instructions() {
 		// 16 T5 AB:ddee DB:--
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
-			[this] () { de_out(); write_s(m_data_bus); },
+			[this] () { write_s(m_de.w.l, m_data_bus); },
 			[this] () { ldi(); }
 		},
 		// ed a1, 16 cycles, CPI
@@ -2399,7 +2400,7 @@ void z80lle_device::setup_instructions() {
 		// 16 T5 AB:ddee DB:--
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
-			[this] () { de_out(); write_s(m_data_bus); },
+			[this] () { write_s(m_de.w.l, m_data_bus); },
 			[this] () { ldd(); }
 		},
 		// ed a9, 16 cycles, CPD
@@ -2465,7 +2466,7 @@ void z80lle_device::setup_instructions() {
 		// 21 T5 AB:ddee DB:--
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
-			[this] () { de_out(); write_s(m_data_bus); },
+			[this] () { write_s(m_de.w.l, m_data_bus); },
 			[this] () { ldi(); repeat(); }
 		},
 		//* ed b1, 16/21 cycles, CPIR
@@ -2550,7 +2551,7 @@ void z80lle_device::setup_instructions() {
 		// 21 T5 AB:ddee DB:--
 		{
 			[this] () { read_s(m_hl_index[m_hl_offset].w.l); },
-			[this] () { de_out(); write_s(m_data_bus); },
+			[this] () { write_s(m_de.w.l, m_data_bus); },
 			[this] () { ldd(); repeat(); }
 		},
 		// ed b9, 16/21 cycles, CPDR
@@ -2975,17 +2976,17 @@ void z80lle_device::setup_instructions() {
 		{ [this] () { ccf(); } },
 
 		// dd/fd 40, 8 cycles, LD B,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_bc.b.h = m_bc.b.h; } },
 		// dd/fd 41, 8 cycles, LD B,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_bc.b.h = m_bc.b.l; } },
 		// dd/fd 42, 8 cycles, LD B,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_bc.b.h = m_de.b.h; } },
 		// dd/fd 43, 8 cycles, LD B,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_bc.b.h = m_de.b.l; } },
 		// dd/fd 44, 8 cycles, LD B,IXh/IYh
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_bc.b.h = m_hl_index[m_hl_offset].b.h; } },
 		// dd/fd 45, 8 cycles, LD B,IXl/IYl
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_bc.b.h = m_hl_index[m_hl_offset].b.l; } },
 		// dd/fd 46, 19 cycles, LD B,(IX/IY+dd)
 		//  9 T1 AB:1236 DB:--
 		// 10 T2 AB:1236 DB:dd MREQ RD
@@ -3004,20 +3005,20 @@ void z80lle_device::setup_instructions() {
 			[this] () { m_bc.b.h = m_data_bus; }
 		},
 		// dd/fd 47, 8 cycles, LD B,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_bc.b.h = m_af.b.h; } },
 
 		// dd/fd 48, 8 cycles, LD C,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_bc.b.l = m_bc.b.h; } },
 		// dd/fd 49, 8 cycles, LD C,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_bc.b.l = m_bc.b.l; } },
 		// dd/fd 4a, 8 cycles, LD C,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_bc.b.l = m_de.b.h; } },
 		// dd/fd 4b, 8 cycles, LD C,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_bc.b.l = m_de.b.l; } },
 		// dd/fd 4c, 8 cycles, LD C,IXh/IYh
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_bc.b.l = m_hl_index[m_hl_offset].b.h; } },
 		// dd/fd 4d, 8 cycles, LD C,IXl/IYl
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_bc.b.l = m_hl_index[m_hl_offset].b.l; } },
 		// dd/fd 4e, 19 cycles, LD C,(IX/IY+dd)
 		{
 			[this] () { read_s(m_pc.w.l++); },
@@ -3025,20 +3026,20 @@ void z80lle_device::setup_instructions() {
 			[this] () { m_bc.b.l = m_data_bus; }
 		},
 		// dd/fd 4f, 8 cycles, LD C,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_bc.b.l = m_af.b.h; } },
 
 		// dd/fd 50, 8 cycles, LD D,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_de.b.h = m_bc.b.h; } },
 		// dd/fd 51, 8 cycles, LD D,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_de.b.h = m_bc.b.l; } },
 		// dd/fd 52, 8 cycles, LD D,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_de.b.h = m_de.b.h; } },
 		// dd/fd 53, 8 cycles, LD D,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_de.b.h = m_de.b.l; } },
 		// dd/fd 54, 8 cycles, LD D,IXh/IYh
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_de.b.h = m_hl_index[m_hl_offset].b.h; } },
 		// dd/fd 55, 8 cycles, LD D,IXl/IYl
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_de.b.h = m_hl_index[m_hl_offset].b.l; } },
 		// dd/fd 56, 19 cycles, LD D,(IX/IY+dd)
 		{
 			[this] () { read_s(m_pc.w.l++); },
@@ -3046,20 +3047,20 @@ void z80lle_device::setup_instructions() {
 			[this] () { m_de.b.h = m_data_bus; }
 		},
 		// dd/fd 57, 8 cycles, LD D,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_de.b.h = m_af.b.h; } },
 
 		// dd/fd 58, 8 cycles, LD E,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_de.b.l = m_bc.b.h; } },
 		// dd/fd 59, 8 cycles, LD E,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_de.b.l = m_bc.b.l; } },
 		// dd/fd 5a, 8 cycles, LD E,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_de.b.l = m_de.b.h; } },
 		// dd/fd 5b, 8 cycles, LD E,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_de.b.l = m_de.b.l; } },
 		// dd/fd 5c, 8 cycles, LD E,IXh/IYh
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_de.b.l = m_hl_index[m_hl_offset].b.h; } },
 		// dd/fd 5d, 8 cycles, LD E,IXl/IYl
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_de.b.l = m_hl_index[m_hl_offset].b.l; } },
 		// dd/fd 5e, 19 cycles, LD E,(IX/IY+dd)
 		{
 			[this] () { read_s(m_pc.w.l++); },
@@ -3067,20 +3068,20 @@ void z80lle_device::setup_instructions() {
 			[this] () { m_de.b.l = m_data_bus; }
 		},
 		// dd/fd 5f, 8 cycles, LD E,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_de.b.l = m_af.b.h; } },
 
 		// dd/fd 60, 8 cycles, LD IXh/IYh,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_bc.b.h; } },
 		// dd/fd 61, 8 cycles, LD IXh/IYh,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_bc.b.l; } },
 		// dd/fd 62, 8 cycles, LD IXh/IYh,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_de.b.h; } },
 		// dd/fd 63, 8 cycles, LD IXh/IYh,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_de.b.l; } },
 		// dd/fd 64, 8 cycles, LD IXh/IYh,IXh/IYh
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_hl_index[m_hl_offset].b.h; } },
 		// dd/fd 65, 8 cycles, LD IXh/IYh,IXl/IYl
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_hl_index[m_hl_offset].b.l; } },
 		// dd/fd 66, 19 cycles, LD H,(IX/IY+dd)
 		{
 			[this] () { read_s(m_pc.w.l++); },
@@ -3088,20 +3089,20 @@ void z80lle_device::setup_instructions() {
 			[this] () { m_hl_index[HL_OFFSET].b.h = m_data_bus; }
 		},
 		// dd/fd 67, 8 cycles, LD IXh/IYh,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.h = m_af.b.h; } },
 
 		// dd/fd 68, 8 cycles, LD IXl/IYl,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_bc.b.h; } },
 		// dd/fd 69, 8 cycles, LD IXl/IYl,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_bc.b.l; } },
 		// dd/fd 6a, 8 cycles, LD IXl/IYl,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_de.b.h; } },
 		// dd/fd 6b, 8 cycles, LD IXl/IYl,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_de.b.l; } },
 		// dd/fd 6c, 8 cycles, LD IXl/IYl,IXh/IYh
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_hl_index[m_hl_offset].b.h; } },
 		// dd/fd 6d, 8 cycles, LD IXl/IYl,IXl/IYl
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_hl_index[m_hl_offset].b.l; } },
 		// dd/fd 6e, 19 cycles, LD L,(IX/IY+dd)
 		{
 			[this] () { read_s(m_pc.w.l++); },
@@ -3109,7 +3110,7 @@ void z80lle_device::setup_instructions() {
 			[this] () { m_hl_index[HL_OFFSET].b.l = m_data_bus; }
 		},
 		// dd/fd 6f, 8 cycles, LD IXl/IYl,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_hl_index[m_hl_offset].b.l = m_af.b.h; } },
 
 		// dd/fd 70, 19 cycles, LD (IX/IY+dd),B
 		//  9 T1 AB:1236 DB:--
@@ -3163,17 +3164,17 @@ void z80lle_device::setup_instructions() {
 		},
 
 		// dd/fd 78, 8 cycles, LD A,B
-		{ [this] () { tmp_reg(m_bc.b.h); } },
+		{ [this] () { m_af.b.h = m_bc.b.h; } },
 		// dd/fd 79, 8 cycles, LD A,C
-		{ [this] () { tmp_reg(m_bc.b.l); } },
+		{ [this] () { m_af.b.h = m_bc.b.l; } },
 		// dd/fd 7a, 8 cycles, LD A,D
-		{ [this] () { tmp_reg(m_de.b.h); } },
+		{ [this] () { m_af.b.h = m_de.b.h; } },
 		// dd/fd 7b, 8 cycles, LD A,E
-		{ [this] () { tmp_reg(m_de.b.l); } },
+		{ [this] () { m_af.b.h = m_de.b.l; } },
 		// dd/fd 7c, 8 cycles, LD A,IXh/IYh
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.h); } },
+		{ [this] () { m_af.b.h = m_hl_index[m_hl_offset].b.h; } },
 		// dd/fd 7d, 8 cycles, LD A,IXl/IYl
-		{ [this] () { tmp_reg(m_hl_index[m_hl_offset].b.l); } },
+		{ [this] () { m_af.b.h = m_hl_index[m_hl_offset].b.l; } },
 		// dd/fd 7e, 19 cycles, LD A,(IX/IY+dd)
 		{
 			[this] () { read_s(m_pc.w.l++); },
@@ -3181,7 +3182,7 @@ void z80lle_device::setup_instructions() {
 			[this] () { m_af.b.h = m_data_bus; }
 		},
 		// dd/fd 7f, 8 cycles, LD A,A
-		{ [this] () { tmp_reg(m_af.b.h); } },
+		{ [this] () { m_af.b.h = m_af.b.h; } },
 
 		// dd/fd 80, 8 cycles, ADD B
 		{ [this] () { alu_add(m_bc.b.h); } },
@@ -5073,7 +5074,7 @@ void z80lle_device::setup_instructions() {
 		// 16 T5 AB:1237 DB:--
 		{
 			[this] () { read_s(m_pc.w.l++); },
-			[this] () { db_tmp(); pc_out(); read_op2_s(); m_pc.w.l++; },
+			[this] () { db_tmp(); read_op2_s(m_pc.w.l); m_pc.w.l++; },
 			[this] () { disp_wz2(); decode(); }
 		},
 		/* Take IRQ, 6 cycles, Taking IRQ */
@@ -5571,22 +5572,6 @@ inline void z80lle_device::jr_cond()
 }
 
 
-inline void z80lle_device::bc_out()
-{
-	m_address_bus = m_bc.w.l;
-	m_address_bus_cb(m_address_bus);
-	m_icount -= 1;
-}
-
-
-inline void z80lle_device::de_out()
-{
-	m_address_bus = m_de.w.l;
-	m_address_bus_cb(m_address_bus);
-	m_icount -= 1;
-}
-
-
 inline void z80lle_device::djnz()
 {
 	m_bc.b.h--;
@@ -5655,7 +5640,7 @@ inline void z80lle_device::input_a()
 }
 
 
-inline void z80lle_device::input_s(u16 address)
+void z80lle_device::input_s(u16 address)
 {
 	m_address_bus = address;
 	m_address_bus_cb(m_address_bus);
@@ -5776,7 +5761,7 @@ inline void z80lle_device::outi()
 }
 
 
-inline void z80lle_device::output_s(u8 data)
+void z80lle_device::output_s(u8 data)
 {
 	set_iorq();
 	set_wr();
@@ -5786,7 +5771,7 @@ inline void z80lle_device::output_s(u8 data)
 }
 
 
-inline void z80lle_device::output_s(u16 address, u8 data)
+void z80lle_device::output_s(u16 address, u8 data)
 {
 	m_address_bus = address;
 	m_address_bus_cb(m_address_bus);
@@ -5805,29 +5790,6 @@ inline void z80lle_device::pc_out_m1()
 	m_address_bus_cb(m_address_bus);
 	set_m1();
 	m_icount -= 1;
-}
-
-
-inline void z80lle_device::pc_out()
-{
-	m_address_bus = m_pc.w.l;
-	m_address_bus_cb(m_address_bus);
-	m_icount -= 1;
-}
-
-
-inline void z80lle_device::read()
-{
-	// Assert MREQ and RD signals
-	set_mreq();
-	set_rd();
-	m_icount -= 2;
-	m_data_bus = m_program->read_byte(m_address_bus);
-	// TODO: Clear MREQ and RD signals. This should be done in the main loop to allow other
-	// devices to catch up.
-	clear_mreq();
-	clear_rd();
-	m_check_wait = true;
 }
 
 
@@ -5856,7 +5818,7 @@ inline void z80lle_device::read_op_irq()
 }
 
 
-inline void z80lle_device::read_op_s()
+void z80lle_device::read_op_s()
 {
 	set_mreq();
 	set_rd();
@@ -5867,7 +5829,7 @@ inline void z80lle_device::read_op_s()
 }
 
 
-inline void z80lle_device::read_op1_s()
+void z80lle_device::read_op1_s()
 {
 	m_address_bus = m_pc.w.l;
 	m_address_bus_cb(m_address_bus);
@@ -5878,9 +5840,12 @@ inline void z80lle_device::read_op1_s()
 }
 
 
-inline void z80lle_device::read_op2_s()
+void z80lle_device::read_op2_s(u16 address)
 {
 	// This is a regular read but the result ends up in the instruction register (for DDCB / FDCB instructions)
+	m_address_bus = address;
+	m_address_bus_cb(m_address_bus);
+	m_icount -= 1;
 	m_opcode_read = true;
 	set_mreq();
 	set_rd();
@@ -5889,7 +5854,7 @@ inline void z80lle_device::read_op2_s()
 }
 
 
-inline void z80lle_device::read_s(u16 address)
+void z80lle_device::read_s(u16 address)
 {
 	m_address_bus = address;
 	m_address_bus_cb(m_address_bus);
@@ -6058,39 +6023,7 @@ inline void z80lle_device::scf()
 }
 
 
-inline void z80lle_device::tmp_reg(u8 data)
-{
-	switch (m_ir & 0x38)
-	{
-	case 0x00:
-		m_bc.b.h = data;
-		break;
-	case 0x08:
-		m_bc.b.l = data;
-		break;
-	case 0x10:
-		m_de.b.h = data;
-		break;
-	case 0x18:
-		m_de.b.l = data;
-		break;
-	case 0x20:
-		m_hl_index[m_hl_offset].b.h = data;
-		break;
-	case 0x28:
-		m_hl_index[m_hl_offset].b.l = data;
-		break;
-	case 0x30:
-		fatalerror("TMP_REG: illegal register reference 0x30\n");
-		break;
-	case 0x38:
-		m_af.b.h = data;
-		break;
-	}
-}
-
-
-inline void z80lle_device::write_s(u8 data)
+void z80lle_device::write_s(u8 data)
 {
 	set_mreq();
 	m_icount -= 1;
@@ -6101,7 +6034,7 @@ inline void z80lle_device::write_s(u8 data)
 }
 
 
-inline void z80lle_device::write_s(u16 address, u8 data)
+void z80lle_device::write_s(u16 address, u8 data)
 {
 	m_address_bus = address;
 	m_address_bus_cb(m_address_bus);
@@ -6486,41 +6419,37 @@ void z80lle_device::execute_run()
 				return;
 			}
 			m_check_wait = false;
-		}
 
-		// Check if we should perform a memory or io read or write
-		// TODO Move this inside the m_check_wait check?
-		if (m_mreq) {
-			if (m_rd) {
-				if (m_m1 || m_opcode_read) {
-					m_data_bus = m_opcodes_cache->read_byte(m_address_bus);
-					m_ir = m_data_bus;
-					if (m_m1) {
-						clear_m1();
+			// Check if we should perform a memory or io read or write
+			if (m_mreq) {
+				if (m_rd) {
+					if (m_m1 || m_opcode_read) {
+						m_data_bus = m_opcodes_cache->read_byte(m_address_bus);
+						m_ir = m_data_bus;
+						if (m_m1) {
+							clear_m1();
+						}
+						m_opcode_read = false;
+					} else {
+						m_data_bus = m_program->read_byte(m_address_bus);
 					}
-					m_opcode_read = false;
-				} else {
-					m_data_bus = m_program->read_byte(m_address_bus);
+					clear_mreq();
+					clear_rd();
+				} else if (m_wr) {
+					m_program->write_byte(m_address_bus, m_data_bus);
+					clear_mreq();
+					clear_wr();
 				}
-				clear_mreq();
-				clear_rd();
-			}
-			if (m_wr) {
-				m_program->write_byte(m_address_bus, m_data_bus);
-				clear_mreq();
-				clear_wr();
-			}
-		}
-		if (m_iorq) {
-			if (m_rd) {
-				m_data_bus = m_io->read_byte(m_address_bus);
-				clear_iorq();
-				clear_rd();
-			}
-			if (m_wr) {
-				m_io->write_byte(m_address_bus, m_data_bus);
-				clear_iorq();
-				clear_wr();
+			} else if (m_iorq) {
+				if (m_rd) {
+					m_data_bus = m_io->read_byte(m_address_bus);
+					clear_iorq();
+					clear_rd();
+				} else if (m_wr) {
+					m_io->write_byte(m_address_bus, m_data_bus);
+					clear_iorq();
+					clear_wr();
+				}
 			}
 		}
 

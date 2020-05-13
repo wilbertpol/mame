@@ -398,7 +398,6 @@ protected:
 	u8 alu_srl(u8 arg);
 	void alu_sub(u8 arg2);
 	void alu_xor(u8 arg2);
-	void bc_out();
 	bool call_cond();
 	void ccf();
 	void cpi();
@@ -406,7 +405,6 @@ protected:
 	void cpl();
 	void daa();
 	void db_tmp();
-	void de_out();
 	void di();
 	void disp_wz2();
 	void disp_wz5();
@@ -435,8 +433,6 @@ protected:
 	void output_s(u8 data);
 	void output_s(u16 address, u8 data);
 	void pc_out_m1();
-	void pc_out();
-	void read();
 	void read_op_irq();
 	void read_op_s();
 	void read_op1_s();
@@ -458,7 +454,6 @@ protected:
 	void rrd();
 	void rst();
 	void scf();
-	void tmp_reg(u8 data);
 	void write_s(u8 data);
 	void write_s(u16 address, u8 data);
 
