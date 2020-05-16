@@ -104,9 +104,6 @@ protected:
 		A_W,         // register A to W
 		ADC16,       // 16bit addition with carry, takes 7 cycles
 		ADD16,       // 16bit addition, takes 7 cycles
-		ALU_REGS,    // ALU output to source register (bits .....xxx)
-		ALU_REGD,    // ALU output to destination register (bits ..xxx...)
-		BC_OUT,      // Put BC on address bus, takes 1 cycle
 		BC_WZ,       // Store BC in WZ
 		CALL_COND,   // Check condition for CALL, takes 1 cycle when condition is true
 		CCF,         // CCF
@@ -120,13 +117,11 @@ protected:
 		DB_REGD,     // Store data bus in 8bit register (bits ..xxx...), takes no cycles
 		DB_REGD0,    // Store data bus in 8bit register (bits ..xxx...), not to index registers, takes no cycles
 		DB_REGD_INPUT, // Store data bus in 8bit register (bits ..xxx...)
-		DB_TMP,      // Store data bus in TMP
 		DB_W,        // Store data bus in W, takes no cycles
 		DB_Z,        // Store data bus in Z, takes no cycles
 		DE_WZ,       // Store DE in WZ
 		DEC_R8,      // Decrement an 8 bit register
 		DEC_R16,     // Decrement a 16 bit register, takes 2 cycles
-		DEC_SP,      // Decrement SP (for PUSH)
 		DECODE,      // Decode instruction
 		DISP_WZ2,    // Calculate IX/IY displacement into WZ, takes 2 cycles (in DD CB xx II instructions)
 		DISP_WZ5,    // Calculate IX/IY displacement into WZ, takes 5 cycles (in DD xx instructions)
@@ -143,12 +138,12 @@ protected:
 		IM,          // IM
 		INC_R8,      // Increment an 8 bit register
 		INC_R16,     // Increment a 16 bit register, takes 2 cycles
-		INC_SP,      // Increment SP (for POP)
 		IND,         // Set flags and update pointers and counter, takes no cycles
 		INI,         // Set flags and update pointers and counter, takes no cycles
 		INPUT_A,     // Read data bus from input, store in A, takes no cycles
 		INPUT_REGD,  // Read data bus from input, store in 8 bit register, takes no cycles
-		INPUT_S,     // Assert IORQ and RD signals for input cycle, takes 3 cycles
+		INPUT_S_BC,  // Put BC on address bus, assert IORQ and RD signals for input cycle, takes 4 cycles
+		INPUT_S_WZ_INC, // Put WZ on address bus, assert IORQ and RD signals for inoput cycle, takes 4 cycles
 		JR_COND,     // Check condition (Z, NZ, etc) for JR and perform jump, 5 cycles when branch taken
 		JP_COND,     // Check condition for JP and perform jump
 		L_DB,        // register L to data bus
@@ -161,11 +156,11 @@ protected:
 		LDI,         // Set flags and update pointers and counter, takes 2 cycles
 		NEG,         // NEG
 		NMI,         // NMI
-		OUTD,        // Set flags and update pointers and counter and prepare for I/O, takes 1 cycles
-		OUTI,        // Set flags and update pointers and counter and prepare for I/O, takes 1 cycles
-		OUTPUT_S,    // Assert IORQ an WR signals for output, takes 3 cycles
+		OUTD,        // Set flags and update pointers and counter and prepare for I/O, takes no cycles
+		OUTI,        // Set flags and update pointers and counter and prepare for I/O, takes no cycles
+		OUTPUT_S_BC, // Put BC on address bus, assert IORQ and WR signals for output, takes 4 cycles
+		OUTPUT_S_WZ_INC, // Put WZ on address, increment WZ, assert IORQ and WR signals for output, takes 4 cycles
 		PC_OUT,      // Put PC on address bus, takes 1 cycle
-		PC_OUT_INC,  // Put PC on address bus, takes 1 cycle, increment PC
 		PC_OUT_INC_M1,  // Put PC on address bus, assert M1, takes 1 cycle, increment PC
 		PCH_DB,      // Put PC 8 high bits on data bus
 		PCL_DB,      // Put PC 8 low bits on data bus
@@ -175,19 +170,16 @@ protected:
 		READ_OP_S,   // Assert MREQ and RD signals for opcodde read, takes 1 cycle
 		READ_OP2_S,  // Assert MREQ and signals for opcode read as part of DD/FD CB dd xx instructions, takes 2 cycles
 		READ_OP_IRQ, // Special opcode reading while taking an interrupt
-		READ_S,      // Assert MREQ and RD signals for read cycle, takes 2 cycles
 		READ_S_HL,   // Put HL on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
 		READ_S_PC,   // Put PC on address bus, increment PC, assert MREQ and RD signals for read cycle, takes 3 cycles
+		READ_S_SP,   // Put SP on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
 		READ_S_SP_INC,   // Put SP on address bus, increment SP, assert MREQ and RD signals for read cycle, takes 3 cycles
 		READ_S_WZ,   // Put WZ on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
 		READ_S_WZ_INC, // Put WZ on address bus, increment WZ, assert MREQ and RD signals for read cycle, takes 3 cycles
 		REFRESH,     // Refresh RAM, takes 2 cycles
 		REFRESH_DECODE, // Refresh RAM and decode instruction, takes 2 cycles
 		REGD_DB,     // 8 bit source register (bits ..xxx...) to data bus
-		REGD_TMP,    // 8 bit destination register (bits ..xxx...) to TMP
-		REGS_DB,     // 8 bit source register (bits .....xxx) to data bus
-		REGS0_DB,    // 8 bit source register (bits .....xxx) to data bus not to index registers
-		REGS_TMP,    // 8 bit source register (bits .....xxx) to TMP
+		REGS0_DB,    // 8 bit source register (bits .....xxx) to data bus (not from index registers)
 		REPEAT,      // Move PC 2 steps back if BC != 0, takes 5 cycles
 		REPEATCP,    // Move PC 2 steps back if BC != 0 and ZF clear, takes 5 cycles
 		REPEATIO,    // Move PC 2 steps back if B != 0, takes 5 cycles
@@ -203,17 +195,13 @@ protected:
 		RST,         // Change PC to 0/8/10/18/20/28/30/38
 		SBC16,       // 16bit subtraction with carry, takes 7 cycles
 		SCF,         // SCF
-		SP_OUT,      // Put SP on address bus, takes 1 cycle
-		TMP_REG,     // TMP to 8 bit register
 		WRITE_S,     // Assert MREQ and WR signals for write, takes 2 cycles
 		WRITE_S_DE,  // Put DE on address bus, assert MREQ and WR signals for write, takes 3 cycles
 		WRITE_S_HL,  // Put HL on address bus, assert MREQ and WR signals for write, takes 3 cycles
 		WRITE_S_SP_DEC, // Decrement SP, put SP on address bus, assert MREQ and WR signals for write, takes 3 cycles
 		WRITE_S_WZ,  // Put WZ on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		WRITE_S_WZ_INC, // Put WZ on address bus, increment WZ, assert MREQ and WR signals for write, takes 3 cycles
 		WZ_HL,       // Store contents of WZ in HL
-		WZ_OUT_INC,  // Put WZ on address bus and increment WZ, takes 1 cycle
-		BC_WZ_OUT_INC,  // Store BC in WZ, put WZ on address bus and increment WZ, takes 1 cycle
-		DE_WZ_OUT_INC,  // Store DE in WZ, put WZ on address bus and increment WZ, takes 1 cycle
 		WZ_PC,       // Store contents of WZ in PC
 		X,           // Do nothing, takes 1 cycle
 		X2,          // Do nothing, takes 2 cycles
@@ -316,8 +304,6 @@ protected:
 	u16               m_instruction;
 	u8                m_m1_wait_states; // Wait states during an M1 cycle (default 0)
 	u8                m_ir;
-	u8                m_tmp;    // TMP input into ALU
-	u8                m_alu;    // ALU output
 	PAIR              m_prvpc;
 	PAIR              m_pc;
 	PAIR              m_sp;
@@ -375,30 +361,30 @@ protected:
 	void adc16();
 	void add16();
 	void sbc16();
-	void alu_adc();
-	void alu_add();
-	void alu_and();
-	void alu_bit();
-	void alu_cp();
-	void alu_dec();
-	void alu_inc();
-	void alu_or();
-	void alu_regd();
-	void alu_regs();
-	void alu_regs0();
-	void alu_res();
-	void alu_rl();
-	void alu_rlc();
-	void alu_rr();
-	void alu_rrc();
-	void alu_sbc();
-	void alu_set();
-	void alu_sla();
-	void alu_sll();
-	void alu_sra();
-	void alu_srl();
-	void alu_sub();
-	void alu_xor();
+	void alu_adc(u8 arg);
+	void alu_add(u8 arg);
+	void alu_and(u8 arg);
+	void alu_bit(u8 arg);
+	void alu_cp(u8 arg);
+	u8 alu_dec(u8 arg);
+	u8 alu_inc(u8 arg);
+	void alu_or(u8 arg);
+	void alu_regd(u8 data);
+	void alu_regs(u8 data);
+	void alu_regs0(u8 data);
+	u8 alu_res(u8 arg);
+	u8 alu_rl(u8 arg);
+	u8 alu_rlc(u8 arg);
+	u8 alu_rr(u8 arg);
+	u8 alu_rrc(u8 arg);
+	void alu_sbc(u8 arg);
+	u8 alu_set(u8 arg);
+	u8 alu_sla(u8 arg);
+	u8 alu_sll(u8 arg);
+	u8 alu_sra(u8 arg);
+	u8 alu_srl(u8 arg);
+	void alu_sub(u8 arg);
+	void alu_xor(u8 arg);
 	void bc_wz();
 	void db_a();
 	void db_ir();
@@ -407,26 +393,18 @@ protected:
 	void db_regd();
 	void db_regd0();
 	void db_regd_input();
-	void db_tmp();
-	void db_w();
-	void db_z();
-	void de_wz();
-	void dec_sp();
-	void inc_sp();
-	void bc_out();
-	void de_out();
-	void hl_out();
-	void pc_out_inc();
+	void input_s(u16 address);
+	void output_s(u16 address);
 	void read();
 	void read_op_s();
 	void read_s();
-	void regd_tmp();
-	void regs_tmp();
+	void read_s(u16 address);
+	u8 regd_tmp();
+	u8 regs_tmp();
 	void sp_out();
-	void tmp_reg();
+	void tmp_reg(u8 data);
 	void write_s();
-	void wz_out();
-	void wz_out_inc();
+	void write_s(u16 address);
 	void decode();
 
 	inline void set_m1() { m_m1 = true; m_m1_cb(!m_m1); }
@@ -439,6 +417,8 @@ protected:
 	inline void clear_rd() { m_rd = false; m_rd_cb(!m_rd); }
 	inline void set_wr() { m_wr = true; m_wr_cb(!m_wr); }
 	inline void clear_wr() { m_wr = false; m_wr_cb(!m_wr); }
+	inline void set_rfsh() { /* TODO */ }
+	inline void clear_rfsh() { /* TODO */ }
 };
 
 DECLARE_DEVICE_TYPE(Z80LLE, z80lle_device)
