@@ -16,6 +16,7 @@
  *   - Add support for interrupt mode 0
  *   - Add support for interrupt mode 2
  *   - Group sub-instructions for readability and/or move code out into functions
+ *   - check flags on INPUT_A
  *   - These instructions are untested:
  *     - 76 / dd/fd 76 - HALT (leaving halt state is also untested)
  *     - f9 / dd/fd f9 - LD SP,HL
@@ -2037,7 +2038,7 @@ const u16 z80lle_device::insts[5 * 256 + 4][17] = {
 	{ READ_S_PC, DISP_WZ2, READ_OP2_S, DECODE },
 	/* Take IRQ, 6 cycles, Taking IRQ */
 	{ READ_OP_IRQ, REFRESH_DECODE },
-	/* Take NMI, 11 cycles, opcode is read but ignored, the PC_OUT also asserts M1 */
+	/* Take NMI, 11 cycles, opcode is read but ignored, also asserts M1 */
 	// TODO: M1 signal
 	//  1 T1 AB:ppcc DB:-- M1
 	//  2 T2 AB:ppcc DB:xx M1 MREQ RD
@@ -2050,7 +2051,7 @@ const u16 z80lle_device::insts[5 * 256 + 4][17] = {
 	//  9 T1 AB:sspp DB:--
 	// 10 T2 AB:sspp DB:pp MREQ
 	// 11 T3 AB:sspp DB:pp MREQ WR
-	{ PC_OUT, READ_OP_S, REFRESH, X, PCH_DB, WRITE_S_SP_DEC, PCL_DB, WRITE_S_SP_DEC, NMI | END },
+	{ READ_OP_S, REFRESH, X, PCH_DB, WRITE_S_SP_DEC, PCL_DB, WRITE_S_SP_DEC, NMI | END },
 
 };
 
@@ -2100,18 +2101,6 @@ inline void z80lle_device::leave_halt()
 		m_halt_cb(m_halt);
 		m_pc.w.l++;
 	}
-}
-
-
-inline void z80lle_device::a_db()
-{
-	m_data_bus = m_af.b.h;
-}
-
-
-inline void z80lle_device::a_w()
-{
-	m_wz.b.h = m_af.b.h;
 }
 
 
@@ -2214,12 +2203,14 @@ inline void z80lle_device::alu_bit(u8 arg)
 	}
 }
 
+
 inline void z80lle_device::alu_cp(u8 arg)
 {
 	// Flag handling is slightly different from SUB
 	u8 res = m_af.b.h - arg;
 	m_af.b.l = (SZHVC_sub[(m_af.b.h << 8) | res] & ~(YF | XF)) | (arg & (YF | XF));
 }
+
 
 inline u8 z80lle_device::alu_dec(u8 arg)
 {
@@ -2228,12 +2219,14 @@ inline u8 z80lle_device::alu_dec(u8 arg)
 	return res;
 }
 
+
 inline u8 z80lle_device::alu_inc(u8 arg)
 {
 	u8 res = arg + 1;
 	m_af.b.l = (m_af.b.l & CF) | SZHV_inc[res];
 	return res;
 }
+
 
 inline void z80lle_device::alu_or(u8 arg)
 {
@@ -2242,104 +2235,12 @@ inline void z80lle_device::alu_or(u8 arg)
 	m_af.b.h = res;
 }
 
-inline void z80lle_device::alu_regd(u8 data)
-{
-	switch (m_ir & 0x38)
-	{
-	case 0x00:
-		m_bc.b.h = data;
-		break;
-	case 0x08:
-		m_bc.b.l = data;
-		break;
-	case 0x10:
-		m_de.b.h = data;
-		break;
-	case 0x18:
-		m_de.b.l = data;
-		break;
-	case 0x20:
-		m_hl_index[m_hl_offset].b.h = data;
-		break;
-	case 0x28:
-		m_hl_index[m_hl_offset].b.l = data;
-		break;
-	case 0x30:
-		fatalerror("ALU_REGD: illegal register reference 0x30\n");
-		break;
-	case 0x38:
-		m_af.b.h = data;
-		break;
-	}
-}
-
-inline void z80lle_device::alu_regs(u8 data)
-{
-	switch (m_ir & 0x07)
-	{
-	case 0x00:
-		m_bc.b.h = data;
-		break;
-	case 0x01:
-		m_bc.b.l = data;
-		break;
-	case 0x02:
-		m_de.b.h = data;
-		break;
-	case 0x03:
-		m_de.b.l = data;
-		break;
-	case 0x04:
-		m_hl_index[m_hl_offset].b.h = data;
-		break;
-	case 0x05:
-		m_hl_index[m_hl_offset].b.l = data;
-		break;
-	case 0x06:
-		fatalerror("ALU_REGS: illegal register reference 0x06\n");
-		break;
-	case 0x07:
-		m_af.b.h = data;
-		break;
-	}
-}
-
-// ALU output to register, but not index register
-inline void z80lle_device::alu_regs0(u8 data)
-{
-	switch (m_ir & 0x07)
-	{
-	case 0x00:
-		m_bc.b.h = data;
-		break;
-	case 0x01:
-		m_bc.b.l = data;
-		break;
-	case 0x02:
-		m_de.b.h = data;
-		break;
-	case 0x03:
-		m_de.b.l = data;
-		break;
-	case 0x04:
-		m_hl_index[HL_OFFSET].b.h = data;
-		break;
-	case 0x05:
-		m_hl_index[HL_OFFSET].b.l = data;
-		break;
-	case 0x06:
-		fatalerror("ALU_REGS0: illegal register reference 0x06\n");
-		break;
-	case 0x07:
-		m_af.b.h = data;
-		break;
-	}
-}
 
 inline u8 z80lle_device::alu_res(u8 arg)
 {
 	return arg & ~(1 << ((m_ir >> 3) & 0x07));
 }
+
 
 inline u8 z80lle_device::alu_rl(u8 arg)
 {
@@ -2348,12 +2249,14 @@ inline u8 z80lle_device::alu_rl(u8 arg)
 	return res;
 }
 
+
 inline u8 z80lle_device::alu_rlc(u8 arg)
 {
 	u8 res = (arg << 1) | (arg >> 7);
 	m_af.b.l = SZP[res] | ((arg & 0x80) ? CF : 0);
 	return res;
 }
+
 
 inline u8 z80lle_device::alu_rr(u8 arg)
 {
@@ -2362,12 +2265,14 @@ inline u8 z80lle_device::alu_rr(u8 arg)
 	return res;
 }
 
+
 inline u8 z80lle_device::alu_rrc(u8 arg)
 {
 	u8 res = (arg >> 1) | (arg << 7);
 	m_af.b.l = SZP[res] | ((arg & 0x01) ? CF : 0);
 	return res;
 }
+
 
 inline void z80lle_device::alu_sbc(u8 arg)
 {
@@ -2376,10 +2281,12 @@ inline void z80lle_device::alu_sbc(u8 arg)
 	m_af.b.h = res;
 }
 
+
 inline u8 z80lle_device::alu_set(u8 arg)
 {
 	return arg | (1 << ((m_ir >> 3) & 0x07));
 }
+
 
 inline u8 z80lle_device::alu_sla(u8 arg)
 {
@@ -2388,12 +2295,14 @@ inline u8 z80lle_device::alu_sla(u8 arg)
 	return res;
 }
 
+
 inline u8 z80lle_device::alu_sll(u8 arg)
 {
 	u8 res = (arg << 1) | 0x01;
 	m_af.b.l = SZP[res] | ((arg & 0x80) ? CF : 0);
 	return res;
 }
+
 
 inline u8 z80lle_device::alu_sra(u8 arg)
 {
@@ -2402,12 +2311,14 @@ inline u8 z80lle_device::alu_sra(u8 arg)
 	return res;
 }
 
+
 inline u8 z80lle_device::alu_srl(u8 arg)
 {
 	u8 res = arg >> 1;
 	m_af.b.l = SZP[res] | ((arg & 0x01) ? CF : 0);
 	return res;
 }
+
 
 inline void z80lle_device::alu_sub(u8 arg)
 {
@@ -2416,6 +2327,7 @@ inline void z80lle_device::alu_sub(u8 arg)
 	m_af.b.h = res;
 }
 
+
 inline void z80lle_device::alu_xor(u8 arg)
 {
 	u8 res = m_af.b.h ^ arg;
@@ -2423,20 +2335,6 @@ inline void z80lle_device::alu_xor(u8 arg)
 	m_af.b.h = res;
 }
 
-inline void z80lle_device::bc_wz()
-{
-	m_wz.w.l = m_bc.w.l;
-}
-
-inline void z80lle_device::db_a()
-{
-	m_af.b.h = m_data_bus;
-}
-
-inline void z80lle_device::db_ir()
-{
-	m_ir = m_data_bus;
-}
 
 inline void z80lle_device::db_r16h()
 {
@@ -2460,6 +2358,7 @@ inline void z80lle_device::db_r16h()
 	}
 }
 
+
 inline void z80lle_device::db_r16l()
 {
 	switch (m_ir & 0x30)
@@ -2481,6 +2380,7 @@ inline void z80lle_device::db_r16l()
 		break;
 	}
 }
+
 
 inline void z80lle_device::db_regd()
 {
@@ -2513,6 +2413,7 @@ inline void z80lle_device::db_regd()
 	}
 }
 
+
 inline void z80lle_device::db_regd0()
 {
 	switch (m_ir & 0x38)
@@ -2543,6 +2444,7 @@ inline void z80lle_device::db_regd0()
 		break;
 	}
 }
+
 
 inline void z80lle_device::db_regd_input()
 {
@@ -2603,20 +2505,22 @@ inline void z80lle_device::output_s(u16 address)
 
 inline void z80lle_device::read()
 {
-	// Assert MREQ and RD signals
 	set_mreq();
 	set_rd();
 	m_icount -= 2;
 	m_data_bus = m_program->read_byte(m_address_bus);
-	// TODO: Clear MREQ and RD signals. This should be done in the main loop to allow other
-	// devices to catch up.
 	clear_mreq();
 	clear_rd();
 	m_check_wait = true;
 }
 
+
 inline void z80lle_device::read_op_s()
 {
+	m_address_bus = m_pc.w.l;
+	m_address_bus_cb(m_address_bus);
+	set_m1();
+	m_icount -= 1;
 	set_mreq();
 	set_rd();
 	m_icount -= 1;
@@ -2625,6 +2529,7 @@ inline void z80lle_device::read_op_s()
 	m_check_wait = true;
 }
 
+
 inline void z80lle_device::read_s()
 {
 	set_mreq();
@@ -2632,6 +2537,7 @@ inline void z80lle_device::read_s()
 	m_icount -= 2;
 	m_check_wait = true;
 }
+
 
 inline void z80lle_device::read_s(u16 address)
 {
@@ -2644,7 +2550,8 @@ inline void z80lle_device::read_s(u16 address)
 	m_check_wait = true;
 }
 
-inline u8 z80lle_device::regd_tmp()
+
+inline u8 z80lle_device::regd()
 {
 	switch (m_ir & 0x38)
 	{
@@ -2661,7 +2568,7 @@ inline u8 z80lle_device::regd_tmp()
 	case 0x28:
 		return m_hl_index[m_hl_offset].b.l;
 	case 0x30:
-		fatalerror("REGD_TMP: illegal register reference 0x30\n");
+		fatalerror("REGD: illegal register reference 0x30\n");
 		break;
 	case 0x38:
 		return m_af.b.h;
@@ -2669,32 +2576,8 @@ inline u8 z80lle_device::regd_tmp()
 	return 0;
 }
 
-inline u8 z80lle_device::regs_tmp()
-{
-	switch (m_ir & 0x07)
-	{
-	case 0x00:
-		return m_bc.b.h;
-	case 0x01:
-		return m_bc.b.l;
-	case 0x02:
-		return m_de.b.h;
-	case 0x03:
-		return m_de.b.l;
-	case 0x04:
-		return m_hl_index[m_hl_offset].b.h;
-	case 0x05:
-		return m_hl_index[m_hl_offset].b.l;
-	case 0x06:
-		fatalerror("REGS_TMP: illegal register reference 0x06\n");
-		break;
-	case 0x07:
-		return m_af.b.h;
-	}
-	return 0;
-}
 
-inline void z80lle_device::tmp_reg(u8 data)
+inline void z80lle_device::regd(u8 data)
 {
 	switch (m_ir & 0x38)
 	{
@@ -2717,9 +2600,100 @@ inline void z80lle_device::tmp_reg(u8 data)
 		m_hl_index[m_hl_offset].b.l = data;
 		break;
 	case 0x30:
-		fatalerror("TMP_REG: illegal register reference 0x30\n");
+		fatalerror("REGD: illegal register reference 0x30\n");
 		break;
 	case 0x38:
+		m_af.b.h = data;
+		break;
+	}
+}
+
+
+inline u8 z80lle_device::regs()
+{
+	switch (m_ir & 0x07)
+	{
+	case 0x00:
+		return m_bc.b.h;
+	case 0x01:
+		return m_bc.b.l;
+	case 0x02:
+		return m_de.b.h;
+	case 0x03:
+		return m_de.b.l;
+	case 0x04:
+		return m_hl_index[m_hl_offset].b.h;
+	case 0x05:
+		return m_hl_index[m_hl_offset].b.l;
+	case 0x06:
+		fatalerror("REGS: illegal register reference 0x06\n");
+		break;
+	case 0x07:
+		return m_af.b.h;
+	}
+	return 0;
+}
+
+
+inline void z80lle_device::regs(u8 data)
+{
+	switch (m_ir & 0x07)
+	{
+	case 0x00:
+		m_bc.b.h = data;
+		break;
+	case 0x01:
+		m_bc.b.l = data;
+		break;
+	case 0x02:
+		m_de.b.h = data;
+		break;
+	case 0x03:
+		m_de.b.l = data;
+		break;
+	case 0x04:
+		m_hl_index[m_hl_offset].b.h = data;
+		break;
+	case 0x05:
+		m_hl_index[m_hl_offset].b.l = data;
+		break;
+	case 0x06:
+		fatalerror("REGS: illegal register reference 0x06\n");
+		break;
+	case 0x07:
+		m_af.b.h = data;
+		break;
+	}
+}
+
+
+// store in base registers only, not index register
+inline void z80lle_device::regs0(u8 data)
+{
+	switch (m_ir & 0x07)
+	{
+	case 0x00:
+		m_bc.b.h = data;
+		break;
+	case 0x01:
+		m_bc.b.l = data;
+		break;
+	case 0x02:
+		m_de.b.h = data;
+		break;
+	case 0x03:
+		m_de.b.l = data;
+		break;
+	case 0x04:
+		m_hl_index[HL_OFFSET].b.h = data;
+		break;
+	case 0x05:
+		m_hl_index[HL_OFFSET].b.l = data;
+		break;
+	case 0x06:
+		fatalerror("REGS0: illegal register reference 0x06\n");
+		break;
+	case 0x07:
 		m_af.b.h = data;
 		break;
 	}
@@ -3116,7 +3090,7 @@ void z80lle_device::execute_run()
 			if (m_rd) {
 				if (m_m1 || m_opcode_read) {
 					m_data_bus = m_opcodes_cache->read_byte(m_address_bus);
-					db_ir();
+					m_ir = m_data_bus;
 					if (m_m1) {
 						clear_m1();
 					}
@@ -3162,103 +3136,191 @@ void z80lle_device::execute_run()
 				fatalerror("Unsupported instruction %d,%02x encountered at address %04x", m_instruction_offset / 256,
 						   m_ir, m_prvpc.d);
 			break;
+		// register A to data bus
 		case A_DB:
-			a_db();
+			m_data_bus = m_af.b.h;
 			break;
+		// register A to W
 		case A_W:
-			a_w();
+			m_wz.b.h = m_af.b.h;
 			break;
+		// Perform ADC operation on A and data bus
+		case ADC_DB:
+			alu_adc(m_data_bus);
+			break;
+		// Perform ADC operation on A and 8 bit register
+		case ADC_R8:
+			alu_adc(regs());
+			break;
+		// 16bit addition with carry, takes 7 cycles
 		case ADC16:
 			adc16();
 			break;
+		// Perform ADD operation on A and data bus
+		case ADD_DB:
+			alu_add(m_data_bus);
+			break;
+		// Perform ADD operation on A and 8 bit register
+		case ADD_R8:
+			alu_add(regs());
+			break;
+		// 16bit addition, takes 7 cycles
 		case ADD16:
 			add16();
 			break;
-		case SBC16:
-			sbc16();
+		// Perform AND operation on A and data bus, takes 0 cycles
+		case AND_DB:
+			alu_and(m_data_bus);
 			break;
-		case DB_REGD:
-			db_regd();
+		// Perform AND operation on A and 8 bit register, takes 0 cycles
+		case AND_R8:
+			alu_and(regs());
 			break;
-		case DB_REGD0:
-			db_regd0();
-			break;
-		case DB_REGD_INPUT:
-			db_regd_input();
-			break;
-		case DB_A:
-			db_a();
-			break;
-		case DB_R16H:
-			db_r16h();
-			break;
-		case DB_R16L:
-			db_r16l();
-			break;
-		case DB_W:
-			m_wz.b.h = m_data_bus;
-			break;
-		case DB_Z:
-			m_wz.b.l = m_data_bus;
-			break;
+		// Store BC in WZ, takes 0 cycles
 		case BC_WZ:
 			m_wz.w.l = m_bc.w.l;
 			break;
+		// Perform BIT operation on data bus, takes 1 cycle
+		case BIT_DB:
+			alu_bit(m_data_bus);
+			m_icount -= 1;
+			break;
+		// Perform BIT operation on 8 bit register
+		case BIT_R8:
+			alu_bit(regs());
+			break;
+		// Check condition for CALL, takes 1 cycle when condition is true
+		case CALL_COND:
+			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
+			{
+				m_icount -= 1;
+			}
+			else
+			{
+				end_instruction();
+			}
+			break;
+		// Clear carry flag, takes 0 cycles
+		case CCF:
+			m_af.b.l = ((m_af.b.l & (SF | ZF | YF | XF | PF | CF)) | ((m_af.b.l & CF) << 4) | (m_af.b.h & (YF | XF))) ^ CF;
+			break;
+		// Perform CP operation on A and data bus
+		case CP_DB:
+			alu_cp(m_data_bus);
+			break;
+		// Perform CP operation on A and 8 bit register
+		case CP_R8:
+			alu_cp(regs());
+			break;
+		// Set flags and update pointers and counter, takes 5 cycles
+		case CPD:
+			{
+				u8 res = m_af.b.h - m_data_bus;
+				m_wz.w.l--;
+				m_hl_index[m_hl_offset].w.l--;
+				m_bc.w.l--;
+				m_af.b.l = (m_af.b.l & CF) | (SZ[res] & ~(YF | XF)) | ((m_af.b.h ^ m_data_bus ^ res) & HF) | NF;
+				if (m_af.b.l & HF)
+					res -= 1;
+				if (res & 0x02)
+					m_af.b.l |= YF; /* bit 1 -> flag 5 */
+				if (res & 0x08)
+					m_af.b.l |= XF; /* bit 3 -> flag 3 */
+				if (m_bc.w.l)
+					m_af.b.l |= VF;
+			}
+			break;
+		// Set flags and update pointers and counter, takes 5 cycles
+		case CPI:
+			{
+				u8 res = m_af.b.h - m_data_bus;
+				m_wz.w.l++;
+				m_hl_index[m_hl_offset].w.l++;
+				m_bc.w.l--;
+				m_af.b.l = (m_af.b.l & CF) | (SZ[res] & ~(YF | XF)) | ((m_af.b.h ^ m_data_bus ^ res) & HF) | NF;
+				if (m_af.b.l & HF)
+					res -= 1;
+				if (res & 0x02)
+					m_af.b.l |= YF; /* bit 1 -> flag 5 */
+				if (res & 0x08)
+					m_af.b.l |= XF; /* bit 3 -> flag 3 */
+				if (m_bc.w.l)
+					m_af.b.l |= VF;
+			}
+			break;
+		// Complement A, takes 0 cycles
+		case CPL:
+			m_af.b.h ^= 0xff;
+			m_af.b.l = (m_af.b.l & (SF | ZF | PF | CF)) | HF | NF | (m_af.b.h & (YF | XF));
+			break;
+		// Decimal adjust, takes 0 cycles
+		case DAA:
+			{
+				u8 res = m_af.b.h;
+				if (m_af.b.l & NF)
+				{
+					if ((m_af.b.l & HF) | ((m_af.b.h & 0xf) > 9))
+						res -= 6;
+					if ((m_af.b.l & CF) | (m_af.b.h > 0x99))
+						res -= 0x60;
+				}
+				else
+				{
+					if ((m_af.b.l & HF) | ((m_af.b.h & 0xf) > 9))
+						res += 6;
+					if ((m_af.b.l & CF) | (m_af.b.h > 0x99))
+						res += 0x60;
+				}
+				m_af.b.l = (m_af.b.l & (CF | NF)) | (m_af.b.h > 0x99) | ((m_af.b.h ^ res) & HF) | SZP[res];
+				m_af.b.h = res;
+			}
+			break;
+		// Store data bus in A, takes 0 cycles
+		case DB_A:
+			m_af.b.h = m_data_bus;
+			break;
+		// Store data bus in high 8 bits of 16 bit register, takes 0 cycles
+		case DB_R16H:
+			db_r16h();
+			break;
+		// Store data bus in low 8 bits of 16 bit register, takes 0 cycles
+		case DB_R16L:
+			db_r16l();
+			break;
+		// Store data bus in 8bit destination register (bits ..xxx...), takes 0 cycles
+		case DB_REGD:
+			db_regd();
+			break;
+		// Store data bus from input operation in 8bit register (bits ..xxx...), takes 0 cycles
+		case DB_REGD_INPUT:
+			db_regd_input();
+			break;
+		// Store data bus in 8bit register (bits ..xxx...), not to index registers, takes 0 cycles
+		case DB_REGD0:
+			db_regd0();
+			break;
+		// Store data bus in W, takes no cycles
+		case DB_W:
+			m_wz.b.h = m_data_bus;
+			break;
+		// Store data bus in Z, takes no cycles
+		case DB_Z:
+			m_wz.b.l = m_data_bus;
+			break;
+		// Store DE in WZ
 		case DE_WZ:
 			m_wz.w.l = m_de.w.l;
 			break;
-		case HL_WZ:
-			m_wz.w.l = m_hl_index[m_hl_offset].w.l;
-			break;
-		case DECODE:
-			decode();
-			break;
-		case DISP_WZ2:
-			m_wz.w.l = m_hl_index[m_hl_offset].w.l + (s8) m_data_bus;
+		// Perform DEC operation on data bus, takes 2 cycles
+		case DEC_DB:
+			m_data_bus = alu_dec(m_data_bus);
 			m_icount -= 2;
 			break;
-		case DISP_WZ5:
-			m_wz.w.l = m_hl_index[m_hl_offset].w.l + (s8) m_data_bus;
-			m_icount -= 5;
+		// Decrement an 8 bit register
+		case DEC_R8:
+			regd(alu_dec(regd()));
 			break;
-		case DI:
-			m_iff1 = m_iff2 = 0;
-			break;
-		case EI:
-			m_iff1 = m_iff2 = 1;
-			m_after_ei = true;
-			break;
-		case EX_AF_AF:
-			{
-				PAIR tmp = m_af;
-				m_af = m_af2;
-				m_af2 = tmp;
-			}
-			break;
-		case EX_DE_HL:
-			{
-				u16 tmp = m_de.w.l;
-				m_de.w.l = m_hl_index[m_hl_offset].w.l;
-				m_hl_index[m_hl_offset].w.l = tmp;
-			}
-			break;
-		case EXX:
-			{
-				PAIR tmp;
-				tmp = m_bc;
-				m_bc = m_bc2;
-				m_bc2 = tmp;
-				tmp = m_de;
-				m_de = m_de2;
-				m_de2 = tmp;
-				tmp = m_hl_index[HL_OFFSET];
-				m_hl_index[HL_OFFSET] = m_hl2;
-				m_hl2 = tmp;
-			}
-			break;
-		case H_DB:
-			m_data_bus = m_hl_index[m_hl_offset].b.h;
-			break;
+		// Decrement a 16 bit register, takes 2 cycles
 		case DEC_R16:
 			switch (m_ir & 0x30)
 			{
@@ -3277,6 +3339,107 @@ void z80lle_device::execute_run()
 			}
 			m_icount -= 2;
 			break;
+		// Decode instruction
+		case DECODE:
+			decode();
+			break;
+		// Reset interrupt flip flops
+		case DI:
+			m_iff1 = m_iff2 = 0;
+			break;
+		// Calculate IX/IY displacement into WZ, takes 2 cycles (in DD CB xx II instructions)
+		case DISP_WZ2:
+			m_wz.w.l = m_hl_index[m_hl_offset].w.l + (s8) m_data_bus;
+			m_icount -= 2;
+			break;
+		// Calculate IX/IY displacement into WZ, takes 5 cycles (in DD xx instructions)
+		case DISP_WZ5:
+			m_wz.w.l = m_hl_index[m_hl_offset].w.l + (s8) m_data_bus;
+			m_icount -= 5;
+			break;
+		// Decrement B and jump when not zero, takes 5 cycles when branch taken
+		case DJNZ:
+			m_bc.b.h--;
+			if (m_bc.b.h)
+			{
+				m_wz.w.l = m_pc.w.l + (s8) m_data_bus;
+				m_pc.w.l = m_wz.w.l;
+				m_icount -= 5;
+			}
+			break;
+		// Set interrupt flip flops
+		case EI:
+			m_iff1 = m_iff2 = 1;
+			m_after_ei = true;
+			break;
+		// Swap AF and AF'
+		case EX_AF_AF:
+			{
+				PAIR tmp = m_af;
+				m_af = m_af2;
+				m_af2 = tmp;
+			}
+			break;
+		// Swap DE and HL
+		case EX_DE_HL:
+			{
+				u16 tmp = m_de.w.l;
+				m_de.w.l = m_hl_index[m_hl_offset].w.l;
+				m_hl_index[m_hl_offset].w.l = tmp;
+			}
+			break;
+		// Swap BC, DE, HL and BC2, DE2, HL2
+		case EXX:
+			{
+				PAIR tmp;
+				tmp = m_bc;
+				m_bc = m_bc2;
+				m_bc2 = tmp;
+				tmp = m_de;
+				m_de = m_de2;
+				m_de2 = tmp;
+				tmp = m_hl_index[HL_OFFSET];
+				m_hl_index[HL_OFFSET] = m_hl2;
+				m_hl2 = tmp;
+			}
+			break;
+		// register H to data bus
+		case H_DB:
+			m_data_bus = m_hl_index[m_hl_offset].b.h;
+			break;
+		// HALT
+		case HALT:
+			m_pc.w.l--;
+			if (!m_halt)
+			{
+				m_halt = 1;
+				m_halt_cb(1);
+			}
+			break;
+		// Store HL in PC
+		case HL_PC:
+			m_pc.w.l = m_hl_index[m_hl_offset].w.l;
+			break;
+		// Store HL in WZ
+		case HL_WZ:
+			m_wz.w.l = m_hl_index[m_hl_offset].w.l;
+			break;
+		// Set interrupt mode, takes 0 cycles
+		case IM:
+			m_im = (m_ir >> 3) & 0x03;
+			if (m_im)
+				m_im--;
+			break;
+		// Perform INC operation on data bus, takes 2 cycles
+		case INC_DB:
+			m_data_bus = alu_inc(m_data_bus);
+			m_icount -= 2;
+			break;
+		// Increment an 8 bit register
+		case INC_R8:
+			regd(alu_inc(regd()));
+			break;
+		// Increment a 16 bit register, takes 2 cycles
 		case INC_R16:
 			switch (m_ir & 0x30)
 			{
@@ -3295,25 +3458,62 @@ void z80lle_device::execute_run()
 			}
 			m_icount -= 2;
 			break;
-		case CALL_COND:
+		// Set flags and update pointers and counter, takes no cycles
+		case IND:
+			{
+				m_wz.w.l = m_bc.w.l - 1;
+				m_bc.b.h--;
+				m_hl_index[m_hl_offset].w.l++;
+				m_af.b.l = SZ[m_bc.b.h];
+				u16 t = ((m_bc.b.l - 1) & 0xff) + m_data_bus;
+				if (m_data_bus & SF)
+					m_af.b.l |= NF;
+				if (t & 0x100)
+					m_af.b.l |= HF | CF;
+				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
+			}
+			break;
+		// Set flags and update pointers and counter, takes no cycles
+		case INI:
+			{
+				m_wz.w.l = m_bc.w.l + 1;
+				m_bc.b.h--;
+				m_hl_index[m_hl_offset].w.l--;
+				m_af.b.l = SZ[m_bc.b.h];
+				u16 t = ((m_bc.b.l + 1) & 0xff) + m_data_bus;
+				if (m_data_bus & SF)
+					m_af.b.l |= NF;
+				if (t & 0x100)
+					m_af.b.l |= HF | CF;
+				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
+			}
+			break;
+		// Read data bus from input, store in A, takes no cycles
+		case INPUT_A:
+			// TODO: Flags?
+			m_af.b.h = m_data_bus;
+			break;
+		// Read data bus from input, store in 8 bit register, takes no cycles
+		case INPUT_REGD:
+			db_regd_input();
+			break;
+		// Put BC on address bus, assert IORQ and RD signals for input cycle, takes 4 cycles
+		case INPUT_S_BC:
+			input_s(m_bc.w.l);
+			break;
+		// Put WZ on address bus, assert IORQ and RD signals for inoput cycle, takes 4 cycles
+		case INPUT_S_WZ_INC:
+			input_s(m_wz.w.l);
+			m_wz.w.l++;
+			break;
+		// Check condition for JP and perform jump
+		case JP_COND:
 			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
 			{
-				m_icount -= 1;
-			}
-			else
-			{
-				end_instruction();
-			}
-			break;
-		case DJNZ:
-			m_bc.b.h--;
-			if (m_bc.b.h)
-			{
-				m_wz.w.l = m_pc.w.l + (s8) m_data_bus;
 				m_pc.w.l = m_wz.w.l;
-				m_icount -= 5;
 			}
 			break;
+		// Check condition (Z, NZ, etc) for JR and perform jump, 5 cycles when branch taken
 		case JR_COND:
 			if ((m_af.b.l & jr_conditions[((m_ir >> 3) & 0x07)][0]) == jr_conditions[((m_ir >> 3) & 0x07)][1])
 			{
@@ -3322,32 +3522,128 @@ void z80lle_device::execute_run()
 				m_icount -= 5;
 			}
 			break;
-		case JP_COND:
-			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
-			{
-				m_pc.w.l = m_wz.w.l;
-			}
-			break;
-		case RET_COND:
-			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) != jp_conditions[((m_ir >> 3) & 0x07)][1])
-			{
-				end_instruction();
-			}
-			m_icount -= 1;
-			break;
-		case RST:
-			m_pc.w.l = m_ir & 0x38;
-			m_wz.w.l = m_pc.w.l;
-			break;
+		// register L to data bus
 		case L_DB:
 			m_data_bus = m_hl_index[m_hl_offset].b.l;
 			break;
-		case PC_OUT:
-			m_address_bus = m_pc.w.l;
-			m_address_bus_cb(m_address_bus);
-			set_m1();
+		// LD A,I, takes 1 cycle
+		case LD_A_I:
+			m_af.b.h = m_i;
+			m_af.b.l = (m_af.b.l & CF) | SZ[m_af.b.h] | (m_iff2 << 2);
+			m_after_ldair = true;
 			m_icount -= 1;
 			break;
+		// LD A,R, takes 1 cycle
+		case LD_A_R:
+			m_af.b.h = (m_r & 0x7f) | m_r2;
+			m_af.b.l = (m_af.b.l & CF) | SZ[m_af.b.h] | (m_iff2 << 2);
+			m_after_ldair = true;
+			m_icount -= 1;
+			break;
+		// LD I,A, takes 1 cycle
+		case LD_I_A:
+			m_i = m_af.b.h;
+			m_icount -= 1;
+			break;
+		// LD R,A, takes 1 cycle
+		case LD_R_A:
+			m_r = m_af.b.h;
+			m_r2 = m_af.b.h & 0x80;
+			m_icount -= 1;
+			break;
+		// LD SP,HL, takes 2 cycles
+		case LD_SP_HL:
+			m_sp.w.l = m_hl_index[m_hl_offset].w.l;
+			m_icount -= 2;
+			break;
+		// Set flags and update pointers and counter, takes 2 cycles
+		case LDD:
+			m_af.b.l &= SF | ZF | CF;
+			if ((m_af.b.h + m_data_bus) & 0x02)
+				m_af.b.l |= YF; /* bit 1 -> flag 5 */
+			if ((m_af.b.h + m_data_bus) & 0x08)
+				m_af.b.l |= XF; /* bit 3 -> flag 3 */
+			m_hl_index[m_hl_offset].w.l--;
+			m_de.w.l--;
+			m_bc.w.l--;
+			if (m_bc.w.l)
+				m_af.b.l |= VF;
+			m_icount -= 2;
+			break;
+		// Set flags and update pointers and counter, takes 2 cycles
+		case LDI:
+			m_af.b.l &= SF | ZF | CF;
+			if ((m_af.b.h + m_data_bus) & 0x02)
+				m_af.b.l |= YF; /* bit 1 -> flag 5 */
+			if ((m_af.b.h + m_data_bus) & 0x08)
+				m_af.b.l |= XF; /* bit 3 -> flag 3 */
+			m_hl_index[m_hl_offset].w.l++;
+			m_de.w.l++;
+			m_bc.w.l--;
+			if (m_bc.w.l)
+				m_af.b.l |= VF;
+			m_icount -= 2;
+			break;
+		// NEG
+		case NEG:
+			{
+				u8 res = 0 - m_af.b.h;
+				m_af.b.l = SZHVC_sub[res];
+				m_af.b.h = res;
+			}
+			break;
+		// NMI
+		case NMI:
+			m_pc.w.l = 0x66;
+			break;
+		// Perform OR operation on A and data bus
+		case OR_DB:
+			alu_or(m_data_bus);
+			break;
+		// Perform OR operation on A and 8 bit register
+		case OR_R8:
+			alu_or(regs());
+			break;
+		// Set flags and update pointers and counter and prepare for I/O, takes no cycles
+		case OUTD:
+			{
+				m_bc.b.h--;
+				m_wz.w.l = m_bc.w.l - 1;
+				m_hl_index[m_hl_offset].w.l--;
+				m_af.b.l = SZ[m_bc.b.h];
+				u16 t = m_hl_index[m_hl_offset].b.l + m_data_bus;
+				if (m_data_bus & SF)
+					m_af.b.l |= NF;
+				if (t & 0x100)
+					m_af.b.l |= HF | CF;
+				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
+			}
+			break;
+		// Set flags and update pointers and counter and prepare for I/O, takes no cycles
+		case OUTI:
+			{
+				m_bc.b.h--;
+				m_wz.w.l = m_bc.w.l + 1;
+				m_hl_index[m_hl_offset].w.l++;
+				m_af.b.l = SZ[m_bc.b.h];
+				u16 t = m_hl_index[m_hl_offset].b.l + m_data_bus;
+				if (m_data_bus & SF)
+					m_af.b.l |= NF;
+				if (t & 0x100)
+					m_af.b.l |= HF | CF;
+				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
+			}
+			break;
+		// Put BC on address bus, assert IORQ and WR signals for output, takes 4 cycles
+		case OUTPUT_S_BC:
+			output_s(m_bc.w.l);
+			break;
+		// Put WZ on address, increment WZ, assert IORQ and WR signals for output, takes 4 cycles
+		case OUTPUT_S_WZ_INC:
+			output_s(m_wz.w.l);
+			m_wz.w.l++;
+			break;
+		// Put PC on address bus, assert M1, increment PC, takes 1 cycle
 		case PC_OUT_INC_M1:
 			m_address_bus = m_pc.w.l;
 			m_address_bus_cb(m_address_bus);
@@ -3355,12 +3651,15 @@ void z80lle_device::execute_run()
 			m_icount -= 1;
 			m_pc.w.l++;
 			break;
+		// Put PC 8 high bits on data bus
 		case PCH_DB:
 			m_data_bus = m_pc.b.h;
 			break;
+		// Put PC 8 low bits on data bus
 		case PCL_DB:
 			m_data_bus = m_pc.b.l;
 			break;
+		// Put high 8 bits of 16 bit register on data bus
 		case R16H_DB:
 			switch (m_ir & 0x30)
 			{
@@ -3381,6 +3680,7 @@ void z80lle_device::execute_run()
 				break;
 			}
 			break;
+		// Put low 8 bits of 16 bit register on data bus
 		case R16L_DB:
 			switch (m_ir & 0x30)
 			{
@@ -3401,44 +3701,23 @@ void z80lle_device::execute_run()
 				break;
 			}
 			break;
-		case INPUT_A:
-			// TODO: Flags?
-			m_af.b.h = m_data_bus;
-			break;
-		case INPUT_REGD:
-			db_regd_input();
-			break;
-		case INPUT_S_BC:
-			input_s(m_bc.w.l);
-			break;
-		case INPUT_S_WZ_INC:
-			input_s(m_wz.w.l);
-			m_wz.w.l++;
-			break;
-		case OUTPUT_S_BC:
-			output_s(m_bc.w.l);
-			break;
-		case OUTPUT_S_WZ_INC:
-			output_s(m_wz.w.l);
-			m_wz.w.l++;
-			break;
+		// Put PC on address bus, increment PC, assert M1, MREQ, and RD signals, takes 2 cycles
 		case READ_OP1_S:
-			m_address_bus = m_pc.w.l;
-			m_address_bus_cb(m_address_bus);
-			set_m1();
-			m_icount -= 1;
-			m_pc.w.l++;
 			read_op_s();
+			m_pc.w.l++;
 			break;
+		// Put PC on address bus, assert M1, MREQ and RD signals for opcodde read, takes 2 cycle
 		case READ_OP_S:
 			read_op_s();
 			break;
+		// Assert MREQ and signals for opcode read as part of DD/FD CB dd xx instructions, takes 2 cycles
 		case READ_OP2_S:
 			// This is a regular read without M1 but the result ends up in the instruction register (for DDCB / FDCB instructions)
 			m_opcode_read = true;
 			read_s(m_pc.w.l);
 			m_pc.w.l++;
 			break;
+		// Special opcode reading while taking an interrupt
 		case READ_OP_IRQ:
 			// What is put on the address bus when taking IRQ?
 			m_icount -= 1;
@@ -3461,47 +3740,34 @@ void z80lle_device::execute_run()
 			m_icount -= 2;
 			m_check_wait = true;
 			break;
+		// Put HL on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
 		case READ_S_HL:
 			read_s(m_hl_index[m_hl_offset].w.l);
 			break;
+		// Put PC on address bus, increment PC, assert MREQ and RD signals for read cycle, takes 3 cycles
 		case READ_S_PC:
 			read_s(m_pc.w.l);
 			m_pc.w.l++;
 			break;
+		// Put SP on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
 		case READ_S_SP:
 			read_s(m_sp.w.l);
 			break;
+		// Put SP on address bus, increment SP, assert MREQ and RD signals for read cycle, takes 3 cycles
 		case READ_S_SP_INC:
 			read_s(m_sp.w.l);
 			m_sp.w.l += 1;
 			break;
+		// Put WZ on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
 		case READ_S_WZ:
 			read_s(m_wz.w.l);
 			break;
+		// Put WZ on address bus, increment WZ, assert MREQ and RD signals for read cycle, takes 3 cycles
 		case READ_S_WZ_INC:
 			read_s(m_wz.w.l);
 			m_wz.w.l++;
 			break;
-		case WRITE_S:
-			write_s();
-			break;
-		case WRITE_S_DE:
-			write_s(m_de.w.l);
-			break;
-		case WRITE_S_HL:
-			write_s(m_hl_index[m_hl_offset].w.l);
-			break;
-		case WRITE_S_SP_DEC:
-			m_sp.w.l -= 1;
-			write_s(m_sp.w.l);
-			break;
-		case WRITE_S_WZ:
-			write_s(m_wz.w.l);
-			break;
-		case WRITE_S_WZ_INC:
-			write_s(m_wz.w.l);
-			m_wz.w.l++;
-			break;
+		// Refresh RAM, takes 2 cycles
 		case REFRESH:
 			set_rfsh();
 			m_icount -= 1;
@@ -3512,6 +3778,7 @@ void z80lle_device::execute_run()
 			clear_rfsh();
 			m_r++;
 			break;
+		// Refresh RAM and decode instruction, takes 2 cycles
 		case REFRESH_DECODE:
 			set_rfsh();
 			m_icount -= 1;
@@ -3523,6 +3790,7 @@ void z80lle_device::execute_run()
 			m_r++;
 			decode();
 			break;
+		// Store destination register contents on data bus, takes 0 cycles
 		case REGD_DB:
 			switch (m_ir & 0x38)
 			{
@@ -3552,6 +3820,11 @@ void z80lle_device::execute_run()
 				break;
 			}
 			break;
+		// Copy source 8 bit register to destination 8 bit register, takes 0 cycles
+		case REGS_TMP_REG:
+			regd(regs());
+			break;
+		// 8 bit source register (bits .....xxx) to data bus (not from index registers)
 		case REGS0_DB:
 			switch (m_ir & 0x07)
 			{
@@ -3581,267 +3854,7 @@ void z80lle_device::execute_run()
 				break;
 			}
 			break;
-		case ZERO_DB:
-			m_data_bus = 0;
-			break;
-		case CCF:
-			m_af.b.l = ((m_af.b.l & (SF | ZF | YF | XF | PF | CF)) | ((m_af.b.l & CF) << 4) | (m_af.b.h & (YF | XF))) ^ CF;
-			break;
-		case CPL:
-			m_af.b.h ^= 0xff;
-			m_af.b.l = (m_af.b.l & (SF | ZF | PF | CF)) | HF | NF | (m_af.b.h & (YF | XF));
-			break;
-		case DAA:
-			{
-				u8 res = m_af.b.h;
-				if (m_af.b.l & NF)
-				{
-					if ((m_af.b.l & HF) | ((m_af.b.h & 0xf) > 9))
-						res -= 6;
-					if ((m_af.b.l & CF) | (m_af.b.h > 0x99))
-						res -= 0x60;
-				}
-				else
-				{
-					if ((m_af.b.l & HF) | ((m_af.b.h & 0xf) > 9))
-						res += 6;
-					if ((m_af.b.l & CF) | (m_af.b.h > 0x99))
-						res += 0x60;
-				}
-				m_af.b.l = (m_af.b.l & (CF | NF)) | (m_af.b.h > 0x99) | ((m_af.b.h ^ res) & HF) | SZP[res];
-				m_af.b.h = res;
-			}
-			break;
-		case HALT:
-			m_pc.w.l--;
-			if (!m_halt)
-			{
-				m_halt = 1;
-				m_halt_cb(1);
-			}
-			break;
-		case IM:
-			m_im = (m_ir >> 3) & 0x03;
-			if (m_im)
-				m_im--;
-			break;
-		case LD_A_I:
-			m_af.b.h = m_i;
-			m_af.b.l = (m_af.b.l & CF) | SZ[m_af.b.h] | (m_iff2 << 2);
-			m_after_ldair = true;
-			m_icount -= 1;
-			break;
-		case LD_A_R:
-			m_af.b.h = (m_r & 0x7f) | m_r2;
-			m_af.b.l = (m_af.b.l & CF) | SZ[m_af.b.h] | (m_iff2 << 2);
-			m_after_ldair = true;
-			m_icount -= 1;
-			break;
-		case LD_I_A:
-			m_i = m_af.b.h;
-			m_icount -= 1;
-			break;
-		case LD_R_A:
-			m_r = m_af.b.h;
-			m_r2 = m_af.b.h & 0x80;
-			m_icount -= 1;
-			break;
-		case LD_SP_HL:
-			m_sp.w.l = m_hl_index[m_hl_offset].w.l;
-			m_icount -= 2;
-			break;
-		case NEG:
-			{
-				u8 res = 0 - m_af.b.h;
-				m_af.b.l = SZHVC_sub[res];
-				m_af.b.h = res;
-			}
-			break;
-		case NMI:
-			m_pc.w.l = 0x66;
-			break;
-		case RETI:
-			m_iff1 = m_iff2;
-			daisy_call_reti_device();
-			break;
-		case RETN:
-			m_iff1 = m_iff2;
-			break;
-		case RLA:
-			{
-				u8 res = (m_af.b.h << 1) | (m_af.b.l & CF);
-				m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | ((m_af.b.h & 0x80) ? CF : 0) | (res & (YF | XF));
-				m_af.b.h = res;
-			}
-			break;
-		case RLCA:
-			m_af.b.h = (m_af.b.h << 1) | (m_af.b.h >> 7);
-			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | (m_af.b.h & (YF | XF | CF));
-			break;
-		case RRA:
-			{
-				u8 res = (m_af.b.h >> 1) | (m_af.b.l << 7);
-				m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | ((m_af.b.h & 0x01) ? CF : 0) | (res & (YF | XF));
-				m_af.b.h = res;
-			}
-			break;
-		case RRCA:
-			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | (m_af.b.h & CF);
-			m_af.b.h = (m_af.b.h >> 1) | (m_af.b.h << 7);
-			m_af.b.l |= (m_af.b.h & (YF | XF));
-			break;
-		case RRD:
-			{
-				u8 res = (m_data_bus >> 4) | (m_af.b.h << 4);
-				m_af.b.h = (m_af.b.h & 0xf0) | (m_data_bus & 0x0f);
-				m_af.b.l = (m_af.b.l & CF) | SZP[m_af.b.h];
-				m_data_bus = res;
-				m_icount -= 5;
-			}
-			break;
-		case RLD:
-			{
-				u8 res = (m_data_bus << 4) | (m_af.b.h & 0x0f);
-				m_af.b.h = (m_af.b.h & 0xf0) | (m_data_bus >> 4);
-				m_af.b.l = (m_af.b.l & CF) | SZP[m_af.b.h];
-				m_data_bus = res;
-				m_icount -= 5;
-			}
-			break;
-		case SCF:
-			m_af.b.l = (m_af.b.l & (SF | ZF | YF | XF | PF)) | CF | (m_af.b.h & (YF | XF));
-			break;
-		case HL_PC:
-			m_pc.w.l = m_hl_index[m_hl_offset].w.l;
-			break;
-		case WZ_HL:
-			m_hl_index[m_hl_offset].w.l = m_wz.w.l;
-			break;
-		case WZ_PC:
-			m_pc.w.l = m_wz.w.l;
-			break;
-		case X:
-			m_icount -= 1;
-			break;
-		case X2:
-			m_icount -= 2;
-			break;
-		case CPD:
-			{
-				u8 res = m_af.b.h - m_data_bus;
-				m_wz.w.l--;
-				m_hl_index[m_hl_offset].w.l--;
-				m_bc.w.l--;
-				m_af.b.l = (m_af.b.l & CF) | (SZ[res] & ~(YF | XF)) | ((m_af.b.h ^ m_data_bus ^ res) & HF) | NF;
-				if (m_af.b.l & HF)
-					res -= 1;
-				if (res & 0x02)
-					m_af.b.l |= YF; /* bit 1 -> flag 5 */
-				if (res & 0x08)
-					m_af.b.l |= XF; /* bit 3 -> flag 3 */
-				if (m_bc.w.l)
-					m_af.b.l |= VF;
-			}
-			break;
-		case CPI:
-			{
-				u8 res = m_af.b.h - m_data_bus;
-				m_wz.w.l++;
-				m_hl_index[m_hl_offset].w.l++;
-				m_bc.w.l--;
-				m_af.b.l = (m_af.b.l & CF) | (SZ[res] & ~(YF | XF)) | ((m_af.b.h ^ m_data_bus ^ res) & HF) | NF;
-				if (m_af.b.l & HF)
-					res -= 1;
-				if (res & 0x02)
-					m_af.b.l |= YF; /* bit 1 -> flag 5 */
-				if (res & 0x08)
-					m_af.b.l |= XF; /* bit 3 -> flag 3 */
-				if (m_bc.w.l)
-					m_af.b.l |= VF;
-			}
-			break;
-		case IND:
-			{
-				m_wz.w.l = m_bc.w.l - 1;
-				m_bc.b.h--;
-				m_hl_index[m_hl_offset].w.l++;
-				m_af.b.l = SZ[m_bc.b.h];
-				u16 t = ((m_bc.b.l - 1) & 0xff) + m_data_bus;
-				if (m_data_bus & SF)
-					m_af.b.l |= NF;
-				if (t & 0x100)
-					m_af.b.l |= HF | CF;
-				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
-			}
-			break;
-		case INI:
-			{
-				m_wz.w.l = m_bc.w.l + 1;
-				m_bc.b.h--;
-				m_hl_index[m_hl_offset].w.l--;
-				m_af.b.l = SZ[m_bc.b.h];
-				u16 t = ((m_bc.b.l + 1) & 0xff) + m_data_bus;
-				if (m_data_bus & SF)
-					m_af.b.l |= NF;
-				if (t & 0x100)
-					m_af.b.l |= HF | CF;
-				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
-			}
-			break;
-		case LDD:
-			m_af.b.l &= SF | ZF | CF;
-			if ((m_af.b.h + m_data_bus) & 0x02)
-				m_af.b.l |= YF; /* bit 1 -> flag 5 */
-			if ((m_af.b.h + m_data_bus) & 0x08)
-				m_af.b.l |= XF; /* bit 3 -> flag 3 */
-			m_hl_index[m_hl_offset].w.l--;
-			m_de.w.l--;
-			m_bc.w.l--;
-			if (m_bc.w.l)
-				m_af.b.l |= VF;
-			m_icount -= 2;
-			break;
-		case LDI:
-			m_af.b.l &= SF | ZF | CF;
-			if ((m_af.b.h + m_data_bus) & 0x02)
-				m_af.b.l |= YF; /* bit 1 -> flag 5 */
-			if ((m_af.b.h + m_data_bus) & 0x08)
-				m_af.b.l |= XF; /* bit 3 -> flag 3 */
-			m_hl_index[m_hl_offset].w.l++;
-			m_de.w.l++;
-			m_bc.w.l--;
-			if (m_bc.w.l)
-				m_af.b.l |= VF;
-			m_icount -= 2;
-			break;
-		case OUTD:
-			{
-				m_bc.b.h--;
-				m_wz.w.l = m_bc.w.l - 1;
-				m_hl_index[m_hl_offset].w.l--;
-				m_af.b.l = SZ[m_bc.b.h];
-				u16 t = m_hl_index[m_hl_offset].b.l + m_data_bus;
-				if (m_data_bus & SF)
-					m_af.b.l |= NF;
-				if (t & 0x100)
-					m_af.b.l |= HF | CF;
-				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
-			}
-			break;
-		case OUTI:
-			{
-				m_bc.b.h--;
-				m_wz.w.l = m_bc.w.l + 1;
-				m_hl_index[m_hl_offset].w.l++;
-				m_af.b.l = SZ[m_bc.b.h];
-				u16 t = m_hl_index[m_hl_offset].b.l + m_data_bus;
-				if (m_data_bus & SF)
-					m_af.b.l |= NF;
-				if (t & 0x100)
-					m_af.b.l |= HF | CF;
-				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
-			}
-			break;
+		// Move PC 2 steps back if BC != 0, takes 5 cycles
 		case REPEAT:
 			if (m_bc.w.l != 0)
 			{
@@ -3854,6 +3867,7 @@ void z80lle_device::execute_run()
 				m_icount -= 5;
 			}
 			break;
+		// Move PC 2 steps back if BC != 0 and ZF clear, takes 5 cycles
 		case REPEATCP:
 			if (m_bc.w.l != 0 && !(m_af.b.l & ZF))
 			{
@@ -3866,203 +3880,309 @@ void z80lle_device::execute_run()
 				m_icount -= 5;
 			}
 			break;
+		// Move PC 2 steps back if B != 0, takes 5 cycles
 		case REPEATIO:
 			if (m_bc.b.h != 0) {
 				m_pc.w.l -= 2;
 				m_icount -= 5;
 			}
 			break;
-		case ADD_DB:
-			alu_add(m_data_bus);
-			break;
-		case ADD_R8:
-			alu_add(regs_tmp());
-			break;
-		case ADC_DB:
-			alu_adc(m_data_bus);
-			break;
-		case ADC_R8:
-			alu_adc(regs_tmp());
-			break;
-		case SUB_DB:
-			alu_sub(m_data_bus);
-			break;
-		case SUB_R8:
-			alu_sub(regs_tmp());
-			break;
-		case SBC_DB:
-			alu_sbc(m_data_bus);
-			break;
-		case SBC_R8:
-			alu_sbc(regs_tmp());
-			break;
-		case AND_DB:
-			alu_and(m_data_bus);
-			break;
-		case AND_R8:
-			alu_and(regs_tmp());
-			break;
-		case XOR_DB:
-			alu_xor(m_data_bus);
-			break;
-		case XOR_R8:
-			alu_xor(regs_tmp());
-			break;
-		case OR_DB:
-			alu_or(m_data_bus);
-			break;
-		case OR_R8:
-			alu_or(regs_tmp());
-			break;
-		case CP_DB:
-			alu_cp(m_data_bus);
-			break;
-		case CP_R8:
-			alu_cp(regs_tmp());
-			break;
-		case INC_DB:
-			m_data_bus = alu_inc(m_data_bus);
-			m_icount -= 2;
-			break;
-		case INC_R8:
-			alu_regd(alu_inc(regd_tmp()));
-			break;
-		case DEC_DB:
-			m_data_bus = alu_dec(m_data_bus);
-			m_icount -= 2;
-			break;
-		case DEC_R8:
-			alu_regd(alu_dec(regd_tmp()));
-			break;
-		case BIT_DB:
-			alu_bit(m_data_bus);
-			m_icount -= 1;
-			break;
-		case BIT_R8:
-			alu_bit(regs_tmp());
-			break;
-		case REGS_TMP_REG:
-			tmp_reg(regs_tmp());
-			break;
+		// Perform RES operation on data bus, takes 2 cycles
 		case RES_DB:
 			m_data_bus = alu_res(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform RES operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case RES_DB_REGS0:
 			m_data_bus = alu_res(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform RES operation on 8 bit register
 		case RES_R8:
-			alu_regs(alu_res(regs_tmp()));
+			regs(alu_res(regs()));
 			break;
+		// Check condition for RET, takes 1 cycle
+		case RET_COND:
+			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) != jp_conditions[((m_ir >> 3) & 0x07)][1])
+			{
+				end_instruction();
+			}
+			m_icount -= 1;
+			break;
+		// RETI
+		case RETI:
+			m_iff1 = m_iff2;
+			daisy_call_reti_device();
+			break;
+		// RETN
+		case RETN:
+			m_iff1 = m_iff2;
+			break;
+		// Perform RL operation on data bus, takes 2 cycles
 		case RL_DB:
 			m_data_bus = alu_rl(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform RL operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case RL_DB_REGS0:
 			m_data_bus = alu_rl(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform RL operation on 8 bit register
 		case RL_R8:
-			alu_regs(alu_rl(regs_tmp()));
+			regs(alu_rl(regs()));
 			break;
+		// RLA
+		case RLA:
+			{
+				u8 res = (m_af.b.h << 1) | (m_af.b.l & CF);
+				m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | ((m_af.b.h & 0x80) ? CF : 0) | (res & (YF | XF));
+				m_af.b.h = res;
+			}
+			break;
+		// Perform RLC operation on data bus, takes 2 cycles
 		case RLC_DB:
 			m_data_bus = alu_rlc(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform RLC operation on data bus, takes 2 cycles, also stores result in 8 bit register
 		case RLC_DB_REGS0:
 			m_data_bus = alu_rlc(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform RLC operation on 8 bit register
 		case RLC_R8:
-			alu_regs(alu_rlc(regs_tmp()));
+			regs(alu_rlc(regs()));
 			break;
+		// RLCA
+		case RLCA:
+			m_af.b.h = (m_af.b.h << 1) | (m_af.b.h >> 7);
+			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | (m_af.b.h & (YF | XF | CF));
+			break;
+		// RLD, takes 5 cycles
+		case RLD:
+			{
+				u8 res = (m_data_bus << 4) | (m_af.b.h & 0x0f);
+				m_af.b.h = (m_af.b.h & 0xf0) | (m_data_bus >> 4);
+				m_af.b.l = (m_af.b.l & CF) | SZP[m_af.b.h];
+				m_data_bus = res;
+				m_icount -= 5;
+			}
+			break;
+		// Perform RR operation on data bus, takes 2 cycles
 		case RR_DB:
 			m_data_bus = alu_rr(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform RR operation on data bus, takes 2 cycles, also stores result in 8 bit register
 		case RR_DB_REGS0:
 			m_data_bus = alu_rr(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform RR operation on 8 bit register
 		case RR_R8:
-			alu_regs(alu_rr(regs_tmp()));
+			regs(alu_rr(regs()));
 			break;
+		// RRA
+		case RRA:
+			{
+				u8 res = (m_af.b.h >> 1) | (m_af.b.l << 7);
+				m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | ((m_af.b.h & 0x01) ? CF : 0) | (res & (YF | XF));
+				m_af.b.h = res;
+			}
+			break;
+		// Perform RRC operation on data bus, takes 2 cycles
 		case RRC_DB:
 			m_data_bus = alu_rrc(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform RRC operation on data bus, takes 2 cycles, also stores result in 8 bit register
 		case RRC_DB_REGS0:
 			m_data_bus = alu_rrc(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform RRC operation on 8 bit register
 		case RRC_R8:
-			alu_regs(alu_rrc(regs_tmp()));
+			regs(alu_rrc(regs()));
 			break;
+		// RRCA
+		case RRCA:
+			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | (m_af.b.h & CF);
+			m_af.b.h = (m_af.b.h >> 1) | (m_af.b.h << 7);
+			m_af.b.l |= (m_af.b.h & (YF | XF));
+			break;
+		// RRD, takes 5 cycles
+		case RRD:
+			{
+				u8 res = (m_data_bus >> 4) | (m_af.b.h << 4);
+				m_af.b.h = (m_af.b.h & 0xf0) | (m_data_bus & 0x0f);
+				m_af.b.l = (m_af.b.l & CF) | SZP[m_af.b.h];
+				m_data_bus = res;
+				m_icount -= 5;
+			}
+			break;
+		// Change PC to 0/8/10/18/20/28/30/38
+		case RST:
+			m_pc.w.l = m_ir & 0x38;
+			m_wz.w.l = m_pc.w.l;
+			break;
+		// Perform SBC operation on A and data bus
+		case SBC_DB:
+			alu_sbc(m_data_bus);
+			break;
+		// Perform SBC operation on A and 8 bit register
+		case SBC_R8:
+			alu_sbc(regs());
+			break;
+		// 16bit subtraction with carry, takes 7 cycles
+		case SBC16:
+			sbc16();
+			break;
+		// SCF
+		case SCF:
+			m_af.b.l = (m_af.b.l & (SF | ZF | YF | XF | PF)) | CF | (m_af.b.h & (YF | XF));
+			break;
+		// Perform SET operation on data bus, takes 2 cycles
 		case SET_DB:
 			m_data_bus = alu_set(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform SET operation on data bus, takes 2 cycles, also stores result in 8 bit register
 		case SET_DB_REGS0:
 			m_data_bus = alu_set(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform SET operation on 8 bit register
 		case SET_R8:
-			alu_regs(alu_set(regs_tmp()));
+			regs(alu_set(regs()));
 			break;
+		// Perform SLA operation on data bus, takes 2 cycles
 		case SLA_DB:
 			m_data_bus = alu_sla(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform SLA operation on data bus, takes 2 cycles, also stores result in 8 bit register
 		case SLA_DB_REGS0:
 			m_data_bus = alu_sla(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform SLA operation on 8 bit register
 		case SLA_R8:
-			alu_regs(alu_sla(regs_tmp()));
+			regs(alu_sla(regs()));
 			break;
+		// Perform SLL operation on data bus, takes 2 cycles
 		case SLL_DB:
 			m_data_bus = alu_sll(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform SLL operation on data bus, takes 2 cycles, also stores result in 8 bit register
 		case SLL_DB_REGS0:
 			m_data_bus = alu_sll(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform SLL operation on 8 bit register
 		case SLL_R8:
-			alu_regs(alu_sll(regs_tmp()));
+			regs(alu_sll(regs()));
 			break;
+		// Perform SRA operation on data bus, takes 2 cycles
 		case SRA_DB:
 			m_data_bus = alu_sra(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform SRA operation on data bus, takes 2 cycles, also stores result in 8 bit register
 		case SRA_DB_REGS0:
 			m_data_bus = alu_sra(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform SRA operation on 8 bit register
 		case SRA_R8:
-			alu_regs(alu_sra(regs_tmp()));
+			regs(alu_sra(regs()));
 			break;
+		// Perform SRL operation on data bus, takes 2 cycles
 		case SRL_DB:
 			m_data_bus = alu_srl(m_data_bus);
 			m_icount -= 2;
 			break;
+		// Perform SRL operation on data bus, takes 2 cycles, also stores result in 8 bit register
 		case SRL_DB_REGS0:
 			m_data_bus = alu_srl(m_data_bus);
 			m_icount -= 2;
-			alu_regs0(m_data_bus);
+			regs0(m_data_bus);
 			break;
+		// Perform SRL operation on 8 bit register
 		case SRL_R8:
-			alu_regs(alu_srl(regs_tmp()));
+			regs(alu_srl(regs()));
+			break;
+		// Perform SUB operation on A and data bus
+		case SUB_DB:
+			alu_sub(m_data_bus);
+			break;
+		// Perform SUB operation on A and 8 bit register
+		case SUB_R8:
+			alu_sub(regs());
+			break;
+		// Assert MREQ and WR signals for write, takes 2 cycles
+		case WRITE_S:
+			write_s();
+			break;
+		// Put DE on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		case WRITE_S_DE:
+			write_s(m_de.w.l);
+			break;
+		// Put HL on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		case WRITE_S_HL:
+			write_s(m_hl_index[m_hl_offset].w.l);
+			break;
+		// Decrement SP, put SP on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		case WRITE_S_SP_DEC:
+			m_sp.w.l -= 1;
+			write_s(m_sp.w.l);
+			break;
+		// Put WZ on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		case WRITE_S_WZ:
+			write_s(m_wz.w.l);
+			break;
+		// Put WZ on address bus, increment WZ, assert MREQ and WR signals for write, takes 3 cycles
+		case WRITE_S_WZ_INC:
+			write_s(m_wz.w.l);
+			m_wz.w.l++;
+			break;
+		// Store contents of WZ in HL
+		case WZ_HL:
+			m_hl_index[m_hl_offset].w.l = m_wz.w.l;
+			break;
+		// Store contents of WZ in PC
+		case WZ_PC:
+			m_pc.w.l = m_wz.w.l;
+			break;
+		// Do nothing, takes 1 cycle
+		case X:
+			m_icount -= 1;
+			break;
+		// Do nothing, takes 2 cycles
+		case X2:
+			m_icount -= 2;
+			break;
+		// Perform XOR operation on A and data bus
+		case XOR_DB:
+			alu_xor(m_data_bus);
+			break;
+		// Perform XOR operation on A an 8 bit register
+		case XOR_R8:
+			alu_xor(regs());
+			break;
+		// put all zeroes on the data bus, takes 0 cycles
+		case ZERO_DB:
+			m_data_bus = 0;
 			break;
 		}
 		if (step & END) {
