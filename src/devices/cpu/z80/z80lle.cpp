@@ -3136,19 +3136,19 @@ void z80lle_device::execute_run()
 				fatalerror("Unsupported instruction %d,%02x encountered at address %04x", m_instruction_offset / 256,
 						   m_ir, m_prvpc.d);
 			break;
-		// register A to data bus
+		// register A to data bus, takes 0 cycles
 		case A_DB:
 			m_data_bus = m_af.b.h;
 			break;
-		// register A to W
+		// register A to W, takes 0 cycles
 		case A_W:
 			m_wz.b.h = m_af.b.h;
 			break;
-		// Perform ADC operation on A and data bus
+		// Perform ADC operation on A and data bus, takes 0 cycles
 		case ADC_DB:
 			alu_adc(m_data_bus);
 			break;
-		// Perform ADC operation on A and 8 bit register
+		// Perform ADC operation on A and 8 bit register, takes 0 cycles
 		case ADC_R8:
 			alu_adc(regs());
 			break;
@@ -3156,11 +3156,11 @@ void z80lle_device::execute_run()
 		case ADC16:
 			adc16();
 			break;
-		// Perform ADD operation on A and data bus
+		// Perform ADD operation on A and data bus, takes 0 cycles
 		case ADD_DB:
 			alu_add(m_data_bus);
 			break;
-		// Perform ADD operation on A and 8 bit register
+		// Perform ADD operation on A and 8 bit register, takes 0 cycles
 		case ADD_R8:
 			alu_add(regs());
 			break;
@@ -3185,7 +3185,7 @@ void z80lle_device::execute_run()
 			alu_bit(m_data_bus);
 			m_icount -= 1;
 			break;
-		// Perform BIT operation on 8 bit register
+		// Perform BIT operation on 8 bit register, takes 0 cycles
 		case BIT_R8:
 			alu_bit(regs());
 			break;
@@ -3204,11 +3204,11 @@ void z80lle_device::execute_run()
 		case CCF:
 			m_af.b.l = ((m_af.b.l & (SF | ZF | YF | XF | PF | CF)) | ((m_af.b.l & CF) << 4) | (m_af.b.h & (YF | XF))) ^ CF;
 			break;
-		// Perform CP operation on A and data bus
+		// Perform CP operation on A and data bus, takes 0 cycles
 		case CP_DB:
 			alu_cp(m_data_bus);
 			break;
-		// Perform CP operation on A and 8 bit register
+		// Perform CP operation on A and 8 bit register, takes 0 cycles
 		case CP_R8:
 			alu_cp(regs());
 			break;
@@ -3299,15 +3299,15 @@ void z80lle_device::execute_run()
 		case DB_REGD0:
 			db_regd0();
 			break;
-		// Store data bus in W, takes no cycles
+		// Store data bus in W, takes 0 cycles
 		case DB_W:
 			m_wz.b.h = m_data_bus;
 			break;
-		// Store data bus in Z, takes no cycles
+		// Store data bus in Z, takes 0 cycles
 		case DB_Z:
 			m_wz.b.l = m_data_bus;
 			break;
-		// Store DE in WZ
+		// Store DE in WZ, takes 0 cycles
 		case DE_WZ:
 			m_wz.w.l = m_de.w.l;
 			break;
@@ -3316,7 +3316,7 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_dec(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Decrement an 8 bit register
+		// Decrement an 8 bit register, takes 0 cycles
 		case DEC_R8:
 			regd(alu_dec(regd()));
 			break;
@@ -3339,11 +3339,11 @@ void z80lle_device::execute_run()
 			}
 			m_icount -= 2;
 			break;
-		// Decode instruction
+		// Decode instruction, takes 0 cycles
 		case DECODE:
 			decode();
 			break;
-		// Reset interrupt flip flops
+		// Reset interrupt flip flops, takes 0 cycles
 		case DI:
 			m_iff1 = m_iff2 = 0;
 			break;
@@ -3367,12 +3367,12 @@ void z80lle_device::execute_run()
 				m_icount -= 5;
 			}
 			break;
-		// Set interrupt flip flops
+		// Set interrupt flip flops, takes 0 cycles
 		case EI:
 			m_iff1 = m_iff2 = 1;
 			m_after_ei = true;
 			break;
-		// Swap AF and AF'
+		// Swap AF and AF', takes 0 cycles
 		case EX_AF_AF:
 			{
 				PAIR tmp = m_af;
@@ -3380,7 +3380,7 @@ void z80lle_device::execute_run()
 				m_af2 = tmp;
 			}
 			break;
-		// Swap DE and HL
+		// Swap DE and HL, takes 0 cycles
 		case EX_DE_HL:
 			{
 				u16 tmp = m_de.w.l;
@@ -3388,7 +3388,7 @@ void z80lle_device::execute_run()
 				m_hl_index[m_hl_offset].w.l = tmp;
 			}
 			break;
-		// Swap BC, DE, HL and BC2, DE2, HL2
+		// Swap BC, DE, HL and BC2, DE2, HL2, takes 0 cycles
 		case EXX:
 			{
 				PAIR tmp;
@@ -3403,11 +3403,11 @@ void z80lle_device::execute_run()
 				m_hl2 = tmp;
 			}
 			break;
-		// register H to data bus
+		// register H to data bus, takes 0 cycles
 		case H_DB:
 			m_data_bus = m_hl_index[m_hl_offset].b.h;
 			break;
-		// HALT
+		// HALT, takes 0 cycles
 		case HALT:
 			m_pc.w.l--;
 			if (!m_halt)
@@ -3416,11 +3416,11 @@ void z80lle_device::execute_run()
 				m_halt_cb(1);
 			}
 			break;
-		// Store HL in PC
+		// Store HL in PC, takes 0 cycles
 		case HL_PC:
 			m_pc.w.l = m_hl_index[m_hl_offset].w.l;
 			break;
-		// Store HL in WZ
+		// Store HL in WZ, takes 0 cycles
 		case HL_WZ:
 			m_wz.w.l = m_hl_index[m_hl_offset].w.l;
 			break;
@@ -3435,7 +3435,7 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_inc(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Increment an 8 bit register
+		// Increment an 8 bit register, takes 0 cycles
 		case INC_R8:
 			regd(alu_inc(regd()));
 			break;
@@ -3458,7 +3458,7 @@ void z80lle_device::execute_run()
 			}
 			m_icount -= 2;
 			break;
-		// Set flags and update pointers and counter, takes no cycles
+		// Set flags and update pointers and counter, takes 0 cycles
 		case IND:
 			{
 				m_wz.w.l = m_bc.w.l - 1;
@@ -3473,7 +3473,7 @@ void z80lle_device::execute_run()
 				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
 			}
 			break;
-		// Set flags and update pointers and counter, takes no cycles
+		// Set flags and update pointers and counter, takes 0 cycles
 		case INI:
 			{
 				m_wz.w.l = m_bc.w.l + 1;
@@ -3488,12 +3488,12 @@ void z80lle_device::execute_run()
 				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
 			}
 			break;
-		// Read data bus from input, store in A, takes no cycles
+		// Read data bus from input, store in A, takes 0 cycles
 		case INPUT_A:
 			// TODO: Flags?
 			m_af.b.h = m_data_bus;
 			break;
-		// Read data bus from input, store in 8 bit register, takes no cycles
+		// Read data bus from input, store in 8 bit register, takes 0 cycles
 		case INPUT_REGD:
 			db_regd_input();
 			break;
@@ -3506,7 +3506,7 @@ void z80lle_device::execute_run()
 			input_s(m_wz.w.l);
 			m_wz.w.l++;
 			break;
-		// Check condition for JP and perform jump
+		// Check condition for JP and perform jump, takes 0 cycles
 		case JP_COND:
 			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
 			{
@@ -3522,7 +3522,7 @@ void z80lle_device::execute_run()
 				m_icount -= 5;
 			}
 			break;
-		// register L to data bus
+		// register L to data bus, takes 0 cycles
 		case L_DB:
 			m_data_bus = m_hl_index[m_hl_offset].b.l;
 			break;
@@ -3584,7 +3584,7 @@ void z80lle_device::execute_run()
 				m_af.b.l |= VF;
 			m_icount -= 2;
 			break;
-		// NEG
+		// NEG, takes 0 cycles
 		case NEG:
 			{
 				u8 res = 0 - m_af.b.h;
@@ -3592,19 +3592,19 @@ void z80lle_device::execute_run()
 				m_af.b.h = res;
 			}
 			break;
-		// NMI
+		// NMI, takes 0 cycles
 		case NMI:
 			m_pc.w.l = 0x66;
 			break;
-		// Perform OR operation on A and data bus
+		// Perform OR operation on A and data bus, takes 0 cycles
 		case OR_DB:
 			alu_or(m_data_bus);
 			break;
-		// Perform OR operation on A and 8 bit register
+		// Perform OR operation on A and 8 bit register, takes 0 cycles
 		case OR_R8:
 			alu_or(regs());
 			break;
-		// Set flags and update pointers and counter and prepare for I/O, takes no cycles
+		// Set flags and update pointers and counter and prepare for I/O, takes 0 cycles
 		case OUTD:
 			{
 				m_bc.b.h--;
@@ -3619,7 +3619,7 @@ void z80lle_device::execute_run()
 				m_af.b.l |= SZP[(t & 0x07) ^ m_bc.b.h] & PF;
 			}
 			break;
-		// Set flags and update pointers and counter and prepare for I/O, takes no cycles
+		// Set flags and update pointers and counter and prepare for I/O, takes 0 cycles
 		case OUTI:
 			{
 				m_bc.b.h--;
@@ -3651,15 +3651,15 @@ void z80lle_device::execute_run()
 			m_icount -= 1;
 			m_pc.w.l++;
 			break;
-		// Put PC 8 high bits on data bus
+		// Put PC 8 high bits on data bus, takes 0 cycles
 		case PCH_DB:
 			m_data_bus = m_pc.b.h;
 			break;
-		// Put PC 8 low bits on data bus
+		// Put PC 8 low bits on data bus, takes 0 cycles
 		case PCL_DB:
 			m_data_bus = m_pc.b.l;
 			break;
-		// Put high 8 bits of 16 bit register on data bus
+		// Put high 8 bits of 16 bit register on data bus, takes 0 cycles
 		case R16H_DB:
 			switch (m_ir & 0x30)
 			{
@@ -3680,7 +3680,7 @@ void z80lle_device::execute_run()
 				break;
 			}
 			break;
-		// Put low 8 bits of 16 bit register on data bus
+		// Put low 8 bits of 16 bit register on data bus, takes 0 cycles
 		case R16L_DB:
 			switch (m_ir & 0x30)
 			{
@@ -3717,7 +3717,7 @@ void z80lle_device::execute_run()
 			read_s(m_pc.w.l);
 			m_pc.w.l++;
 			break;
-		// Special opcode reading while taking an interrupt
+		// Special opcode reading while taking an interrupt, takes 4 cycles
 		case READ_OP_IRQ:
 			// What is put on the address bus when taking IRQ?
 			m_icount -= 1;
@@ -3824,7 +3824,7 @@ void z80lle_device::execute_run()
 		case REGS_TMP_REG:
 			regd(regs());
 			break;
-		// 8 bit source register (bits .....xxx) to data bus (not from index registers)
+		// 8 bit source register (bits .....xxx) to data bus (not from index registers), takes 0 cycles
 		case REGS0_DB:
 			switch (m_ir & 0x07)
 			{
@@ -3898,7 +3898,7 @@ void z80lle_device::execute_run()
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform RES operation on 8 bit register
+		// Perform RES operation on 8 bit register, takes 0 cycles
 		case RES_R8:
 			regs(alu_res(regs()));
 			break;
@@ -3910,12 +3910,12 @@ void z80lle_device::execute_run()
 			}
 			m_icount -= 1;
 			break;
-		// RETI
+		// RETI, takes 0 cycles
 		case RETI:
 			m_iff1 = m_iff2;
 			daisy_call_reti_device();
 			break;
-		// RETN
+		// RETN, takes 0 cycles
 		case RETN:
 			m_iff1 = m_iff2;
 			break;
@@ -3930,11 +3930,11 @@ void z80lle_device::execute_run()
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform RL operation on 8 bit register
+		// Perform RL operation on 8 bit register, takes 0 cycles
 		case RL_R8:
 			regs(alu_rl(regs()));
 			break;
-		// RLA
+		// RLA, takes 0 cycles
 		case RLA:
 			{
 				u8 res = (m_af.b.h << 1) | (m_af.b.l & CF);
@@ -3947,17 +3947,17 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_rlc(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Perform RLC operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		// Perform RLC operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case RLC_DB_REGS0:
 			m_data_bus = alu_rlc(m_data_bus);
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform RLC operation on 8 bit register
+		// Perform RLC operation on 8 bit register, takes 0 cycles
 		case RLC_R8:
 			regs(alu_rlc(regs()));
 			break;
-		// RLCA
+		// RLCA, takes 0 cycles
 		case RLCA:
 			m_af.b.h = (m_af.b.h << 1) | (m_af.b.h >> 7);
 			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | (m_af.b.h & (YF | XF | CF));
@@ -3977,17 +3977,17 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_rr(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Perform RR operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		// Perform RR operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case RR_DB_REGS0:
 			m_data_bus = alu_rr(m_data_bus);
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform RR operation on 8 bit register
+		// Perform RR operation on 8 bit register, takes 0 cycles
 		case RR_R8:
 			regs(alu_rr(regs()));
 			break;
-		// RRA
+		// RRA, takes 0 cycles
 		case RRA:
 			{
 				u8 res = (m_af.b.h >> 1) | (m_af.b.l << 7);
@@ -4000,17 +4000,17 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_rrc(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Perform RRC operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		// Perform RRC operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case RRC_DB_REGS0:
 			m_data_bus = alu_rrc(m_data_bus);
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform RRC operation on 8 bit register
+		// Perform RRC operation on 8 bit register, takes 0 cycles
 		case RRC_R8:
 			regs(alu_rrc(regs()));
 			break;
-		// RRCA
+		// RRCA, takes 0 cycles
 		case RRCA:
 			m_af.b.l = (m_af.b.l & (SF | ZF | PF)) | (m_af.b.h & CF);
 			m_af.b.h = (m_af.b.h >> 1) | (m_af.b.h << 7);
@@ -4026,16 +4026,16 @@ void z80lle_device::execute_run()
 				m_icount -= 5;
 			}
 			break;
-		// Change PC to 0/8/10/18/20/28/30/38
+		// Change PC to 0/8/10/18/20/28/30/38, takes 0 cycles
 		case RST:
 			m_pc.w.l = m_ir & 0x38;
 			m_wz.w.l = m_pc.w.l;
 			break;
-		// Perform SBC operation on A and data bus
+		// Perform SBC operation on A and data bus, takes 0 cycles
 		case SBC_DB:
 			alu_sbc(m_data_bus);
 			break;
-		// Perform SBC operation on A and 8 bit register
+		// Perform SBC operation on A and 8 bit register, takes 0 cycles
 		case SBC_R8:
 			alu_sbc(regs());
 			break;
@@ -4052,13 +4052,13 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_set(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Perform SET operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		// Perform SET operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case SET_DB_REGS0:
 			m_data_bus = alu_set(m_data_bus);
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform SET operation on 8 bit register
+		// Perform SET operation on 8 bit register, takes 0 cycles
 		case SET_R8:
 			regs(alu_set(regs()));
 			break;
@@ -4067,13 +4067,13 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_sla(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Perform SLA operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		// Perform SLA operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case SLA_DB_REGS0:
 			m_data_bus = alu_sla(m_data_bus);
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform SLA operation on 8 bit register
+		// Perform SLA operation on 8 bit register, takes 0 cycles
 		case SLA_R8:
 			regs(alu_sla(regs()));
 			break;
@@ -4082,13 +4082,13 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_sll(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Perform SLL operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		// Perform SLL operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case SLL_DB_REGS0:
 			m_data_bus = alu_sll(m_data_bus);
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform SLL operation on 8 bit register
+		// Perform SLL operation on 8 bit register, takes 0 cycles
 		case SLL_R8:
 			regs(alu_sll(regs()));
 			break;
@@ -4097,13 +4097,13 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_sra(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Perform SRA operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		// Perform SRA operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case SRA_DB_REGS0:
 			m_data_bus = alu_sra(m_data_bus);
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform SRA operation on 8 bit register
+		// Perform SRA operation on 8 bit register, takes 0 cycles
 		case SRA_R8:
 			regs(alu_sra(regs()));
 			break;
@@ -4112,21 +4112,21 @@ void z80lle_device::execute_run()
 			m_data_bus = alu_srl(m_data_bus);
 			m_icount -= 2;
 			break;
-		// Perform SRL operation on data bus, takes 2 cycles, also stores result in 8 bit register
+		// Perform SRL operation on data bus, also stores result in 8 bit register, takes 2 cycles
 		case SRL_DB_REGS0:
 			m_data_bus = alu_srl(m_data_bus);
 			m_icount -= 2;
 			regs0(m_data_bus);
 			break;
-		// Perform SRL operation on 8 bit register
+		// Perform SRL operation on 8 bit register, takes 0 cycles
 		case SRL_R8:
 			regs(alu_srl(regs()));
 			break;
-		// Perform SUB operation on A and data bus
+		// Perform SUB operation on A and data bus, takes 0 cycles
 		case SUB_DB:
 			alu_sub(m_data_bus);
 			break;
-		// Perform SUB operation on A and 8 bit register
+		// Perform SUB operation on A and 8 bit register, takes 0 cycles
 		case SUB_R8:
 			alu_sub(regs());
 			break;
@@ -4156,11 +4156,11 @@ void z80lle_device::execute_run()
 			write_s(m_wz.w.l);
 			m_wz.w.l++;
 			break;
-		// Store contents of WZ in HL
+		// Store contents of WZ in HL, takes 0 cycles
 		case WZ_HL:
 			m_hl_index[m_hl_offset].w.l = m_wz.w.l;
 			break;
-		// Store contents of WZ in PC
+		// Store contents of WZ in PC, takes 0 cycles
 		case WZ_PC:
 			m_pc.w.l = m_wz.w.l;
 			break;
@@ -4172,11 +4172,11 @@ void z80lle_device::execute_run()
 		case X2:
 			m_icount -= 2;
 			break;
-		// Perform XOR operation on A and data bus
+		// Perform XOR operation on A and data bus, takes 0 cycles
 		case XOR_DB:
 			alu_xor(m_data_bus);
 			break;
-		// Perform XOR operation on A an 8 bit register
+		// Perform XOR operation on A an 8 bit register, takes 0 cycles
 		case XOR_R8:
 			alu_xor(regs());
 			break;
