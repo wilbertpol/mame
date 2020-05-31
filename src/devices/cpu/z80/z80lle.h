@@ -400,9 +400,7 @@ protected:
 	void output_s(u16 address);
 	void r16h_db();
 	void r16l_db();
-	void read();
 	void read_op_s();
-	void read_s();
 	void read_s(u16 address);
 	u8 regd();
 	void regd(u8 data);

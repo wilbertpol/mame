@@ -95,9 +95,9 @@ const u8 z80lle_device::jp_conditions[8][2] = {
 
 
 const u16 z80lle_device::insts[5 * 256 + 6][17] = {
-	/*****************************************************/
-	/* Regular instructions                              */
-	/*****************************************************/
+	///////////////////////////////////////////////////////
+	// Regular instructions                              //
+	///////////////////////////////////////////////////////
 
 	// 00, 4 cycles, NOP
 	{ END },
@@ -499,73 +499,137 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 7f, 4 cycles, LD A,A 
 	{ REGS_TMP_REG | END },
 
-	/* 80, 4 cycles, ADD B */ { ADD_R8 | END },
-	/* 81, 4 cycles, ADD C */ { ADD_R8 | END },
-	/* 82, 4 ccyles, ADD D */ { ADD_R8 | END },
-	/* 83, 4 cycles, ADD E */ { ADD_R8 | END },
-	/* 84, 4 cycles, ADD H */ { ADD_R8 | END },
-	/* 85, 4 cycles, ADD L */ { ADD_R8 | END },
-	/* 86, 7 cycles, ADD (HL) */ { READ_S_HL, ADD_DB | END },
-	/* 87, 4 cycles, ADC A */ { ADD_R8 | END },
-	/* 88, 4 cycles, ADC B */ { ADC_R8 | END },
-	/* 89, 4 cycles, ADC C */ { ADC_R8 | END },
-	/* 8a, 4 cycles, ADC D */ { ADC_R8 | END },
-	/* 8b, 4 cycles, ADC E */ { ADC_R8 | END },
-	/* 8c, 4 cycles, ADC H */ { ADC_R8 | END },
-	/* 8d, 4 cycles, ADC L */ { ADC_R8 | END },
-	/* 8e, 7 cycles, ADC (HL) */ { READ_S_HL, ADC_DB | END },
-	/* 8f, 4 cycles, ADC A */ { ADC_R8 | END },
+	// 80, 4 cycles, ADD B
+	{ ADD_R8 | END },
+	// 81, 4 cycles, ADD C
+	{ ADD_R8 | END },
+	// 82, 4 ccyles, ADD D
+	{ ADD_R8 | END },
+	// 83, 4 cycles, ADD E
+	{ ADD_R8 | END },
+	// 84, 4 cycles, ADD H
+	{ ADD_R8 | END },
+	// 85, 4 cycles, ADD L
+	{ ADD_R8 | END },
+	// 86, 7 cycles, ADD (HL)
+	{ READ_S_HL, ADD_DB | END },
+	// 87, 4 cycles, ADC A
+	{ ADD_R8 | END },
+	// 88, 4 cycles, ADC B
+	{ ADC_R8 | END },
+	// 89, 4 cycles, ADC C
+	{ ADC_R8 | END },
+	// 8a, 4 cycles, ADC D
+	{ ADC_R8 | END },
+	// 8b, 4 cycles, ADC E
+	{ ADC_R8 | END },
+	// 8c, 4 cycles, ADC H
+	{ ADC_R8 | END },
+	// 8d, 4 cycles, ADC L
+	{ ADC_R8 | END },
+	// 8e, 7 cycles, ADC (HL)
+	{ READ_S_HL, ADC_DB | END },
+	// 8f, 4 cycles, ADC A
+	{ ADC_R8 | END },
 
-	/* 90, 4 cycles, SUB B */ { SUB_R8 | END },
-	/* 91, 4 cycles, SUB C */ { SUB_R8 | END },
-	/* 92, 4 cycles, SUB D */ { SUB_R8 | END },
-	/* 93, 4 cycles, SUB E */ { SUB_R8 | END },
-	/* 94, 4 cycles, SUB H */ { SUB_R8 | END },
-	/* 95, 4 cycles, SUB L */ { SUB_R8 | END },
-	/* 96, 7 cycles, SUB (HL) */ { READ_S_HL, SUB_DB | END },
-	/* 97, 4 cycles, SUB A */ { SUB_R8 | END },
-	/* 98, 4 cycles, SBC B */ { SBC_R8 | END },
-	/* 99, 4 cycles, SBC C */ { SBC_R8 | END },
-	/* 9a, 4 cycles, SBC D */ { SBC_R8 | END },
-	/* 9b, 4 cycles, SBC E */ { SBC_R8 | END },
-	/* 9c, 4 cycles, SBC H */ { SBC_R8 | END },
-	/* 9d, 4 cycles, SBC L */ { SBC_R8 | END },
-	/* 9e, 7 cycles, SBC (HL) */ { READ_S_HL, SBC_DB | END },
-	/* 9f, 4 cycles, SBC A */ { SBC_R8 | END },
+	// 90, 4 cycles, SUB B
+	{ SUB_R8 | END },
+	// 91, 4 cycles, SUB C
+	{ SUB_R8 | END },
+	// 92, 4 cycles, SUB D
+	{ SUB_R8 | END },
+	// 93, 4 cycles, SUB E
+	{ SUB_R8 | END },
+	// 94, 4 cycles, SUB H
+	{ SUB_R8 | END },
+	// 95, 4 cycles, SUB L
+	{ SUB_R8 | END },
+	// 96, 7 cycles, SUB (HL)
+	{ READ_S_HL, SUB_DB | END },
+	// 97, 4 cycles, SUB A
+	{ SUB_R8 | END },
+	// 98, 4 cycles, SBC B
+	{ SBC_R8 | END },
+	// 99, 4 cycles, SBC C
+	{ SBC_R8 | END },
+	// 9a, 4 cycles, SBC D
+	{ SBC_R8 | END },
+	// 9b, 4 cycles, SBC E
+	{ SBC_R8 | END },
+	// 9c, 4 cycles, SBC H
+	{ SBC_R8 | END },
+	// 9d, 4 cycles, SBC L
+	{ SBC_R8 | END },
+	// 9e, 7 cycles, SBC (HL)
+	{ READ_S_HL, SBC_DB | END },
+	// 9f, 4 cycles, SBC A
+	{ SBC_R8 | END },
 
-	/* a0, 4 cycles, AND B */ { AND_R8 | END },
-	/* a1, 4 cycles, AND C */ { AND_R8 | END },
-	/* a2, 4 cycles, AND D */ { AND_R8 | END },
-	/* a3, 4 cycles, AND E */ { AND_R8 | END },
-	/* a4, 4 cycles, AND H */ { AND_R8 | END },
-	/* a5, 4 cycles, AND L */ { AND_R8 | END },
-	/* a6, 7 cycles, AND (HL) */ { READ_S_HL, AND_DB | END },
-	/* a7, 4 cycles, AND A */ { AND_R8 | END },
-	/* a8, 4 cycles, XOR B */ { XOR_R8 | END },
-	/* a9, 4 cycles, XOR C */ { XOR_R8 | END },
-	/* aa, 4 cycles, XOR D */ { XOR_R8 | END },
-	/* ab, 4 cycles, XOR E */ { XOR_R8 | END },
-	/* ac, 4 cycles, XOR H */ { XOR_R8 | END },
-	/* ad, 4 cycles, XOR L */ { XOR_R8 | END },
-	/* ae, 7 cycles, XOR (HL) */ { READ_S_HL, XOR_DB | END },
-	/* af, 4 cycles, XOR A */ { XOR_R8 | END },
+	// a0, 4 cycles, AND B
+	{ AND_R8 | END },
+	// a1, 4 cycles, AND C
+	{ AND_R8 | END },
+	// a2, 4 cycles, AND D
+	{ AND_R8 | END },
+	// a3, 4 cycles, AND E
+	{ AND_R8 | END },
+	// a4, 4 cycles, AND H
+	{ AND_R8 | END },
+	// a5, 4 cycles, AND L
+	{ AND_R8 | END },
+	// a6, 7 cycles, AND (HL)
+	{ READ_S_HL, AND_DB | END },
+	// a7, 4 cycles, AND A
+	{ AND_R8 | END },
+	// a8, 4 cycles, XOR B
+	{ XOR_R8 | END },
+	// a9, 4 cycles, XOR C
+	{ XOR_R8 | END },
+	// aa, 4 cycles, XOR D
+	{ XOR_R8 | END },
+	// ab, 4 cycles, XOR E
+	{ XOR_R8 | END },
+	// ac, 4 cycles, XOR H
+	{ XOR_R8 | END },
+	// ad, 4 cycles, XOR L
+	{ XOR_R8 | END },
+	// ae, 7 cycles, XOR (HL)
+	{ READ_S_HL, XOR_DB | END },
+	// af, 4 cycles, XOR A
+	{ XOR_R8 | END },
 
-	/* b0, 4 cycles, OR B */ { OR_R8 | END },
-	/* b1, 4 cycles, OR C */ { OR_R8 | END },
-	/* b2, 4 cycles, OR D */ { OR_R8 | END },
-	/* b3, 4 cycles, OR E */ { OR_R8 | END },
-	/* b4, 4 cycles, OR H */ { OR_R8 | END },
-	/* b5, 4 cycles, OR L */ { OR_R8 | END },
-	/* b6, 7 cycles, OR (HL) */ { READ_S_HL, OR_DB | END },
-	/* b7, 4 cycles, OR A */ { OR_R8 | END },
-	/* b8, 4 cycles, CP B */ { CP_R8 | END },
-	/* b9, 4 cycles, CP C */ { CP_R8 | END },
-	/* ba, 4 cycles, CP D */ { CP_R8 | END },
-	/* bb, 4 cycles, CP E */ { CP_R8 | END },
-	/* bc, 4 cycles, CP H */ { CP_R8 | END },
-	/* bd, 4 cycles, CP L */ { CP_R8 | END },
-	/* be, 7 cycles, CP (HL) */ { READ_S_HL, CP_DB | END },
-	/* bf, 4 cycles, CP A */ { CP_R8 | END },
+	// b0, 4 cycles, OR B
+	{ OR_R8 | END },
+	// b1, 4 cycles, OR C
+	{ OR_R8 | END },
+	// b2, 4 cycles, OR D
+	{ OR_R8 | END },
+	// b3, 4 cycles, OR E
+	{ OR_R8 | END },
+	// b4, 4 cycles, OR H
+	{ OR_R8 | END },
+	// b5, 4 cycles, OR L
+	{ OR_R8 | END },
+	// b6, 7 cycles, OR (HL)
+	{ READ_S_HL, OR_DB | END },
+	// b7, 4 cycles, OR A
+	{ OR_R8 | END },
+	// b8, 4 cycles, CP B
+	{ CP_R8 | END },
+	// b9, 4 cycles, CP C
+	{ CP_R8 | END },
+	// ba, 4 cycles, CP D
+	{ CP_R8 | END },
+	// bb, 4 cycles, CP E
+	{ CP_R8 | END },
+	// bc, 4 cycles, CP H
+	{ CP_R8 | END },
+	// bd, 4 cycles, CP L
+	{ CP_R8 | END },
+	// be, 7 cycles, CP (HL)
+	{ READ_S_HL, CP_DB | END },
+	// bf, 4 cycles, CP A
+	{ CP_R8 | END },
 
 	// c0, 5/11 cycles, RET NZ
 	// cycles 6-11 only taken when condition is true
@@ -673,7 +737,8 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// ce, 7 cycles, ADC A,n, see c6 for timing
 	{ READ_S_PC, ADC_DB | END },
-	/* cf, 11 cycles, RST 8H, see c7 for timing */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// cf, 11 cycles, RST 8H, see c7 for timing
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	// d0, 5/11 cycles, RET NC, see c0 for timing
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
@@ -762,7 +827,8 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	{ EX_DE_HL | END },
 	// ec, 10/17 cycles, CALL PE,nn, see c4 for timing
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* ed, +4 cycles, ED prefix */ { 0 },
+	// ed, +4 cycles, ED prefix
+	{ 0 },
 	// ee, 7 cycles, XOR n, see c6 for timing
 	{ READ_S_PC, XOR_DB | END },
 	// ef, 11 cycles, RST 28H, see c7 for timing
@@ -801,16 +867,22 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// ff, 11 cycles, RST 38H, see c7 for timing
 	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
-	/*****************************************************/
-	/* CB prefixed instructions                          */
-	/*****************************************************/
+	///////////////////////////////////////////////////////
+	// CB prefixed instructions                          //
+	///////////////////////////////////////////////////////
 
-	/* cb 00, 8 cycles, RLC B */ { RLC_R8 | END },
-	/* cb 01, 8 cycles, RLC C */ { RLC_R8 | END },
-	/* cb 02, 8 cycles, RLC D */ { RLC_R8 | END },
-	/* cb 03, 8 cycles, RLC E */ { RLC_R8 | END },
-	/* cb 04, 8 cycles, RLC H */ { RLC_R8 | END },
-	/* cb 05, 8 cycles, RLC L */ { RLC_R8 | END },
+	// cb 00, 8 cycles, RLC B
+	{ RLC_R8 | END },
+	// cb 01, 8 cycles, RLC C
+	{ RLC_R8 | END },
+	// cb 02, 8 cycles, RLC D
+	{ RLC_R8 | END },
+	// cb 03, 8 cycles, RLC E
+	{ RLC_R8 | END },
+	// cb 04, 8 cycles, RLC H
+	{ RLC_R8 | END },
+	// cb 05, 8 cycles, RLC L
+	{ RLC_R8 | END },
 	// cb 06, 15 cycles, RLC (HL)
 	//  9 T1 AB:hhll DB:--
 	// 10 T2 AB:hhll DB:xx MREQ RD
@@ -820,146 +892,272 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 14 T2 AB:hhll DB:yy MREQ
 	// 15 T3 AB:hhll DB:yy MREQ WR
 	{ READ_S_HL, RLC_WRITE_S | END },
-	/* cb 07, 8 cycles, RLC A */ { RLC_R8 | END },
-	/* cb 08, 8 cycles, RRC B */ { RRC_R8 | END },
-	/* cb 09, 8 cycles, RRC C */ { RRC_R8 | END },
-	/* cb 0a, 8 cycles, RRC D */ { RRC_R8 | END },
-	/* cb 0b, 8 cycles, RRC E */ { RRC_R8 | END },
-	/* cb 0c, 8 cycles, RRC H */ { RRC_R8 | END },
-	/* cb 0d, 8 cycles, RRC L */ { RRC_R8 | END },
-	/* cb 0e, 15 cycles, RRC (HL), see cb 06 for timing */ { READ_S_HL, RRC_WRITE_S | END },
-	/* cb 0f, 8 cycles, RRC A */ { RRC_R8 | END },
+	// cb 07, 8 cycles, RLC A
+	{ RLC_R8 | END },
+	// cb 08, 8 cycles, RRC B
+	{ RRC_R8 | END },
+	// cb 09, 8 cycles, RRC C
+	{ RRC_R8 | END },
+	// cb 0a, 8 cycles, RRC D
+	{ RRC_R8 | END },
+	// cb 0b, 8 cycles, RRC E
+	{ RRC_R8 | END },
+	// cb 0c, 8 cycles, RRC H
+	{ RRC_R8 | END },
+	// cb 0d, 8 cycles, RRC L
+	{ RRC_R8 | END },
+	// cb 0e, 15 cycles, RRC (HL), see cb 06 for timing
+	{ READ_S_HL, RRC_WRITE_S | END },
+	// cb 0f, 8 cycles, RRC A
+	{ RRC_R8 | END },
 
-	/* cb 10, 8 cycles, RL B */ { RL_R8 | END },
-	/* cb 11, 8 cycles, RL C */ { RL_R8 | END },
-	/* cb 12, 8 cycles, RL D */ { RL_R8 | END },
-	/* cb 13, 8 cycles, RL E */ { RL_R8 | END },
-	/* cb 14, 8 cycles, RL H */ { RL_R8 | END },
-	/* cb 15, 8 cycles, RL L */ { RL_R8 | END },
-	/* cb 16, 15 cycles, RL (HL), see cb 06 for timing */ { READ_S_HL, RL_WRITE_S | END },
-	/* cb 17, 8 cycles, RL A */ { RL_R8 | END },
-	/* cb 18, 8 cycles, RR B */ { RR_R8 | END },
-	/* cb 19, 8 cycles, RR C */ { RR_R8 | END },
-	/* cb 1a, 8 cycles, RR D */ { RR_R8 | END },
-	/* cb 1b, 8 cycles, RR E */ { RR_R8 | END },
-	/* cb 1c, 8 cycles, RR H */ { RR_R8 | END },
-	/* cb 1d, 8 cycles, RR L */ { RR_R8 | END },
-	/* cb 1e, 15 cycles, RR (HL), see cb 06 for timing */ { READ_S_HL, RR_WRITE_S | END },
-	/* cb 1f, 8 cycles, RR A */ { RR_R8 | END },
+	// cb 10, 8 cycles, RL B
+	{ RL_R8 | END },
+	// cb 11, 8 cycles, RL C
+	{ RL_R8 | END },
+	// cb 12, 8 cycles, RL D
+	{ RL_R8 | END },
+	// cb 13, 8 cycles, RL E
+	{ RL_R8 | END },
+	// cb 14, 8 cycles, RL H
+	{ RL_R8 | END },
+	// cb 15, 8 cycles, RL L
+	{ RL_R8 | END },
+	// cb 16, 15 cycles, RL (HL), see cb 06 for timing
+	{ READ_S_HL, RL_WRITE_S | END },
+	// cb 17, 8 cycles, RL A
+	{ RL_R8 | END },
+	// cb 18, 8 cycles, RR B
+	{ RR_R8 | END },
+	// cb 19, 8 cycles, RR C
+	{ RR_R8 | END },
+	// cb 1a, 8 cycles, RR D
+	{ RR_R8 | END },
+	// cb 1b, 8 cycles, RR E
+	{ RR_R8 | END },
+	// cb 1c, 8 cycles, RR H
+	{ RR_R8 | END },
+	// cb 1d, 8 cycles, RR L
+	{ RR_R8 | END },
+	// cb 1e, 15 cycles, RR (HL), see cb 06 for timing
+	{ READ_S_HL, RR_WRITE_S | END },
+	// cb 1f, 8 cycles, RR A
+	{ RR_R8 | END },
 
-	/* cb 20, 8 cycles, SLA B */ { SLA_R8 | END },
-	/* cb 21, 8 cycles, SLA C */ { SLA_R8 | END },
-	/* cb 22, 8 cycles, SLA D */ { SLA_R8 | END },
-	/* cb 23, 8 cycles, SLA E */ { SLA_R8 | END },
-	/* cb 24, 8 cycles, SLA H */ { SLA_R8 | END },
-	/* cb 25, 8 cycles, SLA L */ { SLA_R8 | END },
-	/* cb 26, 15 cycles, SLA (HL), see cb 06 for timing */ { READ_S_HL, SLA_WRITE_S | END },
-	/* cb 27, 8 cycles, SLA A */ { SLA_R8 | END },
-	/* cb 28, 8 cycles, SRA B */ { SRA_R8 | END },
-	/* cb 29, 8 cycles, SRA C */ { SRA_R8 | END },
-	/* cb 2a, 8 cycles, SRA D */ { SRA_R8 | END },
-	/* cb 2b, 8 cycles, SRA E */ { SRA_R8 | END },
-	/* cb 2c, 8 cycles, SRA H */ { SRA_R8 | END },
-	/* cb 2d, 8 cycles, SRA L */ { SRA_R8 | END },
-	/* cb 2e, 15 cycles, SRA (HL), see cb 06 for timing */ { READ_S_HL, SRA_WRITE_S | END },
-	/* cb 2f, 8 cycles, SRA A */ { SRA_R8 | END },
+	// cb 20, 8 cycles, SLA B
+	{ SLA_R8 | END },
+	// cb 21, 8 cycles, SLA C
+	{ SLA_R8 | END },
+	// cb 22, 8 cycles, SLA D
+	{ SLA_R8 | END },
+	// cb 23, 8 cycles, SLA E
+	{ SLA_R8 | END },
+	// cb 24, 8 cycles, SLA H
+	{ SLA_R8 | END },
+	// cb 25, 8 cycles, SLA L
+	{ SLA_R8 | END },
+	// cb 26, 15 cycles, SLA (HL), see cb 06 for timing
+	{ READ_S_HL, SLA_WRITE_S | END },
+	// cb 27, 8 cycles, SLA A
+	{ SLA_R8 | END },
+	// cb 28, 8 cycles, SRA B
+	{ SRA_R8 | END },
+	// cb 29, 8 cycles, SRA C
+	{ SRA_R8 | END },
+	// cb 2a, 8 cycles, SRA D
+	{ SRA_R8 | END },
+	// cb 2b, 8 cycles, SRA E
+	{ SRA_R8 | END },
+	// cb 2c, 8 cycles, SRA H
+	{ SRA_R8 | END },
+	// cb 2d, 8 cycles, SRA L
+	{ SRA_R8 | END },
+	// cb 2e, 15 cycles, SRA (HL), see cb 06 for timing
+	{ READ_S_HL, SRA_WRITE_S | END },
+	// cb 2f, 8 cycles, SRA A
+	{ SRA_R8 | END },
 
-	/* cb 30, 8 cycles, SLL B */ { SLL_R8 | END },
-	/* cb 31, 8 cycles, SLL C */ { SLL_R8 | END },
-	/* cb 32, 8 cycles, SLL D */ { SLL_R8 | END },
-	/* cb 33, 8 cycles, SLL E */ { SLL_R8 | END },
-	/* cb 34, 8 cycles, SLL H */ { SLL_R8 | END },
-	/* cb 35, 8 cycles, SLL L */ { SLL_R8 | END },
-	/* cb 36, 15 cycles, SLL (HL), see cb 06 for timing */ { READ_S_HL, SLL_WRITE_S | END },
-	/* cb 37, 8 cycles, SLL A */ { SLL_R8 | END },
-	/* cb 38, 8 cycles, SRL B */ { SRL_R8 | END },
-	/* cb 39, 8 cycles, SRL C */ { SRL_R8 | END },
-	/* cb 3a, 8 cycles, SRL D */ { SRL_R8 | END },
-	/* cb 3b, 8 cycles, SRL E */ { SRL_R8 | END },
-	/* cb 3c, 8 cycles, SRL H */ { SRL_R8 | END },
-	/* cb 3d, 8 cycles, SRL L */ { SRL_R8 | END },
-	/* cb 3e, 15 cycles, SRL (HL), see cb 06 for timing */ { READ_S_HL, SRL_WRITE_S | END },
-	/* cb 3f, 8 cycles, SRL A */ { SRL_R8 | END },
+	// cb 30, 8 cycles, SLL B
+	{ SLL_R8 | END },
+	// cb 31, 8 cycles, SLL C
+	{ SLL_R8 | END },
+	// cb 32, 8 cycles, SLL D
+	{ SLL_R8 | END },
+	// cb 33, 8 cycles, SLL E
+	{ SLL_R8 | END },
+	// cb 34, 8 cycles, SLL H
+	{ SLL_R8 | END },
+	// cb 35, 8 cycles, SLL L
+	{ SLL_R8 | END },
+	// cb 36, 15 cycles, SLL (HL), see cb 06 for timing
+	{ READ_S_HL, SLL_WRITE_S | END },
+	// cb 37, 8 cycles, SLL A
+	{ SLL_R8 | END },
+	// cb 38, 8 cycles, SRL B
+	{ SRL_R8 | END },
+	// cb 39, 8 cycles, SRL C
+	{ SRL_R8 | END },
+	// cb 3a, 8 cycles, SRL D
+	{ SRL_R8 | END },
+	// cb 3b, 8 cycles, SRL E
+	{ SRL_R8 | END },
+	// cb 3c, 8 cycles, SRL H
+	{ SRL_R8 | END },
+	// cb 3d, 8 cycles, SRL L
+	{ SRL_R8 | END },
+	// cb 3e, 15 cycles, SRL (HL), see cb 06 for timing
+	{ READ_S_HL, SRL_WRITE_S | END },
+	// cb 3f, 8 cycles, SRL A
+	{ SRL_R8 | END },
 
-	/* cb 40, 8 cycles, BIT 0,B */ { BIT_R8 | END },
-	/* cb 41, 8 cycles, BIT 0,C */ { BIT_R8 | END },
-	/* cb 42, 8 cycles, BIT 0,D */ { BIT_R8 | END },
-	/* cb 43, 8 cycles, BIT 0,E */ { BIT_R8 | END },
-	/* cb 44, 8 cycles, BIT 0,H */ { BIT_R8 | END },
-	/* cb 45, 8 cycles, BIT 0,L */ { BIT_R8 | END },
+	// cb 40, 8 cycles, BIT 0,B
+	{ BIT_R8 | END },
+	// cb 41, 8 cycles, BIT 0,C
+	{ BIT_R8 | END },
+	// cb 42, 8 cycles, BIT 0,D
+	{ BIT_R8 | END },
+	// cb 43, 8 cycles, BIT 0,E
+	{ BIT_R8 | END },
+	// cb 44, 8 cycles, BIT 0,H
+	{ BIT_R8 | END },
+	// cb 45, 8 cycles, BIT 0,L
+	{ BIT_R8 | END },
 	// cb 46, 12 cycles, BIT 0,(HL)
 	//  9 T1 AB:hhll DB:--
 	// 10 T2 AB:hhll DB:xx MREQ RD
 	// 11 T3 AB:hhll DB:xx MREQ RD
 	// 12 T4 AB:hhll DB:--
 	{ READ_S_HL, BIT_DB | END },
-	/* cb 47, 8 cycles, BIT 0,A */ { BIT_R8 | END },
-	/* cb 48, 8 cycles, BIT 1,B */ { BIT_R8 | END },
-	/* cb 49, 8 cycles, BIT 1,C */ { BIT_R8 | END },
-	/* cb 4a, 8 cycles, BIT 1,D */ { BIT_R8 | END },
-	/* cb 4b, 8 cycles, BIT 1,E */ { BIT_R8 | END },
-	/* cb 4c, 8 cycles, BIT 1,H */ { BIT_R8 | END },
-	/* cb 4d, 8 cycles, BIT 1,L */ { BIT_R8 | END },
-	/* cb 4e, 12 cycles, BIT 1,(HL), see cb 46 for timing */ { READ_S_HL, BIT_DB | END },
-	/* cb 4f, 8 cycles, BIT 1,A */ { BIT_R8 | END },
+	// cb 47, 8 cycles, BIT 0,A
+	{ BIT_R8 | END },
+	// cb 48, 8 cycles, BIT 1,B
+	{ BIT_R8 | END },
+	// cb 49, 8 cycles, BIT 1,C
+	{ BIT_R8 | END },
+	// cb 4a, 8 cycles, BIT 1,D
+	{ BIT_R8 | END },
+	// cb 4b, 8 cycles, BIT 1,E
+	{ BIT_R8 | END },
+	// cb 4c, 8 cycles, BIT 1,H
+	{ BIT_R8 | END },
+	// cb 4d, 8 cycles, BIT 1,L
+	{ BIT_R8 | END },
+	// cb 4e, 12 cycles, BIT 1,(HL), see cb 46 for timing
+	{ READ_S_HL, BIT_DB | END },
+	// cb 4f, 8 cycles, BIT 1,A
+	{ BIT_R8 | END },
 
-	/* cb 50, 8 cycles, BIT 2,B */ { BIT_R8 | END },
-	/* cb 51, 8 cycles, BIT 2,C */ { BIT_R8 | END },
-	/* cb 52, 8 cycles, BIT 2,D */ { BIT_R8 | END },
-	/* cb 53, 8 cycles, BIT 2,E */ { BIT_R8 | END },
-	/* cb 54, 8 cycles, BIT 2,H */ { BIT_R8 | END },
-	/* cb 55, 8 cycles, BIT 2,L */ { BIT_R8 | END },
-	/* cb 56, 12 cycles, BIT 2,(HL), see cb 46 for timing */ { READ_S_HL, BIT_DB | END },
-	/* cb 57, 8 cycles, BIT 2,A */ { BIT_R8 | END },
-	/* cb 58, 8 cycles, BIT 3,B */ { BIT_R8 | END },
-	/* cb 59, 8 cycles, BIT 3,C */ { BIT_R8 | END },
-	/* cb 5a, 8 cycles, BIT 3,D */ { BIT_R8 | END },
-	/* cb 5b, 8 cycles, BIT 3,E */ { BIT_R8 | END },
-	/* cb 5c, 8 cycles, BIT 3,H */ { BIT_R8 | END },
-	/* cb 5d, 8 cycles, BIT 3,L */ { BIT_R8 | END },
-	/* cb 5e, 12 cycles, BIT 3,(HL), see cb 46 for timing */ { READ_S_HL, BIT_DB | END },
-	/* cb 5f, 8 cycles, BIT 3,A */ { BIT_R8 | END },
+	// cb 50, 8 cycles, BIT 2,B
+	{ BIT_R8 | END },
+	// cb 51, 8 cycles, BIT 2,C
+	{ BIT_R8 | END },
+	// cb 52, 8 cycles, BIT 2,D
+	{ BIT_R8 | END },
+	// cb 53, 8 cycles, BIT 2,E
+	{ BIT_R8 | END },
+	// cb 54, 8 cycles, BIT 2,H
+	{ BIT_R8 | END },
+	// cb 55, 8 cycles, BIT 2,L
+	{ BIT_R8 | END },
+	// cb 56, 12 cycles, BIT 2,(HL), see cb 46 for timing
+	{ READ_S_HL, BIT_DB | END },
+	// cb 57, 8 cycles, BIT 2,A
+	{ BIT_R8 | END },
+	// cb 58, 8 cycles, BIT 3,B
+	{ BIT_R8 | END },
+	// cb 59, 8 cycles, BIT 3,C
+	{ BIT_R8 | END },
+	// cb 5a, 8 cycles, BIT 3,D
+	{ BIT_R8 | END },
+	// cb 5b, 8 cycles, BIT 3,E
+	{ BIT_R8 | END },
+	// cb 5c, 8 cycles, BIT 3,H
+	{ BIT_R8 | END },
+	// cb 5d, 8 cycles, BIT 3,L
+	{ BIT_R8 | END },
+	// cb 5e, 12 cycles, BIT 3,(HL), see cb 46 for timing
+	{ READ_S_HL, BIT_DB | END },
+	// cb 5f, 8 cycles, BIT 3,A
+	{ BIT_R8 | END },
 
-	/* cb 60, 8 cycles, BIT 4,B */ { BIT_R8 | END },
-	/* cb 61, 8 cycles, BIT 4,C */ { BIT_R8 | END },
-	/* cb 62, 8 cycles, BIT 4,D */ { BIT_R8 | END },
-	/* cb 63, 8 cycles, BIT 4,E */ { BIT_R8 | END },
-	/* cb 64, 8 cycles, BIT 4,H */ { BIT_R8 | END },
-	/* cb 65, 8 cycles, BIT 4,L */ { BIT_R8 | END },
-	/* cb 66, 12 cycles, BIT 4,(HL), see cb 46 for timing */ { READ_S_HL, BIT_DB | END },
-	/* cb 67, 8 cycles, BIT 4,A */ { BIT_R8 | END },
-	/* cb 68, 8 cycles, BIT 5,B */ { BIT_R8 | END },
-	/* cb 69, 8 cycles, BIT 5,C */ { BIT_R8 | END },
-	/* cb 6a, 8 cycles, BIT 5,D */ { BIT_R8 | END },
-	/* cb 6b, 8 cycles, BIT 5,E */ { BIT_R8 | END },
-	/* cb 6c, 8 cycles, BIT 5,H */ { BIT_R8 | END },
-	/* cb 6d, 8 cycles, BIT 5,L */ { BIT_R8 | END },
-	/* cb 6e, 12 cycles, BIT 5,(HL), see cb 46 for timing */ { READ_S_HL, BIT_DB | END },
-	/* cb 6f, 8 cycles, BIT 5,A */ { BIT_R8 | END },
+	// cb 60, 8 cycles, BIT 4,B
+	{ BIT_R8 | END },
+	// cb 61, 8 cycles, BIT 4,C
+	{ BIT_R8 | END },
+	// cb 62, 8 cycles, BIT 4,D
+	{ BIT_R8 | END },
+	// cb 63, 8 cycles, BIT 4,E
+	{ BIT_R8 | END },
+	// cb 64, 8 cycles, BIT 4,H
+	{ BIT_R8 | END },
+	// cb 65, 8 cycles, BIT 4,L
+	{ BIT_R8 | END },
+	// cb 66, 12 cycles, BIT 4,(HL), see cb 46 for timing
+	{ READ_S_HL, BIT_DB | END },
+	// cb 67, 8 cycles, BIT 4,A
+	{ BIT_R8 | END },
+	// cb 68, 8 cycles, BIT 5,B
+	{ BIT_R8 | END },
+	// cb 69, 8 cycles, BIT 5,C
+	{ BIT_R8 | END },
+	// cb 6a, 8 cycles, BIT 5,D
+	{ BIT_R8 | END },
+	// cb 6b, 8 cycles, BIT 5,E
+	{ BIT_R8 | END },
+	// cb 6c, 8 cycles, BIT 5,H
+	{ BIT_R8 | END },
+	// cb 6d, 8 cycles, BIT 5,L
+	{ BIT_R8 | END },
+	// cb 6e, 12 cycles, BIT 5,(HL), see cb 46 for timing
+	{ READ_S_HL, BIT_DB | END },
+	// cb 6f, 8 cycles, BIT 5,A
+	{ BIT_R8 | END },
 
-	/* cb 70, 8 cycles, BIT 6,B */ { BIT_R8 | END },
-	/* cb 71, 8 cycles, BIT 6,C */ { BIT_R8 | END },
-	/* cb 72, 8 cycles, BIT 6,D */ { BIT_R8 | END },
-	/* cb 73, 8 cycles, BIT 6,E */ { BIT_R8 | END },
-	/* cb 74, 8 cycles, BIT 6,H */ { BIT_R8 | END },
-	/* cb 75, 8 cycles, BIT 6,L */ { BIT_R8 | END },
-	/* cb 76, 12 cycles, BIT 6,(HL), see cb 46 for timing */ { READ_S_HL, BIT_DB | END },
-	/* cb 77, 8 cycles, BIT 6,A */ { BIT_R8 | END },
-	/* cb 78, 8 cycles, BIT 7,B */ { BIT_R8 | END },
-	/* cb 79, 8 cycles, BIT 7,C */ { BIT_R8 | END },
-	/* cb 7a, 8 cycles, BIT 7,D */ { BIT_R8 | END },
-	/* cb 7b, 8 cycles, BIT 7,E */ { BIT_R8 | END },
-	/* cb 7c, 8 cycles, BIT 7,H */ { BIT_R8 | END },
-	/* cb 7d, 8 cycles, BIT 7,L */ { BIT_R8 | END },
-	/* cb 7e, 12 cycles, BIT 7,(HL), see cb 46 for timing */ { READ_S_HL, BIT_DB | END },
-	/* cb 7f, 8 cycles, BIT 7,A */ { BIT_R8 | END },
+	// cb 70, 8 cycles, BIT 6,B
+	{ BIT_R8 | END },
+	// cb 71, 8 cycles, BIT 6,C
+	{ BIT_R8 | END },
+	// cb 72, 8 cycles, BIT 6,D
+	{ BIT_R8 | END },
+	// cb 73, 8 cycles, BIT 6,E
+	{ BIT_R8 | END },
+	// cb 74, 8 cycles, BIT 6,H
+	{ BIT_R8 | END },
+	// cb 75, 8 cycles, BIT 6,L
+	{ BIT_R8 | END },
+	// cb 76, 12 cycles, BIT 6,(HL), see cb 46 for timing
+	{ READ_S_HL, BIT_DB | END },
+	// cb 77, 8 cycles, BIT 6,A
+	{ BIT_R8 | END },
+	// cb 78, 8 cycles, BIT 7,B
+	{ BIT_R8 | END },
+	// cb 79, 8 cycles, BIT 7,C
+	{ BIT_R8 | END },
+	// cb 7a, 8 cycles, BIT 7,D
+	{ BIT_R8 | END },
+	// cb 7b, 8 cycles, BIT 7,E
+	{ BIT_R8 | END },
+	// cb 7c, 8 cycles, BIT 7,H
+	{ BIT_R8 | END },
+	// cb 7d, 8 cycles, BIT 7,L
+	{ BIT_R8 | END },
+	// cb 7e, 12 cycles, BIT 7,(HL), see cb 46 for timing
+	{ READ_S_HL, BIT_DB | END },
+	// cb 7f, 8 cycles, BIT 7,A
+	{ BIT_R8 | END },
 
-	/* cb 80, 8 cycles, RES 0,B */ { RES_R8 | END },
-	/* cb 81, 8 cycles, RES 0,C */ { RES_R8 | END },
-	/* cb 82, 8 cycles, RES 0,D */ { RES_R8 | END },
-	/* cb 83, 8 cycles, RES 0,E */ { RES_R8 | END },
-	/* cb 84, 8 cycles, RES 0,H */ { RES_R8 | END },
-	/* cb 85, 8 cycles, RES 0,L */ { RES_R8 | END },
+	// cb 80, 8 cycles, RES 0,B
+	{ RES_R8 | END },
+	// cb 81, 8 cycles, RES 0,C
+	{ RES_R8 | END },
+	// cb 82, 8 cycles, RES 0,D
+	{ RES_R8 | END },
+	// cb 83, 8 cycles, RES 0,E
+	{ RES_R8 | END },
+	// cb 84, 8 cycles, RES 0,H
+	{ RES_R8 | END },
+	// cb 85, 8 cycles, RES 0,L
+	{ RES_R8 | END },
 	// cb 86, 15 cycles, RES 0,(HL)
 	//  9 T1 AB:hhll DB:--
 	// 10 T2 AB:hhll DB:xx MREQ RD
@@ -969,150 +1167,279 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 14 T2 AB:hhll DB:yy MREG
 	// 15 T3 AB:hhll DB:yy MREQ WR
 	{ READ_S_HL, RES_WRITE_S | END },
-	/* cb 87, 8 cycles, RES 0,A */ { RES_R8 | END },
-	/* cb 88, 8 cycles, RES 1,B */ { RES_R8 | END },
-	/* cb 89, 8 cycles, RES 1,C */ { RES_R8 | END },
-	/* cb 8a, 8 cycles, RES 1,D */ { RES_R8 | END },
-	/* cb 8b, 8 cycles, RES 1,E */ { RES_R8 | END },
-	/* cb 8c, 8 cycles, RES 1,H */ { RES_R8 | END },
-	/* cb 8d, 8 cycles, RES 1,L */ { RES_R8 | END },
-	/* cb 8e, 15 cycles, RES 1,(HL), see cb 86 for timing */ { READ_S_HL, RES_WRITE_S | END },
-	/* cb 8f, 8 cycles, RES 1,A */ { RES_R8 | END },
+	// cb 87, 8 cycles, RES 0,A
+	{ RES_R8 | END },
+	// cb 88, 8 cycles, RES 1,B
+	{ RES_R8 | END },
+	// cb 89, 8 cycles, RES 1,C
+	{ RES_R8 | END },
+	// cb 8a, 8 cycles, RES 1,D
+	{ RES_R8 | END },
+	// cb 8b, 8 cycles, RES 1,E
+	{ RES_R8 | END },
+	// cb 8c, 8 cycles, RES 1,H
+	{ RES_R8 | END },
+	// cb 8d, 8 cycles, RES 1,L
+	{ RES_R8 | END },
+	// cb 8e, 15 cycles, RES 1,(HL), see cb 86 for timing
+	{ READ_S_HL, RES_WRITE_S | END },
+	// cb 8f, 8 cycles, RES 1,A
+	{ RES_R8 | END },
 
-	/* cb 90, 8 cycles, RES 2,B */ { RES_R8 | END },
-	/* cb 91, 8 cycles, RES 2,C */ { RES_R8 | END },
-	/* cb 92, 8 cycles, RES 2,D */ { RES_R8 | END },
-	/* cb 93, 8 cycles, RES 2,E */ { RES_R8 | END },
-	/* cb 94, 8 cycles, RES 2,H */ { RES_R8 | END },
-	/* cb 95, 8 cycles, RES 2,L */ { RES_R8 | END },
-	/* cb 96, 15 cycles, RES 2,(HL), see cb 86 for timing */ { READ_S_HL, RES_WRITE_S | END },
-	/* cb 97, 8 cycles, RES 2,A */ { RES_R8 | END },
-	/* cb 98, 8 cycles, RES 3,B */ { RES_R8 | END },
-	/* cb 99, 8 cycles, RES 3,C */ { RES_R8 | END },
-	/* cb 9a, 8 cycles, RES 3,D */ { RES_R8 | END },
-	/* cb 9b, 8 cycles, RES 3,E */ { RES_R8 | END },
-	/* cb 9c, 8 cycles, RES 3,H */ { RES_R8 | END },
-	/* cb 9d, 8 cycles, RES 3,L */ { RES_R8 | END },
-	/* cb 9e, 15 cycles, RES 3,(HL), see cb 86 for timing */ { READ_S_HL, RES_WRITE_S | END },
-	/* cb 9f, 8 cycles, RES 3,A */ { RES_R8 | END },
+	// cb 90, 8 cycles, RES 2,B
+	{ RES_R8 | END },
+	// cb 91, 8 cycles, RES 2,C
+	{ RES_R8 | END },
+	// cb 92, 8 cycles, RES 2,D
+	{ RES_R8 | END },
+	// cb 93, 8 cycles, RES 2,E
+	{ RES_R8 | END },
+	// cb 94, 8 cycles, RES 2,H
+	{ RES_R8 | END },
+	// cb 95, 8 cycles, RES 2,L
+	{ RES_R8 | END },
+	// cb 96, 15 cycles, RES 2,(HL), see cb 86 for timing
+	{ READ_S_HL, RES_WRITE_S | END },
+	// cb 97, 8 cycles, RES 2,A
+	{ RES_R8 | END },
+	// cb 98, 8 cycles, RES 3,B
+	{ RES_R8 | END },
+	// cb 99, 8 cycles, RES 3,C
+	{ RES_R8 | END },
+	// cb 9a, 8 cycles, RES 3,D
+	{ RES_R8 | END },
+	// cb 9b, 8 cycles, RES 3,E
+	{ RES_R8 | END },
+	// cb 9c, 8 cycles, RES 3,H
+	{ RES_R8 | END },
+	// cb 9d, 8 cycles, RES 3,L
+	{ RES_R8 | END },
+	// cb 9e, 15 cycles, RES 3,(HL), see cb 86 for timing
+	{ READ_S_HL, RES_WRITE_S | END },
+	// cb 9f, 8 cycles, RES 3,A
+	{ RES_R8 | END },
 
-	/* cb a0, 8 cycles, RES 4,B */ { RES_R8 | END },
-	/* cb a1, 8 cycles, RES 4,C */ { RES_R8 | END },
-	/* cb a2, 8 cycles, RES 4,D */ { RES_R8 | END },
-	/* cb a3, 8 cycles, RES 4,E */ { RES_R8 | END },
-	/* cb a4, 8 cycles, RES 4,H */ { RES_R8 | END },
-	/* cb a5, 8 cycles, RES 4,L */ { RES_R8 | END },
-	/* cb a6, 15 cycles, RES 4,(HL), see cb 86 for timing */ { READ_S_HL, RES_WRITE_S | END },
-	/* cb a7, 8 cycles, RES 4,A */ { RES_R8 | END },
-	/* cb a8, 8 cycles, RES 5,B */ { RES_R8 | END },
-	/* cb a9, 8 cycles, RES 5,C */ { RES_R8 | END },
-	/* cb aa, 8 cycles, RES 5,D */ { RES_R8 | END },
-	/* cb ab, 8 cycles, RES 5,E */ { RES_R8 | END },
-	/* cb ac, 8 cycles, RES 5,H */ { RES_R8 | END },
-	/* cb ad, 8 cycles, RES 5,L */ { RES_R8 | END },
-	/* cb ae, 15 cycles, RES 5,(HL), for cb 86 for timing */ { READ_S_HL, RES_WRITE_S | END },
-	/* cb af, 8 cycles, RES 5,A */ { RES_R8 | END },
+	// cb a0, 8 cycles, RES 4,B
+	{ RES_R8 | END },
+	// cb a1, 8 cycles, RES 4,C
+	{ RES_R8 | END },
+	// cb a2, 8 cycles, RES 4,D
+	{ RES_R8 | END },
+	// cb a3, 8 cycles, RES 4,E
+	{ RES_R8 | END },
+	// cb a4, 8 cycles, RES 4,H
+	{ RES_R8 | END },
+	// cb a5, 8 cycles, RES 4,L
+	{ RES_R8 | END },
+	// cb a6, 15 cycles, RES 4,(HL), see cb 86 for timing
+	{ READ_S_HL, RES_WRITE_S | END },
+	// cb a7, 8 cycles, RES 4,A
+	{ RES_R8 | END },
+	// cb a8, 8 cycles, RES 5,B
+	{ RES_R8 | END },
+	// cb a9, 8 cycles, RES 5,C
+	{ RES_R8 | END },
+	// cb aa, 8 cycles, RES 5,D
+	{ RES_R8 | END },
+	// cb ab, 8 cycles, RES 5,E
+	{ RES_R8 | END },
+	// cb ac, 8 cycles, RES 5,H
+	{ RES_R8 | END },
+	// cb ad, 8 cycles, RES 5,L
+	{ RES_R8 | END },
+	// cb ae, 15 cycles, RES 5,(HL), for cb 86 for timing
+	{ READ_S_HL, RES_WRITE_S | END },
+	// cb af, 8 cycles, RES 5,A
+	{ RES_R8 | END },
 
-	/* cb b0, 8 cycles, RES 6,B */ { RES_R8 | END },
-	/* cb b1, 8 cycles, RES 6,C */ { RES_R8 | END },
-	/* cb b2, 8 cycles, RES 6,D */ { RES_R8 | END },
-	/* cb b3, 8 cycles, RES 6,E */ { RES_R8 | END },
-	/* cb b4, 8 cycles, RES 6,H */ { RES_R8 | END },
-	/* cb b5, 8 cycles, RES 6,L */ { RES_R8 | END },
-	/* cb b6, 15 cycles, RES 6,(HL), see cb 86 for timing */ { READ_S_HL, RES_WRITE_S | END },
-	/* cb b7, 8 cycles, RES 6,A */ { RES_R8 | END },
-	/* cb b8, 8 cycles, RES 7,B */ { RES_R8 | END },
-	/* cb b9, 8 cycles, RES 7,C */ { RES_R8 | END },
-	/* cb ba, 8 cycles, RES 7,D */ { RES_R8 | END },
-	/* cb bb, 8 cycles, RES 7,E */ { RES_R8 | END },
-	/* cb bc, 8 cycles, RES 7,H */ { RES_R8 | END },
-	/* cb bd, 8 cycles, RES 7,L */ { RES_R8 | END },
-	/* cb be, 15 cycles, RES 7,(HL), see cb 86 for timing */ { READ_S_HL, RES_WRITE_S | END },
-	/* cb bf, 8 cycles, RES 7,A */ { RES_R8 | END },
+	// cb b0, 8 cycles, RES 6,B
+	{ RES_R8 | END },
+	// cb b1, 8 cycles, RES 6,C
+	{ RES_R8 | END },
+	// cb b2, 8 cycles, RES 6,D
+	{ RES_R8 | END },
+	// cb b3, 8 cycles, RES 6,E
+	{ RES_R8 | END },
+	// cb b4, 8 cycles, RES 6,H
+	{ RES_R8 | END },
+	// cb b5, 8 cycles, RES 6,L
+	{ RES_R8 | END },
+	// cb b6, 15 cycles, RES 6,(HL), see cb 86 for timing
+	{ READ_S_HL, RES_WRITE_S | END },
+	// cb b7, 8 cycles, RES 6,A
+	{ RES_R8 | END },
+	// cb b8, 8 cycles, RES 7,B
+	{ RES_R8 | END },
+	// cb b9, 8 cycles, RES 7,C
+	{ RES_R8 | END },
+	// cb ba, 8 cycles, RES 7,D
+	{ RES_R8 | END },
+	// cb bb, 8 cycles, RES 7,E
+	{ RES_R8 | END },
+	// cb bc, 8 cycles, RES 7,H
+	{ RES_R8 | END },
+	// cb bd, 8 cycles, RES 7,L
+	{ RES_R8 | END },
+	// cb be, 15 cycles, RES 7,(HL), see cb 86 for timing
+	{ READ_S_HL, RES_WRITE_S | END },
+	// cb bf, 8 cycles, RES 7,A
+	{ RES_R8 | END },
 
-	/* cb c0, 8 cycles, SET 0,B */ { SET_R8 | END },
-	/* cb c1, 8 cycles, SET 0,C */ { SET_R8 | END },
-	/* cb c2, 8 cycles, SET 0,D */ { SET_R8 | END },
-	/* cb c3, 8 cycles, SET 0,E */ { SET_R8 | END },
-	/* cb c4, 8 cycles, SET 0,H */ { SET_R8 | END },
-	/* cb c5, 8 cycles, SET 0,L */ { SET_R8 | END },
-	/* cb c6, 15 cycles, SET 0,(HL), see cb 86 for timing */ { READ_S_HL, SET_WRITE_S | END },
-	/* cb c7, 8 cycles, SET 0,A */ { SET_R8 | END },
-	/* cb c8, 8 cycles, SET 1,B */ { SET_R8 | END },
-	/* cb c9, 8 cycles, SET 1,C */ { SET_R8 | END },
-	/* cb ca, 8 cycles, SET 1,D */ { SET_R8 | END },
-	/* cb cb, 8 cycles, SET 1,E */ { SET_R8 | END },
-	/* cb cc, 8 cycles, SET 1,H */ { SET_R8 | END },
-	/* cb cd, 8 cycles, SET 1,L */ { SET_R8 | END },
-	/* cb ce, 15 cycles, SET 1,(HL), see cb 86 for timing */ { READ_S_HL, SET_WRITE_S | END },  // 
-	/* cb cf, 8 cycles, SET 1,A */ { SET_R8 | END },
+	// cb c0, 8 cycles, SET 0,B
+	{ SET_R8 | END },
+	// cb c1, 8 cycles, SET 0,C
+	{ SET_R8 | END },
+	// cb c2, 8 cycles, SET 0,D
+	{ SET_R8 | END },
+	// cb c3, 8 cycles, SET 0,E
+	{ SET_R8 | END },
+	// cb c4, 8 cycles, SET 0,H
+	{ SET_R8 | END },
+	// cb c5, 8 cycles, SET 0,L
+	{ SET_R8 | END },
+	// cb c6, 15 cycles, SET 0,(HL), see cb 86 for timing
+	{ READ_S_HL, SET_WRITE_S | END },
+	// cb c7, 8 cycles, SET 0,A
+	{ SET_R8 | END },
+	// cb c8, 8 cycles, SET 1,B
+	{ SET_R8 | END },
+	// cb c9, 8 cycles, SET 1,C
+	{ SET_R8 | END },
+	// cb ca, 8 cycles, SET 1,D
+	{ SET_R8 | END },
+	// cb cb, 8 cycles, SET 1,E
+	{ SET_R8 | END },
+	// cb cc, 8 cycles, SET 1,H
+	{ SET_R8 | END },
+	// cb cd, 8 cycles, SET 1,L
+	{ SET_R8 | END },
+	// cb ce, 15 cycles, SET 1,(HL), see cb 86 for timing
+	{ READ_S_HL, SET_WRITE_S | END },
+	// cb cf, 8 cycles, SET 1,A
+	{ SET_R8 | END },
 
-	/* cb d0, 8 cycles, SET 2,B */ { SET_R8 | END },
-	/* cb d1, 8 cycles, SET 2,C */ { SET_R8 | END },
-	/* cb d2, 8 cycles, SET 2,D */ { SET_R8 | END },
-	/* cb d3, 8 cycles, SET 2,E */ { SET_R8 | END },
-	/* cb d4, 8 cycles, SET 2,H */ { SET_R8 | END },
-	/* cb d5, 8 cycles, SET 2,L */ { SET_R8 | END },
-	/* cb d6, 15 cycles, SET 2,(HL), see cb 86 for timing */ { READ_S_HL, SET_WRITE_S | END },
-	/* cb d7, 8 cycles, SET 2,A */ { SET_R8 | END },
-	/* cb d8, 8 cycles, SET 3,B */ { SET_R8 | END },
-	/* cb d9, 8 cycles, SET 3,C */ { SET_R8 | END },
-	/* cb da, 8 cycles, SET 3,D */ { SET_R8 | END },
-	/* cb db, 8 cycles, SET 3,E */ { SET_R8 | END },
-	/* cb dc, 8 cycles, SET 3,H */ { SET_R8 | END },
-	/* cb dd, 8 cycles, SET 3,L */ { SET_R8 | END },
-	/* cb de, 15 cycles, SET 3,(HL), see cb 86 for timing */ { READ_S_HL, SET_WRITE_S | END },
-	/* cb df, 8 cycles, SET 3,A */ { SET_R8 | END },
+	// cb d0, 8 cycles, SET 2,B
+	{ SET_R8 | END },
+	// cb d1, 8 cycles, SET 2,C
+	{ SET_R8 | END },
+	// cb d2, 8 cycles, SET 2,D
+	{ SET_R8 | END },
+	// cb d3, 8 cycles, SET 2,E
+	{ SET_R8 | END },
+	// cb d4, 8 cycles, SET 2,H
+	{ SET_R8 | END },
+	// cb d5, 8 cycles, SET 2,L
+	{ SET_R8 | END },
+	// cb d6, 15 cycles, SET 2,(HL), see cb 86 for timing
+	{ READ_S_HL, SET_WRITE_S | END },
+	// cb d7, 8 cycles, SET 2,A
+	{ SET_R8 | END },
+	// cb d8, 8 cycles, SET 3,B
+	{ SET_R8 | END },
+	// cb d9, 8 cycles, SET 3,C
+	{ SET_R8 | END },
+	// cb da, 8 cycles, SET 3,D
+	{ SET_R8 | END },
+	// cb db, 8 cycles, SET 3,E
+	{ SET_R8 | END },
+	// cb dc, 8 cycles, SET 3,H
+	{ SET_R8 | END },
+	// cb dd, 8 cycles, SET 3,L
+	{ SET_R8 | END },
+	// cb de, 15 cycles, SET 3,(HL), see cb 86 for timing
+	{ READ_S_HL, SET_WRITE_S | END },
+	// cb df, 8 cycles, SET 3,A
+	{ SET_R8 | END },
 
-	/* cb e0, 8 cycles, SET 4,B */ { SET_R8 | END },
-	/* cb e1, 8 cycles, SET 4,C */ { SET_R8 | END },
-	/* cb e2, 8 cycles, SET 4,D */ { SET_R8 | END },
-	/* cb e3, 8 cycles, SET 4,E */ { SET_R8 | END },
-	/* cb e4, 8 cycles, SET 4,H */ { SET_R8 | END },
-	/* cb e5, 8 cycles, SET 4,L */ { SET_R8 | END },
-	/* cb e6, 15 cycles, SET 4,(HL), see cb 86 for timing */ { READ_S_HL, SET_WRITE_S | END },
-	/* cb e7, 8 cycles, SET 4,A */ { SET_R8 | END },
-	/* cb e8, 8 cycles, SET 5,B */ { SET_R8 | END },
-	/* cb e9, 8 cycles, SET 5,C */ { SET_R8 | END },
-	/* cb ea, 8 cycles, SET 5,D */ { SET_R8 | END },
-	/* cb eb, 8 cycles, SET 5,E */ { SET_R8 | END },
-	/* cb ec, 8 cycles, SET 5,H */ { SET_R8 | END },
-	/* cb ed, 8 cycles, SET 5,L */ { SET_R8 | END },
-	/* cb ee, 15 cycles, SET 5,(HL), see cb 86 for timing */ { READ_S_HL, SET_WRITE_S | END },
-	/* cb ef, 8 cycles, SET 5,A */ { SET_R8 | END },
+	// cb e0, 8 cycles, SET 4,B
+	{ SET_R8 | END },
+	// cb e1, 8 cycles, SET 4,C
+	{ SET_R8 | END },
+	// cb e2, 8 cycles, SET 4,D
+	{ SET_R8 | END },
+	// cb e3, 8 cycles, SET 4,E
+	{ SET_R8 | END },
+	// cb e4, 8 cycles, SET 4,H
+	{ SET_R8 | END },
+	// cb e5, 8 cycles, SET 4,L
+	{ SET_R8 | END },
+	// cb e6, 15 cycles, SET 4,(HL), see cb 86 for timing
+	{ READ_S_HL, SET_WRITE_S | END },
+	// cb e7, 8 cycles, SET 4,A
+	{ SET_R8 | END },
+	// cb e8, 8 cycles, SET 5,B
+	{ SET_R8 | END },
+	// cb e9, 8 cycles, SET 5,C
+	{ SET_R8 | END },
+	// cb ea, 8 cycles, SET 5,D
+	{ SET_R8 | END },
+	// cb eb, 8 cycles, SET 5,E
+	{ SET_R8 | END },
+	// cb ec, 8 cycles, SET 5,H
+	{ SET_R8 | END },
+	// cb ed, 8 cycles, SET 5,L
+	{ SET_R8 | END },
+	// cb ee, 15 cycles, SET 5,(HL), see cb 86 for timing
+	{ READ_S_HL, SET_WRITE_S | END },
+	// cb ef, 8 cycles, SET 5,A
+	{ SET_R8 | END },
 
-	/* cb f0, 8 cycles, SET 6,B */ { SET_R8 | END },
-	/* cb f1, 8 cycles, SET 6,C */ { SET_R8 | END },
-	/* cb f2, 8 cycles, SET 6,D */ { SET_R8 | END },
-	/* cb f3, 8 cycles, SET 6,E */ { SET_R8 | END },
-	/* cb f4, 8 cycles, SET 6,H */ { SET_R8 | END },
-	/* cb f5, 8 cycles, SET 6,L */ { SET_R8 | END },
-	/* cb f6, 15 cycles, SET 6,(HL), see cb 86 for timing */ { READ_S_HL, SET_WRITE_S | END },
-	/* cb f7, 8 cycles, SET 6,A */ { SET_R8 | END },
-	/* cb f8, 8 cycles, SET 7,B */ { SET_R8 | END },
-	/* cb f9, 8 cycles, SET 7,C */ { SET_R8 | END },
-	/* cb fa, 8 cycles, SET 7,D */ { SET_R8 | END },
-	/* cb fb, 8 cycles, SET 7,E */ { SET_R8 | END },
-	/* cb fc, 8 cycles, SET 7,H */ { SET_R8 | END },
-	/* cb fd, 8 cycles, SET 7,L */ { SET_R8 | END },
-	/* cb fe, 15 cycles, SET 7,(HL), see cb 86 for timing */ { READ_S_HL, SET_WRITE_S | END },
-	/* cb ff, 8 cycles, SET 7,A */ { SET_R8 | END },
+	// cb f0, 8 cycles, SET 6,B
+	{ SET_R8 | END },
+	// cb f1, 8 cycles, SET 6,C
+	{ SET_R8 | END },
+	// cb f2, 8 cycles, SET 6,D
+	{ SET_R8 | END },
+	// cb f3, 8 cycles, SET 6,E
+	{ SET_R8 | END },
+	// cb f4, 8 cycles, SET 6,H
+	{ SET_R8 | END },
+	// cb f5, 8 cycles, SET 6,L
+	{ SET_R8 | END },
+	// cb f6, 15 cycles, SET 6,(HL), see cb 86 for timing
+	{ READ_S_HL, SET_WRITE_S | END },
+	// cb f7, 8 cycles, SET 6,A
+	{ SET_R8 | END },
+	// cb f8, 8 cycles, SET 7,B
+	{ SET_R8 | END },
+	// cb f9, 8 cycles, SET 7,C
+	{ SET_R8 | END },
+	// cb fa, 8 cycles, SET 7,D
+	{ SET_R8 | END },
+	// cb fb, 8 cycles, SET 7,E
+	{ SET_R8 | END },
+	// cb fc, 8 cycles, SET 7,H
+	{ SET_R8 | END },
+	// cb fd, 8 cycles, SET 7,L
+	{ SET_R8 | END },
+	// cb fe, 15 cycles, SET 7,(HL), see cb 86 for timing
+	{ READ_S_HL, SET_WRITE_S | END },
+	// cb ff, 8 cycles, SET 7,A
+	{ SET_R8 | END },
 
-	/*****************************************************/
-	/* ED-prefixed instructions                          */
-	/*****************************************************/
+	///////////////////////////////////////////////////////
+	// ED-prefixed instructions                          //
+	///////////////////////////////////////////////////////
 
-	/* ed 00 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed 08 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 00-07, 8 cycles
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 08-0f, 8 cycles
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
-	/* ed 10 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed 18 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 10-17, 8 cycles
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 18-1f, 8 cycles
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
-	/* ed 20 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed 28 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 20-27, 8 cycles
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 28-2f, 8 cycles
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
-	/* ed 30 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed 38 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 30-37, 8, cycles
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 38-3f, 8 cycles
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
 	// ed 40, 12 cycles, IN B,(C)
 	//  9 T1 AB:bbcc DB:--
@@ -1149,7 +1476,8 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 19 T2 AB:5679 DB:bb MREQ
 	// 20 T3 AB:5679 DB:bb MREQ WR
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, R16L_WRITE_S_WZ_INC, R16H_WRITE_S_WZ | END },
-	/* ed 44, 8 cycles, NEG */ { NEG | END },
+	// ed 44, 8 cycles, NEG
+	{ NEG | END },
 	// ed 45, 14 cycles, RETN
 	//  9 T1 AB:5678 DB:--
 	// 10 T2 AB:5678 DB:yy MREQ RD
@@ -1158,13 +1486,17 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 13 T2 AB:5679 DB:xx MREQ RD
 	// 14 T3 AB:5679 DB:xx MREQ RD
 	{ RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* ed 46, 8 cycles, IM 0 */ { IM | END },
+	// ed 46, 8 cycles, IM 0
+	{ IM | END },
 	// ed 47, 9 cycles, LD I,A
 	// 9 AB:1235 DB:--
 	{ LD_I_A | END },
-	/* ed 48, 12 cycles, IN C,(C), see ed 40 for timing */ { INPUT_S_BC, INPUT_REGD | END },
-	/* ed 49, 12 cycles, OUT (C),C, see ed 41 for timing */ { REGD_DB, OUTPUT_S_BC | END },
-	/* ed 4a, 15 cycles, ADC HL,BC, see ed 42 for timing */ { ADC16 | END },
+	// ed 48, 12 cycles, IN C,(C), see ed 40 for timing
+	{ INPUT_S_BC, INPUT_REGD | END },
+	// ed 49, 12 cycles, OUT (C),C, see ed 41 for timing
+	{ REGD_DB, OUTPUT_S_BC | END },
+	// ed 4a, 15 cycles, ADC HL,BC, see ed 42 for timing
+	{ ADC16 | END },
 	// ed 4b, 20 cycles, LD BC,(nn)
 	//  9 T1 AB:1236 DB:--
 	// 10 T2 AB:1236 DB:78 MREQ RD
@@ -1179,38 +1511,62 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 19 T2 AB:5679 DB:xx MREQ RD
 	// 20 T3 AB:5679 DB:xx MREQ RD
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_R16L_READ_S_WZ, DB_R16H | END },
-	/* ed 4c, 8 cycles, NEG */ { NEG | END },
-	/* ed 4d, 14 cycles, RETI, sed ed 45 for timing */ { RETI, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* ed 4e, 8 cycles, IM 0 */ { IM | END },
-	/* ed 4f, 9 cycles, LD R,A */ { LD_R_A | END },
+	// ed 4c, 8 cycles, NEG
+	{ NEG | END },
+	// ed 4d, 14 cycles, RETI, sed ed 45 for timing
+	{ RETI, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// ed 4e, 8 cycles, IM 0
+	{ IM | END },
+	// ed 4f, 9 cycles, LD R,A
+	{ LD_R_A | END },
 
-	/* ed 50, 12 cycles, IN D,(C), see ed 40 for timing */ { INPUT_S_BC, INPUT_REGD | END },
-	/* ed 51, 12 cycles, OUT (C),D, see ed 41 for timing */ { REGD_DB, OUTPUT_S_BC | END },
-	/* ed 52, 15 cycles SBC HL,DE, see ed 42 for timing */ { SBC16 | END },
-	/* ed 53, 20 cycles, LD (nn),DE, see ed 43 for timing */
+	// ed 50, 12 cycles, IN D,(C), see ed 40 for timing
+	{ INPUT_S_BC, INPUT_REGD | END },
+	// ed 51, 12 cycles, OUT (C),D, see ed 41 for timing
+	{ REGD_DB, OUTPUT_S_BC | END },
+	// ed 52, 15 cycles SBC HL,DE, see ed 42 for timing
+	{ SBC16 | END },
+	// ed 53, 20 cycles, LD (nn),DE, see ed 43 for timing
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, R16L_WRITE_S_WZ_INC, R16H_WRITE_S_WZ | END },
-	/* ed 54, 8 cycles, NEG */ { NEG | END },
-	/* ed 55, 14 cycles, RETN, see ed 45 for timing */ { RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* ed 56 */ { IM | END },  // 8 cycles, IM 1
-	/* ed 57 */ { LD_A_I | END },  // 9 cycles, LD A,I
-	/* ed 58, 12 cycles, IN E,(C), see ed 40 for timing */ { INPUT_S_BC, INPUT_REGD | END },
-	/* ed 59, 12 cycles, OUT (C),E, see ed 41 for timing */ { REGD_DB, OUTPUT_S_BC | END },
-	/* ed 5a, 15 cycles, ADC HL,DE, see ed 42 for timing */ { ADC16 | END },
-	/* ed 5b, 20 cycles, LD DE,(nn), see ed 4b for timing */
+	// ed 54, 8 cycles, NEG
+	{ NEG | END },
+	// ed 55, 14 cycles, RETN, see ed 45 for timing
+	{ RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// ed 56, 8 cycles, IM 1
+	{ IM | END },
+	// ed 57, 9 cycles, LD A,I
+	{ LD_A_I | END },
+	// ed 58, 12 cycles, IN E,(C), see ed 40 for timing
+	{ INPUT_S_BC, INPUT_REGD | END },
+	// ed 59, 12 cycles, OUT (C),E, see ed 41 for timing
+	{ REGD_DB, OUTPUT_S_BC | END },
+	// ed 5a, 15 cycles, ADC HL,DE, see ed 42 for timing
+	{ ADC16 | END },
+	// ed 5b, 20 cycles, LD DE,(nn), see ed 4b for timing
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_R16L_READ_S_WZ, DB_R16H | END },
-	/* ed 5c, 8 cycles, NEG */ { NEG | END },
-	/* ed 5d, 14 cycles, RETN, see ed 42 for timing */ { RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* ed 5e, 8 cycles, IM 2 */ { IM | END },
-	/* ed 5f, 9 cycles, LD A,R */ { LD_A_R | END },
+	// ed 5c, 8 cycles, NEG
+	{ NEG | END },
+	// ed 5d, 14 cycles, RETN, see ed 42 for timing
+	{ RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// ed 5e, 8 cycles, IM 2
+	{ IM | END },
+	// ed 5f, 9 cycles, LD A,R
+	{ LD_A_R | END },
 
-	/* ed 60, 12 cycles, IN H,(C), see ed 40 for timing */ { INPUT_S_BC, INPUT_REGD | END },
-	/* ed 61, 12 cycles, OUT (C),H, see ed 41 for timing */ { REGD_DB, OUTPUT_S_BC | END },
-	/* ed 62, 15 cycles, SBC HL,HL, see ed 42 for timing */ { SBC16 | END },
-	/* ed 63, 20 cycles, LD (nn),HL, see ed 43 for timing */
+	// ed 60, 12 cycles, IN H,(C), see ed 40 for timing
+	{ INPUT_S_BC, INPUT_REGD | END },
+	// ed 61, 12 cycles, OUT (C),H, see ed 41 for timing
+	{ REGD_DB, OUTPUT_S_BC | END },
+	// ed 62, 15 cycles, SBC HL,HL, see ed 42 for timing
+	{ SBC16 | END },
+	// ed 63, 20 cycles, LD (nn),HL, see ed 43 for timing
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, R16L_WRITE_S_WZ_INC, R16H_WRITE_S_WZ | END },
-	/* ed 64, 8 cycles, NEG */ { NEG | END },
-	/* ed 65, 14 cycles, RETN, see ed 45 for timing */ { RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* ed 66, 8 cycles, IM 0 */ { IM | END },
+	// ed 64, 8 cycles, NEG
+	{ NEG | END },
+	// ed 65, 14 cycles, RETN, see ed 45 for timing
+	{ RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// ed 66, 8 cycles, IM 0
+	{ IM | END },
 	// ed 67, 18 cycles, RRD
 	//  9 T1 AB:hhll DB:--
 	// 10 T2 AB:hhll DB:xx MREQ RD
@@ -1223,39 +1579,65 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 17 T2 AB:hhll DB:yy MREQ
 	// 18 T3 AB:hhll DB:yy MREQ WR
 	{ HL_WZ, READ_S_WZ_INC, RRD, WRITE_S | END },
-	/* ed 68, 12 cycles, IN L,(C), see ed 40 for timing */ { INPUT_S_BC, INPUT_REGD | END },
-	/* ed 69, 12 cycles, OUT (C),L, see ed 41 for timing */ { REGD_DB, OUTPUT_S_BC | END },
-	/* ed 6a, 15 cycles, ADC HL,HL, see ed 42 for timing */ { ADC16 | END },
-	/* ed 6b, 20 cycles, LD HL,(nn), see ed 4b for timing */
+	// ed 68, 12 cycles, IN L,(C), see ed 40 for timing
+	{ INPUT_S_BC, INPUT_REGD | END },
+	// ed 69, 12 cycles, OUT (C),L, see ed 41 for timing
+	{ REGD_DB, OUTPUT_S_BC | END },
+	// ed 6a, 15 cycles, ADC HL,HL, see ed 42 for timing
+	{ ADC16 | END },
+	// ed 6b, 20 cycles, LD HL,(nn), see ed 4b for timing
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_R16L_READ_S_WZ, DB_R16H | END },
-	/* ed 6c, 8 cycles, NEG */ { NEG | END },
-	/* ed 6d, 14 cycles, RETN, see ed 45 for timing */ { RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* ed 6e, 8 cycles, IM 0 */ { IM | END },
-	/* ed 6f, 18 cycles, RLD, see ed 67 for timing */ { HL_WZ, READ_S_WZ_INC, RLD, WRITE_S | END },
+	// ed 6c, 8 cycles, NEG
+	{ NEG | END },
+	// ed 6d, 14 cycles, RETN, see ed 45 for timing
+	{ RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// ed 6e, 8 cycles, IM 0
+	{ IM | END },
+	// ed 6f, 18 cycles, RLD, see ed 67 for timing
+	{ HL_WZ, READ_S_WZ_INC, RLD, WRITE_S | END },
 
-	/* ed 70, 12 cycles, IN F,(C), see ed 40 for timing */ { INPUT_S_BC, INPUT_REGD | END },
-	/* ed 71, 12 cycles, OUT (C),0, see ed 41 for timing */ { ZERO_DB, OUTPUT_S_BC | END },
-	/* ed 72, 15 cycles, SBC HL,SP, see ed 42 for timing */ { SBC16 | END },
-	/* ed 73, 20 cycles, LD (nn),SP, see ed 43 for timing */
+	// ed 70, 12 cycles, IN F,(C), see ed 40 for timing
+	{ INPUT_S_BC, INPUT_REGD | END },
+	// ed 71, 12 cycles, OUT (C),0, see ed 41 for timing
+	{ ZERO_DB, OUTPUT_S_BC | END },
+	// ed 72, 15 cycles, SBC HL,SP, see ed 42 for timing
+	{ SBC16 | END },
+	// ed 73, 20 cycles, LD (nn),SP, see ed 43 for timing
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, R16L_WRITE_S_WZ_INC, R16H_WRITE_S_WZ | END },
-	/* ed 74, 8 cycles, NEG */ { NEG | END },
-	/* ed 75, 14 cycles, RETN, see ed 45 for timing */ { RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* ed 76, 8 cycles, IM 1 */ { IM | END },
-	/* ed 77, 8 cycles, illegal */ { END },
-	/* ed 78, 12 cycles, IN A,(C), see ed 40 for timing */ { INPUT_S_BC, INPUT_REGD | END },
-	/* ed 79, 12 cycles, OUT (C),A, see ed 41 for timing */ { REGD_DB, OUTPUT_S_BC | END },
-	/* ed 7a, 15 cycles, ADC HL,SP, see ed 42 for timing */ { ADC16 | END },
-	/* ed 7b, 20 cycles, LD SP,(nn), see ed 4b for timing */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_R16L_READ_S_WZ, DB_R16H | END },
-	/* ed 7c, 8 cycles, NEG */ { NEG | END },
-	/* ed 7d, 14 cycles, RETN, see ed 45 for timing */ { RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* ed 7e, 8 cycles, IM 2 */ { IM | END },
-	/* ed 7f, 8 cycles, illegal */ { END },
+	// ed 74, 8 cycles, NEG
+	{ NEG | END },
+	// ed 75, 14 cycles, RETN, see ed 45 for timing
+	{ RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// ed 76, 8 cycles, IM 1
+	{ IM | END },
+	// ed 77, 8 cycles, illegal
+	{ END },
+	// ed 78, 12 cycles, IN A,(C), see ed 40 for timing
+	{ INPUT_S_BC, INPUT_REGD | END },
+	// ed 79, 12 cycles, OUT (C),A, see ed 41 for timing
+	{ REGD_DB, OUTPUT_S_BC | END },
+	// ed 7a, 15 cycles, ADC HL,SP, see ed 42 for timing
+	{ ADC16 | END },
+	// ed 7b, 20 cycles, LD SP,(nn), see ed 4b for timing
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_R16L_READ_S_WZ, DB_R16H | END },
+	// ed 7c, 8 cycles, NEG
+	{ NEG | END },
+	// ed 7d, 14 cycles, RETN, see ed 45 for timing
+	{ RETN, READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// ed 7e, 8 cycles, IM 2
+	{ IM | END },
+	// ed 7f, 8 cycles, illegal
+	{ END },
 
-	/* ed 80 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed 88 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 80-87
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 88-8f
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
-	/* ed 90 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed 98 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 90-97
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed 98-9f
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
 	// ed a0, 16 cycles, LDI
 	//  9 T1 AB:hhll DB:--
@@ -1297,7 +1679,8 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 15 T3 AB:bbcc DB:xx WR IORQ
 	// 16 T4 AB:bbcc DB:xx WR IORQ
 	{ X, READ_S_HL, OUTI, OUTPUT_S_BC | END },
-	/* ed a4 */ { END }, { END }, { END }, { END },
+	// ed a4-a7
+	{ END }, { END }, { END }, { END },
 	// ed a8, 16 cycles, LDD
 	//  9 T1 AB:hhll DB:--
 	// 10 T2 AB:hhll DB:xx MREQ RD
@@ -1338,7 +1721,8 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 15 T3 AB:bbcc DB:xx WR IORQ
 	// 16 T4 AB:bbcc DB:xx WR IORQ
 	{ X, READ_S_HL, OUTPUT_S_BC | END },
-	/* ed ac */ { END }, { END }, { END }, { END },
+	// ed ac-af
+	{ END }, { END }, { END }, { END },
 
 	// ed b0, 16/21 cycles, LDIR
 	// cycles 17-21 when BC != 0
@@ -1404,7 +1788,8 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 20 T4 AB:bbcc DB:--
 	// 21 T5 AB:bbcc DB:--
 	{ X, READ_S_HL, OUTI, OUTPUT_S_BC, REPEATIO | END },
-	/* ed b4 */ { END }, { END }, { END }, { END },
+	// ed b4-b7
+	{ END }, { END }, { END }, { END },
 	// ed b8, 16/21 cycles, LDDR
 	// cycles 17-21 when BC != 0
 	//  9 T1 AB:hhll DB:--
@@ -1469,80 +1854,141 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 20 T4 AB:bbcc DB:--
 	// 21 T5 AB:bbcc DB:--
 	{ X, READ_S_HL, OUTPUT_S_BC, REPEATIO | END },
-	/* ed bc */ { END }, { END }, { END }, { END },
+	// ed bc-bf
+	{ END }, { END }, { END }, { END },
 
-	/* ed c0 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed c8 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed c0-c7
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed c8-cf
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
-	/* ed d0 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed d8 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed d0-d7
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed d8-df
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
-	/* ed e0 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed e8 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed e0-e7
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed e8-ef
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
-	/* ed f0 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
-	/* ed f8 */ { END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed f0-f7
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
+	// ed f8-ff
+	{ END }, { END }, { END }, { END }, { END }, { END }, { END }, { END },
 
-	/*****************************************************/
-	/* DD/FD prefixed instructions                       */
-	/* Almost equal to regular instructions              */
-	/*****************************************************/
+	///////////////////////////////////////////////////////
+	// DD/FD prefixed instructions                       //
+	// Almost equal to regular instructions              //
+	///////////////////////////////////////////////////////
 
-	/* dd/fd 00, 8 cycles, NOP */ { END },
-	/* dd/fd 01, 14 cycles, LD BC,nn */ { READ_S_PC, DB_R16L_READ_S_PC, DB_R16H | END },
-	/* dd/fd 02, 11 cycles, LD (BC),A */ { WRITE_BCDE_A | END },
-	/* dd/fd 03, 10 cycles, INC BC */ { INC_R16 | END },
-	/* dd/fd 04, 8 cycles, INC B */ { INC_R8 | END },
-	/* dd/fd 05, 8 cycles, DEC B */ { DEC_R8 | END },
-	/* dd/fd 06, 11 cycles, LD B,n */ { READ_S_PC, DB_REGD | END },
-	/* dd/fd 07, 8 cycles, RLCA */ { RLCA | END },
-	/* dd/fd 08, 8 cycles, EX AF,AF' */ { EX_AF_AF | END },
-	/* dd/fd 09, 15 cycles, ADD IX/IY,BC */ { ADD16 | END },
-	/* dd/fd 0a, 11 cycles, LD A,(BC) */ { READ_S_BCDE_WZ_INC, DB_A | END },
-	/* dd/fd 0b, 10 cycles, DEC BC */ { DEC_R16 | END }, 
-	/* dd/fd 0c, 8 cycles, INC C */ { INC_R8 | END },
-	/* dd/fd 0d, 8 cycles, DEC C */ { DEC_R8 | END },
-	/* dd/fd 0e, 11 cycles, LD C,n */ { READ_S_PC, DB_REGD | END },
-	/* dd/fd 0f, 8 cycles, RRCA */ { RRCA | END },
+	// dd/fd 00, 8 cycles, NOP
+	{ END },
+	// dd/fd 01, 14 cycles, LD BC,nn
+	{ READ_S_PC, DB_R16L_READ_S_PC, DB_R16H | END },
+	// dd/fd 02, 11 cycles, LD (BC),A
+	{ WRITE_BCDE_A | END },
+	// dd/fd 03, 10 cycles, INC BC
+	{ INC_R16 | END },
+	// dd/fd 04, 8 cycles, INC B
+	{ INC_R8 | END },
+	// dd/fd 05, 8 cycles, DEC B
+	{ DEC_R8 | END },
+	// dd/fd 06, 11 cycles, LD B,n
+	{ READ_S_PC, DB_REGD | END },
+	// dd/fd 07, 8 cycles, RLCA
+	{ RLCA | END },
+	// dd/fd 08, 8 cycles, EX AF,AF'
+	{ EX_AF_AF | END },
+	// dd/fd 09, 15 cycles, ADD IX/IY,BC
+	{ ADD16 | END },
+	// dd/fd 0a, 11 cycles, LD A,(BC)
+	{ READ_S_BCDE_WZ_INC, DB_A | END },
+	// dd/fd 0b, 10 cycles, DEC BC
+	{ DEC_R16 | END }, 
+	// dd/fd 0c, 8 cycles, INC C
+	{ INC_R8 | END },
+	// dd/fd 0d, 8 cycles, DEC C
+	{ DEC_R8 | END },
+	// dd/fd 0e, 11 cycles, LD C,n
+	{ READ_S_PC, DB_REGD | END },
+	// dd/fd 0f, 8 cycles, RRCA
+	{ RRCA | END },
 
-	/* dd/fd 10, 12/17 cycles, DJNZ n */ { X_READ_S_PC, DJNZ | END },
-	/* dd/fd 11, 14 cycles, LD DE,nn */ { READ_S_PC, DB_R16L_READ_S_PC, DB_R16H | END },
-	/* dd/fd 12, 7 cycles, LD (DE),A */ { WRITE_BCDE_A | END },
-	/* dd/fd 13, 10 cycles, INC DE */ { INC_R16 | END },
-	/* dd/fd 14, 8 cycles, INC D */ { INC_R8 | END },
-	/* dd/fd 15, 8 cycles, DEC D */ { DEC_R8 | END },
-	/* dd/fd 16, 11 cycles, LD D,n */ { READ_S_PC, DB_REGD | END },
-	/* dd/fd 17, 8 cycles, RLA */ { RLA | END },
-	/* dd/fd 18, 16 cycles, JR n */ { READ_S_PC, JR_COND | END },
-	/* dd/fd 19, 11 cycles, ADD IX/IY,DE */ { ADD16 | END },
-	/* dd/fd 1a, 11 cycles, LD A,(DE) */ { READ_S_BCDE_WZ_INC, DB_A | END },
-	/* dd/fd 1b, 10 cycles, DEC DE */ { DEC_R16 | END },
-	/* dd/fd 1c, 8 cycles, INC E */ { INC_R8 | END },
-	/* dd/fd 1d, 8 cycles, DEC E */ { DEC_R8 | END },
-	/* dd/fd 1e, 11 cycles, LD E,n */ { READ_S_PC, DB_REGD | END },
-	/* dd/fd 1f, 8 cycles, RRA */ { RRA | END },
+	// dd/fd 10, 12/17 cycles, DJNZ n
+	{ X_READ_S_PC, DJNZ | END },
+	// dd/fd 11, 14 cycles, LD DE,nn
+	{ READ_S_PC, DB_R16L_READ_S_PC, DB_R16H | END },
+	// dd/fd 12, 7 cycles, LD (DE),A
+	{ WRITE_BCDE_A | END },
+	// dd/fd 13, 10 cycles, INC DE
+	{ INC_R16 | END },
+	// dd/fd 14, 8 cycles, INC D
+	{ INC_R8 | END },
+	// dd/fd 15, 8 cycles, DEC D
+	{ DEC_R8 | END },
+	// dd/fd 16, 11 cycles, LD D,n
+	{ READ_S_PC, DB_REGD | END },
+	// dd/fd 17, 8 cycles, RLA
+	{ RLA | END },
+	// dd/fd 18, 16 cycles, JR n
+	{ READ_S_PC, JR_COND | END },
+	// dd/fd 19, 11 cycles, ADD IX/IY,DE
+	{ ADD16 | END },
+	// dd/fd 1a, 11 cycles, LD A,(DE)
+	{ READ_S_BCDE_WZ_INC, DB_A | END },
+	// dd/fd 1b, 10 cycles, DEC DE
+	{ DEC_R16 | END },
+	// dd/fd 1c, 8 cycles, INC E
+	{ INC_R8 | END },
+	// dd/fd 1d, 8 cycles, DEC E
+	{ DEC_R8 | END },
+	// dd/fd 1e, 11 cycles, LD E,n
+	{ READ_S_PC, DB_REGD | END },
+	// dd/fd 1f, 8 cycles, RRA
+	{ RRA | END },
 
-	/* dd/fd 20, 11/16 cycles, JR NZ,n */ { READ_S_PC, JR_COND | END },
-	/* dd/fd 21, 14 cycles, LD IX/IY,nn */ { READ_S_PC, DB_R16L_READ_S_PC, DB_R16H | END },
-	/* dd/fd 22, 20 cycles, LD (nn),IX/IY */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_L_DB_WRITE_S_WZ_INC, H_DB_WRITE_S_WZ | END },
-	/* dd/fd 23, 10 cycles, INC IX/IY */ { INC_R16 | END },
-	/* dd/fd 24, 8 cycles, INC IXh/IYh */ { INC_R8 | END },
-	/* dd/fd 25, 8 cycles, DEC IXh/IYh */ { DEC_R8 | END },
-	/* dd/fd 26, 11 cycles, LD IXh/IYh,n */ { READ_S_PC, DB_REGD | END },
-	/* dd/fd 27, 8 cycles, DAA */ { DAA | END },
-	/* dd/fd 28, 11/16 cycles, JR Z,n */ { READ_S_PC, JR_COND | END },
-	/* dd/fd 29, 15 cycles, ADD IX/IY,IX/IY */ { ADD16 | END },
-	/* dd/fd 2a, 20 cycles, LD IX/IY,(nn) */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_R16L_READ_S_WZ, DB_R16H | END },
-	/* dd/fd 2b, 10 cycles, DEC IX/IY */ { DEC_R16 | END },
-	/* dd/fd 2c, 8 cycles, INC IXl/IYl */ { INC_R8 | END },
-	/* dd/fd 2d, 8 cycles, DEC IXl/IYl */ { DEC_R8 | END },
-	/* dd/fd 2e, 11 cycles, LD IXl/IYl,n */ { READ_S_PC, DB_REGD | END },
-	/* dd/fd 2f, 8 cycles, CPL */ { CPL | END },
+	// dd/fd 20, 11/16 cycles, JR NZ,n
+	{ READ_S_PC, JR_COND | END },
+	// dd/fd 21, 14 cycles, LD IX/IY,nn
+	{ READ_S_PC, DB_R16L_READ_S_PC, DB_R16H | END },
+	// dd/fd 22, 20 cycles, LD (nn),IX/IY
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_L_DB_WRITE_S_WZ_INC, H_DB_WRITE_S_WZ | END },
+	// dd/fd 23, 10 cycles, INC IX/IY
+	{ INC_R16 | END },
+	// dd/fd 24, 8 cycles, INC IXh/IYh
+	{ INC_R8 | END },
+	// dd/fd 25, 8 cycles, DEC IXh/IYh
+	{ DEC_R8 | END },
+	// dd/fd 26, 11 cycles, LD IXh/IYh,n
+	{ READ_S_PC, DB_REGD | END },
+	// dd/fd 27, 8 cycles, DAA
+	{ DAA | END },
+	// dd/fd 28, 11/16 cycles, JR Z,n
+	{ READ_S_PC, JR_COND | END },
+	// dd/fd 29, 15 cycles, ADD IX/IY,IX/IY
+	{ ADD16 | END },
+	// dd/fd 2a, 20 cycles, LD IX/IY,(nn)
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_R16L_READ_S_WZ, DB_R16H | END },
+	// dd/fd 2b, 10 cycles, DEC IX/IY
+	{ DEC_R16 | END },
+	// dd/fd 2c, 8 cycles, INC IXl/IYl
+	{ INC_R8 | END },
+	// dd/fd 2d, 8 cycles, DEC IXl/IYl
+	{ DEC_R8 | END },
+	// dd/fd 2e, 11 cycles, LD IXl/IYl,n
+	{ READ_S_PC, DB_REGD | END },
+	// dd/fd 2f, 8 cycles, CPL
+	{ CPL | END },
 
-	/* dd/fd 30, 11/16 cycles, JR NC,n */ { READ_S_PC, JR_COND | END },
-	/* dd/fd 31, 14 cycles, LD SP,nn */ { READ_S_PC, DB_R16L_READ_S_PC, DB_R16H | END },
-	/* dd/fd 32, 17 cycles, LD (nn),A */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_A_DB_WRITE_S_WZ_INC | END },
-	/* dd/fd 33, 10 cycles, INC SP */ { INC_R16 | END },
+	// dd/fd 30, 11/16 cycles, JR NC,n
+	{ READ_S_PC, JR_COND | END },
+	// dd/fd 31, 14 cycles, LD SP,nn
+	{ READ_S_PC, DB_R16L_READ_S_PC, DB_R16H | END },
+	// dd/fd 32, 17 cycles, LD (nn),A
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_A_DB_WRITE_S_WZ_INC | END },
+	// dd/fd 33, 10 cycles, INC SP
+	{ INC_R16 | END },
 	// dd/fd 34, 23 cycles, INC (IX/IY+dd)
 	//  9 T1 AB:1236 DB:--
 	// 10 T2 AB:1236 DB:dd MREQ RD
@@ -1590,22 +2036,37 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 18 T2 AB:5678 DB:nn MREQ
 	// 19 T3 AB:5678 DB:nn MREQ WR
 	{ READ_S_PC, DISP_WZ2, READ_S_PC, WRITE_S_WZ | END },
-	/* dd/fd 37, 8 cycles, SCF */ { SCF | END },
-	/* dd/fd 38, 11/16 cycles, JR C,n */ { READ_S_PC, JR_COND | END },
-	/* dd/fd 39, 15 cycles, ADD IX/IY,SP */ { ADD16 | END },
-	/* dd/fd 3a, 17 cycles, LD A,(nn) */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_A | END },
-	/* dd/fd 3b, 10 cycles, DEC SP */ { DEC_R16 | END },
-	/* dd/fd 3c, 8 cycles, INC A */ { INC_R8 | END },
-	/* dd/fd 3d, 8 cycles, DEC A */ { DEC_R8 | END },
-	/* dd/fd 3e, 11 cycles, LD A,n */ { READ_S_PC, DB_REGD | END },
-	/* dd/fd 3f, 8 cycles, CCF */ { CCF | END },
+	// dd/fd 37, 8 cycles, SCF
+	{ SCF | END },
+	// dd/fd 38, 11/16 cycles, JR C,n
+	{ READ_S_PC, JR_COND | END },
+	// dd/fd 39, 15 cycles, ADD IX/IY,SP
+	{ ADD16 | END },
+	// dd/fd 3a, 17 cycles, LD A,(nn)
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_READ_S_WZ_INC, DB_A | END },
+	// dd/fd 3b, 10 cycles, DEC SP
+	{ DEC_R16 | END },
+	// dd/fd 3c, 8 cycles, INC A
+	{ INC_R8 | END },
+	// dd/fd 3d, 8 cycles, DEC A
+	{ DEC_R8 | END },
+	// dd/fd 3e, 11 cycles, LD A,n
+	{ READ_S_PC, DB_REGD | END },
+	// dd/fd 3f, 8 cycles, CCF
+	{ CCF | END },
 
-	/* dd/fd 40, 8 cycles, LD B,B */ { REGS_TMP_REG | END },
-	/* dd/fd 41, 8 cycles, LD B,C */ { REGS_TMP_REG | END },
-	/* dd/fd 42, 8 cycles, LD B,D */ { REGS_TMP_REG | END },
-	/* dd/fd 43, 8 cycles, LD B,E */ { REGS_TMP_REG | END },
-	/* dd/fd 44, 8 cycles, LD B,IXh/IYh */ { REGS_TMP_REG | END },
-	/* dd/fd 45, 8 cycles, LD B,IXl/IYl */ { REGS_TMP_REG | END },
+	// dd/fd 40, 8 cycles, LD B,B
+	{ REGS_TMP_REG | END },
+	// dd/fd 41, 8 cycles, LD B,C
+	{ REGS_TMP_REG | END },
+	// dd/fd 42, 8 cycles, LD B,D
+	{ REGS_TMP_REG | END },
+	// dd/fd 43, 8 cycles, LD B,E
+	{ REGS_TMP_REG | END },
+	// dd/fd 44, 8 cycles, LD B,IXh/IYh
+	{ REGS_TMP_REG | END },
+	// dd/fd 45, 8 cycles, LD B,IXl/IYl
+	{ REGS_TMP_REG | END },
 	// dd/fd 46, 19 cycles, LD B,(IX/IY+dd)
 	//  9 T1 AB:1236 DB:--
 	// 10 T2 AB:1236 DB:dd MREQ RD
@@ -1619,49 +2080,90 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 18 T2 AB:5678 DB:ee MREQ RD
 	// 19 T3 AB:5678 DB:ee MREQ RD
 	{ READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
-	/* dd/fd 47, 8 cycles, LD B,A */ { REGS_TMP_REG | END },
-	/* dd/fd 48, 8 cycles, LD C,B */ { REGS_TMP_REG | END },
-	/* dd/fd 49, 8 cycles, LD C,C */ { REGS_TMP_REG | END },
-	/* dd/fd 4a, 8 cycles, LD C,D */ { REGS_TMP_REG | END },
-	/* dd/fd 4b, 8 cycles, LD C,E */ { REGS_TMP_REG | END },
-	/* dd/fd 4c, 8 cycles, LD C,IXh/IYh */ { REGS_TMP_REG | END },
-	/* dd/fd 4d, 8 cycles, LD C,IXl/IYl */ { REGS_TMP_REG | END },
-	/* dd/fd 4e, 19 cycles, LD C,(IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
-	/* dd/fd 4f, 8 cycles, LD C,A */ { REGS_TMP_REG | END },
+	// dd/fd 47, 8 cycles, LD B,A
+	{ REGS_TMP_REG | END },
+	// dd/fd 48, 8 cycles, LD C,B
+	{ REGS_TMP_REG | END },
+	// dd/fd 49, 8 cycles, LD C,C
+	{ REGS_TMP_REG | END },
+	// dd/fd 4a, 8 cycles, LD C,D
+	{ REGS_TMP_REG | END },
+	// dd/fd 4b, 8 cycles, LD C,E
+	{ REGS_TMP_REG | END },
+	// dd/fd 4c, 8 cycles, LD C,IXh/IYh
+	{ REGS_TMP_REG | END },
+	// dd/fd 4d, 8 cycles, LD C,IXl/IYl
+	{ REGS_TMP_REG | END },
+	// dd/fd 4e, 19 cycles, LD C,(IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
+	// dd/fd 4f, 8 cycles, LD C,A
+	{ REGS_TMP_REG | END },
 
-	/* dd/fd 50, 8 cycles, LD D,B */ { REGS_TMP_REG | END },
-	/* dd/fd 51, 8 cycles, LD D,C */ { REGS_TMP_REG | END },
-	/* dd/fd 52, 8 cycles, LD D,D */ { REGS_TMP_REG | END },
-	/* dd/fd 53, 8 cycles, LD D,E */ { REGS_TMP_REG | END },
-	/* dd/fd 54, 8 cycles, LD D,IXh/IYh */ { REGS_TMP_REG | END },
-	/* dd/fd 55, 8 cycles, LD D,IXl/IYl */ { REGS_TMP_REG | END },
-	/* dd/fd 56, 19 cycles, LD D,(IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
-	/* dd/fd 57, 8 cycles, LD D,A */ { REGS_TMP_REG | END },
-	/* dd/fd 58, 8 cycles, LD E,B */ { REGS_TMP_REG | END },
-	/* dd/fd 59, 8 cycles, LD E,C */ { REGS_TMP_REG | END },
-	/* dd/fd 5a, 8 cycles, LD E,D */ { REGS_TMP_REG | END },
-	/* dd/fd 5b, 8 cycles, LD E,E */ { REGS_TMP_REG | END },
-	/* dd/fd 5c, 8 cycles, LD E,IXh/IYh */ { REGS_TMP_REG | END },
-	/* dd/fd 5d, 8 cycles, LD E,IXl/IYl */ { REGS_TMP_REG | END },
-	/* dd/fd 5e, 19 cycles, LD E,(IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
-	/* dd/fd 5f, 8 cycles, LD E,A */ { REGS_TMP_REG | END },
+	// dd/fd 50, 8 cycles, LD D,B
+	{ REGS_TMP_REG | END },
+	// dd/fd 51, 8 cycles, LD D,C
+	{ REGS_TMP_REG | END },
+	// dd/fd 52, 8 cycles, LD D,D
+	{ REGS_TMP_REG | END },
+	// dd/fd 53, 8 cycles, LD D,E
+	{ REGS_TMP_REG | END },
+	// dd/fd 54, 8 cycles, LD D,IXh/IYh
+	{ REGS_TMP_REG | END },
+	// dd/fd 55, 8 cycles, LD D,IXl/IYl
+	{ REGS_TMP_REG | END },
+	// dd/fd 56, 19 cycles, LD D,(IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
+	// dd/fd 57, 8 cycles, LD D,A
+	{ REGS_TMP_REG | END },
+	// dd/fd 58, 8 cycles, LD E,B
+	{ REGS_TMP_REG | END },
+	// dd/fd 59, 8 cycles, LD E,C
+	{ REGS_TMP_REG | END },
+	// dd/fd 5a, 8 cycles, LD E,D
+	{ REGS_TMP_REG | END },
+	// dd/fd 5b, 8 cycles, LD E,E
+	{ REGS_TMP_REG | END },
+	// dd/fd 5c, 8 cycles, LD E,IXh/IYh
+	{ REGS_TMP_REG | END },
+	// dd/fd 5d, 8 cycles, LD E,IXl/IYl
+	{ REGS_TMP_REG | END },
+	// dd/fd 5e, 19 cycles, LD E,(IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
+	// dd/fd 5f, 8 cycles, LD E,A
+	{ REGS_TMP_REG | END },
 
-	/* dd/fd 60, 8 cycles, LD IXh/IYh,B */ { REGS_TMP_REG | END },
-	/* dd/fd 61, 8 cycles, LD IXh/IYh,C */ { REGS_TMP_REG | END },
-	/* dd/fd 62, 8 cycles, LD IXh/IYh,D */ { REGS_TMP_REG | END },
-	/* dd/fd 63, 8 cycles, LD IXh/IYh,E */ { REGS_TMP_REG | END },
-	/* dd/fd 64, 8 cycles, LD IXh/IYh,IXh/IYh */ { REGS_TMP_REG | END },
-	/* dd/fd 65, 8 cycles, LD IXh/IYh,IXl/IYl */ { REGS_TMP_REG | END },
-	/* dd/fd 66, 19 cycles, LD H,(IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD0 | END },
-	/* dd/fd 67, 8 cycles, LD IXh/IYh,A */ { REGS_TMP_REG | END },
-	/* dd/fd 68, 8 cycles, LD IXl/IYl,B */ { REGS_TMP_REG | END },
-	/* dd/fd 69, 8 cycles, LD IXl/IYl,C */ { REGS_TMP_REG | END },
-	/* dd/fd 6a, 8 cycles, LD IXl/IYl,D */ { REGS_TMP_REG | END },
-	/* dd/fd 6b, 8 cycles, LD IXl/IYl,E */ { REGS_TMP_REG | END },
-	/* dd/fd 6c, 8 cycles, LD IXl/IYl,IXh/IYh */ { REGS_TMP_REG | END },
-	/* dd/fd 6d, 8 cycles, LD IXl/IYl,IXl/IYl */ { REGS_TMP_REG | END },
-	/* dd/fd 6e, 19 cycles, LD L,(IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD0 | END },
-	/* dd/fd 6f, 8 cycles, LD IXl/IYl,A */ { REGS_TMP_REG | END },
+	// dd/fd 60, 8 cycles, LD IXh/IYh,B
+	{ REGS_TMP_REG | END },
+	// dd/fd 61, 8 cycles, LD IXh/IYh,C
+	{ REGS_TMP_REG | END },
+	// dd/fd 62, 8 cycles, LD IXh/IYh,D
+	{ REGS_TMP_REG | END },
+	// dd/fd 63, 8 cycles, LD IXh/IYh,E
+	{ REGS_TMP_REG | END },
+	// dd/fd 64, 8 cycles, LD IXh/IYh,IXh/IYh
+	{ REGS_TMP_REG | END },
+	// dd/fd 65, 8 cycles, LD IXh/IYh,IXl/IYl
+	{ REGS_TMP_REG | END },
+	// dd/fd 66, 19 cycles, LD H,(IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD0 | END },
+	// dd/fd 67, 8 cycles, LD IXh/IYh,A
+	{ REGS_TMP_REG | END },
+	// dd/fd 68, 8 cycles, LD IXl/IYl,B
+	{ REGS_TMP_REG | END },
+	// dd/fd 69, 8 cycles, LD IXl/IYl,C
+	{ REGS_TMP_REG | END },
+	// dd/fd 6a, 8 cycles, LD IXl/IYl,D
+	{ REGS_TMP_REG | END },
+	// dd/fd 6b, 8 cycles, LD IXl/IYl,E
+	{ REGS_TMP_REG | END },
+	// dd/fd 6c, 8 cycles, LD IXl/IYl,IXh/IYh
+	{ REGS_TMP_REG | END },
+	// dd/fd 6d, 8 cycles, LD IXl/IYl,IXl/IYl
+	{ REGS_TMP_REG | END },
+	// dd/fd 6e, 19 cycles, LD L,(IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD0 | END },
+	// dd/fd 6f, 8 cycles, LD IXl/IYl,A
+	{ REGS_TMP_REG | END },
 
 	// dd/fd 70, 19 cycles, LD (IX/IY+dd),B
 	//  9 T1 AB:1236 DB:--
@@ -1676,28 +2178,49 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 18 T2 AB:5678 DB:ee MREQ 
 	// 19 T3 AB:5678 DB:ee MREQ WR
 	{ READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
-	/* dd/fd 71, 19 cycles, LD (IX/IY+dd),C */ { READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
-	/* dd/fd 72, 19 cycles, LD (IX/IY+dd),D */ { READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
-	/* dd/fd 73, 19 cycles, LD (IX/IY+dd),E */ { READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
-	/* dd/fd 74, 19 cycles, LD (IX/IY+dd),H */ { READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
-	/* dd/fd 75, 19 cycles, LD (IX/IY+dd),L */ { READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
-	/* dd/fd 76, 8 cycles, HALT */ { HALT | END },
-	/* dd/fd 77, 19 cycles, LD (IX/IY+dd),A */ { READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
-	/* dd/fd 78, 8 cycles, LD A,B */ { REGS_TMP_REG | END },
-	/* dd/fd 79, 8 cycles, LD A,C */ { REGS_TMP_REG | END },
-	/* dd/fd 7a, 8 cycles, LD A,D */ { REGS_TMP_REG | END },
-	/* dd/fd 7b, 8 cycles, LD A,E */ { REGS_TMP_REG | END },
-	/* dd/fd 7c, 8 cycles, LD A,IXh/IYh */ { REGS_TMP_REG | END },
-	/* dd/fd 7d, 8 cycles, LD A,IXl/IYl */ { REGS_TMP_REG | END },
-	/* dd/fd 7e, 19 cycles, LD A,(IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
-	/* dd/fd 7f, 8 cycles, LD A,A */ { REGS_TMP_REG | END },
+	// dd/fd 71, 19 cycles, LD (IX/IY+dd),C
+	{ READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
+	// dd/fd 72, 19 cycles, LD (IX/IY+dd),D
+	{ READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
+	// dd/fd 73, 19 cycles, LD (IX/IY+dd),E
+	{ READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
+	// dd/fd 74, 19 cycles, LD (IX/IY+dd),H
+	{ READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
+	// dd/fd 75, 19 cycles, LD (IX/IY+dd),L
+	{ READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
+	// dd/fd 76, 8 cycles, HALT
+	{ HALT | END },
+	// dd/fd 77, 19 cycles, LD (IX/IY+dd),A
+	{ READ_S_PC, DISP_WZ5, REGS0_DB, WRITE_S_WZ | END },
+	// dd/fd 78, 8 cycles, LD A,B
+	{ REGS_TMP_REG | END },
+	// dd/fd 79, 8 cycles, LD A,C
+	{ REGS_TMP_REG | END },
+	// dd/fd 7a, 8 cycles, LD A,D
+	{ REGS_TMP_REG | END },
+	// dd/fd 7b, 8 cycles, LD A,E
+	{ REGS_TMP_REG | END },
+	// dd/fd 7c, 8 cycles, LD A,IXh/IYh
+	{ REGS_TMP_REG | END },
+	// dd/fd 7d, 8 cycles, LD A,IXl/IYl
+	{ REGS_TMP_REG | END },
+	// dd/fd 7e, 19 cycles, LD A,(IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, DB_REGD | END },
+	// dd/fd 7f, 8 cycles, LD A,A
+	{ REGS_TMP_REG | END },
 
-	/* dd/fd 80, 8 cycles, ADD B */ { ADD_R8 | END },
-	/* dd/fd 81, 8 cycles, ADD C */ { ADD_R8 | END },
-	/* dd/fd 82, 8 cycles, ADD D */ { ADD_R8 | END },
-	/* dd/fd 83, 8 cycles, ADD E */ { ADD_R8 | END },
-	/* dd/fd 84, 8 cycles, ADD IXh/IYh */ { ADD_R8 | END },
-	/* dd/fd 85, 8 cycles, ADD IXl/IYl */ { ADD_R8 | END },
+	// dd/fd 80, 8 cycles, ADD B
+	{ ADD_R8 | END },
+	// dd/fd 81, 8 cycles, ADD C
+	{ ADD_R8 | END },
+	// dd/fd 82, 8 cycles, ADD D
+	{ ADD_R8 | END },
+	// dd/fd 83, 8 cycles, ADD E
+	{ ADD_R8 | END },
+	// dd/fd 84, 8 cycles, ADD IXh/IYh
+	{ ADD_R8 | END },
+	// dd/fd 85, 8 cycles, ADD IXl/IYl
+	{ ADD_R8 | END },
 	// dd/fd 86, 19 cycles, ADD (IX/IY+dd)
 	//  9 T1 AB:1236 DB:--
 	// 10 T2 AB:1236 DB:dd MREQ RD
@@ -1711,138 +2234,259 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 18 T2 AB:5678 DB:ee MREQ RD
 	// 19 T3 AB:5678 DB:ee MREQ RD
 	{ READ_S_PC, DISP_WZ5_READ_S_WZ, ADD_DB | END },
-	/* dd/fd 87, 8 cycles, ADD A */ { ADD_R8 | END },
-	/* dd/fd 88, 8 cycles, ADC B */ { ADC_R8 | END },
-	/* dd/fd 89, 8 cycles, ADC C */ { ADC_R8 | END },
-	/* dd/fd 8a, 8 cycles, ADC D */ { ADC_R8 | END },
-	/* dd/fd 8b, 8 cycles, ADC E */ { ADC_R8 | END },
-	/* dd/fd 8c, 8 cycles, ADC IXh/IYh */ { ADC_R8 | END },
-	/* dd/fd 8d, 8 cycles, ADC IXl/IYl */ { ADC_R8 | END },
-	/* dd/fd 8e, 19 cycles, ADC (IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, ADC_DB | END },
-	/* dd/fd 8f, 8 cycles, ADC A */ { ADC_R8 | END },
+	// dd/fd 87, 8 cycles, ADD A
+	{ ADD_R8 | END },
+	// dd/fd 88, 8 cycles, ADC B
+	{ ADC_R8 | END },
+	// dd/fd 89, 8 cycles, ADC C
+	{ ADC_R8 | END },
+	// dd/fd 8a, 8 cycles, ADC D
+	{ ADC_R8 | END },
+	// dd/fd 8b, 8 cycles, ADC E
+	{ ADC_R8 | END },
+	// dd/fd 8c, 8 cycles, ADC IXh/IYh
+	{ ADC_R8 | END },
+	// dd/fd 8d, 8 cycles, ADC IXl/IYl
+	{ ADC_R8 | END },
+	// dd/fd 8e, 19 cycles, ADC (IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, ADC_DB | END },
+	// dd/fd 8f, 8 cycles, ADC A
+	{ ADC_R8 | END },
 
-	/* dd/fd 90, 8 cycles, SUB B */ { SUB_R8 | END },
-	/* dd/fd 91, 8 cycles, SUB C */ { SUB_R8 | END },
-	/* dd/fd 92, 8 cycles, SUB D */ { SUB_R8 | END },
-	/* dd/fd 93, 8 cycles, SUB E */ { SUB_R8 | END },
-	/* dd/fd 94, 8 cycles, SUB IXh/IYh */ { SUB_R8 | END },
-	/* dd/fd 95, 8 cycles, SUB IXl/IYl */ { SUB_R8 | END },
-	/* dd/fd 96, 19 cycles, SUB (IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, SUB_DB | END },
-	/* dd/fd 97, 8 cycles, SUB A */ { SUB_R8 | END },
-	/* dd/fd 98, 8 cycles, SBC B */ { SBC_R8 | END },
-	/* dd/fd 99, 8 cycles, SBC C */ { SBC_R8 | END },
-	/* dd/fd 9a, 8 cycles, SBC D */ { SBC_R8 | END },
-	/* dd/fd 9b, 8 cycles, SBC E */ { SBC_R8 | END },
-	/* dd/fd 9c, 8 cycles, SBC IXh/IYh */ { SBC_R8 | END },
-	/* dd/fd 9d, 8 cycles, SBC IXl/IYl */ { SBC_R8 | END },
-	/* dd/fd 9e, 19 cycles, SBC (IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, SBC_DB | END },
-	/* dd/fd 9f, 8 cycles, SBC A */ { SBC_R8 | END },
+	// dd/fd 90, 8 cycles, SUB B
+	{ SUB_R8 | END },
+	// dd/fd 91, 8 cycles, SUB C
+	{ SUB_R8 | END },
+	// dd/fd 92, 8 cycles, SUB D
+	{ SUB_R8 | END },
+	// dd/fd 93, 8 cycles, SUB E
+	{ SUB_R8 | END },
+	// dd/fd 94, 8 cycles, SUB IXh/IYh
+	{ SUB_R8 | END },
+	// dd/fd 95, 8 cycles, SUB IXl/IYl
+	{ SUB_R8 | END },
+	// dd/fd 96, 19 cycles, SUB (IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, SUB_DB | END },
+	// dd/fd 97, 8 cycles, SUB A
+	{ SUB_R8 | END },
+	// dd/fd 98, 8 cycles, SBC B
+	{ SBC_R8 | END },
+	// dd/fd 99, 8 cycles, SBC C
+	{ SBC_R8 | END },
+	// dd/fd 9a, 8 cycles, SBC D
+	{ SBC_R8 | END },
+	// dd/fd 9b, 8 cycles, SBC E
+	{ SBC_R8 | END },
+	// dd/fd 9c, 8 cycles, SBC IXh/IYh
+	{ SBC_R8 | END },
+	// dd/fd 9d, 8 cycles, SBC IXl/IYl
+	{ SBC_R8 | END },
+	// dd/fd 9e, 19 cycles, SBC (IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, SBC_DB | END },
+	// dd/fd 9f, 8 cycles, SBC A
+	{ SBC_R8 | END },
 
-	/* dd/fd a0, 8 cycles, AND B */ { AND_R8 | END },
-	/* dd/fd a1, 8 cycles, AND C */ { AND_R8 | END },
-	/* dd/fd a2, 8 cycles, AND D */ { AND_R8 | END },
-	/* dd/fd a3, 8 cycles, AND E */ { AND_R8 | END },
-	/* dd/fd a4, 8 cycles, AND IXh/IYh */ { AND_R8 | END },
-	/* dd/fd a5, 8 cycles, AND IXl/IYl */ { AND_R8 | END },
-	/* dd/fd a6, 19 cycles, AND (IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, AND_DB | END },
-	/* dd/fd a7, 8 cycles, AND A */ { AND_R8 | END },
-	/* dd/fd a8, 8 cycles, XOR B */ { XOR_R8 | END },
-	/* dd/fd a9, 8 cycles, XOR C */ { XOR_R8 | END },
-	/* dd/fd aa, 8 cycles, XOR D */ { XOR_R8 | END },
-	/* dd/fd ab, 8 cycles, XOR E */ { XOR_R8 | END },
-	/* dd/fd ac, 8 cycles, XOR IXh/IYh */ { XOR_R8 | END },
-	/* dd/fd ad, 8 cycles, XOR IXl/IYl */ { XOR_R8 | END },
-	/* dd/fd ae, 19 cycles, XOR (IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, XOR_DB | END },
-	/* dd/fd af, 8 cycles, XOR A */ { XOR_R8 | END },
+	// dd/fd a0, 8 cycles, AND B
+	{ AND_R8 | END },
+	// dd/fd a1, 8 cycles, AND C
+	{ AND_R8 | END },
+	// dd/fd a2, 8 cycles, AND D
+	{ AND_R8 | END },
+	// dd/fd a3, 8 cycles, AND E
+	{ AND_R8 | END },
+	// dd/fd a4, 8 cycles, AND IXh/IYh
+	{ AND_R8 | END },
+	// dd/fd a5, 8 cycles, AND IXl/IYl
+	{ AND_R8 | END },
+	// dd/fd a6, 19 cycles, AND (IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, AND_DB | END },
+	// dd/fd a7, 8 cycles, AND A
+	{ AND_R8 | END },
+	// dd/fd a8, 8 cycles, XOR B
+	{ XOR_R8 | END },
+	// dd/fd a9, 8 cycles, XOR C
+	{ XOR_R8 | END },
+	// dd/fd aa, 8 cycles, XOR D
+	{ XOR_R8 | END },
+	// dd/fd ab, 8 cycles, XOR E
+	{ XOR_R8 | END },
+	// dd/fd ac, 8 cycles, XOR IXh/IYh
+	{ XOR_R8 | END },
+	// dd/fd ad, 8 cycles, XOR IXl/IYl
+	{ XOR_R8 | END },
+	// dd/fd ae, 19 cycles, XOR (IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, XOR_DB | END },
+	// dd/fd af, 8 cycles, XOR A
+	{ XOR_R8 | END },
 
-	/* dd/fd b0, 8 cycles, OR B */ { OR_R8 | END },
-	/* dd/fd b1, 8 cycles, OR C */ { OR_R8 | END },
-	/* dd/fd b2, 8 cycles, OR D */ { OR_R8 | END },
-	/* dd/fd b3, 8 cycles, OR E */ { OR_R8 | END },
-	/* dd/fd b4, 8 cycles, OR IXh/IYh */ { OR_R8 | END },
-	/* dd/fd b5, 8 cycles, OR IXl/IYl */ { OR_R8 | END },
-	/* dd/fd b6, 19 cycles, OR (IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, OR_DB | END },
-	/* dd/fd b7, 8 cycles, OR A */ { OR_R8 | END },
-	/* dd/fd b8, 8 cycles, CP B */ { CP_R8 | END },
-	/* dd/fd b9, 8 cycles, CP C */ { CP_R8 | END },
-	/* dd/fd ba, 8 cycles, CP D */ { CP_R8 | END },
-	/* dd/fd bb, 8 cycles, CP E */ { CP_R8 | END },
-	/* dd/fd bc, 8 cycles, CP IXh/IYh */ { CP_R8 | END },
-	/* dd/fd bd, 8 cycles, CP IXl/IYl */ { CP_R8 | END },
-	/* dd/fd be, 19 cycles, CP (IX/IY+dd) */ { READ_S_PC, DISP_WZ5_READ_S_WZ, CP_DB | END },
-	/* dd/fd bf, 8 cycles, CP A */ { CP_R8 | END },
+	// dd/fd b0, 8 cycles, OR B
+	{ OR_R8 | END },
+	// dd/fd b1, 8 cycles, OR C
+	{ OR_R8 | END },
+	// dd/fd b2, 8 cycles, OR D
+	{ OR_R8 | END },
+	// dd/fd b3, 8 cycles, OR E
+	{ OR_R8 | END },
+	// dd/fd b4, 8 cycles, OR IXh/IYh
+	{ OR_R8 | END },
+	// dd/fd b5, 8 cycles, OR IXl/IYl
+	{ OR_R8 | END },
+	// dd/fd b6, 19 cycles, OR (IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, OR_DB | END },
+	// dd/fd b7, 8 cycles, OR A
+	{ OR_R8 | END },
+	// dd/fd b8, 8 cycles, CP B
+	{ CP_R8 | END },
+	// dd/fd b9, 8 cycles, CP C
+	{ CP_R8 | END },
+	// dd/fd ba, 8 cycles, CP D
+	{ CP_R8 | END },
+	// dd/fd bb, 8 cycles, CP E
+	{ CP_R8 | END },
+	// dd/fd bc, 8 cycles, CP IXh/IYh
+	{ CP_R8 | END },
+	// dd/fd bd, 8 cycles, CP IXl/IYl
+	{ CP_R8 | END },
+	// dd/fd be, 19 cycles, CP (IX/IY+dd)
+	{ READ_S_PC, DISP_WZ5_READ_S_WZ, CP_DB | END },
+	// dd/fd bf, 8 cycles, CP A
+	{ CP_R8 | END },
 
-	/* dd/fd c0, 9/15 cycles, RET NZ */ { RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd c1, 14 cycles, POP BC */ {  READ_S_SP_INC, DB_R16L_READ_S_SP_INC, DB_R16H | END },
-	/* dd/fd c2, 14 cycles, JP NZ,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
-	/* dd/fd c3, 14 cycles, JMP nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_WZ_PC | END },
-	/* dd/fd c4, 14/21 cycles, CALL NZ,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd c5, 15 cycles, PUSH BC */ { X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
-	/* dd/fd c6, 11 cycles, ADD A,n */ { READ_S_PC, ADD_DB | END },
-	/* dd/fd c7, 15 cycles, RST 0H */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
-	/* dd/fd c8, 9/15 cycles, RET Z */ { RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd c9, 14 cycles, RET */ {  READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd ca, 14 cycles, JP Z,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
-	/* dd/fd cb, +4 cycles, DD/FD + CB prefix */ { 0 },
-	/* dd/fd cc, 14/21 cycles, CALL Z,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd cd, 21 cycles, CALL nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W, X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd ce, 11 cycles, ADC A,n */ { READ_S_PC, ADC_DB | END },
-	/* dd/fd cf, 15 cycles, RST 8H */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// dd/fd c0, 9/15 cycles, RET NZ
+	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd c1, 14 cycles, POP BC
+	{  READ_S_SP_INC, DB_R16L_READ_S_SP_INC, DB_R16H | END },
+	// dd/fd c2, 14 cycles, JP NZ,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
+	// dd/fd c3, 14 cycles, JMP nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_WZ_PC | END },
+	// dd/fd c4, 14/21 cycles, CALL NZ,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd c5, 15 cycles, PUSH BC
+	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	// dd/fd c6, 11 cycles, ADD A,n
+	{ READ_S_PC, ADD_DB | END },
+	// dd/fd c7, 15 cycles, RST 0H
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// dd/fd c8, 9/15 cycles, RET Z
+	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd c9, 14 cycles, RET
+	{ READ_S_SP_INC, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd ca, 14 cycles, JP Z,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
+	// dd/fd cb, +4 cycles, DD/FD + CB prefix
+	{ 0 },
+	// dd/fd cc, 14/21 cycles, CALL Z,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd cd, 21 cycles, CALL nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd ce, 11 cycles, ADC A,n
+	{ READ_S_PC, ADC_DB | END },
+	// dd/fd cf, 15 cycles, RST 8H
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
-	/* dd/fd d0, 9/15 cycles, RET NC */ { RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd d1, 14 cycles, POP DE */ {  READ_S_SP_INC, DB_R16L_READ_S_SP_INC, DB_R16H | END },
-	/* dd/fd d2, 14 cycles, JP NC,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
-	/* dd/fd d3, 15 cycles, OUT (n), A */ { READ_S_PC, DB_Z, A_W, A_DB, OUTPUT_S_WZ_INC, DB_W | END },
-	/* dd/fd d4, 14/21 cycles, CALL NC,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd d5, 15 cycles, PUSH DE */ { X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
-	/* dd/fd d6, 11 cycles, SUB n */ { READ_S_PC, SUB_DB | END },
-	/* dd/fd d7, 15 cycles, RST 10H */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
-	/* dd/fd d8, 9/15 cycles, RET C */ { RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd d9, 8 cycles, EXX */ { EXX | END },
-	/* dd/fd da, 14 cycles, JP C,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
-	/* dd/fd db, 15 cycles, IN A,(n) */ { READ_S_PC, DB_Z, A_W, INPUT_S_WZ_INC, INPUT_A | END },
-	/* dd/fd dc, 14/21 cycles, CALL C,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd dd, +4 cycles, DD prefix */ { 0 },
-	/* dd/fd de, 11 cycles, SBC n */ { READ_S_PC, SBC_DB | END },
-	/* dd/fd df, 15 cycles, RST 18H */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// dd/fd d0, 9/15 cycles, RET NC
+	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd d1, 14 cycles, POP DE
+	{ READ_S_SP_INC, DB_R16L_READ_S_SP_INC, DB_R16H | END },
+	// dd/fd d2, 14 cycles, JP NC,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
+	// dd/fd d3, 15 cycles, OUT (n), A
+	{ READ_S_PC, DB_Z, A_W, A_DB, OUTPUT_S_WZ_INC, DB_W | END },
+	// dd/fd d4, 14/21 cycles, CALL NC,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd d5, 15 cycles, PUSH DE
+	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	// dd/fd d6, 11 cycles, SUB n
+	{ READ_S_PC, SUB_DB | END },
+	// dd/fd d7, 15 cycles, RST 10H
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// dd/fd d8, 9/15 cycles, RET C
+	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd d9, 8 cycles, EXX
+	{ EXX | END },
+	// dd/fd da, 14 cycles, JP C,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
+	// dd/fd db, 15 cycles, IN A,(n)
+	{ READ_S_PC, DB_Z, A_W, INPUT_S_WZ_INC, INPUT_A | END },
+	// dd/fd dc, 14/21 cycles, CALL C,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd dd, +4 cycles, DD prefix
+	{ 0 },
+	// dd/fd de, 11 cycles, SBC n
+	{ READ_S_PC, SBC_DB | END },
+	// dd/fd df, 15 cycles, RST 18H
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
-	/* dd/fd e0, 9/15 cycles, RET PO */ { RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd e1, 14 cycles, POP IX/IY */ {  READ_S_SP_INC, DB_R16L_READ_S_SP_INC, DB_R16H | END },
-	/* dd/fd e2, 14 cycles, JP PO,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
-	/* dd/fd e3, 23 cycles, EX (SP),IX/IY */ {  READ_S_SP_INC, DB_Z, READ_S_SP, DB_W, X2, R16H_DB, WRITE_S, R16L_WRITE_S_SP_DEC, X2, WZ_HL | END },
-	/* dd/fd e4, 14/21 cycles, CALL PO,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd e5, 15 cycles, PUSH IX/IY */ { X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
-	/* dd/fd e6, 11 cycles, AND n */ { READ_S_PC, AND_DB | END },
-	/* dd/fd e7, 15 cycles, RST 20H */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
-	/* dd/fd e8, 9/15 cycles, RET PE */ { RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd e9, 8 cycles, JP (HL) */ { HL_PC | END },
-	/* dd/fd ea, 14 cycles, JP PE,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
-	/* dd/fd eb, 8 cycles, EX DE,HL */ { EX_DE_HL | END },
-	/* dd/fd ec, 14/21 cycles, CALL PE,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd ed, +4 cycles, ED prefix */ { 0 },
-	/* dd/fd ee, 11 cycles, XOR n */ { READ_S_PC, XOR_DB | END },
-	/* dd/fd ef, 15 cycles, RST 28H */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// dd/fd e0, 9/15 cycles, RET PO
+	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd e1, 14 cycles, POP IX/IY
+	{ READ_S_SP_INC, DB_R16L_READ_S_SP_INC, DB_R16H | END },
+	// dd/fd e2, 14 cycles, JP PO,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
+	// dd/fd e3, 23 cycles, EX (SP),IX/IY
+	{ READ_S_SP_INC, DB_Z, READ_S_SP, DB_W, X2, R16H_DB, WRITE_S, R16L_WRITE_S_SP_DEC, X2, WZ_HL | END },
+	// dd/fd e4, 14/21 cycles, CALL PO,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd e5, 15 cycles, PUSH IX/IY
+	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	// dd/fd e6, 11 cycles, AND n
+	{ READ_S_PC, AND_DB | END },
+	// dd/fd e7, 15 cycles, RST 20H
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// dd/fd e8, 9/15 cycles, RET PE
+	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd e9, 8 cycles, JP (HL)
+	{ HL_PC | END },
+	// dd/fd ea, 14 cycles, JP PE,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
+	// dd/fd eb, 8 cycles, EX DE,HL
+	{ EX_DE_HL | END },
+	// dd/fd ec, 14/21 cycles, CALL PE,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd ed, +4 cycles, ED prefix
+	{ 0 },
+	// dd/fd ee, 11 cycles, XOR n
+	{ READ_S_PC, XOR_DB | END },
+	// dd/fd ef, 15 cycles, RST 28H
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
-	/* dd/fd f0, 9/15 cycles, RET P */ { RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd f1, 14 cycles, POP AF */ {  READ_S_SP_INC, DB_R16L_READ_S_SP_INC, DB_R16H | END },
-	/* dd/fd f2, 14 cycles, JP P,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
-	/* dd/fd f3, 8 cycles, DI */ { DI | END },
-	/* dd/fd f4, 14/21 cycles, CALL P,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd f5, 15 cycles, PUSH AF */ { X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
-	/* dd/fd f6, 11 cycles, OR n */ { READ_S_PC, OR_DB | END },
-	/* dd/fd f7, 15 cycles, RST 30H */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
-	/* dd/fd f8, 9/15 cycles, RET M */ { RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
-	/* dd/fd f9, 10 cycles, LD SP,IX/IY */ { LD_SP_HL | END },
-	/* dd/fd fa, 14 cycles, JP M,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
-	/* dd/fd fb, 8 cycles, EI */ { EI | END },
-	/* dd/fd fc, 14/21 cycles, CALL M,nn */ { READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
-	/* dd/fd fd, +4 cycles, FD prefix */ { 0 },
-	/* dd/fd fe, 11 cycles, CP n */ { READ_S_PC, CP_DB | END },
-	/* dd/fd ff, 15 cycles, RST 38H */ { X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// dd/fd f0, 9/15 cycles, RET P
+	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd f1, 14 cycles, POP AF
+	{ READ_S_SP_INC, DB_R16L_READ_S_SP_INC, DB_R16H | END },
+	// dd/fd f2, 14 cycles, JP P,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
+	// dd/fd f3, 8 cycles, DI
+	{ DI | END },
+	// dd/fd f4, 14/21 cycles, CALL P,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd f5, 15 cycles, PUSH AF
+	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	// dd/fd f6, 11 cycles, OR n
+	{ READ_S_PC, OR_DB | END },
+	// dd/fd f7, 15 cycles, RST 30H
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	// dd/fd f8, 9/15 cycles, RET M
+	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
+	// dd/fd f9, 10 cycles, LD SP,IX/IY
+	{ LD_SP_HL | END },
+	// dd/fd fa, 14 cycles, JP M,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
+	// dd/fd fb, 8 cycles, EI
+	{ EI | END },
+	// dd/fd fc, 14/21 cycles, CALL M,nn
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	// dd/fd fd, +4 cycles, FD prefix
+	{ 0 },
+	// dd/fd fe, 11 cycles, CP n
+	{ READ_S_PC, CP_DB | END },
+	// dd/fd ff, 15 cycles, RST 38H
+	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
-	/*****************************************************/
-	/* DD/FD + CB prefixed instructions                  */
-	/*****************************************************/
+	///////////////////////////////////////////////////////
+	// DD/FD + CB prefixed instructions                  //
+	///////////////////////////////////////////////////////
 
 	// dd/fd cb dd 00, 23 cycles, RLC (IX/IY+dd),B
 	// 17 T1 AB:5678 DB:--
@@ -1853,72 +2497,135 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 22 T2 AB:5678 DB:yy MREQ
 	// 23 T3 AB:5678 DB:yy MREQ WR
 	{ READ_S_WZ, RLC_WRITE_S | END },
-	/* dd/fd cb dd 01, 23 cycles, RLC (IX/IY+dd),C */ { READ_S_WZ, RLC_WRITE_S | END },
-	/* dd/fd cb dd 02, 23 cycles, RLC (IX/IY+dd),D */ { READ_S_WZ, RLC_WRITE_S | END },
-	/* dd/fd cb dd 03, 23 cycles, RLC (IX/IY+dd),E */ { READ_S_WZ, RLC_WRITE_S | END },
-	/* dd/fd cb dd 04, 23 cycles, RLC (IX/IY+dd),H */ { READ_S_WZ, RLC_WRITE_S | END },
-	/* dd/fd cb dd 05, 23 cycles, RLC (IX/IY+dd),L */ { READ_S_WZ, RLC_WRITE_S | END },
-	/* dd/fd cb dd 06, 23 cycles, RLC (IX/IY+dd) */ { READ_S_WZ, RLC_WRITE_S | END },
-	/* dd/fd cb dd 07, 23 cycles, RLC (IX/IY+dd),A */ { READ_S_WZ, RLC_WRITE_S | END },
-	/* dd/fd cb dd 08, 23 cycles, RRC (IX/IY+dd),B */ { READ_S_WZ, RRC_WRITE_S | END },
-	/* dd/fd cb dd 09, 23 cycles, RRC (IX/IY+dd),C */ { READ_S_WZ, RRC_WRITE_S | END },
-	/* dd/fd cb dd 0a, 23 cycles, RRC (IX/IY+dd),D */ { READ_S_WZ, RRC_WRITE_S | END },
-	/* dd/fd cb dd 0b, 23 cycles, RRC (IX/IY+dd),E */ { READ_S_WZ, RRC_WRITE_S | END },
-	/* dd/fd cb dd 0c, 23 cycles, RRC (IX/IY+dd),H */ { READ_S_WZ, RRC_WRITE_S | END },
-	/* dd/fd cb dd 0d, 23 cycles, RRC (IX/IY+dd),L */ { READ_S_WZ, RRC_WRITE_S | END },
-	/* dd/fd cb dd 0e, 23 cycles, RRC (IX/IY+dd) */ { READ_S_WZ, RRC_WRITE_S | END },
-	/* dd/fd cb dd 0f, 23 cycles, RRC (IX/IY+dd),A */ { READ_S_WZ, RRC_WRITE_S | END },
+	// dd/fd cb dd 01, 23 cycles, RLC (IX/IY+dd),C
+	{ READ_S_WZ, RLC_WRITE_S | END },
+	// dd/fd cb dd 02, 23 cycles, RLC (IX/IY+dd),D
+	{ READ_S_WZ, RLC_WRITE_S | END },
+	// dd/fd cb dd 03, 23 cycles, RLC (IX/IY+dd),E
+	{ READ_S_WZ, RLC_WRITE_S | END },
+	// dd/fd cb dd 04, 23 cycles, RLC (IX/IY+dd),H
+	{ READ_S_WZ, RLC_WRITE_S | END },
+	// dd/fd cb dd 05, 23 cycles, RLC (IX/IY+dd),L
+	{ READ_S_WZ, RLC_WRITE_S | END },
+	// dd/fd cb dd 06, 23 cycles, RLC (IX/IY+dd)
+	{ READ_S_WZ, RLC_WRITE_S | END },
+	// dd/fd cb dd 07, 23 cycles, RLC (IX/IY+dd),A
+	{ READ_S_WZ, RLC_WRITE_S | END },
+	// dd/fd cb dd 08, 23 cycles, RRC (IX/IY+dd),B
+	{ READ_S_WZ, RRC_WRITE_S | END },
+	// dd/fd cb dd 09, 23 cycles, RRC (IX/IY+dd),C
+	{ READ_S_WZ, RRC_WRITE_S | END },
+	// dd/fd cb dd 0a, 23 cycles, RRC (IX/IY+dd),D
+	{ READ_S_WZ, RRC_WRITE_S | END },
+	// dd/fd cb dd 0b, 23 cycles, RRC (IX/IY+dd),E
+	{ READ_S_WZ, RRC_WRITE_S | END },
+	// dd/fd cb dd 0c, 23 cycles, RRC (IX/IY+dd),H
+	{ READ_S_WZ, RRC_WRITE_S | END },
+	// dd/fd cb dd 0d, 23 cycles, RRC (IX/IY+dd),L
+	{ READ_S_WZ, RRC_WRITE_S | END },
+	// dd/fd cb dd 0e, 23 cycles, RRC (IX/IY+dd)
+	{ READ_S_WZ, RRC_WRITE_S | END },
+	// dd/fd cb dd 0f, 23 cycles, RRC (IX/IY+dd),A
+	{ READ_S_WZ, RRC_WRITE_S | END },
 
-	/* dd/fd cb dd 10, 23 cycles, RL (IX/IY+dd),B */ { READ_S_WZ, RL_WRITE_S | END },
-	/* dd/fd cb dd 11, 23 cycles, RL (IX/IY+dd),C */ { READ_S_WZ, RL_WRITE_S | END },
-	/* dd/fd cb dd 12, 23 cycles, RL (IX/IY+dd),D */ { READ_S_WZ, RL_WRITE_S | END },
-	/* dd/fd cb dd 13, 23 cycles, RL (IX/IY+dd),E */ { READ_S_WZ, RL_WRITE_S | END },
-	/* dd/fd cb dd 14, 23 cycles, RL (IX/IY+dd),H */ { READ_S_WZ, RL_WRITE_S | END },
-	/* dd/fd cb dd 15, 23 cycles, RL (IX/IY+dd),L */ { READ_S_WZ, RL_WRITE_S | END },
-	/* dd/fd cb dd 16, 23 cycles, RL (IX/IY+dd) */ { READ_S_WZ, RL_WRITE_S | END },
-	/* dd/fd cb dd 17, 23 cycles, RL (IX/IY+dd),A */ { READ_S_WZ, RL_WRITE_S | END },
-	/* dd/fd cb dd 18, 23 cycles, RR (IX/IY+dd),B */ { READ_S_WZ, RR_WRITE_S | END },
-	/* dd/fd cb dd 19, 23 cycles, RR (IX/IY+dd),C */ { READ_S_WZ, RR_WRITE_S | END },
-	/* dd/fd cb dd 1a, 23 cycles, RR (IX/IY+dd),D */ { READ_S_WZ, RR_WRITE_S | END },
-	/* dd/fd cb dd 1b, 23 cycles, RR (IX/IY+dd),E */ { READ_S_WZ, RR_WRITE_S | END },
-	/* dd/fd cb dd 1c, 23 cycles, RR (IX/IY+dd),H */ { READ_S_WZ, RR_WRITE_S | END },
-	/* dd/fd cb dd 1d, 23 cycles, RR (IX/IY+dd),L */ { READ_S_WZ, RR_WRITE_S | END },
-	/* dd/fd cb dd 1e, 23 cycles, RR (IX/IY+dd) */ { READ_S_WZ, RR_WRITE_S | END },
-	/* dd/fd cb dd 1f, 23 cycles, RR (IX/IY+dd),A */ { READ_S_WZ, RR_WRITE_S | END },
+	// dd/fd cb dd 10, 23 cycles, RL (IX/IY+dd),B
+	{ READ_S_WZ, RL_WRITE_S | END },
+	// dd/fd cb dd 11, 23 cycles, RL (IX/IY+dd),C
+	{ READ_S_WZ, RL_WRITE_S | END },
+	// dd/fd cb dd 12, 23 cycles, RL (IX/IY+dd),D
+	{ READ_S_WZ, RL_WRITE_S | END },
+	// dd/fd cb dd 13, 23 cycles, RL (IX/IY+dd),E
+	{ READ_S_WZ, RL_WRITE_S | END },
+	// dd/fd cb dd 14, 23 cycles, RL (IX/IY+dd),H
+	{ READ_S_WZ, RL_WRITE_S | END },
+	// dd/fd cb dd 15, 23 cycles, RL (IX/IY+dd),L
+	{ READ_S_WZ, RL_WRITE_S | END },
+	// dd/fd cb dd 16, 23 cycles, RL (IX/IY+dd)
+	{ READ_S_WZ, RL_WRITE_S | END },
+	// dd/fd cb dd 17, 23 cycles, RL (IX/IY+dd),A
+	{ READ_S_WZ, RL_WRITE_S | END },
+	// dd/fd cb dd 18, 23 cycles, RR (IX/IY+dd),B
+	{ READ_S_WZ, RR_WRITE_S | END },
+	// dd/fd cb dd 19, 23 cycles, RR (IX/IY+dd),C
+	{ READ_S_WZ, RR_WRITE_S | END },
+	// dd/fd cb dd 1a, 23 cycles, RR (IX/IY+dd),D
+	{ READ_S_WZ, RR_WRITE_S | END },
+	// dd/fd cb dd 1b, 23 cycles, RR (IX/IY+dd),E
+	{ READ_S_WZ, RR_WRITE_S | END },
+	// dd/fd cb dd 1c, 23 cycles, RR (IX/IY+dd),H
+	{ READ_S_WZ, RR_WRITE_S | END },
+	// dd/fd cb dd 1d, 23 cycles, RR (IX/IY+dd),L
+	{ READ_S_WZ, RR_WRITE_S | END },
+	// dd/fd cb dd 1e, 23 cycles, RR (IX/IY+dd)
+	{ READ_S_WZ, RR_WRITE_S | END },
+	// dd/fd cb dd 1f, 23 cycles, RR (IX/IY+dd),A
+	{ READ_S_WZ, RR_WRITE_S | END },
 
-	/* dd/fd cb dd 20, 23 cycles, SLA (IX/IY+dd),B */ { READ_S_WZ, SLA_WRITE_S | END },
-	/* dd/fd cb dd 21, 23 cycles, SLA (IX/IY+dd),C */ { READ_S_WZ, SLA_WRITE_S | END },
-	/* dd/fd cb dd 22, 23 cycles, SLA (IX/IY+dd),D */ { READ_S_WZ, SLA_WRITE_S | END },
-	/* dd/fd cb dd 23, 23 cycles, SLA (IX/IY+dd),E */ { READ_S_WZ, SLA_WRITE_S | END },
-	/* dd/fd cb dd 24, 23 cycles, SLA (IX/IY+dd),H */ { READ_S_WZ, SLA_WRITE_S | END },
-	/* dd/fd cb dd 25, 23 cycles, SLA (IX/IY+dd),L */ { READ_S_WZ, SLA_WRITE_S | END },
-	/* dd/fd cb dd 26, 23 cycles, SLA (IX/IY+dd) */ { READ_S_WZ, SLA_WRITE_S | END },
-	/* dd/fd cb dd 27, 23 cycles, SLA (IX/IY+dd),A */ { READ_S_WZ, SLA_WRITE_S | END },
-	/* dd/fd cb dd 28, 23 cycles, SRA (IX/IY+dd),B */ { READ_S_WZ, SRA_WRITE_S | END },
-	/* dd/fd cb dd 29, 23 cycles, SRA (IX/IY+dd),C */ { READ_S_WZ, SRA_WRITE_S | END },
-	/* dd/fd cb dd 2a, 23 cycles, SRA (IX/IY+dd),D */ { READ_S_WZ, SRA_WRITE_S | END },
-	/* dd/fd cb dd 2b, 23 cycles, SRA (IX/IY+dd),E */ { READ_S_WZ, SRA_WRITE_S | END },
-	/* dd/fd cb dd 2c, 23 cycles, SRA (IX/IY+dd),H */ { READ_S_WZ, SRA_WRITE_S | END },
-	/* dd/fd cb dd 2d, 23 cycles, SRA (IX/IY+dd),L */ { READ_S_WZ, SRA_WRITE_S | END },
-	/* dd/fd cb dd 2e, 23 cycles, SRA (IX/IY+dd) */ { READ_S_WZ, SRA_WRITE_S | END },
-	/* dd/fd cb dd 2f, 23 cycles, SRA (IX/IY+dd),A */ { READ_S_WZ, SRA_WRITE_S | END },
+	// dd/fd cb dd 20, 23 cycles, SLA (IX/IY+dd),B
+	{ READ_S_WZ, SLA_WRITE_S | END },
+	// dd/fd cb dd 21, 23 cycles, SLA (IX/IY+dd),C
+	{ READ_S_WZ, SLA_WRITE_S | END },
+	// dd/fd cb dd 22, 23 cycles, SLA (IX/IY+dd),D
+	{ READ_S_WZ, SLA_WRITE_S | END },
+	// dd/fd cb dd 23, 23 cycles, SLA (IX/IY+dd),E
+	{ READ_S_WZ, SLA_WRITE_S | END },
+	// dd/fd cb dd 24, 23 cycles, SLA (IX/IY+dd),H
+	{ READ_S_WZ, SLA_WRITE_S | END },
+	// dd/fd cb dd 25, 23 cycles, SLA (IX/IY+dd),L
+	{ READ_S_WZ, SLA_WRITE_S | END },
+	// dd/fd cb dd 26, 23 cycles, SLA (IX/IY+dd)
+	{ READ_S_WZ, SLA_WRITE_S | END },
+	// dd/fd cb dd 27, 23 cycles, SLA (IX/IY+dd),A
+	{ READ_S_WZ, SLA_WRITE_S | END },
+	// dd/fd cb dd 28, 23 cycles, SRA (IX/IY+dd),B
+	{ READ_S_WZ, SRA_WRITE_S | END },
+	// dd/fd cb dd 29, 23 cycles, SRA (IX/IY+dd),C
+	{ READ_S_WZ, SRA_WRITE_S | END },
+	// dd/fd cb dd 2a, 23 cycles, SRA (IX/IY+dd),D
+	{ READ_S_WZ, SRA_WRITE_S | END },
+	// dd/fd cb dd 2b, 23 cycles, SRA (IX/IY+dd),E
+	{ READ_S_WZ, SRA_WRITE_S | END },
+	// dd/fd cb dd 2c, 23 cycles, SRA (IX/IY+dd),H
+	{ READ_S_WZ, SRA_WRITE_S | END },
+	// dd/fd cb dd 2d, 23 cycles, SRA (IX/IY+dd),L
+	{ READ_S_WZ, SRA_WRITE_S | END },
+	// dd/fd cb dd 2e, 23 cycles, SRA (IX/IY+dd)
+	{ READ_S_WZ, SRA_WRITE_S | END },
+	// dd/fd cb dd 2f, 23 cycles, SRA (IX/IY+dd),A
+	{ READ_S_WZ, SRA_WRITE_S | END },
 
-	/* dd/fd cb dd 30, 23 cycles, SLL (IX/IY+dd),B */ { READ_S_WZ, SLL_WRITE_S | END },
-	/* dd/fd cb dd 31, 23 cycles, SLL (IX/IY+dd),C */ { READ_S_WZ, SLL_WRITE_S | END },
-	/* dd/fd cb dd 32, 23 cycles, SLL (IX/IY+dd),D */ { READ_S_WZ, SLL_WRITE_S | END },
-	/* dd/fd cb dd 33, 23 cycles, SLL (IX/IY+dd),E */ { READ_S_WZ, SLL_WRITE_S | END },
-	/* dd/fd cb dd 34, 23 cycles, SLL (IX/IY+dd),H */ { READ_S_WZ, SLL_WRITE_S | END },
-	/* dd/fd cb dd 35, 23 cycles, SLL (IX/IY+dd),L */ { READ_S_WZ, SLL_WRITE_S | END },
-	/* dd/fd cb dd 36, 23 cycles, SLL (IX/IY+dd) */ { READ_S_WZ, SLL_WRITE_S | END },
-	/* dd/fd cb dd 37, 23 cycles, SLL (IX/IY+dd),A */ { READ_S_WZ, SLL_WRITE_S | END },
-	/* dd/fd cb dd 38, 23 cycles, SRL (IX/IY+dd),B */ { READ_S_WZ, SRL_WRITE_S | END },
-	/* dd/fd cb dd 39, 23 cycles, SRL (IX/IY+dd),C */ { READ_S_WZ, SRL_WRITE_S | END },
-	/* dd/fd cb dd 3a, 23 cycles, SRL (IX/IY+dd),D */ { READ_S_WZ, SRL_WRITE_S | END },
-	/* dd/fd cb dd 3b, 23 cycles, SRL (IX/IY+dd),E */ { READ_S_WZ, SRL_WRITE_S | END },
-	/* dd/fd cb dd 3c, 23 cycles, SRL (IX/IY+dd),H */ { READ_S_WZ, SRL_WRITE_S | END },
-	/* dd/fd cb dd 3d, 23 cycles, SRL (IX/IY+dd),L */ { READ_S_WZ, SRL_WRITE_S | END },
-	/* dd/fd cb dd 3e, 23 cycles, SRL (IX/IY+dd) */ { READ_S_WZ, SRL_WRITE_S | END },
-	/* dd/fd cb dd 3f, 23 cycles, SRL (IX/IY+dd),A */ { READ_S_WZ, SRL_WRITE_S | END },
+	// dd/fd cb dd 30, 23 cycles, SLL (IX/IY+dd),B
+	{ READ_S_WZ, SLL_WRITE_S | END },
+	// dd/fd cb dd 31, 23 cycles, SLL (IX/IY+dd),C
+	{ READ_S_WZ, SLL_WRITE_S | END },
+	// dd/fd cb dd 32, 23 cycles, SLL (IX/IY+dd),D
+	{ READ_S_WZ, SLL_WRITE_S | END },
+	// dd/fd cb dd 33, 23 cycles, SLL (IX/IY+dd),E
+	{ READ_S_WZ, SLL_WRITE_S | END },
+	// dd/fd cb dd 34, 23 cycles, SLL (IX/IY+dd),H
+	{ READ_S_WZ, SLL_WRITE_S | END },
+	// dd/fd cb dd 35, 23 cycles, SLL (IX/IY+dd),L
+	{ READ_S_WZ, SLL_WRITE_S | END },
+	// dd/fd cb dd 36, 23 cycles, SLL (IX/IY+dd)
+	{ READ_S_WZ, SLL_WRITE_S | END },
+	// dd/fd cb dd 37, 23 cycles, SLL (IX/IY+dd),A
+	{ READ_S_WZ, SLL_WRITE_S | END },
+	// dd/fd cb dd 38, 23 cycles, SRL (IX/IY+dd),B
+	{ READ_S_WZ, SRL_WRITE_S | END },
+	// dd/fd cb dd 39, 23 cycles, SRL (IX/IY+dd),C
+	{ READ_S_WZ, SRL_WRITE_S | END },
+	// dd/fd cb dd 3a, 23 cycles, SRL (IX/IY+dd),D
+	{ READ_S_WZ, SRL_WRITE_S | END },
+	// dd/fd cb dd 3b, 23 cycles, SRL (IX/IY+dd),E
+	{ READ_S_WZ, SRL_WRITE_S | END },
+	// dd/fd cb dd 3c, 23 cycles, SRL (IX/IY+dd),H
+	{ READ_S_WZ, SRL_WRITE_S | END },
+	// dd/fd cb dd 3d, 23 cycles, SRL (IX/IY+dd),L
+	{ READ_S_WZ, SRL_WRITE_S | END },
+	// dd/fd cb dd 3e, 23 cycles, SRL (IX/IY+dd)
+	{ READ_S_WZ, SRL_WRITE_S | END },
+	// dd/fd cb dd 3f, 23 cycles, SRL (IX/IY+dd),A
+	{ READ_S_WZ, SRL_WRITE_S | END },
 
 	// dd/fd cb dd 40, 20 cycles, BIT 0,(IX/IY+dd)*
 	// 17 T1 AB:5678 DB:--
@@ -1926,212 +2633,403 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 19 T3 AB:5678 DB:xx MREQ RD
 	// 20 T4 AB:5678 DB:--
 	{ READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 41, 20 cycles, BIT 0,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 42, 20 cycles, BIT 0,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 43, 20 cycles, BIT 0,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 44, 20 cycles, BIT 0,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 45, 20 cycles, BIT 0,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 46, 20 cycles, BIT 0,(IX/IY+dd) */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 47, 20 cycles, BIT 0,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 48, 20 cycles, BIT 1,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 49, 20 cycles, BIT 1,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 4a, 20 cycles, BIT 1,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 4b, 20 cycles, BIT 1,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 4c, 20 cycles, BIT 1,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 4d, 20 cycles, BIT 1,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 4e, 20 cycles, BIT 1,(IX/IY+dd) */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 4f, 20 cycles, BIT 1,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 41, 20 cycles, BIT 0,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 42, 20 cycles, BIT 0,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 43, 20 cycles, BIT 0,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 44, 20 cycles, BIT 0,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 45, 20 cycles, BIT 0,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 46, 20 cycles, BIT 0,(IX/IY+dd)
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 47, 20 cycles, BIT 0,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 48, 20 cycles, BIT 1,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 49, 20 cycles, BIT 1,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 4a, 20 cycles, BIT 1,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 4b, 20 cycles, BIT 1,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 4c, 20 cycles, BIT 1,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 4d, 20 cycles, BIT 1,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 4e, 20 cycles, BIT 1,(IX/IY+dd)
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 4f, 20 cycles, BIT 1,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
 
-	/* dd/fd cb dd 50, 20 cycles, BIT 2,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 51, 20 cycles, BIT 2,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 52, 20 cycles, BIT 2,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 53, 20 cycles, BIT 2,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 54, 20 cycles, BIT 2,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 55, 20 cycles, BIT 2,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 56, 20 cycles, BIT 2,(IX/IY+dd) */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 57, 20 cycles, BIT 2,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 58, 20 cycles, BIT 3,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 59, 20 cycles, BIT 3,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 5a, 20 cycles, BIT 3,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 5b, 20 cycles, BIT 3,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 5c, 20 cycles, BIT 3,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 5d, 20 cycles, BIT 3,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 5e, 20 cycles, BIT 3,(IX/IY+dd) */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 5f, 20 cycles, BIT 3,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 50, 20 cycles, BIT 2,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 51, 20 cycles, BIT 2,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 52, 20 cycles, BIT 2,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 53, 20 cycles, BIT 2,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 54, 20 cycles, BIT 2,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 55, 20 cycles, BIT 2,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 56, 20 cycles, BIT 2,(IX/IY+dd)
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 57, 20 cycles, BIT 2,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 58, 20 cycles, BIT 3,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 59, 20 cycles, BIT 3,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 5a, 20 cycles, BIT 3,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 5b, 20 cycles, BIT 3,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 5c, 20 cycles, BIT 3,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 5d, 20 cycles, BIT 3,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 5e, 20 cycles, BIT 3,(IX/IY+dd)
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 5f, 20 cycles, BIT 3,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
 
-	/* dd/fd cb dd 60, 20 cycles, BIT 4,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 61, 20 cycles, BIT 4,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 62, 20 cycles, BIT 4,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 63, 20 cycles, BIT 4,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 64, 20 cycles, BIT 4,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 65, 20 cycles, BIT 4,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 66, 20 cycles, BIT 4,(IX/IY+dd) */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 67, 20 cycles, BIT 4,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 68, 20 cycles, BIT 5,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 69, 20 cycles, BIT 5,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 6a, 20 cycles, BIT 5,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 6b, 20 cycles, BIT 5,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 6c, 20 cycles, BIT 5,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 6d, 20 cycles, BIT 5,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 6e, 20 cycles, BIT 5,(IX/IY+dd) */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 6f, 20 cycles, BIT 5,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 60, 20 cycles, BIT 4,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 61, 20 cycles, BIT 4,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 62, 20 cycles, BIT 4,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 63, 20 cycles, BIT 4,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 64, 20 cycles, BIT 4,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 65, 20 cycles, BIT 4,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 66, 20 cycles, BIT 4,(IX/IY+dd)
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 67, 20 cycles, BIT 4,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 68, 20 cycles, BIT 5,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 69, 20 cycles, BIT 5,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 6a, 20 cycles, BIT 5,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 6b, 20 cycles, BIT 5,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 6c, 20 cycles, BIT 5,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 6d, 20 cycles, BIT 5,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 6e, 20 cycles, BIT 5,(IX/IY+dd)
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 6f, 20 cycles, BIT 5,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
 
-	/* dd/fd cb dd 70, 20 cycles, BIT 6,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 71, 20 cycles, BIT 6,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 72, 20 cycles, BIT 6,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 73, 20 cycles, BIT 6,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 74, 20 cycles, BIT 6,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 75, 20 cycles, BIT 6,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 76, 20 cycles, BIT 6,(IX/IY+dd) */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 77, 20 cycles, BIT 6,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 78, 20 cycles, BIT 7,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 79, 20 cycles, BIT 7,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 7a, 20 cycles, BIT 7,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 7b, 20 cycles, BIT 7,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 7c, 20 cycles, BIT 7,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 7d, 20 cycles, BIT 7,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 7e, 20 cycles, BIT 7,(IX/IY+dd) */ { READ_S_WZ, BIT_DB | END },
-	/* dd/fd cb dd 7f, 20 cycles, BIT 7,(IX/IY+dd)* */ { READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 70, 20 cycles, BIT 6,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 71, 20 cycles, BIT 6,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 72, 20 cycles, BIT 6,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 73, 20 cycles, BIT 6,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 74, 20 cycles, BIT 6,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 75, 20 cycles, BIT 6,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 76, 20 cycles, BIT 6,(IX/IY+dd)
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 77, 20 cycles, BIT 6,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 78, 20 cycles, BIT 7,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 79, 20 cycles, BIT 7,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 7a, 20 cycles, BIT 7,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 7b, 20 cycles, BIT 7,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 7c, 20 cycles, BIT 7,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 7d, 20 cycles, BIT 7,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 7e, 20 cycles, BIT 7,(IX/IY+dd)
+	{ READ_S_WZ, BIT_DB | END },
+	// dd/fd cb dd 7f, 20 cycles, BIT 7,(IX/IY+dd)*
+	{ READ_S_WZ, BIT_DB | END },
 
-	/* dd/fd cb dd 80, 23 cycles, RES 0,(IX/IY+dd),B */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 81, 23 cycles, RES 0,(IX/IY+dd),C */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 82, 23 cycles, RES 0,(IX/IY+dd),D */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 83, 23 cycles, RES 0,(IX/IY+dd),E */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 84, 23 cycles, RES 0,(IX/IY+dd),H */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 85, 23 cycles, RES 0,(IX/IY+dd),L */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 86, 23 cycles, RES 0,(IX/IY+dd) */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 87, 23 cycles, RES 0,(IX/IY+dd),A */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 88, 23 cycles, RES 1,(IX/IY+dd),B */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 89, 23 cycles, RES 1,(IX/IY+dd),C */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 8a, 23 cycles, RES 1,(IX/IY+dd),D */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 8b, 23 cycles, RES 1,(IX/IY+dd),E */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 8c, 23 cycles, RES 1,(IX/IY+dd),H */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 8d, 23 cycles, RES 1,(IX/IY+dd),L */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 8e, 23 cycles, RES 1,(IX/IY+dd) */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 8f, 23 cycles, RES 1,(IX/IY+dd),A */ { READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 80, 23 cycles, RES 0,(IX/IY+dd),B
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 81, 23 cycles, RES 0,(IX/IY+dd),C
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 82, 23 cycles, RES 0,(IX/IY+dd),D
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 83, 23 cycles, RES 0,(IX/IY+dd),E
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 84, 23 cycles, RES 0,(IX/IY+dd),H
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 85, 23 cycles, RES 0,(IX/IY+dd),L
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 86, 23 cycles, RES 0,(IX/IY+dd)
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 87, 23 cycles, RES 0,(IX/IY+dd),A
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 88, 23 cycles, RES 1,(IX/IY+dd),B
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 89, 23 cycles, RES 1,(IX/IY+dd),C
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 8a, 23 cycles, RES 1,(IX/IY+dd),D
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 8b, 23 cycles, RES 1,(IX/IY+dd),E
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 8c, 23 cycles, RES 1,(IX/IY+dd),H
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 8d, 23 cycles, RES 1,(IX/IY+dd),L
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 8e, 23 cycles, RES 1,(IX/IY+dd)
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 8f, 23 cycles, RES 1,(IX/IY+dd),A
+	{ READ_S_WZ, RES_WRITE_S | END },
 
-	/* dd/fd cb dd 90, 23 cycles, RES 2,(IX/IY+dd),B */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 91, 23 cycles, RES 2,(IX/IY+dd),C */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 92, 23 cycles, RES 2,(IX/IY+dd),D */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 93, 23 cycles, RES 2,(IX/IY+dd),E */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 94, 23 cycles, RES 2,(IX/IY+dd),H */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 95, 23 cycles, RES 2,(IX/IY+dd),L */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 96, 23 cycles, RES 2,(IX/IY+dd) */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 97, 23 cycles, RES 2,(IX/IY+dd),A */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 98, 23 cycles, RES 3,(IX/IY+dd),B */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 99, 23 cycles, RES 3,(IX/IY+dd),C */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 9a, 23 cycles, RES 3,(IX/IY+dd),D */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 9b, 23 cycles, RES 3,(IX/IY+dd),E */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 9c, 23 cycles, RES 3,(IX/IY+dd),H */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 9d, 23 cycles, RES 3,(IX/IY+dd),L */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 9e, 23 cycles, RES 3,(IX/IY+dd) */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd 9f, 23 cycles, RES 3,(IX/IY+dd),A */ { READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 90, 23 cycles, RES 2,(IX/IY+dd),B
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 91, 23 cycles, RES 2,(IX/IY+dd),C
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 92, 23 cycles, RES 2,(IX/IY+dd),D
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 93, 23 cycles, RES 2,(IX/IY+dd),E
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 94, 23 cycles, RES 2,(IX/IY+dd),H
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 95, 23 cycles, RES 2,(IX/IY+dd),L
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 96, 23 cycles, RES 2,(IX/IY+dd)
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 97, 23 cycles, RES 2,(IX/IY+dd),A
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 98, 23 cycles, RES 3,(IX/IY+dd),B
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 99, 23 cycles, RES 3,(IX/IY+dd),C
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 9a, 23 cycles, RES 3,(IX/IY+dd),D
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 9b, 23 cycles, RES 3,(IX/IY+dd),E
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 9c, 23 cycles, RES 3,(IX/IY+dd),H
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 9d, 23 cycles, RES 3,(IX/IY+dd),L
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 9e, 23 cycles, RES 3,(IX/IY+dd)
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd 9f, 23 cycles, RES 3,(IX/IY+dd),A
+	{ READ_S_WZ, RES_WRITE_S | END },
 
-	/* dd/fd cb dd a0, 23 cycles, RES 4,(IX/IY+dd),B */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a1, 23 cycles, RES 4,(IX/IY+dd),C */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a2, 23 cycles, RES 4,(IX/IY+dd),D */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a3, 23 cycles, RES 4,(IX/IY+dd),E */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a4, 23 cycles, RES 4,(IX/IY+dd),H */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a5, 23 cycles, RES 4,(IX/IY+dd),L */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a6, 23 cycles, RES 4,(IX/IY+dd) */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a7, 23 cycles, RES 4,(IX/IY+dd),A */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a8, 23 cycles, RES 5,(IX/IY+dd),B */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd a9, 23 cycles, RES 5,(IX/IY+dd),C */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd aa, 23 cycles, RES 5,(IX/IY+dd),D */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd ab, 23 cycles, RES 5,(IX/IY+dd),E */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd ac, 23 cycles, RES 5,(IX/IY+dd),H */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd ad, 23 cycles, RES 5,(IX/IY+dd),L */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd ae, 23 cycles, RES 5,(IX/IY+dd) */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd af, 23 cycles, RES 5,(IX/IY+dd),A */ { READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a0, 23 cycles, RES 4,(IX/IY+dd),B
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a1, 23 cycles, RES 4,(IX/IY+dd),C
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a2, 23 cycles, RES 4,(IX/IY+dd),D
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a3, 23 cycles, RES 4,(IX/IY+dd),E
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a4, 23 cycles, RES 4,(IX/IY+dd),H
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a5, 23 cycles, RES 4,(IX/IY+dd),L
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a6, 23 cycles, RES 4,(IX/IY+dd)
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a7, 23 cycles, RES 4,(IX/IY+dd),A
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a8, 23 cycles, RES 5,(IX/IY+dd),B
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd a9, 23 cycles, RES 5,(IX/IY+dd),C
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd aa, 23 cycles, RES 5,(IX/IY+dd),D
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd ab, 23 cycles, RES 5,(IX/IY+dd),E
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd ac, 23 cycles, RES 5,(IX/IY+dd),H
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd ad, 23 cycles, RES 5,(IX/IY+dd),L
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd ae, 23 cycles, RES 5,(IX/IY+dd)
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd af, 23 cycles, RES 5,(IX/IY+dd),A
+	{ READ_S_WZ, RES_WRITE_S | END },
 
-	/* dd/fd cb dd b0, 23 cycles, RES 6,(IX/IY+dd),B */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b1, 23 cycles, RES 6,(IX/IY+dd),C */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b2, 23 cycles, RES 6,(IX/IY+dd),D */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b3, 23 cycles, RES 6,(IX/IY+dd),E */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b4, 23 cycles, RES 6,(IX/IY+dd),H */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b5, 23 cycles, RES 6,(IX/IY+dd),L */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b6, 23 cycles, RES 6,(IX/IY+dd) */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b7, 23 cycles, RES 6,(IX/IY+dd),A */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b8, 23 cycles, RES 7,(IX/IY+dd),B */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd b9, 23 cycles, RES 7,(IX/IY+dd),C */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd ba, 23 cycles, RES 7,(IX/IY+dd),D */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd bb, 23 cycles, RES 7,(IX/IY+dd),E */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd bc, 23 cycles, RES 7,(IX/IY+dd),H */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd bd, 23 cycles, RES 7,(IX/IY+dd),L */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd be, 23 cycles, RES 7,(IX/IY+dd) */ { READ_S_WZ, RES_WRITE_S | END },
-	/* dd/fd cb dd bf, 23 cycles, RES 7,(IX/IY+dd),A */ { READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b0, 23 cycles, RES 6,(IX/IY+dd),B
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b1, 23 cycles, RES 6,(IX/IY+dd),C
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b2, 23 cycles, RES 6,(IX/IY+dd),D
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b3, 23 cycles, RES 6,(IX/IY+dd),E
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b4, 23 cycles, RES 6,(IX/IY+dd),H
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b5, 23 cycles, RES 6,(IX/IY+dd),L
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b6, 23 cycles, RES 6,(IX/IY+dd)
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b7, 23 cycles, RES 6,(IX/IY+dd),A
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b8, 23 cycles, RES 7,(IX/IY+dd),B
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd b9, 23 cycles, RES 7,(IX/IY+dd),C
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd ba, 23 cycles, RES 7,(IX/IY+dd),D
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd bb, 23 cycles, RES 7,(IX/IY+dd),E
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd bc, 23 cycles, RES 7,(IX/IY+dd),H
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd bd, 23 cycles, RES 7,(IX/IY+dd),L
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd be, 23 cycles, RES 7,(IX/IY+dd)
+	{ READ_S_WZ, RES_WRITE_S | END },
+	// dd/fd cb dd bf, 23 cycles, RES 7,(IX/IY+dd),A
+	{ READ_S_WZ, RES_WRITE_S | END },
 
-	/* dd/fd cb dd c0, 23 cycles, SET 0,(IX/IY+dd),B */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c1, 23 cycles, SET 0,(IX/IY+dd),C */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c2, 23 cycles, SET 0,(IX/IY+dd),D */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c3, 23 cycles, SET 0,(IX/IY+dd),E */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c4, 23 cycles, SET 0,(IX/IY+dd),H */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c5, 23 cycles, SET 0,(IX/IY+dd),L */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c6, 23 cycles, SET 0,(IX/IY+dd) */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c7, 23 cycles, SET 0,(IX/IY+dd),A */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c8, 23 cycles, SET 1,(IX/IY+dd),B */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd c9, 23 cycles, SET 1,(IX/IY+dd),C */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd ca, 23 cycles, SET 1,(IX/IY+dd),D */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd cb, 23 cycles, SET 1,(IX/IY+dd),E */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd cc, 23 cycles, SET 1,(IX/IY+dd),H */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd cd, 23 cycles, SET 1,(IX/IY+dd),L */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd ce, 23 cycles, SET 1,(IX/IY+dd) */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd cf, 23 cycles, SET 1,(IX/IY+dd),A */ { READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c0, 23 cycles, SET 0,(IX/IY+dd),B
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c1, 23 cycles, SET 0,(IX/IY+dd),C
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c2, 23 cycles, SET 0,(IX/IY+dd),D
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c3, 23 cycles, SET 0,(IX/IY+dd),E
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c4, 23 cycles, SET 0,(IX/IY+dd),H
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c5, 23 cycles, SET 0,(IX/IY+dd),L
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c6, 23 cycles, SET 0,(IX/IY+dd)
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c7, 23 cycles, SET 0,(IX/IY+dd),A
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c8, 23 cycles, SET 1,(IX/IY+dd),B
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd c9, 23 cycles, SET 1,(IX/IY+dd),C
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd ca, 23 cycles, SET 1,(IX/IY+dd),D
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd cb, 23 cycles, SET 1,(IX/IY+dd),E
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd cc, 23 cycles, SET 1,(IX/IY+dd),H
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd cd, 23 cycles, SET 1,(IX/IY+dd),L
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd ce, 23 cycles, SET 1,(IX/IY+dd)
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd cf, 23 cycles, SET 1,(IX/IY+dd),A
+	{ READ_S_WZ, SET_WRITE_S | END },
 
-	/* dd/fd cb dd d0, 23 cycles, SET 2,(IX/IY+dd),B */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d1, 23 cycles, SET 2,(IX/IY+dd),C */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d2, 23 cycles, SET 2,(IX/IY+dd),D */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d3, 23 cycles, SET 2,(IX/IY+dd),E */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d4, 23 cycles, SET 2,(IX/IY+dd),H */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d5, 23 cycles, SET 2,(IX/IY+dd),L */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d6, 23 cycles, SET 2,(IX/IY+dd) */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d7, 23 cycles, SET 2,(IX/IY+dd),A */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d8, 23 cycles, SET 3,(IX/IY+dd),B */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd d9, 23 cycles, SET 3,(IX/IY+dd),C */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd da, 23 cycles, SET 3,(IX/IY+dd),D */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd db, 23 cycles, SET 3,(IX/IY+dd),E */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd dc, 23 cycles, SET 3,(IX/IY+dd),H */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd dd, 23 cycles, SET 3,(IX/IY+dd),L */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd de, 23 cycles, SET 3,(IX/IY+dd) */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd df, 23 cycles, SET 3,(IX/IY+dd),A */ { READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d0, 23 cycles, SET 2,(IX/IY+dd),B
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d1, 23 cycles, SET 2,(IX/IY+dd),C
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d2, 23 cycles, SET 2,(IX/IY+dd),D
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d3, 23 cycles, SET 2,(IX/IY+dd),E
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d4, 23 cycles, SET 2,(IX/IY+dd),H
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d5, 23 cycles, SET 2,(IX/IY+dd),L
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d6, 23 cycles, SET 2,(IX/IY+dd)
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d7, 23 cycles, SET 2,(IX/IY+dd),A
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d8, 23 cycles, SET 3,(IX/IY+dd),B
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd d9, 23 cycles, SET 3,(IX/IY+dd),C
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd da, 23 cycles, SET 3,(IX/IY+dd),D
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd db, 23 cycles, SET 3,(IX/IY+dd),E
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd dc, 23 cycles, SET 3,(IX/IY+dd),H
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd dd, 23 cycles, SET 3,(IX/IY+dd),L
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd de, 23 cycles, SET 3,(IX/IY+dd)
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd df, 23 cycles, SET 3,(IX/IY+dd),A
+	{ READ_S_WZ, SET_WRITE_S | END },
 
-	/* dd/fd cb dd e0, 23 cycles, SET 4,(IX/IY+dd),B */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e1, 23 cycles, SET 4,(IX/IY+dd),C */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e2, 23 cycles, SET 4,(IX/IY+dd),D */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e3, 23 cycles, SET 4,(IX/IY+dd),E */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e4, 23 cycles, SET 4,(IX/IY+dd),H */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e5, 23 cycles, SET 4,(IX/IY+dd),L */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e6, 23 cycles, SET 4,(IX/IY+dd) */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e7, 23 cycles, SET 4,(IX/IY+dd),A */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e8, 23 cycles, SET 5,(IX/IY+dd),B */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd e9, 23 cycles, SET 5,(IX/IY+dd),C */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd ea, 23 cycles, SET 5,(IX/IY+dd),D */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd eb, 23 cycles, SET 5,(IX/IY+dd),E */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd ec, 23 cycles, SET 5,(IX/IY+dd),H */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd ed, 23 cycles, SET 5,(IX/IY+dd),L */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd ee, 23 cycles, SET 5,(IX/IY+dd) */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd ef, 23 cycles, SET 5,(IX/IY+dd),A */ { READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e0, 23 cycles, SET 4,(IX/IY+dd),B
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e1, 23 cycles, SET 4,(IX/IY+dd),C
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e2, 23 cycles, SET 4,(IX/IY+dd),D
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e3, 23 cycles, SET 4,(IX/IY+dd),E
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e4, 23 cycles, SET 4,(IX/IY+dd),H
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e5, 23 cycles, SET 4,(IX/IY+dd),L
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e6, 23 cycles, SET 4,(IX/IY+dd)
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e7, 23 cycles, SET 4,(IX/IY+dd),A
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e8, 23 cycles, SET 5,(IX/IY+dd),B
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd e9, 23 cycles, SET 5,(IX/IY+dd),C
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd ea, 23 cycles, SET 5,(IX/IY+dd),D
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd eb, 23 cycles, SET 5,(IX/IY+dd),E
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd ec, 23 cycles, SET 5,(IX/IY+dd),H
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd ed, 23 cycles, SET 5,(IX/IY+dd),L
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd ee, 23 cycles, SET 5,(IX/IY+dd)
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd ef, 23 cycles, SET 5,(IX/IY+dd),A
+	{ READ_S_WZ, SET_WRITE_S | END },
 
-	/* dd/fd cb dd f0, 23 cycles, SET 6,(IX/IY+dd),B */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f1, 23 cycles, SET 6,(IX/IY+dd),C */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f2, 23 cycles, SET 6,(IX/IY+dd),D */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f3, 23 cycles, SET 6,(IX/IY+dd),E */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f4, 23 cycles, SET 6,(IX/IY+dd),H */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f5, 23 cycles, SET 6,(IX/IY+dd),L */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f6, 23 cycles, SET 6,(IX/IY+dd) */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f7, 23 cycles, SET 6,(IX/IY+dd),A */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f8, 23 cycles, SET 7,(IX/IY+dd),B */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd f9, 23 cycles, SET 7,(IX/IY+dd),C */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd fa, 23 cycles, SET 7,(IX/IY+dd),D */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd fb, 23 cycles, SET 7,(IX/IY+dd),E */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd fc, 23 cycles, SET 7,(IX/IY+dd),H */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd fd, 23 cycles, SET 7,(IX/IY+dd),L */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd fe, 23 cycles, SET 7,(IX/IY+dd) */ { READ_S_WZ, SET_WRITE_S | END },
-	/* dd/fd cb dd ff, 23 cycles, SET 7,(IX/IY+dd),A */ { READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f0, 23 cycles, SET 6,(IX/IY+dd),B
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f1, 23 cycles, SET 6,(IX/IY+dd),C
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f2, 23 cycles, SET 6,(IX/IY+dd),D
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f3, 23 cycles, SET 6,(IX/IY+dd),E
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f4, 23 cycles, SET 6,(IX/IY+dd),H
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f5, 23 cycles, SET 6,(IX/IY+dd),L
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f6, 23 cycles, SET 6,(IX/IY+dd)
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f7, 23 cycles, SET 6,(IX/IY+dd),A
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f8, 23 cycles, SET 7,(IX/IY+dd),B
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd f9, 23 cycles, SET 7,(IX/IY+dd),C
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd fa, 23 cycles, SET 7,(IX/IY+dd),D
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd fb, 23 cycles, SET 7,(IX/IY+dd),E
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd fc, 23 cycles, SET 7,(IX/IY+dd),H
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd fd, 23 cycles, SET 7,(IX/IY+dd),L
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd fe, 23 cycles, SET 7,(IX/IY+dd)
+	{ READ_S_WZ, SET_WRITE_S | END },
+	// dd/fd cb dd ff, 23 cycles, SET 7,(IX/IY+dd),A
+	{ READ_S_WZ, SET_WRITE_S | END },
 
-	/*****************************************************/
-	/* Special sequences                                 */
-	/*****************************************************/
+	///////////////////////////////////////////////////////
+	// Special sequences                                 //
+	///////////////////////////////////////////////////////
 
 	// CB/ED/DD/FD prefixed instructions have 2 M1 cycles taking an initial total of 8 cycles
 	// M1, 4 cycles
@@ -2151,14 +3049,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 16 T5 AB:1237 DB:--
 	{ READ_S_PC, DISP_WZ2_READ_OP2_S, DECODE_X2 },
 	// Take IRQ Mode 0, 6 cycles
-	// TODO: Implement
 	//  1  T1 AB:ppcc DB:-- M1                  Begin IRQACK cycle to get vector information from interrupting device
 	//  2  T2 AB:ppcc DB:-- M1
 	//  3  T3 AB:ppcc DB:-- M1
 	//  4  T4 AB:ppcc DB:-- M1           IORQ   Wait states can be inserted here
 	//  5  T5 AB:rfsh DB:--    RFSH
 	//  6  T6 AB:rfsh DB:--    RFSH MREQ
-	// Execution or further instruction reading starts here
+	// Execution of further instruction reading and processing continues here
 	// Exanple with a CALL mmnn instruction:
 	//  1  T1 AB:ppcc DB:-- M1
 	//  2  T2 AB:ppcc DB:-- M1
@@ -2173,7 +3070,6 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 12 T12 AB:ppcc DB:mm    MREQ RD
 	// 13 T13 AB:ppcc DB:mm    MREQ RD
 	{ READ_OP_IRQ, REFRESH_DECODE },
-	// 
 	// Take IRQ Mode 1, 6 cycles, Taking IRQ
 	// Only the first 6 cycles are IRQ specific the rest of the cycles is execution of an RST $38 instruction
 	//  1 T1 AB:ppcc DB:-- M1
@@ -2182,7 +3078,7 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	//  4 T4 AB:ppcc DB:-- M1           IORQ
 	//  5 T5 AB:rfsh DB:--    RFSH
 	//  6 T6 AB:rfsh DB:--    RFSH MREQ
-	//  7 T7/T5 AB:rfsh DB:--                 Execution of RST instruction starts here
+	//  7 T5* AB:rfsh DB:--                 Execution of RST instruction continues here
 	//  8 T1 AB:sspp DB:--
 	//  9 T2 AB:sspp DB:cc    MREQ
 	// 10 T3 AB:sspp DB:cc    MREQ WR
@@ -2210,7 +3106,6 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 17 T17 AB:iivv DB:--
 	// 18 T18 AB:iivv DB:xx    MREQ RD
 	// 19 T19 AB:iivv DB:xx    MREQ RD
-	// TODO
 	{ READ_OP_IRQ, REFRESH, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, READ_S_VEC, DB_Z_READ_S_VEC, DB_W_WZ_PC | END },
 	// Take NMI, 11 cycles, opcode is read but ignored, also asserts M1
 	//  1 T1 AB:ppcc DB:-- M1
@@ -2722,18 +3617,6 @@ inline void z80lle_device::r16l_db()
 }
 
 
-inline void z80lle_device::read()
-{
-	set_mreq();
-	set_rd();
-	m_icount -= 2;
-	m_data_bus = m_program->read_byte(m_address_bus);
-	clear_mreq();
-	clear_rd();
-	m_check_wait = true;
-}
-
-
 inline void z80lle_device::read_op_s()
 {
 	m_address_bus = m_pc.w.l;
@@ -2745,15 +3628,6 @@ inline void z80lle_device::read_op_s()
 	m_icount -= 1;
 	m_icount -= m_m1_wait_states;
 	m_opcode_read = true;
-	m_check_wait = true;
-}
-
-
-inline void z80lle_device::read_s()
-{
-	set_mreq();
-	set_rd();
-	m_icount -= 2;
 	m_check_wait = true;
 }
 
@@ -3046,9 +3920,9 @@ inline void z80lle_device::check_interrupts()
 	m_after_ldair = false;
 }
 
-/****************************************************************************
- * Processor initialization
- ****************************************************************************/
+//////////////////////////////////////////////////////////////////////////////
+// Processor initialization
+//////////////////////////////////////////////////////////////////////////////
 void z80lle_device::setup_flag_tables()
 {
 	if (!tables_initialised)
@@ -3061,10 +3935,10 @@ void z80lle_device::setup_flag_tables()
 		{
 			for (int newval = 0; newval < 256; newval++)
 			{
-				/* add or adc w/o carry set */
+				// add or adc w/o carry set
 				int val = newval - oldval;
 				*padd = (newval) ? ((newval & 0x80) ? SF : 0) : ZF;
-				*padd |= (newval & (YF | XF));  /* undocumented flag bits 5+3 */
+				*padd |= (newval & (YF | XF));  // undocumented flag bits 5+3
 				if ((newval & 0x0f) < (oldval & 0x0f))
 					*padd |= HF;
 				if (newval < oldval)
@@ -3073,10 +3947,10 @@ void z80lle_device::setup_flag_tables()
 					*padd |= VF;
 				padd++;
 
-				/* adc with carry set */
+				// adc with carry set
 				val = newval - oldval - 1;
 				*padc = (newval) ? ((newval & 0x80) ? SF : 0) : ZF;
-				*padc |= (newval & (YF | XF));  /* undocumented flag bits 5+3 */
+				*padc |= (newval & (YF | XF));  // undocumented flag bits 5+3
 				if ((newval & 0x0f) <= (oldval & 0x0f))
 					*padc |= HF;
 				if (newval <= oldval )
@@ -3085,10 +3959,10 @@ void z80lle_device::setup_flag_tables()
 					*padc |= VF;
 				padc++;
 
-				/* cp, sub or sbc w/o carry set */
+				// cp, sub or sbc w/o carry set
 				val = oldval - newval;
 				*psub = NF | ((newval) ? ((newval & 0x80) ? SF : 0) : ZF);
-				*psub |= (newval & (YF | XF));  /* undocumented flag bits 5+3 */
+				*psub |= (newval & (YF | XF));  // undocumented flag bits 5+3
 				if ((newval & 0x0f) > (oldval & 0x0f))
 					*psub |= HF;
 				if (newval > oldval)
@@ -3097,10 +3971,10 @@ void z80lle_device::setup_flag_tables()
 					*psub |= VF;
 				psub++;
 
-				/* sbc with carry set */
+				// sbc with carry set
 				val = oldval - newval - 1;
 				*psbc = NF | ((newval) ? ((newval & 0x80) ? SF : 0) : ZF);
-				*psbc |= (newval & (YF | XF));  /* undocumented flag bits 5+3 */
+				*psbc |= (newval & (YF | XF));  // undocumented flag bits 5+3
 				if ((newval & 0x0f) >= (oldval & 0x0f))
 					*psbc |= HF;
 				if (newval >= oldval)
@@ -3123,9 +3997,9 @@ void z80lle_device::setup_flag_tables()
 			if (i & 0x40) ++p;
 			if (i & 0x80) ++p;
 			SZ[i] = i ? i & SF : ZF;
-			SZ[i] |= (i & (YF | XF));       /* undocumented flag bits 5+3 */
+			SZ[i] |= (i & (YF | XF));       // undocumented flag bits 5+3
 			SZ_BIT[i] = i ? i & SF : ZF | PF;
-			SZ_BIT[i] |= (i & (YF | XF));   /* undocumented flag bits 5+3 */
+			SZ_BIT[i] |= (i & (YF | XF));   // undocumented flag bits 5+3
 			SZP[i] = SZ[i] | ((p & 1) ? 0 : PF);
 			SZHV_inc[i] = SZ[i];
 			if (i == 0x80)
@@ -3190,7 +4064,7 @@ void z80lle_device::device_start()
 	save_item(NAME(m_m1));
 	save_item(NAME(m_opcode_read));
 
-	/* Reset registers to their initial values */
+	// Reset registers to their initial values
 	m_prvpc.d = 0;
 	m_pc.d = 0;
 	m_sp.d = 0;
@@ -3232,10 +4106,10 @@ void z80lle_device::device_start()
 	m_opcodes_cache = m_opcodes->cache<0, 0, ENDIANNESS_LITTLE>();
 	m_io = &space(AS_IO);
 
-	m_hl_index[IX_OFFSET].w.l = m_hl_index[IY_OFFSET].w.l = 0xffff; /* IX and IY are FFFF after a reset! */
-	m_af.b.l = ZF;           /* Zero flag is set */
+	m_hl_index[IX_OFFSET].w.l = m_hl_index[IY_OFFSET].w.l = 0xffff; // IX and IY are FFFF after a reset!
+	m_af.b.l = ZF;           // Zero flag is set
 
-	/* set up the state table */
+	// set up the state table
 	state_add(STATE_GENPC,     "PC",        m_pc.w.l).callimport();
 	state_add(STATE_GENPCBASE, "CURPC",     m_prvpc.w.l).callimport().noshow();
 	state_add(Z80LLE_SP,       "SP",        m_sp.w.l);
@@ -3281,9 +4155,9 @@ void z80lle_device::device_start()
 }
 
 
-/****************************************************************************
- * Do a reset
- ****************************************************************************/
+/////////////////////////////////////////////////////////////////////////////
+// Do a reset
+/////////////////////////////////////////////////////////////////////////////
 void z80lle_device::device_reset()
 {
 	m_pc.d = 0x0000;
@@ -3315,9 +4189,9 @@ void z80lle_device::device_reset()
 }
 
 
-/****************************************************************************
- * Execute 'cycles' T-states.
- ****************************************************************************/
+/////////////////////////////////////////////////////////////////////////////
+// Execute 'cycles' T-states.
+/////////////////////////////////////////////////////////////////////////////
 void z80lle_device::execute_run()
 {
 	do
@@ -4509,19 +5383,19 @@ void z80lle_device::execute_set_input(int inputnum, int state)
 		break;
 
 	case INPUT_LINE_NMI:
-		/* mark an NMI pending on the rising edge */
+		// mark an NMI pending on the rising edge
 		if (m_nmi_state == CLEAR_LINE && state != CLEAR_LINE)
 			m_nmi_pending = true;
 		m_nmi_state = state;
 		break;
 
 	case INPUT_LINE_IRQ0:
-		/* update the IRQ state via the daisy chain */
+		// update the IRQ state via the daisy chain
 		m_irq_state = state;
 		if (daisy_chain_present())
 			m_irq_state = (daisy_update_irq_state() == ASSERT_LINE ) ? ASSERT_LINE : m_irq_state;
 
-		/* the main execute loop will take the interrupt */
+		// the main execute loop will take the interrupt
 		break;
 
 	case Z80LLE_INPUT_LINE_WAIT:
@@ -4534,9 +5408,9 @@ void z80lle_device::execute_set_input(int inputnum, int state)
 }
 
 
-/**************************************************************************
- * STATE IMPORT/EXPORT
- **************************************************************************/
+///////////////////////////////////////////////////////////////////////////
+// STATE IMPORT/EXPORT
+///////////////////////////////////////////////////////////////////////////
 
 void z80lle_device::state_import( const device_state_entry &entry )
 {
@@ -4603,14 +5477,11 @@ std::unique_ptr<util::disasm_interface> z80lle_device::create_disassembler()
 }
 
 
-/**************************************************************************
- * Generic set_info
- **************************************************************************/
-
 z80lle_device::z80lle_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
 	: z80lle_device(mconfig, Z80LLE, tag, owner, clock)
 {
 }
+
 
 z80lle_device::z80lle_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: cpu_device(mconfig, type, tag, owner, clock)
@@ -4631,6 +5502,7 @@ z80lle_device::z80lle_device(const machine_config &mconfig, device_type type, co
 {
 }
 
+
 device_memory_interface::space_config_vector z80lle_device::memory_space_config() const
 {
 	if(has_configured_map(AS_OPCODES))
@@ -4645,6 +5517,7 @@ device_memory_interface::space_config_vector z80lle_device::memory_space_config(
 			std::make_pair(AS_IO,      &m_io_config)
 		};
 }
+
 
 DEFINE_DEVICE_TYPE(Z80LLE, z80lle_device, "z80lle", "Zilog Z80 LLE")
 
