@@ -105,15 +105,13 @@ protected:
 		ADC_DB,
 		ADC_R8,
 		ADC16,
-		ADD_DB, 
+		ADD_DB,
 		ADD_R8,
 		ADD16,
 		AND_DB,
 		AND_R8,
-		BC_WZ,
 		BIT_DB,
 		BIT_R8,
-		CALL_COND,
 		CCF,
 		CP_DB,
 		CP_R8,
@@ -124,30 +122,43 @@ protected:
 		DB_A,
 		DB_R16H,
 		DB_R16L,
+		DB_R16L_READ_S_PC,
+		DB_R16L_READ_S_SP_INC,
+		DB_R16L_READ_S_WZ,
 		DB_REGD,
 		DB_REGD_INPUT,
 		DB_REGD0,
-		DB_W,        
-		DB_Z,        
-		DE_WZ,
-		DEC_DB,
+		DB_W,
+		DB_W_CALL_COND,
+		DB_W_JP_COND,
+		DB_W_A_DB_WRITE_S_WZ_INC,
+		DB_W_L_DB_WRITE_S_WZ_INC,
+		DB_W_READ_S_WZ_INC,
+		DB_W_WZ_PC,
+		DB_Z,
+		DB_Z_READ_S_PC,
+		DB_Z_READ_S_SP_INC,
+		DB_Z_READ_S_VEC,
+		DEC_DB_WRITE_S,
 		DEC_R8,
 		DEC_R16,
-		DECODE,
+		DECODE_X2,
 		DI,
 		DISP_WZ2,
+		DISP_WZ2_READ_OP2_S,
 		DISP_WZ5,
+		DISP_WZ5_READ_S_WZ,
 		DJNZ,
 		EI,
 		EX_AF_AF,
 		EX_DE_HL,
 		EXX,
-		H_DB,
+		H_DB_WRITE_S_WZ,
 		HALT,
 		HL_PC,
 		HL_WZ,
 		IM,
-		INC_DB,
+		INC_DB_WRITE_S,
 		INC_R8,
 		INC_R16,
 		IND,
@@ -158,7 +169,6 @@ protected:
 		INPUT_S_WZ_INC,
 		JP_COND,
 		JR_COND,
-		L_DB,
 		LD_A_I,
 		LD_A_R,
 		LD_I_A,
@@ -175,18 +185,22 @@ protected:
 		OUTPUT_S_BC,
 		OUTPUT_S_WZ_INC,
 		PC_OUT_INC_M1,
-		PCH_DB,
-		PCL_DB,
+		PCH_WRITE_S_SP_DEC,
+		PCL_WRITE_S_SP_DEC,
 		R16H_DB,
-		R16L_DB,
+		R16H_WRITE_S_SP_DEC,
+		R16H_WRITE_S_WZ,
+		R16L_WRITE_S_SP_DEC,
+		R16L_WRITE_S_WZ_INC,
 		READ_OP1_S,
 		READ_OP_S,
-		READ_OP2_S,
 		READ_OP_IRQ,
+		READ_S_BCDE_WZ_INC,
 		READ_S_HL,
 		READ_S_PC,
 		READ_S_SP,
 		READ_S_SP_INC,
+		READ_S_VEC,
 		READ_S_WZ,
 		READ_S_WZ_INC,
 		REFRESH,
@@ -194,31 +208,27 @@ protected:
 		REGD_DB,
 		REGS_TMP_REG,
 		REGS0_DB,
+		REGS0_WRITE_S_HL,
 		REPEAT,
 		REPEATCP,
 		REPEATIO,
-		RES_DB,
-		RES_DB_REGS0, 
 		RES_R8,
+		RES_WRITE_S,
 		RET_COND,
 		RETI,
 		RETN,
-		RL_DB,
-		RL_DB_REGS0,
 		RL_R8,
+		RL_WRITE_S,
 		RLA,
-		RLC_DB,
-		RLC_DB_REGS0,
 		RLC_R8,
+		RLC_WRITE_S,
 		RLCA,
 		RLD,
-		RR_DB,
-		RR_DB_REGS0,
 		RR_R8,
+		RR_WRITE_S,
 		RRA,
-		RRC_DB,
-		RRC_DB_REGS0,
 		RRC_R8,
+		RRC_WRITE_S,
 		RRCA,
 		RRD,
 		RST,
@@ -226,23 +236,19 @@ protected:
 		SBC_R8,
 		SBC16,
 		SCF,
-		SET_DB,
-		SET_DB_REGS0,
 		SET_R8,
-		SLA_DB,
-		SLA_DB_REGS0,
+		SET_WRITE_S,
 		SLA_R8,
-		SLL_DB,
-		SLL_DB_REGS0,
+		SLA_WRITE_S,
 		SLL_R8,
-		SRA_DB,
-		SRA_DB_REGS0,
+		SLL_WRITE_S,
 		SRA_R8,
-		SRL_DB,
-		SRL_DB_REGS0,
+		SRA_WRITE_S,
 		SRL_R8,
+		SRL_WRITE_S,
 		SUB_DB,
 		SUB_R8,
+		WRITE_BCDE_A,
 		WRITE_S,
 		WRITE_S_DE,
 		WRITE_S_HL,
@@ -252,6 +258,7 @@ protected:
 		WZ_HL,
 		WZ_PC,
 		X,
+		X_READ_S_PC,
 		X2,
 		XOR_DB,
 		XOR_R8,
@@ -268,7 +275,7 @@ protected:
 	static u8 SZHVC_add[2*256*256];
 	static u8 SZHVC_sub[2*256*256];
 
-	static const u16 insts[5*256 + 4][17];
+	static const u16 insts[5*256 + 6][17];
 	static const u8 jr_conditions[8][2];
 	static const u8 jp_conditions[8][2];
 	static constexpr unsigned CB_OFFSET = 1 * 256;
@@ -277,8 +284,10 @@ protected:
 	static constexpr unsigned FDCB_OFFSET = 4 * 256;
 	static constexpr unsigned M1 = 5 * 256 + 0;
 	static constexpr unsigned DD_FD_CB = 5 * 256 + 1;
-	static constexpr unsigned TAKE_IRQ = 5 * 256 + 2;
-	static constexpr unsigned TAKE_NMI = 5 * 256 + 3;
+	static constexpr unsigned TAKE_IRQ_0 = 5 * 256 + 2;
+	static constexpr unsigned TAKE_IRQ_1 = 5 * 256 + 3;
+	static constexpr unsigned TAKE_IRQ_2 = 5 * 256 + 4;
+	static constexpr unsigned TAKE_NMI = 5 * 256 + 5;
 	static constexpr unsigned END = 0x8000;
 	static constexpr unsigned HL_OFFSET = 0;
 	static constexpr unsigned IX_OFFSET = 1;
@@ -336,6 +345,10 @@ protected:
 	bool              m_wr;                 // WR output line state (active low)
 	bool              m_m1;                 // M1 output line state (active low)
 	bool              m_opcode_read;        // Should we read from opcode_cache
+	u32               m_irq_vector;         // For multibyte irq "vector" in interrupt mode 0
+	                                        // Reading the additional bytes is done with regular memory reads but the rest
+											// of the system should be designed to not have the memory respond.
+	bool              m_in_irq_acknowledge;
 
 	// Temporary state for the debugger
 	u8                m_rtemp;
@@ -350,6 +363,7 @@ protected:
 		m_instruction_offset = 0;
 		m_instruction_step = 0;
 		m_hl_offset = HL_OFFSET;
+		m_in_irq_acknowledge = false;
 	}
 	void leave_halt();
 	void check_interrupts();
@@ -384,6 +398,8 @@ protected:
 	void db_regd_input();
 	void input_s(u16 address);
 	void output_s(u16 address);
+	void r16h_db();
+	void r16l_db();
 	void read();
 	void read_op_s();
 	void read_s();
@@ -393,6 +409,7 @@ protected:
 	u8 regs();
 	void regs(u8 data);
 	void regs0(u8 data);
+	void regs0_db();
 	void write_s();
 	void write_s(u16 address);
 	void decode();
