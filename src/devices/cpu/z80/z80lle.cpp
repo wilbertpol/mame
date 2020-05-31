@@ -21,7 +21,6 @@
  * 
  *   TODO:
  *   - Split the RFSH and MREQ cycles of REFRESH
- *   - Implement the 3 start up cycles after a RESET
  *   - Test interrupts in IM0
  *   - Test interrupts in IM2
  *   - RETI: When should the daisy chain be notified?
@@ -680,7 +679,7 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 15 T1 AB:5677 DB:--
 	// 16 T2 AB:5677 DB:xx MREQ
 	// 17 T3 AB:5677 DB:xx MREQ WR
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// c5, 11 cycles, PUSH BC
 	//  5 T5 AB:1234 DB:--
 	//  6 T1 AB:5677 DB:--
@@ -689,7 +688,7 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	//  9 T1 AB:5676 DB:--
 	// 10 T2 AB:5676 DB:bb MREQ
 	// 11 T3 AB:5676 DB:bb MREQ WR
-	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	{ R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
 	// c6, 7 cycles, ADD A,n
 	//  5 T1 AB:1235 DB:--
 	//  6 T2 AB:1235 DB:nn MREQ RD
@@ -703,7 +702,7 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	//  9 T1 AB:5676 DB--
 	// 10 T2 AB:5676 DB:pp MREQ
 	// 11 T3 AB:5676 DB:pp MREQ WR
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 	// c8, 5/11 cycles, RET Z, see c0 for timing
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
 	// c9, 10 cycles, RET
@@ -719,7 +718,7 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// cb, +4 cycles, CB prefix
 	{ 0 },
 	// cc, 10/17 cycles, CALL Z,nn, see c4 for timing
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// cd, 17 cycles, CALL nn
 	//  5 T1 AB:1235 DB:--
 	//  6 T2 AB:1235 DB:yy MREQ RD
@@ -734,11 +733,11 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 15 T1 AB:5676 DB:--
 	// 16 T2 AB:5676 DB:pp MREQ
 	// 17 T3 AB:5676 DB:pp MREQ WR
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// ce, 7 cycles, ADC A,n, see c6 for timing
 	{ READ_S_PC, ADC_DB | END },
 	// cf, 11 cycles, RST 8H, see c7 for timing
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	// d0, 5/11 cycles, RET NC, see c0 for timing
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
@@ -756,13 +755,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 11 T4 AB:aann DB:aa         WR IORQ
 	{ READ_S_PC, DB_Z, A_W, A_DB, OUTPUT_S_WZ_INC, DB_W | END },
 	// d4, 10/17 cycles, CALL NC,nn, see c4 for timing
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// d5, 11 cycles, PUSH DE, see c5 for timing
-	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	{ R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
 	// d6, 7 cycles, SUB n, see c6 for timing
 	{ READ_S_PC, SUB_DB | END },
 	// d7, 11 cycles, RST 10H, see c7 for timing
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 	// d8, 5/11 cycles, RET C, see c0 for timing
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
 	/* d9, 4 cycles, EXX */ { EXX | END },
@@ -778,13 +777,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 11 T4 AB:aann DB:xx      RD IORQ
 	{ READ_S_PC, DB_Z, A_W, INPUT_S_WZ_INC, INPUT_A | END },
 	// dc, 10/17 cycles, CALL C,nn, see c4 for timing
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd, +4 cycles, DD prefix
 	{ 0 },
 	// de, 7 cycles, SBC n, see c6 for timing
 	{ READ_S_PC, SBC_DB | END },
 	// df, 11 cycles, RST 18H, see c7 for timing
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	// e0, 5/11 cycles, RET PO, see c0 for timing
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
@@ -808,15 +807,15 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// 17 T3 AB:5678 DB:hh MREQ WR
 	// 18 T4 AB:5678 DB:--
 	// 19 T5 AB:5678 DB:--
-	{ READ_S_SP_INC, DB_Z, READ_S_SP, DB_W, X2, R16H_DB, WRITE_S, R16L_WRITE_S_SP_DEC, X2, WZ_HL | END },
+	{ READ_S_SP_INC, DB_Z_READ_S_SP, EX_SP_WRITE_S, R16L_WRITE_S_SP_DEC, X2, WZ_HL | END },
 	// e4, 10/17 cycles, CALL PO,nn, see c4 for timing
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// e5, 11 cycles, PUSH HL, see c5 for timing
-	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	{ R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
 	// e6, 7 cycles, AND n, see c6 for timing
 	{ READ_S_PC, AND_DB | END },
 	// e7, 11 cycles, RST 20H, see c7 for timing
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 	// e8, 5/11 cycles, RET PE, see c0 for timing
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
 	// e9, 4 cycles, JP (HL)
@@ -826,13 +825,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// eb, 4 cycles, EX DE,HL
 	{ EX_DE_HL | END },
 	// ec, 10/17 cycles, CALL PE,nn, see c4 for timing
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// ed, +4 cycles, ED prefix
 	{ 0 },
 	// ee, 7 cycles, XOR n, see c6 for timing
 	{ READ_S_PC, XOR_DB | END },
 	// ef, 11 cycles, RST 28H, see c7 for timing
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	// f0, 5/11 cycles, RET P, see c0 for timing
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
@@ -843,13 +842,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// f3, 4 cycles, DI
 	{ DI | END },
 	// f4, 10/17 cycles, CALL P,nn, see c4 for timing
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// f5, 11 cycles, PUSH AF, see c5 for timing
-	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	{ R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
 	// f6, 7 cycles, OR n, see c6 for timing
 	{ READ_S_PC, OR_DB | END },
 	// f7, 11 cycles, RST 30H, see c7 for timing
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 	// f8, 5/11 cycles, RET M, see c0 for timing
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
 	// f9, 6 cycles, LD SP,HL
@@ -859,13 +858,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// fb, 4 cycles, EI
 	{ EI | END },
 	// fc, 10/17 cycles, CALL M,nn, see c4 for timing
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END }, 
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END }, 
 	// fd, +4 cycles, FD prefix
 	{ 0 },
 	// fe, 7 cycles, CP n, see c6 for timing
 	{ READ_S_PC, CP_DB | END },
 	// ff, 11 cycles, RST 38H, see c7 for timing
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	///////////////////////////////////////////////////////
 	// CB prefixed instructions                          //
@@ -2361,13 +2360,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// dd/fd c3, 14 cycles, JMP nn
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_WZ_PC | END },
 	// dd/fd c4, 14/21 cycles, CALL NZ,nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd c5, 15 cycles, PUSH BC
-	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	{ R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
 	// dd/fd c6, 11 cycles, ADD A,n
 	{ READ_S_PC, ADD_DB | END },
 	// dd/fd c7, 15 cycles, RST 0H
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 	// dd/fd c8, 9/15 cycles, RET Z
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
 	// dd/fd c9, 14 cycles, RET
@@ -2377,13 +2376,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// dd/fd cb, +4 cycles, DD/FD + CB prefix
 	{ 0 },
 	// dd/fd cc, 14/21 cycles, CALL Z,nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd cd, 21 cycles, CALL nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd ce, 11 cycles, ADC A,n
 	{ READ_S_PC, ADC_DB | END },
 	// dd/fd cf, 15 cycles, RST 8H
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	// dd/fd d0, 9/15 cycles, RET NC
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
@@ -2394,13 +2393,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// dd/fd d3, 15 cycles, OUT (n), A
 	{ READ_S_PC, DB_Z, A_W, A_DB, OUTPUT_S_WZ_INC, DB_W | END },
 	// dd/fd d4, 14/21 cycles, CALL NC,nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd d5, 15 cycles, PUSH DE
-	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	{ R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
 	// dd/fd d6, 11 cycles, SUB n
 	{ READ_S_PC, SUB_DB | END },
 	// dd/fd d7, 15 cycles, RST 10H
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 	// dd/fd d8, 9/15 cycles, RET C
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
 	// dd/fd d9, 8 cycles, EXX
@@ -2410,13 +2409,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// dd/fd db, 15 cycles, IN A,(n)
 	{ READ_S_PC, DB_Z, A_W, INPUT_S_WZ_INC, INPUT_A | END },
 	// dd/fd dc, 14/21 cycles, CALL C,nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd dd, +4 cycles, DD prefix
 	{ 0 },
 	// dd/fd de, 11 cycles, SBC n
 	{ READ_S_PC, SBC_DB | END },
 	// dd/fd df, 15 cycles, RST 18H
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	// dd/fd e0, 9/15 cycles, RET PO
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
@@ -2425,15 +2424,15 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// dd/fd e2, 14 cycles, JP PO,nn
 	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_JP_COND | END },
 	// dd/fd e3, 23 cycles, EX (SP),IX/IY
-	{ READ_S_SP_INC, DB_Z, READ_S_SP, DB_W, X2, R16H_DB, WRITE_S, R16L_WRITE_S_SP_DEC, X2, WZ_HL | END },
+	{ READ_S_SP_INC, DB_Z_READ_S_SP, EX_SP_WRITE_S, R16L_WRITE_S_SP_DEC, X2, WZ_HL | END },
 	// dd/fd e4, 14/21 cycles, CALL PO,nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd e5, 15 cycles, PUSH IX/IY
-	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	{ R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
 	// dd/fd e6, 11 cycles, AND n
 	{ READ_S_PC, AND_DB | END },
 	// dd/fd e7, 15 cycles, RST 20H
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 	// dd/fd e8, 9/15 cycles, RET PE
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
 	// dd/fd e9, 8 cycles, JP (HL)
@@ -2443,13 +2442,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// dd/fd eb, 8 cycles, EX DE,HL
 	{ EX_DE_HL | END },
 	// dd/fd ec, 14/21 cycles, CALL PE,nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd ed, +4 cycles, ED prefix
 	{ 0 },
 	// dd/fd ee, 11 cycles, XOR n
 	{ READ_S_PC, XOR_DB | END },
 	// dd/fd ef, 15 cycles, RST 28H
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	// dd/fd f0, 9/15 cycles, RET P
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
@@ -2460,13 +2459,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// dd/fd f3, 8 cycles, DI
 	{ DI | END },
 	// dd/fd f4, 14/21 cycles, CALL P,nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd f5, 15 cycles, PUSH AF
-	{ X, R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
+	{ R16H_WRITE_S_SP_DEC, R16L_WRITE_S_SP_DEC | END },
 	// dd/fd f6, 11 cycles, OR n
 	{ READ_S_PC, OR_DB | END },
 	// dd/fd f7, 15 cycles, RST 30H
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 	// dd/fd f8, 9/15 cycles, RET M
 	{ RET_COND, DB_Z_READ_S_SP_INC, DB_W_WZ_PC | END },
 	// dd/fd f9, 10 cycles, LD SP,IX/IY
@@ -2476,13 +2475,13 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	// dd/fd fb, 8 cycles, EI
 	{ EI | END },
 	// dd/fd fc, 14/21 cycles, CALL M,nn
-	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, WZ_PC | END },
+	{ READ_S_PC, DB_Z_READ_S_PC, DB_W_CALL_COND, PCL_WRITE_S_SP_DEC, WZ_PC | END },
 	// dd/fd fd, +4 cycles, FD prefix
 	{ 0 },
 	// dd/fd fe, 11 cycles, CP n
 	{ READ_S_PC, CP_DB | END },
 	// dd/fd ff, 15 cycles, RST 38H
-	{ X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
+	{ PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, RST | END },
 
 	///////////////////////////////////////////////////////
 	// DD/FD + CB prefixed instructions                  //
@@ -3119,7 +3118,7 @@ const u16 z80lle_device::insts[5 * 256 + 6][17] = {
 	//  9 T1 AB:sspp DB:--
 	// 10 T2 AB:sspp DB:pp MREQ
 	// 11 T3 AB:sspp DB:pp MREQ WR
-	{ READ_OP_S, REFRESH, X, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, NMI | END },
+	{ READ_OP_S, REFRESH, PCH_WRITE_S_SP_DEC, PCL_WRITE_S_SP_DEC, NMI | END },
 
 };
 
@@ -4067,18 +4066,18 @@ void z80lle_device::device_start()
 	// Reset registers to their initial values
 	m_prvpc.d = 0;
 	m_pc.d = 0;
-	m_sp.d = 0;
-	m_af.d = 0;
-	m_bc.d = 0;
-	m_de.d = 0;
-	m_hl_index[HL_OFFSET].d = 0;
-	m_hl_index[IX_OFFSET].d = 0;
-	m_hl_index[IY_OFFSET].d = 0;
-	m_wz.d = 0;
-	m_af2.d = 0;
-	m_bc2.d = 0;
-	m_de2.d = 0;
-	m_hl2.d = 0;
+	m_sp.d = 0xffff;
+	m_af.d = 0xfffd;
+	m_bc.d = 0xffff;
+	m_de.d = 0xffff;
+	m_hl_index[HL_OFFSET].d = 0xffff;
+	m_hl_index[IX_OFFSET].d = 0xffff;
+	m_hl_index[IY_OFFSET].d = 0xffff;
+	m_wz.d = 0xffff;
+	m_af2.d = 0xffff;
+	m_bc2.d = 0xffff;
+	m_de2.d = 0xffff;
+	m_hl2.d = 0xffff;
 	m_r = 0;
 	m_r2 = 0;
 	m_iff1 = 0;
@@ -4099,6 +4098,7 @@ void z80lle_device::device_start()
 	m_wr = false;
 	m_m1 = false;
 	m_opcode_read = false;
+	m_reset = true;
 
 	m_program = &space(AS_PROGRAM);
 	m_opcodes = has_space(AS_OPCODES) ? &space(AS_OPCODES) : m_program;
@@ -4169,6 +4169,7 @@ void z80lle_device::device_reset()
 	m_after_ldair = false;
 	m_iff1 = 0;
 	m_iff2 = 0;
+	m_reset = true;
 
 	m_wz.d = m_pc.d;
 
@@ -4194,6 +4195,12 @@ void z80lle_device::device_reset()
 /////////////////////////////////////////////////////////////////////////////
 void z80lle_device::execute_run()
 {
+	if (m_reset)
+	{
+		// 2-3 cycle delay after a reset
+		m_icount -= 3;
+		m_reset = false;
+	}
 	do
 	{
 		if (m_check_wait) {
@@ -4469,12 +4476,15 @@ void z80lle_device::execute_run()
 		case DB_W:
 			m_wz.b.h = m_data_bus;
 			break;
-		// Store data bus in W, check condition for CALL, takes 1 cycle when condition is true
+		// Store data bus in W, check condition for CALL, put PC 8 high bits on data bus, decrement SP, put SP on address bus, assert MREQ and WR signals for write, takes 4 cycle when condition is true
 		case DB_W_CALL_COND:
 			m_wz.b.h = m_data_bus;
 			if ((m_af.b.l & jp_conditions[((m_ir >> 3) & 0x07)][0]) == jp_conditions[((m_ir >> 3) & 0x07)][1])
 			{
 				m_icount -= 1;
+				m_data_bus = m_pc.b.h;
+				m_sp.w.l -= 1;
+				write_s(m_sp.w.l);
 			}
 			else
 			{
@@ -4524,6 +4534,12 @@ void z80lle_device::execute_run()
 			m_wz.b.l = m_data_bus;
 			read_s(m_pc.w.l);
 			m_pc.w.l++;
+			break;
+		// Store data bus in Z, put SP on address bus, assert MREQ and RD signals for read cycle, takes 3 cycles
+		case DB_Z_READ_S_SP:
+			m_wz.b.l = m_data_bus;
+			read_s(m_sp.w.l);
+			m_sp.w.l += 1;
 			break;
 		// Store data bus in Z, put SP on address bus, increment SP, assert MREQ and RD signals for read cycle, takes 3 cycles
 		case DB_Z_READ_S_SP_INC:
@@ -4628,6 +4644,13 @@ void z80lle_device::execute_run()
 				m_de.w.l = m_hl_index[m_hl_offset].w.l;
 				m_hl_index[m_hl_offset].w.l = tmp;
 			}
+			break;
+		// Store data bus in W, skip 2 cycls, put high 8 bits of 16 bit register on data bus, assert MREQ and WR signals for write, takes 4 cycles
+		case EX_SP_WRITE_S:
+			m_wz.b.h = m_data_bus;
+			m_icount -= 2;
+			r16h_db();
+			write_s();
 			break;
 		// Swap BC, DE, HL and BC2, DE2, HL2, takes 0 cycles
 		case EXX:
@@ -4890,8 +4913,9 @@ void z80lle_device::execute_run()
 			m_icount -= 1;
 			m_pc.w.l++;
 			break;
-		// Put PC 8 high bits on data bus, decrement SP, put SP on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		// Skip 1 cycle, put PC 8 high bits on data bus, decrement SP, put SP on address bus, assert MREQ and WR signals for write, takes 4 cycles
 		case PCH_WRITE_S_SP_DEC:
+			m_icount -= 1;
 			m_data_bus = m_pc.b.h;
 			m_sp.w.l -= 1;
 			write_s(m_sp.w.l);
@@ -4906,8 +4930,9 @@ void z80lle_device::execute_run()
 		case R16H_DB:
 			r16h_db();
 			break;
-		// Put high 8 bits of 16 bit register on data bus, decrement SP, put SP on address bus, assert MREQ and WR signals for write, takes 3 cycles
+		// Skip a cycle, put high 8 bits of 16 bit register on data bus, decrement SP, put SP on address bus, assert MREQ and WR signals for write, takes 4 cycles
 		case R16H_WRITE_S_SP_DEC:
+			m_icount -= 1;
 			r16h_db();
 			m_sp.w.l -= 1;
 			write_s(m_sp.w.l);

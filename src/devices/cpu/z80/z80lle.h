@@ -137,6 +137,7 @@ protected:
 		DB_W_WZ_PC,
 		DB_Z,
 		DB_Z_READ_S_PC,
+		DB_Z_READ_S_SP,
 		DB_Z_READ_S_SP_INC,
 		DB_Z_READ_S_VEC,
 		DEC_DB_WRITE_S,
@@ -152,6 +153,7 @@ protected:
 		EI,
 		EX_AF_AF,
 		EX_DE_HL,
+		EX_SP_WRITE_S,
 		EXX,
 		H_DB_WRITE_S_WZ,
 		HALT,
@@ -349,6 +351,7 @@ protected:
 	                                        // Reading the additional bytes is done with regular memory reads but the rest
 											// of the system should be designed to not have the memory respond.
 	bool              m_in_irq_acknowledge;
+	bool              m_reset;              // when CPU was reset
 
 	// Temporary state for the debugger
 	u8                m_rtemp;
