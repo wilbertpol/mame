@@ -277,7 +277,7 @@ protected:
 	static u8 SZHVC_add[2*256*256];
 	static u8 SZHVC_sub[2*256*256];
 
-	static const u16 insts[5*256 + 6][17];
+	static const u16 insts[5*256 + 6][10];
 	static const u8 jr_conditions[8][2];
 	static const u8 jp_conditions[8][2];
 	static constexpr unsigned CB_OFFSET = 1 * 256;

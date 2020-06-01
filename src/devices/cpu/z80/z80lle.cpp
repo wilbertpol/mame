@@ -93,7 +93,7 @@ const u8 z80lle_device::jp_conditions[8][2] = {
 };
 
 
-const u16 z80lle_device::insts[5 * 256 + 6][17] = {
+const u16 z80lle_device::insts[5 * 256 + 6][10] = {
 	///////////////////////////////////////////////////////
 	// Regular instructions                              //
 	///////////////////////////////////////////////////////
