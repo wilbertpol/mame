@@ -367,9 +367,6 @@ static const int upd775x_state_table[16] = { -1, -1, 0, 0, 1, 2, 2, 3, -1, -1, 0
 
 void upd775x_device::update_adpcm(int data)
 {
-	m_sample += upd775x_step[m_adpcm_state][data];
-	m_adpcm_state += upd775x_state_table[data];
-
 	if (m_adpcm_state < 0)
 		m_adpcm_state = 0;
 	else if (m_adpcm_state > 15)
@@ -719,6 +716,31 @@ void upd7759_device::internal_md_w(int state)
 
 	m_channel->update();
 
+	if (m_state == STATE_IDLE && old_md && !m_md && m_reset)
+	{
+		m_mode = MODE_SLAVE;
+		m_state = STATE_START;
+		m_timer->adjust(attotime::zero);
+	}
+}
+
+
+WRITE_LINE_MEMBER(upd7759_device::md_w)
+{
+	synchronize(TID_MD_WRITE, state);
+}
+
+
+void upd7759_device::internal_md_w(int state)
+{
+	uint8_t old_md = m_md;
+	m_md = (state != 0);
+
+	LOG_STATE("upd7759_md_w: %d->%d\n", old_md, m_md);
+
+	m_channel->update();
+
+	// on the falling edge, if we're idle, switch to slave mode, but not if we're held in reset
 	if (m_state == STATE_IDLE && old_md && !m_md && m_reset)
 	{
 		m_mode = MODE_SLAVE;
