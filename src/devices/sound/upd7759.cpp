@@ -330,11 +330,11 @@ void upd7756_device::device_reset()
 	m_drq = 0;
 }
 
-/************************************************************
-
-    Local variables
-
-*************************************************************/
+//-----------------------------------------------------------
+//
+//  Local variables
+//
+//-----------------------------------------------------------
 
 static const int upd775x_step[16][16] =
 {
@@ -359,11 +359,11 @@ static const int upd775x_step[16][16] =
 static const int upd775x_state_table[16] = { -1, -1, 0, 0, 1, 2, 2, 3, -1, -1, 0, 0, 1, 2, 2, 3 };
 
 
-/************************************************************
-
-    ADPCM sample updater
-
-*************************************************************/
+//-----------------------------------------------------------
+//
+//  ADPCM sample updater
+//
+//-----------------------------------------------------------
 
 void upd775x_device::update_adpcm(int data)
 {
@@ -378,11 +378,11 @@ void upd775x_device::update_adpcm(int data)
 
 
 
-/************************************************************
-
-    Master chip state machine
-
-*************************************************************/
+//-----------------------------------------------------------
+//
+//  Master chip state machine
+//
+//-----------------------------------------------------------
 
 void upd775x_device::advance_state()
 {
@@ -390,6 +390,8 @@ void upd775x_device::advance_state()
 	{
 		// Idle state: we stick around here while there's nothing to do
 		case STATE_IDLE:
+			// If we have dropped back to idle state we always switch back to stand alone mode
+			m_mode = MODE_STAND_ALONE;
 			m_clocks_left = 4;
 			break;
 
@@ -417,8 +419,8 @@ void upd775x_device::advance_state()
 			m_state = STATE_FIRST_REQ;
 			break;
 
-		/* First request state: issue a request for the first byte */
-		/* The expected response will be the index of the last sample */
+		// First request state: issue a request for the first byte
+		// The expected response will be the index of the last sample
 		case STATE_FIRST_REQ:
 			LOG_STATE("first data request\n");
 			m_drq = 1;
@@ -427,8 +429,8 @@ void upd775x_device::advance_state()
 			m_state = STATE_LAST_SAMPLE;
 			break;
 
-		/* Last sample state: latch the last sample value and issue a request for the second byte */
-		/* The second byte read will be just a dummy */
+		// Last sample state: latch the last sample value and issue a request for the second byte
+		// The second byte read will be just a dummy
 		case STATE_LAST_SAMPLE:
 			m_last_sample = (m_mode == MODE_STAND_ALONE) ? read_byte(0) : m_fifo_in;
 			LOG_STATE("last_sample = %02X, requesting dummy 1\n", m_last_sample);
@@ -438,8 +440,8 @@ void upd775x_device::advance_state()
 			m_state = (m_req_sample > m_last_sample) ? STATE_IDLE : STATE_DUMMY1;
 			break;
 
-		/* First dummy state: ignore any data here and issue a request for the third byte */
-		/* The expected response will be the MSB of the sample address */
+		// First dummy state: ignore any data here and issue a request for the third byte
+		// The expected response will be the MSB of the sample address
 		case STATE_DUMMY1:
 			LOG_STATE("dummy1, requesting offset_hi\n");
 			m_drq = 1;
@@ -448,8 +450,8 @@ void upd775x_device::advance_state()
 			m_state = STATE_ADDR_MSB;
 			break;
 
-		/* Address MSB state: latch the MSB of the sample address and issue a request for the fourth byte */
-		/* The expected response will be the LSB of the sample address */
+		// Address MSB state: latch the MSB of the sample address and issue a request for the fourth byte
+		// The expected response will be the LSB of the sample address
 		case STATE_ADDR_MSB:
 			m_offset = ((m_mode == MODE_STAND_ALONE) ? read_byte(m_req_sample * 2 + 5) : m_fifo_in) << (8 + m_sample_offset_shift);
 			LOG_STATE("offset_hi = %02X, requesting offset_lo\n", m_offset >> (8 + m_sample_offset_shift));
@@ -459,8 +461,8 @@ void upd775x_device::advance_state()
 			m_state = STATE_ADDR_LSB;
 			break;
 
-		/* Address LSB state: latch the LSB of the sample address and issue a request for the fifth byte */
-		/* The expected response will be just a dummy */
+		// Address LSB state: latch the LSB of the sample address and issue a request for the fifth byte
+		// The expected response will be just a dummy
 		case STATE_ADDR_LSB:
 			m_offset |= ((m_mode == MODE_STAND_ALONE) ? read_byte(m_req_sample * 2 + 6) : m_fifo_in) << m_sample_offset_shift;
 			LOG_STATE("offset_lo = %02X, requesting dummy 2\n", (m_offset >> m_sample_offset_shift) & 0xff);
@@ -470,8 +472,8 @@ void upd775x_device::advance_state()
 			m_state = STATE_DUMMY2;
 			break;
 
-		/* Second dummy state: ignore any data here and issue a request for the sixth byte */
-		/* The expected response will be the first block header */
+		// Second dummy state: ignore any data here and issue a request for the sixth byte
+		// The expected response will be the first block header
 		case STATE_DUMMY2:
 			m_offset++;
 			m_first_valid_header = 0;
@@ -528,8 +530,8 @@ void upd775x_device::advance_state()
 				m_first_valid_header = 1;
 			break;
 
-		/* Nibble count state: latch the number of nibbles to play and request another byte */
-		/* The expected response will be the first data byte */
+		// Nibble count state: latch the number of nibbles to play and request another byte
+		// The expected response will be the first data byte
 		case STATE_NIBBLE_COUNT:
 			m_nibbles_left = ((m_mode == MODE_STAND_ALONE) ? read_byte(m_offset++) : m_fifo_in) + 1;
 			LOG_STATE("nibble_count = %u, requesting next byte\n", (unsigned)m_nibbles_left);
@@ -539,8 +541,8 @@ void upd775x_device::advance_state()
 			m_state = STATE_NIBBLE_MSN;
 			break;
 
-		/* MSN state: latch the data for this pair of samples and request another byte */
-		/* The expected response will be the next sample data or another header */
+		// MSN state: latch the data for this pair of samples and request another byte
+		// The expected response will be the next sample data or another header
 		case STATE_NIBBLE_MSN:
 			m_adpcm_data = (m_mode == MODE_STAND_ALONE) ? read_byte(m_offset++) : m_fifo_in;
 			update_adpcm(m_adpcm_data >> 4);
@@ -574,11 +576,11 @@ void upd775x_device::advance_state()
 	}
 }
 
-/************************************************************
-
-    DRQ callback
-
-*************************************************************/
+//-----------------------------------------------------------
+//
+//  DRQ callback
+//
+//-----------------------------------------------------------
 
 void upd7759_device::device_timer(emu_timer &timer, device_timer_id id, int param)
 {
@@ -624,11 +626,11 @@ void upd7759_device::device_timer(emu_timer &timer, device_timer_id id, int para
 	}
 }
 
-/************************************************************
-
-    I/O handlers
-
-*************************************************************/
+//-----------------------------------------------------------
+//
+//  I/O handlers
+//
+//-----------------------------------------------------------
 
 WRITE_LINE_MEMBER( upd775x_device::reset_w )
 {
