@@ -936,6 +936,7 @@ BUSES["SCSI"] = true
 BUSES["SCV"] = true
 BUSES["SDK85"] = true
 BUSES["SEGA8"] = true
+BUSES["SEGAAI"] = true
 BUSES["SG1000_EXP"] = true
 BUSES["SGIKBD"] = true
 BUSES["SMS_CTRL"] = true
@@ -4586,6 +4587,7 @@ files {
 	MAME_DIR .. "src/mame/drivers/sb8085.cpp",
 	MAME_DIR .. "src/mame/drivers/sbrain.cpp",
 	MAME_DIR .. "src/mame/drivers/seattlecmp.cpp",
+	MAME_DIR .. "src/mame/drivers/segaai.cpp",
 	MAME_DIR .. "src/mame/drivers/sh4robot.cpp",
 	MAME_DIR .. "src/mame/drivers/sansa_fuze.cpp",
 	MAME_DIR .. "src/mame/drivers/scopus.cpp",

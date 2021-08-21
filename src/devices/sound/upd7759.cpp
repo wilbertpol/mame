@@ -711,8 +711,8 @@ void upd7759_device::internal_start_w(int state)
 	// update the stream first
 	m_channel->update();
 
-	// on the rising edge, if we're idle, start going, but not if we're held in reset
-	if (m_state == STATE_IDLE && !oldstart && m_start && m_reset)
+	// on the faling edge, if we're idle, start going, but not if we're held in reset
+	if (m_state == STATE_IDLE && oldstart && !m_start && m_reset)
 	{
 		m_state = STATE_START;
 
@@ -734,8 +734,8 @@ void upd7756_device::internal_start_w(int state)
 	// update the stream first
 	m_channel->update();
 
-	// on the rising edge, if we're idle, start going, but not if we're held in reset
-	if (m_state == STATE_IDLE && !oldstart && m_start && m_reset)
+	// on the falling edge, if we're idle, start going, but not if we're held in reset
+	if (m_state == STATE_IDLE && oldstart && !m_start && m_reset)
 	{
 		m_state = STATE_START;
 	}
