@@ -10,10 +10,17 @@
 
 ICs on board:
 
+<<<<<<< HEAD
 IC 2       TMP82C53F-2    (91/09)  Toshiba (Peripheral Timer)
 IC 3       HN27512G-25    (87/12)  Hitachi 64K EPROM
 IC 6       YM2151         (91/10)  Yamaha FM chip
 IC 7       TMP82C55AF-10  (88/15)  Toshiba (Peripheral Interface)
+=======
+IC 2       TMP82C53F-2    (91/09)  Toshiba (Peripheral Timer?)
+IC 3       HN27512G-25    (87/12)  Hitachi 64K EPROM
+IC 6       YM2151         (91/10)  Yamaha FM chip
+IC 7       TMP82C55AF-10  (88/15)  Toshiba (Peripheral Interface?)
+>>>>>>> b94ded99dbc (checkpoint)
 IC 8       YM3012         (91/10)  Yamaha Stereo DAC
 IC 9       HA17358                 Hitachi Dual Op-Amp
 IC 10      LC7537N                 Sanyo (Volume Control IC)
@@ -24,6 +31,7 @@ IC 16-19   MB81464-12     (91/12)  Fujitsu 32K DRAMs
 
 Misc Flat DIPs
 
+<<<<<<< HEAD
 IC ??      LS125A        Hitachi (near C41)
 IC ??      74HC04        TI      (near C38)
 IC ??      74HC157A x2   Toshiba (near C37)
@@ -64,6 +72,13 @@ pin 20 CLK1  - 5th point, 1st row below HC04 -> 2nd point, 1st row below HC04 ->
 timer 0 - mode 3 - square wave (000A), gate not involved
 timer 1 - mode 2 - rate generator (0E90), gate involved
 0e90 = 3818
+=======
+IC ??      LS125A        Hitachi
+IC ??      HC04          TI
+IC ??      74HC157A x2   Toshiba
+IC ??      HC138         TI
+IC ??      HC139         TI
+>>>>>>> b94ded99dbc (checkpoint)
 
  ***********************************************************************************************************/
 
@@ -83,15 +98,19 @@ segaai_soundbox_device::segaai_soundbox_device(const machine_config &mconfig, co
 	, m_tmp8255(*this, "tmp8255")
 	, m_ym2151(*this, "ym2151")
 	, m_rom(*this, "soundbox")
+<<<<<<< HEAD
 	, m_rows(*this, "ROW%u", 0U)
 	, m_row(0)
 	, m_8255_portb(0)
+=======
+>>>>>>> b94ded99dbc (checkpoint)
 {
 }
 
 
 void segaai_soundbox_device::device_add_mconfig(machine_config &config)
 {
+<<<<<<< HEAD
 	PIT8253(config, m_tmp8253);
 	m_tmp8253->set_clk<0>(21.477272_MHz_XTAL/6);    // ~3.58 MHz, seems to be tied to pin 24 in ym2151
 	m_tmp8253->out_handler<0>().set(FUNC(segaai_soundbox_device::tmp8253_out0_w));
@@ -108,6 +127,18 @@ void segaai_soundbox_device::device_add_mconfig(machine_config &config)
 	// b2 - pin22 CE
 	// b7 - 8253 GATE1
 	m_tmp8255->in_pb_callback().set(FUNC(segaai_soundbox_device::tmp8255_portb_r));
+=======
+	PIT8253(config, m_tmp8253, 0);
+//	MCFG_PIT8253_CLK0() // unknown frequency, 5MHz?
+//	MCFG_PIT8253_OUT0_HANDLER()
+//	MCFG_PIT8253_CLK1() // unknown frequency, 5MHz?
+//	MCFG_PIT8253_OUT1_HANDLER()
+//	MCFG_PIT8253_CLK2() // unknown frequency, 5MHz?
+//	MCFG_PIT8253_OUT2_HANDLER()
+
+	I8255(config, m_tmp8255);
+	m_tmp8255->in_pa_callback().set(FUNC(segaai_soundbox_device::tmp8255_porta_r));
+>>>>>>> b94ded99dbc (checkpoint)
 	m_tmp8255->out_pb_callback().set(FUNC(segaai_soundbox_device::tmp8255_portb_w));
 	m_tmp8255->out_pc_callback().set(FUNC(segaai_soundbox_device::tmp8255_portc_w));
 
@@ -132,6 +163,7 @@ const tiny_rom_entry *segaai_soundbox_device::device_rom_region() const
 }
 
 
+<<<<<<< HEAD
 static INPUT_PORTS_START( soundbox )
 	PORT_START("ROW0")
 	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_UNUSED )
@@ -228,6 +260,11 @@ void segaai_soundbox_device::device_start()
 	save_item(NAME(m_ram));
 	save_item(NAME(m_row));
 	save_item(NAME(m_8255_portb));
+=======
+void segaai_soundbox_device::device_start()
+{
+	save_item(NAME(m_ram));
+>>>>>>> b94ded99dbc (checkpoint)
 }
 
 
@@ -276,17 +313,26 @@ void segaai_soundbox_device::write_io(offs_t offset, u8 data)
 	switch (offset & 0x0c)
 	{
 		case 0x00:
+<<<<<<< HEAD
 //			osd_printf_info("soundbox 8251 write $%02X, $%02X\n", offset & 0x01, data);
+=======
+>>>>>>> b94ded99dbc (checkpoint)
 			m_ym2151->write(offset & 0x01, data);
 			break;
 
 		case 0x04:
+<<<<<<< HEAD
 			osd_printf_info("soundbox 8253 write $%02X, $%02X\n", offset & 0x03, data);
+=======
+>>>>>>> b94ded99dbc (checkpoint)
 			m_tmp8253->write(offset & 0x03, data);
 			break;
 
 		case 0x08:
+<<<<<<< HEAD
 			osd_printf_info("soundbox 8255 write $%02X, $%02X\n", offset & 0x03, data);
+=======
+>>>>>>> b94ded99dbc (checkpoint)
 			m_tmp8255->write(offset & 0x03, data);
 			break;
 	}
@@ -296,6 +342,7 @@ void segaai_soundbox_device::write_io(offs_t offset, u8 data)
 u8 segaai_soundbox_device::tmp8255_porta_r()
 {
 	// Read pressed keys on music keyboard row (see routine @0x82399)
+<<<<<<< HEAD
 	u8 result = 0xff;
 	result = 0;
 	if (BIT(m_row, 0)) result &= m_rows[0]->read();
@@ -312,27 +359,36 @@ u8 segaai_soundbox_device::tmp8255_porta_r()
 
 u8 segaai_soundbox_device::tmp8255_portb_r()
 {
+=======
+>>>>>>> b94ded99dbc (checkpoint)
 	return 0xff;
 }
 
 
 void segaai_soundbox_device::tmp8255_portb_w(u8 data)
 {
+<<<<<<< HEAD
 	osd_printf_info("soundbox 8255 port B write $%02X\n", data);
 	m_tmp8253->write_gate1(BIT(data, 7));
+=======
+>>>>>>> b94ded99dbc (checkpoint)
 }
 
 
 void segaai_soundbox_device::tmp8255_portc_w(u8 data)
 {
 	// Selects music keyboard row to scan (see routine @0x82399)
+<<<<<<< HEAD
 	osd_printf_info("soundbox m_row = $%02X\n", data);
 	m_row = data;
+=======
+>>>>>>> b94ded99dbc (checkpoint)
 }
 
 
 WRITE_LINE_MEMBER(segaai_soundbox_device::ym2151_irq_w)
 {
+<<<<<<< HEAD
 	osd_printf_info("Soundbox: IRQ from ym2151 is '%s'\n", state ? "ASSERT" : "CLEAR");
 }
 
@@ -347,3 +403,8 @@ WRITE_LINE_MEMBER(segaai_soundbox_device::tmp8253_out1_w)
 {
 //	osd_printf_info("Soundbox: OUT1 from tmp8253 is '%s'\n", state ? "ASSERT" : "CLEAR");
 }
+=======
+	logerror("Soundbox: IRQ from ym2151 is '%s'", state ? "ASSERT" : "CLEAR");
+}
+
+>>>>>>> b94ded99dbc (checkpoint)

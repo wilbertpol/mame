@@ -9,7 +9,11 @@
 #include "segaai_exp.h"
 #include "machine/pit8253.h"
 #include "machine/i8255.h"
+<<<<<<< HEAD
 #include "sound/ymopm.h"
+=======
+#include "sound/ym2151.h"
+>>>>>>> b94ded99dbc (checkpoint)
 
 // ======================> segaai_soundbox_device
 
@@ -21,12 +25,18 @@ public:
 
 	virtual void device_add_mconfig(machine_config &config) override;
 	virtual const tiny_rom_entry *device_rom_region() const override;
+<<<<<<< HEAD
+=======
+	virtual void device_start() override;
+	virtual void device_reset() override;
+>>>>>>> b94ded99dbc (checkpoint)
 
 	virtual u8 read_lo(offs_t offset) override;
 	virtual void write_lo(offs_t offset, u8 data) override;
 	virtual u8 read_hi(offs_t offset) override;
 	virtual u8 read_io(offs_t offset) override;
 	virtual void write_io(offs_t offset, u8 data) override;
+<<<<<<< HEAD
 	virtual ioport_constructor device_input_ports() const override;
 
 	u8 tmp8255_porta_r();
@@ -40,16 +50,27 @@ public:
 protected:
 	virtual void device_start() override;
 	virtual void device_reset() override;
+=======
+
+	u8 tmp8255_porta_r();
+	void tmp8255_portb_w(u8 data);
+	void tmp8255_portc_w(u8 data);
+	DECLARE_WRITE_LINE_MEMBER(ym2151_irq_w);
+>>>>>>> b94ded99dbc (checkpoint)
 
 private:
 	required_device<pit8253_device> m_tmp8253;
 	required_device<i8255_device> m_tmp8255;
 	required_device<ym2151_device> m_ym2151;
 	required_region_ptr<u8> m_rom;
+<<<<<<< HEAD
 	required_ioport_array<8> m_rows;
 	u8 m_ram[0x20000];    // 128KB Expansion RAM
 	u8 m_row;
 	u8 m_8255_portb;
+=======
+	u8 m_ram[0x20000];    // 128KB Expansion RAM
+>>>>>>> b94ded99dbc (checkpoint)
 };
 
 DECLARE_DEVICE_TYPE(SEGAAI_SOUNDBOX, segaai_soundbox_device);

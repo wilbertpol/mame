@@ -94,7 +94,11 @@ static const segaai_slot slot_list[] =
 
 static const char *segaai_get_slot(int type)
 {
+<<<<<<< HEAD
 	for (int i = 0; i < std::size(slot_list); i++)
+=======
+	for (int i = 0; i < ARRAY_LENGTH(slot_list); i++)
+>>>>>>> b94ded99dbc (checkpoint)
 	{
 		if (slot_list[i].pcb_id == type)
 			return slot_list[i].slot_option;
@@ -114,7 +118,11 @@ image_init_result segaai_card_slot_device::call_load()
 
 		if (len != 0x20000 && len != 0x40000)
 		{
+<<<<<<< HEAD
 			seterror(image_error::INVALIDIMAGE, "Invalid card size. Allowed sizes are: 128KB, 256KB");
+=======
+			seterror(IMAGE_ERROR_UNSPECIFIED, "Invalid card size. Allowed sizes are: 128KB, 256KB");
+>>>>>>> b94ded99dbc (checkpoint)
 			return image_init_result::FAIL;
 		}
 
@@ -156,6 +164,7 @@ std::string segaai_card_slot_device::get_default_card_software(get_default_card_
 	if (hook.image_file())
 	{
 		const char *slot_string = "rom_128";
+<<<<<<< HEAD
 		uint64_t len;
 		hook.image_file()->length(len);
 		std::vector<u8> rom(len);
@@ -163,6 +172,13 @@ std::string segaai_card_slot_device::get_default_card_software(get_default_card_
 
 		size_t actual;
 		hook.image_file()->read(&rom[0], len, actual);
+=======
+		u32 len = hook.image_file()->size();
+		std::vector<u8> rom(len);
+		int type;
+
+		hook.image_file()->read(&rom[0], len);
+>>>>>>> b94ded99dbc (checkpoint)
 
 		type = get_cart_type(&rom[0], len);
 		slot_string = segaai_get_slot(type);
