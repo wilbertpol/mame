@@ -820,9 +820,11 @@ static void aleste_floppies(device_slot_interface &device)
 	device.option_add("35dd", FLOPPY_35_DD);
 }
 
-FLOPPY_FORMATS_MEMBER( amstrad_state::aleste_floppy_formats )
-	FLOPPY_MSX_FORMAT
-FLOPPY_FORMATS_END
+void amstrad_state::aleste_floppy_formats(format_registration &fr)
+{
+	fr.add_mfm_containers();
+	fr.add(FLOPPY_MSX_FORMAT);
+}
 
 void amstrad_state::cpcplus_cartslot(machine_config &config)
 {
@@ -962,8 +964,6 @@ void amstrad_state::amstrad_base(machine_config &config)
 	m_crtc->out_vsync_callback().set(FUNC(amstrad_state::amstrad_vsync_changed));
 	m_crtc->out_cur_callback().set("exp", FUNC(cpc_expansion_slot_device::cursor_w));
 
-	MCFG_VIDEO_START_OVERRIDE(amstrad_state,amstrad)
-
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	AY8912(config, m_ay, 16_MHz_XTAL / 16);
@@ -1005,8 +1005,8 @@ void amstrad_state::cpc664(machine_config &config)
 {
 	amstrad_base(config);
 	UPD765A(config, m_fdc, 16_MHz_XTAL / 4, true, true);
-	FLOPPY_CONNECTOR(config, "upd765:0", amstrad_floppies, "3ssdd", floppy_image_device::default_floppy_formats);
-	FLOPPY_CONNECTOR(config, "upd765:1", amstrad_floppies, "35ssdd", floppy_image_device::default_floppy_formats);
+	FLOPPY_CONNECTOR(config, "upd765:0", amstrad_floppies, "3ssdd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "upd765:1", amstrad_floppies, "35ssdd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
 	SOFTWARE_LIST(config, "flop_list").set_original("cpc_flop");
 
 	cpc_expansion_slot_device &exp(CPC_EXPANSION_SLOT(config, "exp", 16_MHz_XTAL / 4, cpc_exp_cards, nullptr));
@@ -1024,8 +1024,8 @@ void amstrad_state::cpc6128(machine_config &config)
 {
 	amstrad_base(config);
 	UPD765A(config, m_fdc, 16_MHz_XTAL / 4, true, true);
-	FLOPPY_CONNECTOR(config, "upd765:0", amstrad_floppies, "3ssdd", floppy_image_device::default_floppy_formats);
-	FLOPPY_CONNECTOR(config, "upd765:1", amstrad_floppies, "35ssdd", floppy_image_device::default_floppy_formats);
+	FLOPPY_CONNECTOR(config, "upd765:0", amstrad_floppies, "3ssdd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "upd765:1", amstrad_floppies, "35ssdd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
 	SOFTWARE_LIST(config, "flop_list").set_original("cpc_flop");
 
 	cpc_expansion_slot_device &exp(CPC_EXPANSION_SLOT(config, "exp", 16_MHz_XTAL / 4, cpc_exp_cards, nullptr));
@@ -1087,8 +1087,6 @@ void amstrad_state::cpcplus(machine_config &config)
 	m_crtc->out_hsync_callback().set(FUNC(amstrad_state::amstrad_plus_hsync_changed));
 	m_crtc->out_vsync_callback().set(FUNC(amstrad_state::amstrad_plus_vsync_changed));
 
-	MCFG_VIDEO_START_OVERRIDE(amstrad_state,amstrad)
-
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	AY8912(config, m_ay, 40_MHz_XTAL / 40);
@@ -1113,8 +1111,8 @@ void amstrad_state::cpcplus(machine_config &config)
 
 	cpcplus_cartslot(config);
 
-	FLOPPY_CONNECTOR(config, "upd765:0", amstrad_floppies, "3ssdd", floppy_image_device::default_floppy_formats);
-	FLOPPY_CONNECTOR(config, "upd765:1", amstrad_floppies, "35ssdd", floppy_image_device::default_floppy_formats);
+	FLOPPY_CONNECTOR(config, "upd765:0", amstrad_floppies, "3ssdd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "upd765:1", amstrad_floppies, "35ssdd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
 	SOFTWARE_LIST(config, "flop_list").set_original("cpc_flop");
 
 	cpc_expansion_slot_device &exp(CPC_EXPANSION_SLOT(config, "exp", 40_MHz_XTAL / 10, cpcplus_exp_cards, nullptr));
@@ -1166,8 +1164,6 @@ void amstrad_state::gx4000(machine_config &config)
 	m_crtc->out_hsync_callback().set(FUNC(amstrad_state::amstrad_plus_hsync_changed));
 	m_crtc->out_vsync_callback().set(FUNC(amstrad_state::amstrad_plus_vsync_changed));
 
-	MCFG_VIDEO_START_OVERRIDE(amstrad_state,amstrad)
-
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 	AY8912(config, m_ay, 40_MHz_XTAL / 40);
@@ -1205,8 +1201,8 @@ void amstrad_state::aleste(machine_config &config)
 	exp.romdis_callback().set(FUNC(amstrad_state::cpc_romdis));  // ROMDIS
 	exp.rom_select_callback().set(FUNC(amstrad_state::rom_select));
 
-	FLOPPY_CONNECTOR(config, "upd765:0", aleste_floppies, "35dd", amstrad_state::aleste_floppy_formats);
-	FLOPPY_CONNECTOR(config, "upd765:1", aleste_floppies, "35dd", amstrad_state::aleste_floppy_formats);
+	FLOPPY_CONNECTOR(config, "upd765:0", aleste_floppies, "35dd", amstrad_state::aleste_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "upd765:1", aleste_floppies, "35dd", amstrad_state::aleste_floppy_formats).enable_sound(true);
 
 	SOFTWARE_LIST(config.replace(), "flop_list").set_original("aleste");
 	SOFTWARE_LIST(config, "cpc_list").set_compatible("cpc_flop");

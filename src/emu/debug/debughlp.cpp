@@ -101,6 +101,7 @@ static const help_item static_help_list[] =
 		"  stateload[sl] <filename> -- load a state file for the current driver\n"
 		"  snap [<filename>] -- save a screen snapshot.\n"
 		"  source <filename> -- reads commands from <filename> and executes them one by one\n"
+		"  cls -- clears the console text buffer\n"
 		"  quit -- exits MAME and the debugger\n"
 	},
 	{
@@ -187,7 +188,6 @@ static const help_item static_help_list[] =
 		"  wpdisable [<wpnum>] -- disables a given watchpoint or all if no <wpnum> specified\n"
 		"  wpenable [<wpnum>] -- enables a given watchpoint or all if no <wpnum> specified\n"
 		"  wplist -- lists all the watchpoints\n"
-		"  hotspot [<CPU>,[<depth>[,<hits>]]] -- attempt to find hotspots\n"
 	},
 	{
 		"registerpoints",
@@ -1214,36 +1214,6 @@ static const help_item static_help_list[] =
 		"conditions or actions attached to them.\n"
 	},
 	{
-		"hotspot",
-		"\n"
-		"  hotspot [<CPU>,[<depth>[,<hits>]]]\n"
-		"\n"
-		"The hotspot command attempts to help locate hotspots in the code where speedup opportunities "
-		"might be present. <CPU>, which defaults to the currently active CPU, specified which "
-		"processor's memory to track. <depth>, which defaults to 64, controls the depth of the search "
-		"buffer. The search buffer tracks the last <depth> memory reads from unique PCs. The <hits> "
-		"parameter, which defaults to 250, specifies the minimum number of hits to report.\n"
-		"\n"
-		"The basic theory of operation is like this: each memory read is trapped by the debugger and "
-		"logged in the search buffer according to the address which was read and the PC that executed "
-		"the opcode. If the search buffer already contains a matching entry, that entry's count is "
-		"incremented and the entry is moved to the top of the list. If the search buffer does not "
-		"contain a matching entry, the entry from the bottom of the list is removed, and a new entry "
-		"is created at the top with an initial count of 1. Entries which fall off the bottom are "
-		"examined and if their count is larger than <hits>, they are reported to the debugger "
-		"console.\n"
-		"\n"
-		"Examples:\n"
-		"\n"
-		"hotspot 0,10\n"
-		"  Looks for hotspots on CPU 0 using a search buffer of 16 entries, reporting any entries which "
-		"end up with 250 or more hits.\n"
-		"\n"
-		"hotspot 1,40,#1000\n"
-		"  Looks for hotspots on CPU 1 using a search buffer of 64 entries, reporting any entries which "
-		"end up with 1000 or more hits.\n"
-	},
-	{
 		"rpset",
 		"\n"
 		"  rp[set] {<condition>}[,<action>]]\n"
@@ -1637,7 +1607,7 @@ const char *debug_get_help(const char *tag)
 	size_t taglen = strlen(tag);
 
 	/* find a match */
-	for (i = 0; i < ARRAY_LENGTH(static_help_list); i++)
+	for (i = 0; i < std::size(static_help_list); i++)
 		if (!core_strnicmp(static_help_list[i].tag, tag, taglen))
 		{
 			foundcount++;
@@ -1659,7 +1629,7 @@ const char *debug_get_help(const char *tag)
 
 	/* otherwise, indicate ambiguous help */
 	msglen = sprintf(ambig_message, "Ambiguous help request, did you mean:\n");
-	for (i = 0; i < ARRAY_LENGTH(static_help_list); i++)
+	for (i = 0; i < std::size(static_help_list); i++)
 		if (!core_strnicmp(static_help_list[i].tag, tag, taglen))
 			msglen += sprintf(&ambig_message[msglen], "  help %s?\n", static_help_list[i].tag);
 	return ambig_message;

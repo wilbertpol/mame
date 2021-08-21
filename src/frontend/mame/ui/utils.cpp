@@ -20,7 +20,6 @@
 #include "drivenum.h"
 #include "rendfont.h"
 #include "romload.h"
-#include "softlist.h"
 
 #include "corestr.h"
 
@@ -307,7 +306,7 @@ protected:
 		// try to load filters from a file
 		if (value && file)
 		{
-			unsigned const cnt(unsigned((std::max)(std::min(int(MAX), std::atoi(value)), 0)));
+			unsigned const cnt(std::clamp<int>(std::atoi(value), 0, MAX));
 			for (unsigned i = 0; cnt > i; ++i)
 			{
 				typename Base::ptr flt(static_cast<Impl &>(*this).create(*file, indent + 1));
@@ -906,7 +905,7 @@ public:
 		if (m_include_clones)
 		{
 			int const found(driver_list::find(system.driver->parent));
-			return m_cache.end() != m_cache.find(&driver_list::driver(found));
+			return found >= 0 && m_cache.end() != m_cache.find(&driver_list::driver(found));
 		}
 
 		return false;
@@ -1319,7 +1318,7 @@ class supported_software_filter : public simple_filter_impl_base<software_filter
 public:
 	supported_software_filter(software_filter_data const &data, char const *value, emu_file *file, unsigned indent) { }
 
-	virtual bool apply(ui_software_info const &info) const override { return SOFTWARE_SUPPORTED_YES == info.supported; }
+	virtual bool apply(ui_software_info const &info) const override { return software_support::SUPPORTED == info.supported; }
 };
 
 
@@ -1329,7 +1328,7 @@ class partial_supported_software_filter : public simple_filter_impl_base<softwar
 public:
 	partial_supported_software_filter(software_filter_data const &data, char const *value, emu_file *file, unsigned indent) { }
 
-	virtual bool apply(ui_software_info const &info) const override { return SOFTWARE_SUPPORTED_PARTIAL == info.supported; }
+	virtual bool apply(ui_software_info const &info) const override { return software_support::PARTIALLY_SUPPORTED == info.supported; }
 };
 
 
@@ -1338,7 +1337,7 @@ class unsupported_software_filter : public simple_filter_impl_base<software_filt
 public:
 	unsupported_software_filter(software_filter_data const &data, char const *value, emu_file *file, unsigned indent) { }
 
-	virtual bool apply(ui_software_info const &info) const override { return SOFTWARE_SUPPORTED_NO == info.supported; }
+	virtual bool apply(ui_software_info const &info) const override { return software_support::UNSUPPORTED == info.supported; }
 };
 
 
@@ -1672,7 +1671,7 @@ machine_filter::ptr machine_filter::create(type n, machine_filter_data const &da
 machine_filter::ptr machine_filter::create(emu_file &file, machine_filter_data const &data, unsigned indent)
 {
 	char buffer[MAX_CHAR_INFO];
-	if (!file.gets(buffer, ARRAY_LENGTH(buffer)))
+	if (!file.gets(buffer, std::size(buffer)))
 		return nullptr;
 
 	// split it into a key/value or bail
@@ -1780,7 +1779,7 @@ software_filter::ptr software_filter::create(type n, software_filter_data const 
 software_filter::ptr software_filter::create(emu_file &file, software_filter_data const &data, unsigned indent)
 {
 	char buffer[MAX_CHAR_INFO];
-	if (!file.gets(buffer, ARRAY_LENGTH(buffer)))
+	if (!file.gets(buffer, std::size(buffer)))
 		return nullptr;
 
 	// split it into a key/value or bail

@@ -68,7 +68,7 @@ protected:
 
 	void common_config(machine_config& config);
 
-	DECLARE_FLOPPY_FORMATS( floppy_formats );
+	static void floppy_formats(format_registration &fr);
 
 	// Link to the WD controller on the board.
 	required_device<wd_fdc_device_base>   m_wdc;
@@ -84,7 +84,7 @@ protected:
 	bool ready_trap_active();
 
 	// Deliver the current state of the address bus
-	uint16_t get_address();
+	offs_t get_address();
 
 	// Wait state logic
 	void operate_ready_line();

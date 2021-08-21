@@ -63,7 +63,7 @@ void romp_device::device_start()
 	state_add(ROMP_SCR + ICS,  "ICS",  m_scr[ICS]);
 	state_add(ROMP_SCR + CS,   "CS",   m_scr[CS]);
 
-	for (unsigned i = 0; i < ARRAY_LENGTH(m_gpr); i++)
+	for (unsigned i = 0; i < std::size(m_gpr); i++)
 		state_add(ROMP_GPR + i, util::string_format("R%d", i).c_str(), m_gpr[i]);
 
 	// register state for saving
@@ -887,7 +887,7 @@ void romp_device::execute_run()
 				flags_log(m_gpr[R2]);
 				break;
 			case 0xf5: // clz: count leading zeros
-				m_gpr[R2] = count_leading_zeros(u16(m_gpr[R3])) - 16;
+				m_gpr[R2] = count_leading_zeros_32(u16(m_gpr[R3])) - 16;
 				break;
 
 			case 0xf9: // mc03: move character zero from three

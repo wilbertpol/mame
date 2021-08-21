@@ -220,6 +220,10 @@ constexpr char f_dtd_string[] =
 		"\t\t\t<!ATTLIST driver emulation (good|imperfect|preliminary) #REQUIRED>\n"
 		"\t\t\t<!ATTLIST driver cocktail (good|imperfect|preliminary) #IMPLIED>\n"
 		"\t\t\t<!ATTLIST driver savestate (supported|unsupported) #REQUIRED>\n"
+		"\t\t\t<!ATTLIST driver requiresartwork (yes|no) \"no\">\n"
+		"\t\t\t<!ATTLIST driver unofficial (yes|no) \"no\">\n"
+		"\t\t\t<!ATTLIST driver nosoundhardware (yes|no) \"no\">\n"
+		"\t\t\t<!ATTLIST driver incomplete (yes|no) \"no\">\n"
 		"\t\t<!ELEMENT feature EMPTY>\n"
 		"\t\t\t<!ATTLIST feature type (protection|timing|graphics|palette|sound|capture|camera|microphone|controls|keyboard|mouse|media|disk|printer|tape|punch|drum|rom|comms|lan|wan) #REQUIRED>\n"
 		"\t\t\t<!ATTLIST feature status (unemulated|imperfect) #IMPLIED>\n"
@@ -544,7 +548,7 @@ void output_header(std::ostream &out, bool dtd)
 			"\" mameconfig=\"%d\">\n",
 			XML_ROOT,
 			normalize_string(emulator_info::get_build_version()),
-			CONFIG_VERSION);
+			configuration_manager::CONFIG_VERSION);
 }
 
 
@@ -1265,7 +1269,7 @@ void output_input(std::ostream &out, const ioport_list &portlist)
 	{
 		int ctrl_type = CTRL_DIGITAL_BUTTONS;
 		bool ctrl_analog = false;
-		for (ioport_field &field : port.second->fields())
+		for (ioport_field const &field : port.second->fields())
 		{
 			// track the highest player number
 			if (nplayer < field.player() + 1)
@@ -1808,6 +1812,18 @@ void output_driver(std::ostream &out, game_driver const &driver, device_t::featu
 		out << " savestate=\"supported\"";
 	else
 		out << " savestate=\"unsupported\"";
+
+	if (flags & machine_flags::REQUIRES_ARTWORK)
+		out << " requiresartwork=\"yes\"";
+
+	if (flags & machine_flags::UNOFFICIAL)
+		out << " unofficial=\"yes\"";
+
+	if (flags & machine_flags::NO_SOUND_HW)
+		out << " nosoundhardware=\"yes\"";
+
+	if (flags & machine_flags::IS_INCOMPLETE)
+		out << " incomplete=\"yes\"";
 
 	out << "/>\n";
 }

@@ -334,7 +334,7 @@ void lua_engine::initialize_input(sol::table &emu)
 			[this] (ioport_field &f)
 			{
 				sol::table result = sol().create_table();
-				for (ioport_setting &setting : f.settings())
+				for (ioport_setting const &setting : f.settings())
 					if (setting.enabled())
 						result[setting.value()] = setting.name();
 				return result;
@@ -357,7 +357,7 @@ void lua_engine::initialize_input(sol::table &emu)
 	input_type["seq_name"] = &input_manager::seq_name;
 	input_type["seq_to_tokens"] = &input_manager::seq_to_tokens;
 	input_type["seq_from_tokens"] =
-		[] (input_manager &input, const char *tokens)
+		[] (input_manager &input, std::string_view tokens)
 		{
 			input_seq seq;
 			input.seq_from_tokens(seq, tokens);

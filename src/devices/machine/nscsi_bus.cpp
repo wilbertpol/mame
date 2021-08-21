@@ -263,6 +263,7 @@ void nscsi_full_device::device_reset()
 	scsi_bus->data_w(scsi_refid, 0);
 	scsi_bus->ctrl_w(scsi_refid, 0, S_ALL);
 	scsi_bus->ctrl_wait(scsi_refid, S_SEL|S_BSY|S_RST, S_ALL);
+	sense(false, SK_NO_SENSE);
 }
 
 void nscsi_full_device::device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr)
@@ -544,7 +545,7 @@ bool nscsi_full_device::scsi_command_done(uint8_t command, uint8_t length)
 
 nscsi_full_device::control *nscsi_full_device::buf_control_push()
 {
-	if(buf_control_wpos == int(ARRAY_LENGTH(buf_control)))
+	if(buf_control_wpos == int(std::size(buf_control)))
 		throw emu_fatalerror("%s: buf_control overflow\n", tag());
 
 	control *c = buf_control + buf_control_wpos;

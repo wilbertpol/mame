@@ -23,7 +23,7 @@
 #define LOG_LIVE    (1U << 13) // Live states
 #define LOG_FUNC    (1U << 14) // Function calls
 
-#define VERBOSE (LOG_GENERAL)
+#define VERBOSE (LOG_DESC)
 //#define LOG_OUTPUT_STREAM std::cout
 
 #include "logmacro.h"
@@ -1146,6 +1146,14 @@ void wd_fdc_device_base::cmd_w(uint8_t val)
 
 	LOGCOMP("Initiating command %02x\n", val);
 
+	// INTRQ flip-flop logic from die schematics:
+	//  Reset conditions:
+	//   - Command register write
+	//   - Status register read
+	//  Setting conditions:
+	//   - While command register contain Dx (interrupt cmd) and one or more I0-I3 conditions met
+	//   - Command-specific based on PLL microprogram
+	// No other logic present in real chips, descriptions of "Forced interrupt" (Dx) command in datasheets are wrong.
 	if (intrq) {
 		intrq = false;
 		if(!intrq_cb.isnull())
@@ -2540,7 +2548,7 @@ bool wd_fdc_digital_device_base::digital_pll_t::write_next_bit(bool bit, attotim
 		uint16_t pre_counter = counter;
 		counter += increment;
 		if(bit && !(pre_counter & 0x400) && (counter & 0x400))
-			if(write_position < ARRAY_LENGTH(write_buffer))
+			if(write_position < std::size(write_buffer))
 				write_buffer[write_position++] = etime;
 		slot++;
 		tm = etime;

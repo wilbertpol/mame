@@ -184,9 +184,9 @@ GFXDECODE_END
 UPD7220_DISPLAY_PIXELS_MEMBER(hhtiger_state::display_pixels)
 {
 	/* 96KB video RAM (32KB green + 32KB red + 32KB blue) */
-	uint16_t const green = m_video_ram[(0x00000 + (address & 0x7fff)) >> 1];
-	uint16_t const red   = m_video_ram[(0x08000 + (address & 0x7fff)) >> 1];
-	uint16_t const blue  = m_video_ram[(0x10000 + (address & 0x7fff)) >> 1];
+	uint16_t const green = m_video_ram[(0x00000 + (address & 0x3fff))];
+	uint16_t const red   = m_video_ram[(0x04000 + (address & 0x3fff))];
+	uint16_t const blue  = m_video_ram[(0x08000 + (address & 0x3fff))];
 
 	for (int xi = 0; xi<16; xi++)
 	{
@@ -481,9 +481,9 @@ void hhtiger_state::hhtiger(machine_config &config)
 	RAM(config, m_ram).set_default_size("64K");
 
 	/* unknown fdc - floppy drives are housed with monitor so maybe fdc is external */
-	FLOPPY_CONNECTOR(config, "0", hhtiger_floppies, "525dd", floppy_image_device::default_floppy_formats).enable_sound(true);
-	FLOPPY_CONNECTOR(config, "1", hhtiger_floppies, "525dd", floppy_image_device::default_floppy_formats).enable_sound(true);
-	FLOPPY_CONNECTOR(config, "2", hhtiger_floppies, nullptr, floppy_image_device::default_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "0", hhtiger_floppies, "525dd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "1", hhtiger_floppies, "525dd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "2", hhtiger_floppies, nullptr, floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
 
 	/* unknown sound hardware - maybe connected to square-wave timer output from via */
 	SPEAKER(config, "mono").front_center();

@@ -15,12 +15,14 @@ upd765_format::upd765_format(const format *_formats) : file_header_skip_bytes(0)
 {
 }
 
-int upd765_format::find_size(io_generic *io, uint32_t form_factor) const
+int upd765_format::find_size(io_generic *io, uint32_t form_factor, const std::vector<uint32_t> &variants) const
 {
 	uint64_t size = io_generic_size(io);
 	for(int i=0; formats[i].form_factor; i++) {
 		const format &f = formats[i];
 		if(form_factor != floppy_image::FF_UNKNOWN && form_factor != f.form_factor)
+			continue;
+		if(!variants.empty() && !has_variant(variants, f.variant))
 			continue;
 
 		if(size == file_header_skip_bytes + (uint64_t) compute_track_size(f) * f.track_count * f.head_count + file_footer_skip_bytes)
@@ -31,7 +33,7 @@ int upd765_format::find_size(io_generic *io, uint32_t form_factor) const
 
 int upd765_format::identify(io_generic *io, uint32_t form_factor, const std::vector<uint32_t> &variants)
 {
-	int type = find_size(io, form_factor);
+	int type = find_size(io, form_factor, variants);
 
 	if(type != -1)
 		return 50;
@@ -175,7 +177,7 @@ floppy_image_format_t::desc_e* upd765_format::get_desc_mfm(const format &f, int 
 
 bool upd765_format::load(io_generic *io, uint32_t form_factor, const std::vector<uint32_t> &variants, floppy_image *image)
 {
-	int type = find_size(io, form_factor);
+	int type = find_size(io, form_factor, variants);
 	if(type == -1)
 		return false;
 
@@ -224,7 +226,7 @@ bool upd765_format::load(io_generic *io, uint32_t form_factor, const std::vector
 			generate_track(desc, track, head, sectors, f.sector_count, total_size, image);
 		}
 
-	image->set_variant(f.variant);
+	image->set_form_variant(f.form_factor, f.variant);
 
 	return true;
 }
@@ -418,13 +420,14 @@ void upd765_format::extract_sectors(floppy_image *image, const format &f, desc_s
 
 	for(int i=0; i<f.sector_count; i++) {
 		desc_s &ds = sdesc[i];
-		const auto &data = sectors[ds.sector_id];
-		if(data.empty())
+		if(ds.sector_id >= sectors.size() || sectors[ds.sector_id].empty())
 			memset((void *)ds.data, 0, ds.size);
-		else if(data.size() < ds.size) {
-			memcpy((void *)ds.data, data.data(), data.size());
-			memset((uint8_t *)ds.data + data.size(), 0, data.size() - ds.size);
+
+		else if(sectors[ds.sector_id].size() < ds.size) {
+			memcpy((void *)ds.data, sectors[ds.sector_id].data(), sectors[ds.sector_id].size());
+			memset((uint8_t *)ds.data + sectors[ds.sector_id].size(), 0, sectors[ds.sector_id].size() - ds.size);
+
 		} else
-			memcpy((void *)ds.data, data.data(), ds.size);
+			memcpy((void *)ds.data, sectors[ds.sector_id].data(), ds.size);
 	}
 }

@@ -24,7 +24,7 @@
 #include "formats/pc_dsk.h"
 #include "imagedev/floppy.h"
 #include "machine/ins8250.h"
-#include "machine/ncr5380n.h"
+#include "machine/ncr5380.h"
 #include "machine/upd765.h"
 #include "sound/spkrdev.h"
 #include "softlist_dev.h"
@@ -81,8 +81,6 @@ private:
 
 	void mem_map(address_map &map);
 	void io_map(address_map &map);
-
-	static const floppy_format_type floppy_formats[];
 
 	required_device<v40_device> m_maincpu;
 	required_device<isa8_device> m_expbus;
@@ -331,10 +329,6 @@ static void lbpc_floppies(device_slot_interface &device)
 	device.option_add("35hd", FLOPPY_35_HD);
 }
 
-FLOPPY_FORMATS_MEMBER( lbpc_state::floppy_formats )
-	FLOPPY_PC_FORMAT
-FLOPPY_FORMATS_END
-
 void lbpc_state::lbpc(machine_config &config)
 {
 	V40(config, m_maincpu, 14.318181_MHz_XTAL); // 7.16 MHz operating frequency
@@ -375,8 +369,8 @@ void lbpc_state::lbpc(machine_config &config)
 	fdc.intrq_wr_callback().set_inputline(m_maincpu, INPUT_LINE_IRQ6);
 	fdc.drq_wr_callback().set(m_maincpu, FUNC(v40_device::dreq_w<1>));
 
-	FLOPPY_CONNECTOR(config, "fdc:0", lbpc_floppies, "525sd", floppy_formats);
-	FLOPPY_CONNECTOR(config, "fdc:1", lbpc_floppies, nullptr, floppy_formats);
+	FLOPPY_CONNECTOR(config, "fdc:0", lbpc_floppies, "525sd", floppy_image_device::default_pc_floppy_formats);
+	FLOPPY_CONNECTOR(config, "fdc:1", lbpc_floppies, nullptr, floppy_image_device::default_pc_floppy_formats);
 	SOFTWARE_LIST(config, "disk_list").set_original("ibm5150");
 
 	NSCSI_BUS(config, "scsi");

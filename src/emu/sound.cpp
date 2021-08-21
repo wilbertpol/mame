@@ -105,7 +105,7 @@ void stream_buffer::set_sample_rate(u32 rate, bool resample)
 	// voice when jumping off the edge in Q*Bert; without this extra effort
 	// it is crackly and/or glitchy at times
 	sample_t buffer[64];
-	int buffered_samples = std::min(m_sample_rate, std::min(rate, u32(ARRAY_LENGTH(buffer))));
+	int buffered_samples = std::min(m_sample_rate, std::min(rate, u32(std::size(buffer))));
 
 	// if the new rate is lower, downsample into our holding buffer;
 	// otherwise just copy into our holding buffer for later upsampling
@@ -203,12 +203,12 @@ void stream_buffer::flush_wav()
 
 	// iterate over chunks for conversion
 	s16 buffer[1024];
-	for (int samplebase = 0; samplebase < view.samples(); samplebase += ARRAY_LENGTH(buffer))
+	for (int samplebase = 0; samplebase < view.samples(); samplebase += std::size(buffer))
 	{
 		// clamp to the buffer size
 		int cursamples = view.samples() - samplebase;
-		if (cursamples > ARRAY_LENGTH(buffer))
-			cursamples = ARRAY_LENGTH(buffer);
+		if (cursamples > std::size(buffer))
+			cursamples = std::size(buffer);
 
 		// convert and fill
 		for (int sampindex = 0; sampindex < cursamples; sampindex++)
@@ -1090,7 +1090,10 @@ sound_manager::sound_manager(running_machine &machine) :
 #endif
 
 	// register callbacks
-	machine.configuration().config_register("mixer", config_load_delegate(&sound_manager::config_load, this), config_save_delegate(&sound_manager::config_save, this));
+	machine.configuration().config_register(
+			"mixer",
+			configuration_manager::load_delegate(&sound_manager::config_load, this),
+			configuration_manager::save_delegate(&sound_manager::config_save, this));
 	machine.add_notifier(MACHINE_NOTIFY_PAUSE, machine_notify_delegate(&sound_manager::pause, this));
 	machine.add_notifier(MACHINE_NOTIFY_RESUME, machine_notify_delegate(&sound_manager::resume, this));
 	machine.add_notifier(MACHINE_NOTIFY_RESET, machine_notify_delegate(&sound_manager::reset, this));
@@ -1224,11 +1227,14 @@ void sound_manager::samples(s16 *buffer)
 
 void sound_manager::mute(bool mute, u8 reason)
 {
+	bool old_muted = m_muted;
 	if (mute)
 		m_muted |= reason;
 	else
 		m_muted &= ~reason;
-	set_attenuation(m_attenuation);
+
+	if(old_muted != (m_muted != 0))
+		set_attenuation(m_attenuation);
 }
 
 
@@ -1353,14 +1359,10 @@ void sound_manager::resume()
 //  configuration file
 //-------------------------------------------------
 
-void sound_manager::config_load(config_type cfg_type, util::xml::data_node const *parentnode)
+void sound_manager::config_load(config_type cfg_type, config_level cfg_level, util::xml::data_node const *parentnode)
 {
-	// we only care about game files
-	if (cfg_type != config_type::GAME)
-		return;
-
-	// might not have any data
-	if (parentnode == nullptr)
+	// we only care system-specific configuration
+	if ((cfg_type != config_type::SYSTEM) || !parentnode)
 		return;
 
 	// iterate over channel nodes
@@ -1385,29 +1387,28 @@ void sound_manager::config_load(config_type cfg_type, util::xml::data_node const
 
 void sound_manager::config_save(config_type cfg_type, util::xml::data_node *parentnode)
 {
-	// we only care about game files
-	if (cfg_type != config_type::GAME)
+	// we only save system-specific configuration
+	if (cfg_type != config_type::SYSTEM)
 		return;
 
 	// iterate over mixer channels
-	if (parentnode != nullptr)
-		for (int mixernum = 0; ; mixernum++)
-		{
-			mixer_input info;
-			if (!indexed_mixer_input(mixernum, info))
-				break;
-			float newvol = info.stream->input(info.inputnum).user_gain();
+	for (int mixernum = 0; ; mixernum++)
+	{
+		mixer_input info;
+		if (!indexed_mixer_input(mixernum, info))
+			break;
 
-			if (newvol != 1.0f)
+		float const newvol = info.stream->input(info.inputnum).user_gain();
+		if (newvol != 1.0f)
+		{
+			util::xml::data_node *const channelnode = parentnode->add_child("channel", nullptr);
+			if (channelnode)
 			{
-				util::xml::data_node *const channelnode = parentnode->add_child("channel", nullptr);
-				if (channelnode != nullptr)
-				{
-					channelnode->set_attribute_int("index", mixernum);
-					channelnode->set_attribute_float("newvol", newvol);
-				}
+				channelnode->set_attribute_int("index", mixernum);
+				channelnode->set_attribute_float("newvol", newvol);
 			}
 		}
+	}
 }
 
 

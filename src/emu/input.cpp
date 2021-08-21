@@ -668,7 +668,7 @@ bool input_manager::code_pressed_once(input_code code)
 	// look for the code in the memory
 	bool curvalue = code_pressed(code);
 	int empty = -1;
-	for (int memnum = 0; memnum < ARRAY_LENGTH(m_switch_memory); memnum++)
+	for (int memnum = 0; memnum < std::size(m_switch_memory); memnum++)
 	{
 		// were we previous pressed on the last time through here?
 		if (m_switch_memory[memnum] == code)
@@ -800,7 +800,7 @@ std::string input_manager::code_name(input_code code) const
 	}
 
 	// devcode part comes from the item name
-	const char *devcode = item->name();
+	std::string_view devcode = item->name();
 
 	// determine the modifier part
 	const char *modifier = (*modifier_string_table)[code.item_modifier()];
@@ -808,13 +808,13 @@ std::string input_manager::code_name(input_code code) const
 	// devcode is redundant with joystick switch left/right/up/down
 	if (device_class == DEVICE_CLASS_JOYSTICK && code.item_class() == ITEM_CLASS_SWITCH)
 		if (code.item_modifier() >= ITEM_MODIFIER_LEFT && code.item_modifier() <= ITEM_MODIFIER_DOWN)
-			devcode = "";
+			devcode = std::string_view();
 
 	// concatenate the strings
 	std::string str(devclass);
 	if (!devindex.empty())
 		str.append(" ").append(devindex);
-	if (devcode[0] != 0)
+	if (!devcode.empty())
 		str.append(" ").append(devcode);
 	if (modifier != nullptr)
 		str.append(" ").append(modifier);
@@ -830,8 +830,12 @@ std::string input_manager::code_name(input_code code) const
 
 std::string input_manager::code_to_token(input_code code) const
 {
+	using namespace std::literals;
+
 	// determine the devclass part
 	const char *devclass = (*devclass_token_table)[code.device_class()];
+	if (devclass == nullptr)
+		return "INVALID";
 
 	// determine the devindex part; keyboard 0 doesn't show an index
 	std::string devindex = string_format("%d", code.device_index() + 1);
@@ -840,14 +844,14 @@ std::string input_manager::code_to_token(input_code code) const
 
 	// determine the itemid part; look up in the table if we don't have a token
 	input_device_item *item = item_from_code(code);
-	const char *devcode = (item != nullptr) ? item->token() : "UNKNOWN";
+	std::string_view devcode = item ? item->token() : "UNKNOWN"sv;
 
 	// determine the modifier part
 	const char *modifier = (*modifier_token_table)[code.item_modifier()];
 
 	// determine the itemclass part; if we match the native class, we don't include this
 	const char *itemclass = "";
-	if (item == nullptr || item->itemclass() != code.item_class())
+	if (!item || (item->itemclass() != code.item_class()))
 		itemclass = (*itemclass_token_table)[code.item_class()];
 
 	// concatenate the strings
@@ -858,7 +862,7 @@ std::string input_manager::code_to_token(input_code code) const
 		str.append("_").append(devcode);
 	if (modifier != nullptr)
 		str.append("_").append(modifier);
-	if (itemclass[0] != 0)
+	if (itemclass != nullptr && itemclass[0] != 0)
 		str.append("_").append(itemclass);
 	return str;
 }
@@ -869,21 +873,21 @@ std::string input_manager::code_to_token(input_code code) const
 //  token
 //-------------------------------------------------
 
-input_code input_manager::code_from_token(const char *_token)
+input_code input_manager::code_from_token(std::string_view _token)
 {
 	// copy the token and break it into pieces
 	std::string token[6];
-	int numtokens;
-	for (numtokens = 0; numtokens < ARRAY_LENGTH(token); )
+	int numtokens = 0;
+	while (numtokens < std::size(token))
 	{
 		// make a token up to the next underscore
-		char *score = (char *)strchr(_token, '_');
-		token[numtokens++].assign(_token, (score == nullptr) ? strlen(_token) : (score - _token));
+		std::string_view::size_type score = _token.find('_');
+		token[numtokens++].assign(_token, 0, (std::string_view::npos == score) ? _token.length() : score);
 
 		// if we hit the end, we're done, else advance our pointer
-		if (score == nullptr)
+		if (std::string_view::npos == score)
 			break;
-		_token = score + 1;
+		_token.remove_prefix(score + 1);
 	}
 
 	// first token should be the devclass
@@ -992,14 +996,16 @@ bool input_manager::seq_pressed(const input_seq &seq)
 	bool first = true;
 	for (int codenum = 0; ; codenum++)
 	{
-		// handle NOT
 		input_code code = seq[codenum];
 		if (code == input_seq::not_code)
+		{
+			// handle NOT
 			invert = true;
-
-		// handle OR and END
+		}
 		else if (code == input_seq::or_code || code == input_seq::end_code)
 		{
+			// handle OR and END
+
 			// if we have a positive result from the previous set, we're done
 			if (result || code == input_seq::end_code)
 				break;
@@ -1009,10 +1015,10 @@ bool input_manager::seq_pressed(const input_seq &seq)
 			invert = false;
 			first = true;
 		}
-
-		// handle everything else as a series of ANDs
 		else
 		{
+			// handle everything else as a series of ANDs
+
 			// if this is the first in the sequence, result is set equal
 			if (first)
 				result = code_pressed(code) ^ invert;
@@ -1226,53 +1232,52 @@ std::string input_manager::seq_to_tokens(const input_seq &seq) const
 //  of a sequence
 //-------------------------------------------------
 
-void input_manager::seq_from_tokens(input_seq &seq, const char *string)
+void input_manager::seq_from_tokens(input_seq &seq, std::string_view string)
 {
 	// start with a blank sequence
 	seq.reset();
 
 	// loop until we're done
-	std::vector<char> strcopy(string, string + std::strlen(string) + 1);
-	char *str = &strcopy[0];
 	unsigned operators = 0;
 	while (1)
 	{
 		// trim any leading spaces
-		while (*str != 0 && isspace(u8(*str)))
-			str++;
+		while (!string.empty() && isspace(u8(string[0])))
+			string.remove_prefix(1);
 
 		// bail if we're done
-		if (*str == 0)
+		if (string.empty())
 			return;
 
 		// find the end of the token and make it upper-case along the way
-		char *strtemp;
-		for (strtemp = str; *strtemp != 0 && !isspace(u8(*strtemp)); strtemp++)
-			*strtemp = toupper(u8(*strtemp));
-		char origspace = *strtemp;
-		*strtemp = 0;
+		std::string token;
+		while (!string.empty() && !isspace(u8(string[0])))
+		{
+			token.push_back(toupper(u8(string[0])));
+			string.remove_prefix(1);
+		}
 
 		// look for common stuff
 		input_code code;
 		bool is_operator;
-		if (strcmp(str, "OR") == 0)
+		if (token == "OR")
 		{
 			code = input_seq::or_code;
 			is_operator = true;
 		}
-		else if (strcmp(str, "NOT") == 0)
+		else if (token == "NOT")
 		{
 			code = input_seq::not_code;
 			is_operator = true;
 		}
-		else if (strcmp(str, "DEFAULT") == 0)
+		else if (token == "DEFAULT")
 		{
 			code = input_seq::default_code;
 			is_operator = false;
 		}
 		else
 		{
-			code = code_from_token(str);
+			code = code_from_token(token);
 			is_operator = false;
 		}
 
@@ -1286,7 +1291,7 @@ void input_manager::seq_from_tokens(input_seq &seq, const char *string)
 		{
 			if (code.device_class() < DEVICE_CLASS_FIRST_VALID)
 			{
-				osd_printf_warning("Input: Dropping invalid input token %s\n", str);
+				osd_printf_warning("Input: Dropping invalid input token %s\n", token);
 				while (operators)
 				{
 					seq.backspace();
@@ -1301,9 +1306,9 @@ void input_manager::seq_from_tokens(input_seq &seq, const char *string)
 		}
 
 		// advance
-		if (origspace == 0)
+		if (string.empty())
 			return;
-		str = strtemp + 1;
+		string.remove_prefix(1);
 	}
 }
 
@@ -1312,30 +1317,27 @@ void input_manager::seq_from_tokens(input_seq &seq, const char *string)
 //  controller based on device map table
 //-------------------------------------------------
 
-bool input_manager::map_device_to_controller(const devicemap_table_type *devicemap_table)
+bool input_manager::map_device_to_controller(const devicemap_table &table)
 {
-	if (nullptr == devicemap_table)
-		return true;
-
-	for (devicemap_table_type::const_iterator it = devicemap_table->begin(); it != devicemap_table->end(); it++)
+	for (const auto &it : table)
 	{
-		const char *deviceid = it->first.c_str();
-		const char *controllername = it->second.c_str();
+		std::string_view deviceid = it.first;
+		std::string_view controllername = it.second;
 
 		// tokenize the controller name into device class and index (i.e. controller name should be of the form "GUNCODE_1")
 		std::string token[2];
-		int numtokens;
-		const char *_token = controllername;
-		for (numtokens = 0; numtokens < ARRAY_LENGTH(token); )
+		int numtokens = 0;
+		std::string_view _token = controllername;
+		while (numtokens < std::size(token))
 		{
 			// make a token up to the next underscore
-			char *score = (char *)strchr(_token, '_');
-			token[numtokens++].assign(_token, (score == nullptr) ? strlen(_token) : (score - _token));
+			std::string_view::size_type score = _token.find('_');
+			token[numtokens++].assign(_token, 0, (std::string_view::npos == score) ? _token.length() : score);
 
 			// if we hit the end, we're done, else advance our pointer
-			if (score == nullptr)
+			if (std::string_view::npos == score)
 				break;
-			_token = score + 1;
+			_token.remove_prefix(score + 1);
 		}
 		if (2 != numtokens)
 			return false;
@@ -1359,7 +1361,7 @@ bool input_manager::map_device_to_controller(const devicemap_table_type *devicem
 		for (int devnum = 0; devnum <= input_devclass->maxindex(); devnum++)
 		{
 			input_device *device = input_devclass->device(devnum);
-			if (device != nullptr && device->match_device_id(deviceid))
+			if (device && device->match_device_id(deviceid))
 			{
 				// remap devindex
 				input_devclass->remap_device_index(device->devindex(), devindex);

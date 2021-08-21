@@ -347,7 +347,7 @@ Notes:
 #include "machine/upd4701.h"
 #include "machine/315_5296.h"
 #include "sound/dac.h"
-#include "sound/ym2151.h"
+#include "sound/ymopm.h"
 #include "video/segaic24.h"
 #include "speaker.h"
 
@@ -2247,7 +2247,7 @@ ROM_START( sspirtfc )
 	ROM_REGION( 0x2000, "subcpu:key", 0 )   /* decryption key */
 	ROM_LOAD( "317-0058-02c.key", 0x0000, 0x2000,  CRC(ebae170e) SHA1(b6d1e1b6943a35b96e98e426ecb39bb5a42fb643) )
 
-	ROM_REGION( 0x1c2000, "floppy", 0)
+	ROM_REGION( 0x1c2000, "floppy", ROMREGION_ERASE00)
 	ROM_LOAD( "ds3-5000-02c.img", 0x000000, 0x1c2000, NO_DUMP )
 ROM_END
 

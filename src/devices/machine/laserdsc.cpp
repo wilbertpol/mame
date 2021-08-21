@@ -201,7 +201,7 @@ uint32_t laserdisc_device::screen_update(screen_device &screen, bitmap_rgb32 &bi
 		}
 
 		// swap to the next bitmap
-		m_overindex = (m_overindex + 1) % ARRAY_LENGTH(m_overbitmap);
+		m_overindex = (m_overindex + 1) % std::size(m_overbitmap);
 	}
 	return 0;
 }
@@ -223,7 +223,10 @@ void laserdisc_device::device_start()
 	init_audio();
 
 	// register callbacks
-	machine().configuration().config_register("laserdisc", config_load_delegate(&laserdisc_device::config_load, this), config_save_delegate(&laserdisc_device::config_save, this));
+	machine().configuration().config_register(
+			"laserdisc",
+			configuration_manager::load_delegate(&laserdisc_device::config_load, this),
+			configuration_manager::save_delegate(&laserdisc_device::config_save, this));
 }
 
 
@@ -870,7 +873,7 @@ laserdisc_device::frame_data &laserdisc_device::current_frame()
 	// determine the most recent live set of frames
 	frame_data *frame = &m_frame[m_videoindex];
 	if (frame->m_numfields < 2)
-		frame = &m_frame[(m_videoindex + ARRAY_LENGTH(m_frame) - 1) % ARRAY_LENGTH(m_frame)];
+		frame = &m_frame[(m_videoindex + std::size(m_frame) - 1) % std::size(m_frame)];
 	return *frame;
 }
 
@@ -906,7 +909,7 @@ void laserdisc_device::read_track_data()
 	if ((vbidata.line1718 & VBI_MASK_CAV_PICTURE) == VBI_CODE_CAV_PICTURE)
 	{
 		if (frame->m_numfields >= 2)
-			m_videoindex = (m_videoindex + 1) % ARRAY_LENGTH(m_frame);
+			m_videoindex = (m_videoindex + 1) % std::size(m_frame);
 		frame = &m_frame[m_videoindex];
 		frame->m_numfields = 0;
 	}
@@ -1040,20 +1043,16 @@ void laserdisc_device::process_track_data()
 //  configuration file
 //-------------------------------------------------
 
-void laserdisc_device::config_load(config_type cfg_type, util::xml::data_node const *parentnode)
+void laserdisc_device::config_load(config_type cfg_type, config_level cfg_level, util::xml::data_node const *parentnode)
 {
-	// we only care about game files
-	if (cfg_type != config_type::GAME)
-		return;
-
-	// might not have any data
-	if (parentnode == nullptr)
+	// we only care system-specific configuration
+	if ((cfg_type != config_type::SYSTEM) || !parentnode)
 		return;
 
 	// iterate over overlay nodes
 	for (util::xml::data_node const *ldnode = parentnode->get_child("device"); ldnode != nullptr; ldnode = ldnode->get_next_sibling("device"))
 	{
-		const char *devtag = ldnode->get_attribute_string("tag", "");
+		char const *const devtag = ldnode->get_attribute_string("tag", "");
 		if (strcmp(devtag, tag()) == 0)
 		{
 			// handle the overlay node
@@ -1078,13 +1077,13 @@ void laserdisc_device::config_load(config_type cfg_type, util::xml::data_node co
 
 void laserdisc_device::config_save(config_type cfg_type, util::xml::data_node *parentnode)
 {
-	// we only care about game files
-	if (cfg_type != config_type::GAME)
+	// we only save system-specific configuration
+	if (cfg_type != config_type::SYSTEM)
 		return;
 
 	// create a node
 	util::xml::data_node *const ldnode = parentnode->add_child("device", nullptr);
-	if (ldnode != nullptr)
+	if (ldnode)
 	{
 		// output the basics
 		ldnode->set_attribute("tag", tag());

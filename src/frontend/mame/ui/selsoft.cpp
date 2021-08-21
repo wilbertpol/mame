@@ -16,7 +16,6 @@
 #include "ui/inifile.h"
 #include "ui/selector.h"
 
-#include "audit.h"
 #include "corestr.h"
 #include "drivenum.h"
 #include "emuopts.h"
@@ -251,19 +250,7 @@ void menu_select_software::populate(float &customtop, float &custombottom)
 		icon.second.texture.reset();
 
 	uint32_t flags_ui = FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW;
-	m_has_empty_start = true;
 	int old_software = -1;
-
-	// FIXME: why does it do this relatively expensive operation every time?
-	machine_config config(m_driver, machine().options());
-	for (device_image_interface &image : image_interface_enumerator(config.root_device()))
-	{
-		if (!image.filename() && image.must_be_loaded())
-		{
-			m_has_empty_start = false;
-			break;
-		}
-	}
 
 	// start with an empty list
 	m_displaylist.clear();
@@ -341,6 +328,17 @@ void menu_select_software::build_software_list()
 	m_swinfo.emplace_back(m_driver);
 
 	machine_config config(m_driver, machine().options());
+
+	// see if any media devices require an image to be loaded
+	m_has_empty_start = true;
+	for (device_image_interface &image : image_interface_enumerator(config.root_device()))
+	{
+		if (!image.filename() && image.must_be_loaded())
+		{
+			m_has_empty_start = false;
+			break;
+		}
+	}
 
 	// iterate through all software lists
 	std::vector<std::size_t> orphans;
@@ -426,7 +424,7 @@ void menu_select_software::build_software_list()
 	}
 
 	std::string searchstr, curpath;
-	for (auto & elem : m_filter_data.list_names())
+	for (auto &elem : m_filter_data.list_names())
 	{
 		path_iterator path(machine().options().media_path());
 		while (path.next(curpath))
@@ -475,9 +473,9 @@ void menu_select_software::inkey_select(const event *menu_event)
 
 	// audit the system ROMs first to see if we're going to work
 	media_auditor::summary const sysaudit = auditor.audit_media(AUDIT_VALIDATE_FAST);
-	if (sysaudit != media_auditor::CORRECT && sysaudit != media_auditor::BEST_AVAILABLE && sysaudit != media_auditor::NONE_NEEDED)
+	if (!audit_passed(sysaudit))
 	{
-		set_error(reset_options::REMEMBER_REF, make_audit_fail_text(media_auditor::NOTFOUND != sysaudit, auditor));
+		set_error(reset_options::REMEMBER_REF, make_system_audit_fail_text(auditor, sysaudit));
 	}
 	else if (ui_swinfo->startempty == 1)
 	{
@@ -489,13 +487,12 @@ void menu_select_software::inkey_select(const event *menu_event)
 	}
 	else
 	{
-		// first audit the software
+		// now audit the software
 		software_list_device *swlist = software_list_device::find_by_name(*drivlist.config(), ui_swinfo->listname);
 		const software_info *swinfo = swlist->find(ui_swinfo->shortname);
-
 		media_auditor::summary const swaudit = auditor.audit_software(*swlist, *swinfo, AUDIT_VALIDATE_FAST);
 
-		if (swaudit == media_auditor::CORRECT || swaudit == media_auditor::BEST_AVAILABLE || swaudit == media_auditor::NONE_NEEDED)
+		if (audit_passed(swaudit))
 		{
 			if (!select_bios(*ui_swinfo, false) && !select_part(*swinfo, *ui_swinfo))
 			{
@@ -506,15 +503,7 @@ void menu_select_software::inkey_select(const event *menu_event)
 		else
 		{
 			// otherwise, display an error
-			std::ostringstream str;
-			str << _("The selected software is missing one or more required files. Please select a different software item.\n\n");
-			if (media_auditor::NOTFOUND != swaudit)
-			{
-				auditor.summarize(nullptr, &str);
-				str << '\n';
-			}
-			str << _("Press any key to continue."),
-			set_error(reset_options::REMEMBER_POSITION, str.str());
+			set_error(reset_options::REMEMBER_REF, make_software_audit_fail_text(auditor, swaudit));
 		}
 	}
 }

@@ -18,11 +18,12 @@ jobs:
       env:
         MINGW64: "/mingw64"
         ARCHOPTS: "-fuse-ld=lld"
+        OVERRIDE_AR: "llvm-ar"
         TOOLS: 1
       run: make -j2
     - name: Validate
-      run: ./mame64 -validate
+      run: ./mame -validate
     - uses: actions/upload-artifact@master
       with:
-        name: mame64-windows-gcc-${{ github.sha }}
-        path: mame64.exe
+        name: mame-windows-gcc-${{ github.sha }}
+        path: mame.exe

@@ -113,7 +113,7 @@ struct hng64_poly_data
 
 class hng64_state;
 
-class hng64_poly_renderer : public poly_manager<float, hng64_poly_data, 7, HNG64_MAX_POLYGONS>
+class hng64_poly_renderer : public poly_manager<float, hng64_poly_data, 7>
 {
 public:
 	hng64_poly_renderer(hng64_state& state);
@@ -304,6 +304,8 @@ private:
 	uint32_t m_p1_trig;
 
 	//uint32_t *q2;
+
+	std::vector< std::pair <int, uint32_t *> > m_spritelist;
 
 	uint8_t m_screen_dis;
 

@@ -107,7 +107,7 @@ Main board:
 #include "machine/nvram.h"
 #include "sound/ay8910.h"
 #include "sound/okim6295.h"
-#include "sound/ym2413.h"
+#include "sound/ymopl.h"
 #include "video/ramdac.h"
 #include "emupal.h"
 #include "screen.h"
@@ -312,9 +312,9 @@ void bmcbowl_state::machine_reset()
 	for (int i = 0; i < m_stats_ram.bytes()/2; i++)
 		m_stats_ram[i] = 0xffff;
 
-	init_stats(bmc_nv1,ARRAY_LENGTH(bmc_nv1),0);
-	init_stats(bmc_nv2,ARRAY_LENGTH(bmc_nv2),0x3b0/2);
-	init_stats(bmc_nv3,ARRAY_LENGTH(bmc_nv3),0xfe2/2);
+	init_stats(bmc_nv1,std::size(bmc_nv1),0);
+	init_stats(bmc_nv2,std::size(bmc_nv2),0x3b0/2);
+	init_stats(bmc_nv3,std::size(bmc_nv3),0xfe2/2);
 #endif
 }
 

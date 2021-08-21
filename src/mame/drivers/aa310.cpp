@@ -73,6 +73,24 @@
  *  3400000 - 35FFFFF - VICD10 (write - supervisor only)
  *  3600000 - 3FFFFFF - MEMC (write - supervisor only)
  *
+=======================================================================================
+ *
+ *  Archimedes IOC interrupts:
+ *     IL0    Podule FIQ
+ *     IL1    Sound Empty
+ *     IL2    Serial
+ *     IL3    HDD
+ *     IL4    Disc Change
+ *     IL5    Podule IRQ
+ *     IL6    Printer Busy
+ *     IL7    Serial Ring
+ *     IF     Printer Ack
+ *     IR     VBL
+ *     POR    Reset
+ *     FH0    Floppy DRQ
+ *     FH1    Floppy IRQ
+ *     FL     Econet
+ *
  *****************************************************************************/
 /*
     DASM of code (bios 2 / RISC OS 2)
@@ -155,7 +173,7 @@ private:
 	virtual void machine_start() override;
 	virtual void machine_reset() override;
 
-	DECLARE_FLOPPY_FORMATS( floppy_formats );
+	static void floppy_formats(format_registration &fr);
 
 	void aa310_mem(address_map &map);
 	void aa310_arm_mem(address_map &map);
@@ -433,13 +451,15 @@ static INPUT_PORTS_START( aa310 )
 	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_UNKNOWN )
 INPUT_PORTS_END
 
-FLOPPY_FORMATS_MEMBER( aa310_state::floppy_formats )
-	FLOPPY_ACORN_ADFS_NEW_FORMAT,
-	FLOPPY_ACORN_ADFS_OLD_FORMAT,
-	FLOPPY_APD_FORMAT,
-	FLOPPY_JFD_FORMAT,
-	FLOPPY_PC_FORMAT
-FLOPPY_FORMATS_END
+void aa310_state::floppy_formats(format_registration &fr)
+{
+	fr.add_pc_formats();
+
+	fr.add(FLOPPY_ACORN_ADFS_NEW_FORMAT);
+	fr.add(FLOPPY_ACORN_ADFS_OLD_FORMAT);
+	fr.add(FLOPPY_APD_FORMAT);
+	fr.add(FLOPPY_JFD_FORMAT);
+}
 
 static void aa310_floppies(device_slot_interface &device)
 {

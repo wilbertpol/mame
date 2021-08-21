@@ -19,7 +19,7 @@
 #include "sound/dac.h"
 #include "sound/flt_biquad.h"
 #include "sound/hc55516.h"
-#include "sound/ym2151.h"
+#include "sound/ymopm.h"
 
 // 6802/8 CPU's input clock is 4MHz
 // but because it has an internal /4 divider, its E clock runs at 1/4 that frequency
@@ -61,6 +61,8 @@ public:
 		, m_ps88(*this, "ps88")
 		, m_digits(*this, "digit%u", 0U)
 		, m_swarray(*this, "SW.%u", 0U)
+		, m_timer_irq_active(false)
+		, m_pia_irq_active(false)
 		{ }
 
 	void s11(machine_config &config);

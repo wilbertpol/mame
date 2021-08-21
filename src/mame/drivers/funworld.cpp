@@ -587,7 +587,7 @@
 
   This is a Bulgarian Jolly Card pseudo-clone, with cyrillic charset.
   ЗАБАВНИ КАРТИ means "Fun cards" / "Cards for fun".
-  
+
   The game has encrypted GFX. Same style as blue TAB board.
 
   This is a timed game. You coin for an amount of playing time.
@@ -618,51 +618,51 @@
      You'll see the following counters and menu:
 
      КАРЕ С ЖОКЕР      0    (five of a kind)
-	 КЕНТ ФЛЕШ РОЯЛ    0    (royal flush)
-	 КЕНТ ФЛЕШ         0    (straight flush)
-	 КАРЕ              0    (poker)
-	 ФУЛ               0    (full house)
-	 ФЛЕШ              0    (flush)
-	 КЕНТА             0    (straight)
-	 ТРОЙКА            0    (three of a kind)
-	 2 ДВОЙКИ          0    (two pairs)
-	 ГОЛЯМА ДВОЙКИ     0    (high pair)
+     КЕНТ ФЛЕШ РОЯЛ    0    (royal flush)
+     КЕНТ ФЛЕШ         0    (straight flush)
+     КАРЕ              0    (poker)
+     ФУЛ               0    (full house)
+     ФЛЕШ              0    (flush)
+     КЕНТА             0    (straight)
+     ТРОЙКА            0    (three of a kind)
+     2 ДВОЙКИ          0    (two pairs)
+     ГОЛЯМА ДВОЙКИ     0    (high pair)
 
 
-	 ВРЕМЕ:  Натиснете бутон Стоп3
-	 TIME:   Press the Stop3 button
+     ВРЕМЕ:  Натиснете бутон Стоп3
+     TIME:   Press the Stop3 button
 
-					Изиграно време, мин. :  00
-					Played time, min.    :  00
+                    Изиграно време, мин. :  00
+                    Played time, min.    :  00
 
-					Платено време, мин.  :  00
-					Paid time, min.      :  00
-
-
-	 НАСТРОЙКА:  Натиснете бутони Стоп2 и Стоп4
-	 SETUP:      Press the Stop2 and Stop4 buttons
-
-					Бутон Стоп1 -- Време за една игра, мин.  (1-99, 5 by default)
-					Stop1 Button -- Time for one game, min.  (1-99, 5 by default)
-
-					Бутон Стоп2 -- Залог  (1-99, 10 by default)
-					Stop2 button - Bet    (1-99, 10 by default)
-
-					Бутон Стоп3 -- Ниво на трудност      (0-3, 2 by default)
-					Stop3 button -- Level of difficulty  (0-3, 2 by default)
-
-					ИЗХОД:  Натиснете бутон Старт
-					EXIT:   Press the Start button
+                    Платено време, мин.  :  00
+                    Paid time, min.      :  00
 
 
-	 НУЛИРАНЕ:  Стоп1 нулира часовника
-	 RESET:     Stop1 resets the clock
+     НАСТРОЙКА:  Натиснете бутони Стоп2 и Стоп4
+     SETUP:      Press the Stop2 and Stop4 buttons
 
-	 ИЗЧИСТВАНЕ:  Натиснете 2 с. бутон Изчистване
-	 CLEAR:       Press the Cancel button for 2 seconds
+                    Бутон Стоп1 -- Време за една игра, мин.  (1-99, 5 by default)
+                    Stop1 Button -- Time for one game, min.  (1-99, 5 by default)
 
-	 ИЗХОД:  Натиснете бутон Старт
-	 EXIT:   Press the Start button
+                    Бутон Стоп2 -- Залог  (1-99, 10 by default)
+                    Stop2 button - Bet    (1-99, 10 by default)
+
+                    Бутон Стоп3 -- Ниво на трудност      (0-3, 2 by default)
+                    Stop3 button -- Level of difficulty  (0-3, 2 by default)
+
+                    ИЗХОД:  Натиснете бутон Старт
+                    EXIT:   Press the Start button
+
+
+     НУЛИРАНЕ:  Стоп1 нулира часовника
+     RESET:     Stop1 resets the clock
+
+     ИЗЧИСТВАНЕ:  Натиснете 2 с. бутон Изчистване
+     CLEAR:       Press the Cancel button for 2 seconds
+
+     ИЗХОД:  Натиснете бутон Старт
+     EXIT:   Press the Start button
 
   ---------------------------------------------------------------------
 
@@ -1436,10 +1436,10 @@ static INPUT_PORTS_START( jolycdcy )
 	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_GAMBLE_KEYIN )   PORT_NAME(u8"Running / Credits (Навъртане)")                               // НАВЪРТАНЕ
 	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_POKER_HOLD1 )    PORT_NAME(u8"Stop 1 (Стоп 1)")                                             // СТОП 1
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_POKER_CANCEL )   PORT_NAME(u8"Cancel (Изчистване) / Autostop (Автостоп) / Take (Качване)")  // ИЗЧИСТВАНЕ / АВТОСТОП / КАЧВАНЕ
-	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_START1 )         PORT_NAME(u8"Start (Старт) / Double (Дублиране)")	                       // СТАРТ / ДУБЛИРАНЕ
-	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_POKER_HOLD5 )    PORT_NAME(u8"Stop 5 (Стоп 5) / Half Gamble (Половин Хазарт)")		       // СТОП 5 / ПОЛОВИН ХАЗАРТ
-	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_SERVICE1 )		PORT_NAME(u8"Turnover (Оборот)")                                           // ОБОРОТ (turnover)
-	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_SERVICE2 )		PORT_NAME(u8"Setup (Настройка)")                                           // НАСТРОЙКА (setup)
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_START1 )         PORT_NAME(u8"Start (Старт) / Double (Дублиране)")                          // СТАРТ / ДУБЛИРАНЕ
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_POKER_HOLD5 )    PORT_NAME(u8"Stop 5 (Стоп 5) / Half Gamble (Половин Хазарт)")              // СТОП 5 / ПОЛОВИН ХАЗАРТ
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_SERVICE1 )       PORT_NAME(u8"Turnover (Оборот)")                                           // ОБОРОТ (turnover)
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_SERVICE2 )       PORT_NAME(u8"Setup (Настройка)")                                           // НАСТРОЙКА (setup)
 	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_POKER_HOLD4 )    PORT_NAME(u8"Stop 4 (Стоп 4) / Big (Голяма)")                              // СТОП 4 / ГОЛЯМА
 
 	PORT_START("IN1")
@@ -1447,13 +1447,13 @@ static INPUT_PORTS_START( jolycdcy )
 	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_POKER_HOLD3 )    PORT_NAME(u8"Stop 3 (Стоп 3)")                                             // СТОП 3
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
-	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("test 1") PORT_CODE(KEYCODE_A)	// present on the test mode, but erased
-	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("test 2") PORT_CODE(KEYCODE_S)	// normally coin2. present on the test mode, but erased.
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("test 1") PORT_CODE(KEYCODE_A)    // present on the test mode, but erased
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("test 2") PORT_CODE(KEYCODE_S)    // normally coin2. present on the test mode, but erased.
 	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
-	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("test 3") PORT_CODE(KEYCODE_D)	// normally keyout. present on the test mode as "K'bo?".  
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("test 3") PORT_CODE(KEYCODE_D)    // normally keyout. present on the test mode as "K'bo?".
 
 	PORT_START("IN2")
-	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("test 4") PORT_CODE(KEYCODE_F)	// normally coin1. present on the test mode, but erased.
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("test 4") PORT_CODE(KEYCODE_F)    // normally coin1. present on the test mode, but erased.
 	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
@@ -1463,7 +1463,7 @@ static INPUT_PORTS_START( jolycdcy )
 	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN )
 
 	PORT_START("DSW")
-	PORT_DIPNAME( 0x01, 0x01, "State" )             PORT_DIPLOCATION("SW1:8")	// only works with credits inserted
+	PORT_DIPNAME( 0x01, 0x01, "State" )             PORT_DIPLOCATION("SW1:8")   // only works with credits inserted
 	PORT_DIPSETTING(    0x01, "Normal Play" )
 	PORT_DIPSETTING(    0x00, "Test Mode" )
 	PORT_DIPNAME( 0x02, 0x02, DEF_STR( Unknown ) )  PORT_DIPLOCATION("SW1:7")
@@ -3083,12 +3083,12 @@ static INPUT_PORTS_START( clubcard )
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
 	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_SERVICE )        PORT_NAME("Hopper SW")  PORT_CODE(KEYCODE_H)
-	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_COIN2 )   		PORT_NAME("Coin B")
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_COIN2 )          PORT_NAME("Coin B")
 	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
 	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_GAMBLE_KEYOUT )
 
 	PORT_START("IN2")
-	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_COIN1 )   		PORT_NAME("Coin A")
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_COIN1 )          PORT_NAME("Coin A")
 	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
@@ -3469,7 +3469,7 @@ void funworld_state::gratispk(machine_config &config)
 
 void funworld_state::clubcard(machine_config &config)
 {
-//	fw1stpal(config);  // 'alla Royal Card. Card deck wrong colors.
+//  fw1stpal(config);  // 'alla Royal Card. Card deck wrong colors.
 	fw2ndpal(config);  // proper colors.
 
 	R65C02(config.replace(), m_maincpu, CPU_CLOCK); // 2 MHz.
@@ -4654,7 +4654,7 @@ ROM_END
   Bulgarian Jolly Card clone with cyrillic charset.
 
   ЗАБАВНИ КАРТИ means "Fun cards" / "Cards for fun".
-  
+
   Encrypted GFX. Same style as blue TAB board.
 
   This is a timed game. You coin for an amount of playing time.
@@ -5023,6 +5023,46 @@ ROM_START( cuoreunod ) // same code as pool10h, same GFX as cuoreunoa
 	ROM_LOAD( "palce16v8h-25pc-4.u5", 0x0000, 0x0117, CRC(c4569166) SHA1(f725dc654fc87b51968fc9f3178e4b22bfc04a6e) )
 	ROM_LOAD( "palce20v8h.u22",       0x0200, 0x0157, NO_DUMP ) // read protected
 	ROM_LOAD( "palce20v8h.u23",       0x0400, 0x0157, NO_DUMP ) // read protected
+ROM_END
+
+ROM_START( cuoreunoe ) // same code as pool10f, same GFX as cuoreunoa
+	ROM_REGION( 0x10000, "maincpu", 0 )
+	ROM_LOAD( "a.u2", 0x8000, 0x8000, CRC(e8087fb8) SHA1(c012a81f561978bd97708a52f656e7b13e41a3e2) )
+
+	ROM_REGION( 0x10000, "gfx1", 0 )
+	ROM_LOAD( "b.u21", 0x0000, 0x8000, CRC(2a3581c8) SHA1(8fa81c55fb2eb1d51ce5995f38ec4518d035c3af) )
+	ROM_LOAD( "c.u20", 0x8000, 0x8000, CRC(26f1162a) SHA1(c6d98e38377016f2b3daa138c3331a1aa91e422a) )
+
+	ROM_REGION( 0x0800, "nvram", 0 )    // pre-initialized BBRAM (hw uses SRAM + 3,6V battery)
+	ROM_LOAD( "cuoreunoe_nvram.bin", 0x0000, 0x0800, CRC(75dd3562) SHA1(a359cada144e7c90946649f5dd0998d0ee48f4d2) )
+
+	ROM_REGION( 0x0200, "proms", 0 )
+	ROM_LOAD( "am27s29pc.u25",   0x0000, 0x0200, BAD_DUMP CRC(1de03d14) SHA1(d8eda20865c1d885a428931f4380032e103b252c) ) // not dumped for this set
+
+	ROM_REGION( 0x0600, "plds", 0 )
+	ROM_LOAD( "palce16v8h-25pc-4.u5", 0x0000, 0x0117, NO_DUMP ) // read protected
+	ROM_LOAD( "palce20v8h.u22",       0x0200, 0x0157, NO_DUMP ) // read protected
+	ROM_LOAD( "palce20v8h.u23",       0x0400, 0x0157, NO_DUMP ) // read protected
+ROM_END
+
+ROM_START( cuoreunof ) // same as cuoreunoc but with copyright removed
+	ROM_REGION( 0x10000, "maincpu", 0 )
+	ROM_LOAD( "3.u2", 0x8000, 0x8000, CRC(ef66d40a) SHA1(ed406472a5f3d883036f0001082607f1561e6820) )
+
+	ROM_REGION( 0x10000, "gfx1", 0 )
+	ROM_LOAD( "cuore_b.u21", 0x0000, 0x8000, CRC(2a3581c8) SHA1(8fa81c55fb2eb1d51ce5995f38ec4518d035c3af) )
+	ROM_LOAD( "cuore_c.u20", 0x8000, 0x8000, CRC(26f1162a) SHA1(c6d98e38377016f2b3daa138c3331a1aa91e422a) )
+
+	ROM_REGION( 0x0800, "nvram", 0 )    // pre-initialized BBRAM (hw uses SRAM + 3,6V battery)
+	ROM_LOAD( "cuoreunof_nvram.bin", 0x0000, 0x0800, CRC(3ec39472) SHA1(aa2bb5abd16557560a19842929ad7dab852abbbf) )
+
+	ROM_REGION( 0x0200, "proms", 0 )
+	ROM_LOAD( "n82s147an.u25",   0x0000, 0x0200, CRC(1de03d14) SHA1(d8eda20865c1d885a428931f4380032e103b252c) )
+
+	ROM_REGION( 0x0600, "plds", 0 ) // all read protected
+	ROM_LOAD( "palce16v8h-25pc-4.u5",  0x0000, 0x0117, NO_DUMP )
+	ROM_LOAD( "palce20v8h-25pc-4.u22", 0x0200, 0x0157, NO_DUMP )
+	ROM_LOAD( "palce20v8h-25pc-4.u23", 0x0400, 0x0157, NO_DUMP )
 ROM_END
 
 /*
@@ -5505,6 +5545,26 @@ ROM_START( pool10k ) // found on two PCBs
 	ROM_LOAD( "gal16v8ah.u5",   0x0000, 0x0117, NO_DUMP )
 	ROM_LOAD( "palce20v8h.u22", 0x0200, 0x0157, NO_DUMP )
 	ROM_LOAD( "palce20v8h.u23", 0x0400, 0x0157, NO_DUMP )
+ROM_END
+
+ROM_START( mag10 ) // same code as pool10g but for title and copyright changes, u20 GFX ROM contains changes
+	ROM_REGION( 0x10000, "maincpu", 0 )
+	ROM_LOAD( "magic_a.u2", 0x8000, 0x8000, CRC(c2379eed) SHA1(91ca7514d6c4a8032ab6a5221b7f09c02f7d65af) )
+
+	ROM_REGION( 0x10000, "gfx1", 0 )
+	ROM_LOAD( "magic_b.u21", 0x0000, 0x8000, CRC(99c8c074) SHA1(f8082b08e895cbcd028a2b7cd961a7a2c8b2762c) )
+	ROM_LOAD( "magic_c.u20", 0x8000, 0x8000, CRC(b863dead) SHA1(8f0016c39ce64a1ecde66f61b7f0db9cdfb36873) )
+
+	ROM_REGION( 0x0800, "nvram", 0 )    // pre-initialized BBRAM (hw uses SRAM + 3,6V battery)
+	ROM_LOAD( "mag10_nvram.bin", 0x0000, 0x0800, CRC(3ec39472) SHA1(aa2bb5abd16557560a19842929ad7dab852abbbf) )
+
+	ROM_REGION( 0x0200, "proms", 0 )
+	ROM_LOAD( "am27s29pc.u25", 0x0000, 0x0200, CRC(1de03d14) SHA1(d8eda20865c1d885a428931f4380032e103b252c) )
+
+	ROM_REGION( 0x0600, "plds", 0 ) // all read protected
+	ROM_LOAD( "palce16v8h-25pc-4.u5", 0x0000, 0x0117, NO_DUMP )
+	ROM_LOAD( "20s25hb1.u22",         0x0200, 0x0157, NO_DUMP )
+	ROM_LOAD( "20s25hb1.u23",         0x0400, 0x0157, NO_DUMP )
 ROM_END
 
 /*
@@ -8402,7 +8462,7 @@ void chinatow_state::init_rcdino4()
 	decrypt_rcdino4(rom, memregion("maincpu")->bytes(), memregion("gfx1")->base(), memregion("gfx1")->bytes(), memregion( "gfx1" )->base());
 
 	int j = 0;
-	for (int i = 0x40; i < (0x40 + ARRAY_LENGTH(rcdino4_keys40));)
+	for (int i = 0x40; i < (0x40 + std::size(rcdino4_keys40));)
 	{
 		uint8_t key = rcdino4_keys40[i - 0x40];
 
@@ -8492,10 +8552,10 @@ void chinatow_state::init_rcdino4()
 
 		j &= 0xff;
 
-		do {} while (((++i - 0x81) < ARRAY_LENGTH(rcdino4_keys80))
+		do {} while (((++i - 0x81) < std::size(rcdino4_keys80))
 				&& !rcdino4_keys80[i - 0x81]);
 
-		if ((i - 0x81) == ARRAY_LENGTH(rcdino4_keys80))
+		if ((i - 0x81) == std::size(rcdino4_keys80))
 		{
 			break;
 		}
@@ -8637,6 +8697,8 @@ GAMEL( 1996, cuoreunoa,  cuoreuno, cuoreuno, cuoreuno,  funworld_state, empty_in
 GAMEL( 1996, cuoreunob,  cuoreuno, cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "C.M.C.",            "Cuore 1 (Italian, set 3)",                        0,                       layout_jollycrd )
 GAMEL( 1996, cuoreunoc,  cuoreuno, cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "C.M.C.",            "Cuore 1 (Italian, set 4)",                        0,                       layout_jollycrd )
 GAMEL( 1996, cuoreunod,  cuoreuno, cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "C.M.C.",            "Cuore 1 (Italian, set 5)",                        0,                       layout_jollycrd )
+GAMEL( 1996, cuoreunoe,  cuoreuno, cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "C.M.C.",            "Cuore 1 (Italian, set 6)",                        0,                       layout_jollycrd )
+GAMEL( 1996, cuoreunof,  cuoreuno, cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "bootleg",           "Cuore 1 (Italian, set 7)",                        0,                       layout_jollycrd )
 GAMEL( 1997, elephfam,   0,        cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "C.M.C.",            "Elephant Family (Italian, new)",                  0,                       layout_jollycrd )
 GAMEL( 1996, elephfmb,   elephfam, cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "C.M.C.",            "Elephant Family (Italian, old)",                  0,                       layout_jollycrd )
 GAMEL( 1996, pool10,     0,        cuoreuno, pool10,    funworld_state, empty_init,    ROT0, "C.M.C.",            "Pool 10 (Italian, set 1)",                        0,                       layout_jollycrd )
@@ -8649,6 +8711,7 @@ GAMEL( 1996, pool10h,    pool10,   cuoreuno, pool10,    funworld_state, empty_in
 GAMEL( 1997, pool10i,    pool10,   cuoreuno, pool10,    funworld_state, empty_init,    ROT0, "C.M.C.",            "Pool 10 (Italian, set 8)",                        0,                       layout_jollycrd )
 GAMEL( 1996, pool10j,    pool10,   cuoreuno, pool10,    funworld_state, empty_init,    ROT0, "bootleg (R.B.)",    "Pool 10 (Italian, set 9)",                        0,                       layout_jollycrd )
 GAMEL( 1997, pool10k,    pool10,   cuoreuno, pool10,    funworld_state, empty_init,    ROT0, "C.M.C.",            "Pool 10 (Italian, set 10)",                       0,                       layout_jollycrd )
+GAMEL( 1997, mag10,      pool10,   cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "bootleg (Magic)",   "Magic 10 Nevada (bootleg of Pool 10)",            0,                       layout_jollycrd )
 GAMEL( 1998, biliard,    pool10,   cuoreuno, pool10,    funworld_state, empty_init,    ROT0, "bootleg",           "New Biliard 98 (Pool 10 hack)",                   0,                       layout_jollycrd )
 GAMEL( 2001, royal,      pool10,   royalcd1, royal,     funworld_state, empty_init,    ROT0, "<unknown>",         "Royal (Pool 10 hack)",                            0,                       layout_jollycrd )
 GAMEL( 1997, tortufam,   0,        cuoreuno, cuoreuno,  funworld_state, empty_init,    ROT0, "C.M.C.",            "Tortuga Family (Italian)",                        0,                       layout_jollycrd )
@@ -8715,7 +8778,7 @@ GAMEL( 199?, jolycdit,   jollycrd, cuoreuno, jolycdit,  funworld_state, init_tab
 GAMEL( 1990, jolycdib,   jollycrd, cuoreuno, jolycdib,  funworld_state, init_tabblue,  ROT0, "bootleg",           "Jolly Card (Italian, encrypted bootleg, set 1)",  0,                       layout_jollycrd ) // not a real TAB blue PCB
 GAMEL( 1993, jolycdic,   jollycrd, cuoreuno, jolycdic,  funworld_state, init_tabblue,  ROT0, "bootleg",           "Jolly Card (Italian, encrypted bootleg, set 2)",  0,                       layout_jollycrd ) // not a real TAB blue PCB
 GAMEL( 1993, jolycdii,   jollycrd, cuoreuno, jolycdib,  funworld_state, init_tabblue,  ROT0, "bootleg (Cleco)",   "Jolly Card (Italian, encrypted bootleg, set 3)",  0,                       layout_jollycrd ) // Cleco bootleg PCB
-GAMEL( 1993, jolycdcy,   jollycrd, cuoreuno, jolycdcy,  funworld_state, init_tabblue,  ROT0, "bootleg (Cleco)",   "Zabavni Karti (cyrillic, Bulgarian, encrypted)",  0,                       layout_jollycrd )
+GAMEL( 1993, jolycdcy,   jollycrd, cuoreuno, jolycdcy,  funworld_state, init_tabblue,  ROT0, "bootleg (Cleco)",   "Zabavni Karti (Bulgarian, encrypted)",            0,                       layout_jollycrd )
 
 // Dino 4 encrypted hardware...
 GAMEL( 1997, pool10e,    pool10,   cuoreuno, cuoreuno,  funworld_state, init_dino4,    ROT0, "C.M.C.",            "Pool 10 (Italian, Dino 4 hardware, encrypted)",   0,                       layout_jollycrd )

@@ -98,37 +98,13 @@ end
 		configuration "**/*"
 			flags { "DeploymentContent" }
 
-	configuration { "x64", "Release" }
-		targetsuffix "64"
-		if _OPTIONS["PROFILE"] then
-			targetsuffix "64p"
-		end
-
-	configuration { "x64", "Debug" }
-		targetsuffix "64d"
-		if _OPTIONS["PROFILE"] then
-			targetsuffix "64dp"
-		end
-
-	configuration { "x32", "Release" }
+	configuration { "Release" }
 		targetsuffix ""
 		if _OPTIONS["PROFILE"] then
 			targetsuffix "p"
 		end
 
-	configuration { "x32", "Debug" }
-		targetsuffix "d"
-		if _OPTIONS["PROFILE"] then
-			targetsuffix "dp"
-		end
-
-	configuration { "Native", "Release" }
-		targetsuffix ""
-		if _OPTIONS["PROFILE"] then
-			targetsuffix "p"
-		end
-
-	configuration { "Native", "Debug" }
+	configuration { "Debug" }
 		targetsuffix "d"
 		if _OPTIONS["PROFILE"] then
 			targetsuffix "dp"
@@ -274,6 +250,7 @@ end
 		"softfloat",
 		"softfloat3",
 		"wdlfft",
+		"ymfm",
 		ext_lib("jpeg"),
 		"7z",
 	}

@@ -11,7 +11,7 @@
 
 #include "cpu/m68000/m68000.h"
 #include "cpu/tms32010/tms32010.h"
-#include "sound/3812intf.h"
+#include "sound/ymopl.h"
 #include "video/toaplan_scu.h"
 #include "emupal.h"
 #include "screen.h"
@@ -56,7 +56,7 @@ protected:
 	optional_ioport m_dswb_io;
 	optional_ioport m_tjump_io;
 
-	int m_intenable;
+	u8 m_intenable;
 
 	std::unique_ptr<u16[]> m_tilevram[4];
 	/*

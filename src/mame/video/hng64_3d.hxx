@@ -7,7 +7,7 @@
 
 // Polygon rasterizer interface
 hng64_poly_renderer::hng64_poly_renderer(hng64_state& state)
-	: poly_manager<float, hng64_poly_data, 7, HNG64_MAX_POLYGONS>(state.machine())
+	: poly_manager<float, hng64_poly_data, 7>(state.machine())
 	, m_state(state)
 	, m_colorBuffer3d(state.m_screen->visible_area().width(), state.m_screen->visible_area().height())
 {
@@ -273,12 +273,12 @@ void hng64_state::setCameraProjectionMatrix(const uint16_t* packet)
 	// [1]  - ???? ... ? Contains a value in buriki's 'how to play' - probably a projection window/offset.
 	// [2]  - ???? ... ? Contains a value in buriki's 'how to play' - probably a projection window/offset.
 	// [3]  - ???? ... ? Contains a value
-	// [4]  - xxxx ... Camera projection near   - confirmed by sams64_2
-	// [5]  - xxxx ... Camera projection near   - confirmed by sams64_2
-	// [6]  - xxxx ... Camera projection near   - confirmed by sams64_2
-	// [7]  - xxxx ... Camera projection far (?)
-	// [8]  - xxxx ... Camera projection far (?)
-	// [9]  - xxxx ... Camera projection far (?)
+	// [4]  - xxxx ... Camera projection Z scale
+	// [5]  - xxxx ... Camera projection near Z
+	// [6]  - xxxx ... Camera projection screen Z
+	// [7]  - xxxx ... Camera projection (?)
+	// [8]  - xxxx ... Camera projection (?)
+	// [9]  - xxxx ... Camera projection (?)
 	// [10] - xxxx ... Camera projection right  - confirmed by sams64_2
 	// [11] - xxxx ... Camera projection left   - confirmed by sams64_2
 	// [12] - xxxx ... Camera projection top    - confirmed by sams64_2
@@ -288,33 +288,37 @@ void hng64_state::setCameraProjectionMatrix(const uint16_t* packet)
 	////////////*/
 
 	// Heisted from GLFrustum - 6 parameters...
+	// Gives the x,y extents for the projection plane at screenZ
 	const float left    = uToF(packet[11]);
 	const float right   = uToF(packet[10]);
 	const float top     = uToF(packet[12]);
 	const float bottom  = uToF(packet[13]);
 
-	// TODO: It's unclear how the 3 values combine to make a near clipping plane
-	const float near_   = uToF(packet[6]) + (uToF(packet[6]) * uToF(packet[4]));
-	const float far_    = 0.9f;             // uToF(packet[9]) + (uToF(packet[9]) * uToF(packet[7]));
+	// Mapping to a canonical view volume of the cube from (-1,-1,-1) to (1,1,1)
+	// near maps to z value -1, screenZ (the projection plane) maps to z value 0
+	// and far (which can be determined from near and screenZ) maps to z value of +1
+	const float screenZ = uToF(packet[6]) * uToF(packet[4]) + uToF(packet[6]);
+	const float near    = uToF(packet[5]) * uToF(packet[4]) + uToF(packet[5]);
+	const float far     = -(screenZ * near)/(screenZ - 2.0f*near);
 
-	m_projectionMatrix[0]  = (2.0f*near_)/(right-left);
+	m_projectionMatrix[0]  = (2.0f*screenZ)/(right-left);
 	m_projectionMatrix[1]  = 0.0f;
 	m_projectionMatrix[2]  = 0.0f;
 	m_projectionMatrix[3]  = 0.0f;
 
 	m_projectionMatrix[4]  = 0.0f;
-	m_projectionMatrix[5]  = (2.0f*near_)/(top-bottom);
+	m_projectionMatrix[5]  = (2.0f*screenZ)/(top-bottom);
 	m_projectionMatrix[6]  = 0.0f;
 	m_projectionMatrix[7]  = 0.0f;
 
 	m_projectionMatrix[8]  = (right+left)/(right-left);
 	m_projectionMatrix[9]  = (top+bottom)/(top-bottom);
-	m_projectionMatrix[10] = -((far_+near_)/(far_-near_));
+	m_projectionMatrix[10] = -((far+near)/(far-near));
 	m_projectionMatrix[11] = -1.0f;
 
 	m_projectionMatrix[12] = 0.0f;
 	m_projectionMatrix[13] = 0.0f;
-	m_projectionMatrix[14] = -((2.0f*far_*near_)/(far_-near_));
+	m_projectionMatrix[14] = -((2.0f*far*near)/(far-near));
 	m_projectionMatrix[15] = 0.0f;
 }
 
@@ -1437,7 +1441,7 @@ void hng64_poly_renderer::drawShaded(polygon *p)
 			pVert[2].p[2] = color.g();
 			pVert[2].p[3] = color.b();
 
-			render_triangle(visibleArea, render_delegate(&hng64_poly_renderer::render_flat_scanline, this), 4, pVert[0], pVert[1], pVert[2]);
+			render_triangle<4>(visibleArea, render_delegate(&hng64_poly_renderer::render_flat_scanline, this), pVert[0], pVert[1], pVert[2]);
 		}
 	}
 	else
@@ -1493,7 +1497,7 @@ void hng64_poly_renderer::drawShaded(polygon *p)
 			pVert[2].p[5] = pvjp1.texCoords[0];
 			pVert[2].p[6] = pvjp1.texCoords[1];
 
-			render_triangle(visibleArea, render_delegate(&hng64_poly_renderer::render_texture_scanline, this), 7, pVert[0], pVert[1], pVert[2]);
+			render_triangle<7>(visibleArea, render_delegate(&hng64_poly_renderer::render_texture_scanline, this), pVert[0], pVert[1], pVert[2]);
 		}
 	}
 }

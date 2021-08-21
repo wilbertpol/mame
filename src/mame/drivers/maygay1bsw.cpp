@@ -94,6 +94,7 @@
 	ROM_LOAD( "m1a-mcu.bin", 0x0000, 0x1000, CRC(ae957b00) SHA1(83267b64335b4ab33cc033d5003c4c93c813fc37) ) \
 	ROM_REGION( 0x100000, "gals", ROMREGION_ERASE00  ) \
 	ROM_LOAD( "gal16v8a.m1a.a.u32", 0x0000, 0x000117, CRC(5da2b5ab) SHA1(7af5ee675e280905fa41aee23b06394a59c8758d) ) /* M1a,b mainboards */  \
+	ROM_LOAD( "gal16v8.digi.a.u5", 0x0000, 0x000117, CRC(137c8d65) SHA1(c86d8ae7e0c99c4f179810dd12e7f412f167093e) ) /* FM + DIGITAL sound/rom card */  \
 	ROM_LOAD( "gal16v8.digi.b.u5", 0x0000, 0x000117, CRC(98dc995a) SHA1(13056e0b2a979a92279b668ce570b80bb75654f9) ) /* DIGITAL sound/rom card */  \
 	ROM_LOAD( "gal16v8.esp.b.u9", 0x0000, 0x000117, CRC(d0ea9b54) SHA1(b7611fb4004431a21f81be10934392bea8dc00a0) ) /* E.S.P. sound/rom card */  \
 	ROM_END
@@ -1567,7 +1568,8 @@ GAMEL( 199?, m1monmonw, m1monmon, maygay_m1, maygay_m1, maygay1b_state, init_m1,
 
 #define m1_jbond_sound \
 	ROM_REGION( 0x100000, "msm6376", ROMREGION_ERASE00  ) \
-	/* missing or different sound system? */
+	ROM_LOAD( "dig1-047_u2.bin", 0x000000, 0x080000, CRC(1f301dc4) SHA1(337ff12a7ea52498dc642230dda6a6f5852e0be2) )\
+	ROM_LOAD( "dig1-047_u3.bin", 0x080000, 0x080000, CRC(481ab40c) SHA1(08143f53e25db654e9fe80cfffe2711b0e15eafc) )
 ROM_START( m1jbond )  ROM_REGION( 0x10000, "maincpu", ROMREGION_ERASE00 ) ROM_LOAD("jbnd2010",          0x0000, 0x010000, CRC(8a41f5c0) SHA1(f52187b04a9b0103495e93eac16b75789012e072) ) m1_jbond_sound ROM_END_M1A_MCU
 ROM_START( m1jbonda ) ROM_REGION( 0x10000, "maincpu", ROMREGION_ERASE00 ) ROM_LOAD("sa4-605",           0x0000, 0x010000, CRC(a0882696) SHA1(ae2055b7dbf5644408c21e799a4a2d5355617e0a) ) m1_jbond_sound ROM_END_M1A_MCU
 ROM_START( m1jbondb ) ROM_REGION( 0x10000, "maincpu", ROMREGION_ERASE00 ) ROM_LOAD("sa4-606",           0x0000, 0x010000, CRC(1430f845) SHA1(687d54958db78c0da499e58814d916500e6d426e) ) m1_jbond_sound ROM_END_M1A_MCU

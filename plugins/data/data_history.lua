@@ -7,7 +7,7 @@ local function init()
 	local filepath
 	local dbver
 	local fh
-	
+
 	for path in mame_manager.ui.options.entries.historypath:value():gmatch("([^;]+)") do
 		filepath = emu.subst_env(path) .. "/" .. file
 		fh = io.open(filepath, "r")
@@ -29,7 +29,7 @@ local function init()
 	end
 	stmt:finalize()
 
-	
+
 	local stmt = db.prepare("SELECT version FROM version WHERE datfile = ?")
 	db.check("reading history version")
 	stmt:bind_values(file)
@@ -80,6 +80,8 @@ local function init()
 	if dbver then
 		db.exec("DELETE FROM \"" .. file .. "\"")
 		db.check("deleting history")
+		db.exec("DELETE FROM \"" .. file .. "_idx\"")
+		db.check("deleting index")
 		stmt = db.prepare("UPDATE version SET version = ? WHERE datfile = ?")
 		db.check("updating history version")
 	else
@@ -117,6 +119,7 @@ local function init()
 		end,
 		text = function(text, cdata)
 			if lasttag == "text" then
+				text = text:gsub("\r", "") -- strip crs
 				stmt = db.prepare("INSERT INTO \"" .. file .. "\" VALUES (?)")
 				db.check("inserting values")
 				stmt:bind_values(text)

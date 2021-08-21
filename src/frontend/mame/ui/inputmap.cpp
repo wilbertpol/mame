@@ -38,10 +38,11 @@ void menu_input_groups::populate(float &customtop, float &custombottom)
 	item_append(_("User Interface"), 0, (void *)uintptr_t(IPG_UI + 1));
 	for (int player = 0; player < MAX_PLAYERS; player++)
 	{
-		auto s = string_format("Player %d Controls", player + 1);
+		auto s = string_format(_("Player %1$d Controls"), player + 1);
 		item_append(s, 0, (void *)uintptr_t(IPG_PLAYER1 + player + 1));
 	}
 	item_append(_("Other Controls"), 0, (void *)uintptr_t(IPG_OTHER + 1));
+	item_append(menu_item_type::SEPARATOR);
 }
 
 void menu_input_groups::handle()
@@ -113,6 +114,7 @@ void menu_input_general::populate(float &customtop, float &custombottom)
 
 	// populate the menu in a standard fashion
 	populate_sorted(customtop, custombottom);
+	item_append(menu_item_type::SEPARATOR);
 }
 
 void menu_input_general::update_input(input_item_data &seqchangeditem)
@@ -219,7 +221,12 @@ void menu_input_specific::populate(float &customtop, float &custombottom)
 	}
 
 	// populate the menu in a standard fashion
-	populate_sorted(customtop, custombottom);
+	if (!data.empty())
+		populate_sorted(customtop, custombottom);
+	else
+		item_append(_("This machine has no configurable inputs."), FLAG_DISABLE, nullptr);
+
+	item_append(menu_item_type::SEPARATOR);
 }
 
 void menu_input_specific::update_input(input_item_data &seqchangeditem)
@@ -245,6 +252,7 @@ menu_input::menu_input(mame_ui_manager &mui, render_container &container)
 	, erroritem(nullptr)
 	, lastitem(nullptr)
 	, record_next(false)
+	, modified_ticks(0)
 {
 }
 
@@ -306,6 +314,17 @@ void menu_input::custom_render(void *selectedref, float top, float bottom, float
 						ui::text_layout::CENTER, ui::text_layout::NEVER, false,
 						ui().colors().text_color(), ui().colors().background_color(), 1.0f);
 			}
+			else
+			{
+				char const *const text[] = {
+					record_next ? appendprompt.c_str() : assignprompt.c_str(),
+					(!item.seq.empty() || item.defseq->empty()) ? clearprompt.c_str() : defaultprompt.c_str() };
+				draw_text_box(
+						std::begin(text), std::end(text),
+						x1, x2, y2 + ui().box_tb_border(), y2 + bottom,
+						ui::text_layout::CENTER, ui::text_layout::NEVER, false,
+						ui().colors().text_color(), ui().colors().background_color(), 1.0f);
+			}
 		}
 	}
 }
@@ -316,17 +335,21 @@ void menu_input::handle()
 	bool invalidate = false;
 
 	// process the menu
-	const event *const menu_event = process((pollingitem != nullptr) ? PROCESS_NOKEYS : 0);
+	const event *const menu_event = process(pollingitem ? PROCESS_NOKEYS : PROCESS_LR_ALWAYS);
 	if (pollingitem)
 	{
 		// if we are polling, handle as a special case
 		input_item_data *const item = pollingitem;
 
+		// prevent race condition between ui_input().pressed() and poll()
+		if (modified_ticks == 0 && seq_poll->modified())
+			modified_ticks = osd_ticks();
+
 		if (machine().ui_input().pressed(IPT_UI_CANCEL))
 		{
 			// if UI_CANCEL is pressed, abort
 			pollingitem = nullptr;
-			if (!seq_poll->modified())
+			if (!seq_poll->modified() || modified_ticks == osd_ticks())
 			{
 				// cancelled immediately - toggle between default and none
 				record_next = false;
@@ -368,6 +391,7 @@ void menu_input::handle()
 		case IPT_UI_SELECT: // an item was selected: begin polling
 			errormsg.clear();
 			erroritem = nullptr;
+			modified_ticks = 0;
 			pollingitem = &item;
 			lastitem = &item;
 			starting_seq = item.seq;
@@ -388,6 +412,12 @@ void menu_input::handle()
 			toggle_none_default(item.seq, item.seq, *item.defseq);
 			record_next = false;
 			seqchangeditem = &item;
+			break;
+
+		case IPT_UI_LEFT: // flip between set and append
+		case IPT_UI_RIGHT: // not very discoverable, but with the prompt it isn't opaque
+			if (record_next || !item.seq.empty())
+				record_next = !record_next;
 			break;
 		}
 
@@ -479,8 +509,14 @@ void menu_input::populate_sorted(float &customtop, float &custombottom)
 		item_append(std::move(text), std::move(subtext), flags, &item);
 	}
 
+	// pre-format messages
+	assignprompt = util::string_format(_("Press %1$s to set\n"), machine().input().seq_name(machine().ioport().type_seq(IPT_UI_SELECT)));
+	appendprompt = util::string_format(_("Press %1$s to append\n"), machine().input().seq_name(machine().ioport().type_seq(IPT_UI_SELECT)));
+	clearprompt = util::string_format(_("Press %1$s to clear\n"), machine().input().seq_name(machine().ioport().type_seq(IPT_UI_CLEAR)));
+	defaultprompt = util::string_format(_("Press %1$s to restore default\n"), machine().input().seq_name(machine().ioport().type_seq(IPT_UI_CLEAR)));
+
 	// leave space for showing the input sequence below the menu
-	custombottom = ui().get_line_height() + 3.0f * ui().box_tb_border();
+	custombottom = 2.0f * ui().get_line_height() + 3.0f * ui().box_tb_border();
 }
 
 } // namespace ui

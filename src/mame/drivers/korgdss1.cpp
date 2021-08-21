@@ -16,7 +16,7 @@
 #include "machine/gen_latch.h"
 #include "machine/i8155.h"
 #include "machine/i8255.h"
-#include "machine/ncr5380n.h"
+#include "machine/ncr5380.h"
 #include "machine/nscsi_bus.h"
 #include "machine/pit8253.h"
 #include "machine/upd765.h"
@@ -446,8 +446,8 @@ void korg_dss1_state::klm780(machine_config &config)
 
 	UPD765A(config, m_fdc, 16_MHz_XTAL / 4, true, true); // uPD765AC; clocked through SED9420C
 	m_fdc->intrq_wr_callback().set_inputline(m_cpu1, I8085_INTR_LINE);
-	FLOPPY_CONNECTOR(config, "fdc:0", dss1_floppies, "35dd", floppy_image_device::default_floppy_formats).enable_sound(true);
-	FLOPPY_CONNECTOR(config, "fdc:1", dss1_floppies, nullptr, floppy_image_device::default_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "fdc:0", dss1_floppies, "35dd", floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "fdc:1", dss1_floppies, nullptr, floppy_image_device::default_mfm_floppy_formats).enable_sound(true);
 
 	GENERIC_LATCH_8(config, m_latch[0]);
 	m_latch[0]->data_pending_callback().set_inputline(m_cpu1, I8085_RST65_LINE).invert();
