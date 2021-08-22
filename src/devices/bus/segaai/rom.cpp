@@ -48,7 +48,7 @@ void segaai_rom_128_device::write_cart(offs_t offset, u8 data)
 segaai_rom_256_device::segaai_rom_256_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock)
 	: segaai_rom_128_device(mconfig, SEGAAI_ROM_256, tag, owner, clock)
 {
-	for (int i = 0; i < ARRAY_LENGTH(m_bank_reg); i++)
+	for (int i = 0; i < std::size(m_bank_reg); i++)
 	{
 		m_bank_reg[i] = i;
 	}
@@ -63,7 +63,7 @@ void segaai_rom_256_device::device_start()
 
 void segaai_rom_256_device::device_reset()
 {
-	for (int i = 0; i < ARRAY_LENGTH(m_bank_reg); i++)
+	for (int i = 0; i < std::size(m_bank_reg); i++)
 	{
 		m_bank_reg[i] = i;
 	}

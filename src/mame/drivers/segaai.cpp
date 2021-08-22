@@ -574,7 +574,7 @@ bool segaai_state::get_touchpad_pressed()
 				port >>= 1;
 			}
 
-			if (bit >= 0 && bit < ARRAY_LENGTH(tp_x))
+			if (bit >= 0 && bit < std::size(tp_x))
 			{
 				m_touchpad_x = tp_x[bit];
 				m_touchpad_y = tp_y[row];

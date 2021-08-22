@@ -379,7 +379,7 @@ AI-8003 Pinpon Music Melody
 		<part name="cassb" interface="flac_cass">
 			<dataarea name="cass" size="58812097">
 				<rom name="Eigo de Ohanashi 2 (Tape Side B).flac" size="58812097" crc="2cca36eb" sha1="393d1b6ed5318d07a9407644ed921e2b76569ffd"/>
-			<dataarea>
+			</dataarea>
 		</part>
 	</software>
 

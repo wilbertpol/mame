@@ -9,7 +9,7 @@
 #include "segaai_exp.h"
 #include "machine/pit8253.h"
 #include "machine/i8255.h"
-#include "sound/ym2151.h"
+#include "sound/ymopm.h"
 
 // ======================> segaai_soundbox_device
 

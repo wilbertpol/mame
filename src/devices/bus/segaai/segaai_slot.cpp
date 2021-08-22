@@ -94,7 +94,7 @@ static const segaai_slot slot_list[] =
 
 static const char *segaai_get_slot(int type)
 {
-	for (int i = 0; i < ARRAY_LENGTH(slot_list); i++)
+	for (int i = 0; i < std::size(slot_list); i++)
 	{
 		if (slot_list[i].pcb_id == type)
 			return slot_list[i].slot_option;
