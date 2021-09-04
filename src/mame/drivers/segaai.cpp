@@ -32,6 +32,7 @@ TODO:
 - Proper hooking up of uPD7759 START signal.
 - Cassette
 - Keyboard (there is probably an mcu inside it)
+- State saving
 
 ===========================================================================
 
@@ -158,8 +159,9 @@ public:
 	u8 port1e_r(offs_t offset);
 
 	// unknown device writes
-	u8 unk16_r(offs_t offset);
-	void unk17_w(offs_t offset, u8 data);
+	u8 irq_enable_r(offs_t offset);
+	void irq_enable_w(offs_t offset, u8 data);
+	void irq_select_w(offs_t offset, u8 data);
 
 protected:
 	virtual void machine_start();
@@ -169,6 +171,8 @@ private:
 	static constexpr u8 VECTOR_I8251_SEND = 0xf9;
 	static constexpr u8 VECTOR_I8251_RECEIVE = 0xfa;
 	static constexpr u8 VECTOR_UPD7759 = 0xfb;
+	static constexpr u8 IRQ_V9938 = 0x01;
+	static constexpr u8 IRQ_UPD7759 = 0x08;
 
 	void mem_map(address_map &map);
 	void io_map(address_map &map);
@@ -189,15 +193,12 @@ private:
 	u8 m_port_1c;
 	u8 m_port_1d;
 	u8 m_port_1e;
-	int m_v9938_irq;
-	int m_0xfb_irq;
 	int m_prev_v9938_irq;
-	int m_prev_0xfb_irq;
-	bool m_v9938_irq_triggered;
-	bool m_0xfb_irq_triggered;
+	int m_prev_upd7759_irq;
 	u8 m_touchpad_x;
 	u8 m_touchpad_y;
-	u8 m_unk17[8];
+	u8 m_irq_active;
+	u8 m_irq_enabled;
 	u32 m_vector;
 };
 
@@ -313,23 +314,10 @@ void segaai_state::io_map(address_map &map)
 
 	map(0x14, 0x14).mirror(0x01).w(m_upd7759, FUNC(upd7759_device::port_w));
 
-	// 0x16 (w) - ??
-	// during boot 81h is written
-	// @ED5B7, 2 more writes (in al, 16h + out 16, (al & f0 | 8), and out 16h, al & f7)
-	// in BRK 31h either (in 16h & 10h) or out 17h, (8h or 9h) is performed
-	map(0x16, 0x16).r(FUNC(segaai_state::unk16_r));
-	// 0x17 (w) - ??
-	map(0x17, 0x17).w(FUNC(segaai_state::unk17_w));
-	// values written during boot:
-	// 16 <- 81
-	// 17 <- 0a
-	// 17 <- 07
-	// loops checking upd7759 busy flag
-	// 0b <- 01
-	// 17 <- 06
-	// loops checking upd7759 busy flag
-	// 0b <- 00
-	// a lot of 17 <- 0a
+	// IRQ Enable
+	map(0x16, 0x16).rw(FUNC(segaai_state::irq_enable_r), FUNC(segaai_state::irq_enable_w));
+	// IRQ Enable (per IRQ source selection) Why 2 registers for IRQ enable?
+	map(0x17, 0x17).w(FUNC(segaai_state::irq_select_w));
 
 	// Touchpad
 	map(0x1c, 0x1c).w(FUNC(segaai_state::port1c_w));
@@ -408,30 +396,12 @@ static INPUT_PORTS_START(ai_kbd)
 INPUT_PORTS_END
 
 
-// Based on edge triggers, level triggers are created(?)
+// Based on edge triggers, level triggers are created
 void segaai_state::update_irq_state()
 {
 	int state = CLEAR_LINE;
 
-	if (m_v9938_irq != CLEAR_LINE)
-	{
-		if (m_prev_v9938_irq == CLEAR_LINE)
-		{
-			m_v9938_irq_triggered = true;
-		}
-	}
-	m_prev_v9938_irq = m_v9938_irq;
-
-	if (m_0xfb_irq != CLEAR_LINE)
-	{
-		if (m_prev_0xfb_irq == CLEAR_LINE)
-		{
-			m_0xfb_irq_triggered = true;
-		}
-	}
-	m_prev_0xfb_irq = m_0xfb_irq;
-
-	if (m_v9938_irq_triggered || m_0xfb_irq_triggered)
+	if (m_irq_active & m_irq_enabled)
 	{
 		state = ASSERT_LINE;
 	}
@@ -442,14 +412,31 @@ void segaai_state::update_irq_state()
 
 WRITE_LINE_MEMBER(segaai_state::vdp_interrupt)
 {
-	m_v9938_irq = state;
+	if (state != CLEAR_LINE)
+	{
+		if (m_prev_v9938_irq == CLEAR_LINE)
+		{
+			m_irq_active |= IRQ_V9938;
+		}
+	}
+	m_prev_v9938_irq = state;
+
 	update_irq_state();
 }
 
 
 WRITE_LINE_MEMBER(segaai_state::upd7759_drq_w)
 {
-	m_0xfb_irq = state ? CLEAR_LINE : ASSERT_LINE;
+	int upd7759_irq = state ? CLEAR_LINE : ASSERT_LINE;
+	if (upd7759_irq != CLEAR_LINE)
+	{
+		if (m_prev_upd7759_irq == CLEAR_LINE)
+		{
+			m_irq_active |= IRQ_UPD7759;
+		}
+	}
+	m_prev_upd7759_irq = upd7759_irq;
+
 	update_irq_state();
 }
 
@@ -468,15 +455,23 @@ IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
 {
 	int vector = 0;	// default??
 
-	if (m_v9938_irq_triggered)
+	if (m_irq_active & m_irq_enabled & IRQ_V9938)
 	{
 		vector = VECTOR_V9938;
-		m_v9938_irq_triggered = false;
+		m_irq_active &= ~IRQ_V9938;
 	}
-	else if (m_0xfb_irq_triggered)
+	else if (m_irq_active & m_irq_enabled & IRQ_UPD7759)
 	{
 		vector = VECTOR_UPD7759;
-		m_0xfb_irq_triggered = false;
+		m_irq_active &= ~IRQ_UPD7759;
+	}
+	else
+	{
+		if (m_irq_active & m_irq_enabled)
+		{
+			fatalerror("Unknown irq triggered: $%02X active, $%02X enabled\n", m_irq_active, m_irq_enabled);
+		}
+		fatalerror("irq_callback called but no irq active or enabled: $%02X active, $%02X enabled\n", m_irq_active, m_irq_enabled);
 	}
 
 	m_vector = vector;
@@ -630,24 +625,32 @@ void segaai_state::upd7759_ctrl_w(offs_t offset, u8 data)
 }
 
 
-u8 segaai_state::unk16_r(offs_t offset)
+// I/O Port 16 - IRQ Enable
+u8 segaai_state::irq_enable_r(offs_t offset)
 {
-	u8 data = (m_unk17[7] ? 0x80 : 0)
-	           | (m_unk17[6] ? 0x40 : 0)
-	           | (m_unk17[5] ? 0x20 : 0)
-	           | (m_unk17[4] ? 0x10 : 0)
-	           | (m_unk17[3] ? 0x08 : 0)
-	           | (m_unk17[2] ? 0x04 : 0)
-	           | (m_unk17[1] ? 0x02 : 0)
-	           | (m_unk17[0] ? 0x01 : 0)
-	;
-
-	return data;
+	return m_irq_enabled;
 }
 
+
+// IRQ Enable
+// 76543210
+// +-------- ???
+//  +------- ???
+//   +------ ???
+//    +----- ???
+//     +---- D7759 IRQ enable
+//      +--- ???
+//       +-- ???
+//        +- V9938 IRQ enable
+void segaai_state::irq_enable_w(offs_t offet, u8 data)
+{
+	m_irq_enabled = data;
+}
+
+// I/O Port 17 - IRQ Enable selection
 /*
 
-Port 16 and 17 are closely related
+Port 16 and 17 are closely related (IRQ Enable/State?)
 
 Some config can be written through port 17, and the current combined
 settings can be read through port 16. From the bios code no such relation
@@ -698,27 +701,16 @@ A9F38: 80 C3 02                  add     bl,2h
 A9F3B: E2 F1                     dbnz    0A9F2Eh
 */
 // In gulliver 0000 1010 is written shortly after writing a byte to I/O port 14
-void segaai_state::unk17_w(offs_t offset, u8 data)
+void segaai_state::irq_select_w(offs_t offset, u8 data)
 {
-	LOG("I/O Port $17 write: $%02x\n", data);
-
 	int pin = (data >> 1) & 0x07;
-	u8 state = data & 1;
-	u8 old_state = m_unk17[pin];
-
-	m_unk17[pin] = state;
-
-	if (old_state != state)
+	if (data & 1)
 	{
-		switch (pin)
-		{
-			case 3:
-				// TODO: Unknown
-				break;
-			case 5:
-				// TODO: Unknown, seems to be related to tape
-				break;
-		}
+		m_irq_enabled |= (1 << pin);
+	}
+	else
+	{
+		m_irq_enabled &= ~(1 << pin);
 	}
 }
 
@@ -761,18 +753,13 @@ void segaai_state::machine_start()
 	m_port_1c = 0;
 	m_port_1d = 0;
 	m_port_1e = 0;
-	m_v9938_irq = CLEAR_LINE;
-	m_0xfb_irq = CLEAR_LINE;
 	m_prev_v9938_irq = CLEAR_LINE;
-	m_prev_0xfb_irq = CLEAR_LINE;
-	m_v9938_irq_triggered = false;
-	m_0xfb_irq_triggered = false;
+	m_prev_upd7759_irq = CLEAR_LINE;
 	m_touchpad_x = 0;
 	m_touchpad_y = 0;
-	for (int i = 0; i < 8; i++)
-	{
-		m_unk17[i] = 0xff;
-	}
+	m_vector = 0;
+	m_irq_enabled = 0;
+	m_irq_active = 0;
 }
 
 
