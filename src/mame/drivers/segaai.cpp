@@ -453,16 +453,14 @@ WRITE_LINE_MEMBER(segaai_state::upd7759_busy_w)
 
 IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
 {
-	int vector = 0;	// default??
-
 	if (m_irq_active & m_irq_enabled & IRQ_V9938)
 	{
-		vector = VECTOR_V9938;
+		m_vector = VECTOR_V9938;
 		m_irq_active &= ~IRQ_V9938;
 	}
 	else if (m_irq_active & m_irq_enabled & IRQ_UPD7759)
 	{
-		vector = VECTOR_UPD7759;
+		m_vector = VECTOR_UPD7759;
 		m_irq_active &= ~IRQ_UPD7759;
 	}
 	else
@@ -471,13 +469,11 @@ IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
 		{
 			fatalerror("Unknown irq triggered: $%02X active, $%02X enabled\n", m_irq_active, m_irq_enabled);
 		}
-		fatalerror("irq_callback called but no irq active or enabled: $%02X active, $%02X enabled\n", m_irq_active, m_irq_enabled);
+		fatalerror("irq_callback called but no irq active and enabled: $%02X active, $%02X enabled\n", m_irq_active, m_irq_enabled);
 	}
 
-	m_vector = vector;
-
 	update_irq_state();
-	return vector;
+	return m_vector;
 }
 
 
