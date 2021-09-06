@@ -396,7 +396,6 @@ static INPUT_PORTS_START(ai_kbd)
 INPUT_PORTS_END
 
 
-// Based on edge triggers, level triggers are created
 void segaai_state::update_irq_state()
 {
 	int state = CLEAR_LINE;
@@ -410,6 +409,7 @@ void segaai_state::update_irq_state()
 }
 
 
+// Based on edge triggers level triggers are created
 WRITE_LINE_MEMBER(segaai_state::vdp_interrupt)
 {
 	if (state != CLEAR_LINE)
@@ -425,6 +425,7 @@ WRITE_LINE_MEMBER(segaai_state::vdp_interrupt)
 }
 
 
+// Based on edge triggers level triggers are created
 WRITE_LINE_MEMBER(segaai_state::upd7759_drq_w)
 {
 	int upd7759_irq = state ? CLEAR_LINE : ASSERT_LINE;
@@ -482,7 +483,7 @@ Mainboard 8255 port A
 
  76543210
  +-------- Microphone sensor (1 = sound enabled)
-  +------- Unknown (usually 1) // -BUSY output from the uPD7759?
+  +------- -BUSY output from the uPD7759
    +------ PR trigger (active low)
     +----- PL trigger (active low)
      +---- Pad right (active low)
@@ -615,7 +616,6 @@ void segaai_state::upd7759_ctrl_w(offs_t offset, u8 data)
 	m_upd7759->md_w((m_upd7759_ctrl & 0x01) ? 0 : 1);
 
 	// bit1 selects which ROM should be used?
-//	m_upd7759->set_bank_base((m_upd7759_ctrl & 2) ? 0x00000 : 0x20000);
 	// TODO check if this is correct
 	m_upd7759->set_rom_bank((m_upd7759_ctrl & 2) >> 1);
 }
@@ -644,59 +644,8 @@ void segaai_state::irq_enable_w(offs_t offet, u8 data)
 }
 
 // I/O Port 17 - IRQ Enable selection
-/*
-
-Port 16 and 17 are closely related (IRQ Enable/State?)
-
-Some config can be written through port 17, and the current combined
-settings can be read through port 16. From the bios code no such relation
-is directly clear though.
-
-See these snippets from eigogam2:
-A9EC5: FA                        di
-A9EC6: E4 16                     in      al,16h
-A9EC8: A2 82 12                  mov     [1282h],al
-A9ECB: B0 00                     mov     al,0h
-A9ECD: E6 17                     out     17h,al
-A9ECF: B0 02                     mov     al,2h
-A9ED1: E6 17                     out     17h,al
-A9ED3: B0 04                     mov     al,4h
-A9ED5: E6 17                     out     17h,al
-A9ED7: B0 07                     mov     al,7h
-A9ED9: E6 17                     out     17h,al
-A9EDB: B0 0D                     mov     al,0Dh
-A9EDD: E6 17                     out     17h,al
-A9EDF: B0 0E                     mov     al,0Eh
-A9EE1: E6 17                     out     17h,al
-A9EE3: FB                        ei
-...
-A9F05: B0 06                     mov     al,6h
-A9F07: E6 17                     out     17h,al
-A9F09: B0 0D                     mov     al,0Dh
-A9F0B: E6 17                     out     17h,al
-A9F0D: A0 82 12                  mov     al,[1282h]
-A9F10: D0 C0                     rol     al,1
-A9F12: 24 01                     and     al,1h
-A9F14: 04 0E                     add     al,0Eh
-A9F16: E6 17                     out     17h,al
-A9F18: A0 82 12                  mov     al,[1282h]
-A9F1B: D0 C0                     rol     al,1
-A9F1D: D0 C0                     rol     al,1
-A9F1F: 24 01                     and     al,1h
-A9F21: 04 0C                     add     al,0Ch
-A9F23: E6 17                     out     17h,al
-A9F25: 8A 26 82 12               mov     ah,[1282h]
-A9F29: 32 DB                     xor     bl,bl
-A9F2B: B9 03 00                  mov     cw,3h
-A9F2E: 8A C4                     mov     al,ah
-A9F30: 24 01                     and     al,1h
-A9F32: 02 C3                     add     al,bl
-A9F34: E6 17                     out     17h,al
-A9F36: D0 EC                     shr     ah,1
-A9F38: 80 C3 02                  add     bl,2h
-A9F3B: E2 F1                     dbnz    0A9F2Eh
-*/
-// In gulliver 0000 1010 is written shortly after writing a byte to I/O port 14
+// This port seems to be used to set or reset specific bits in the IRQ enable register.
+// Why 2 ways of setting/clearing irq enable bits?
 void segaai_state::irq_select_w(offs_t offset, u8 data)
 {
 	int pin = (data >> 1) & 0x07;
@@ -756,6 +705,19 @@ void segaai_state::machine_start()
 	m_vector = 0;
 	m_irq_enabled = 0;
 	m_irq_active = 0;
+
+	save_item(NAME(m_i8255_portb));
+	save_item(NAME(m_upd7759_ctrl));
+	save_item(NAME(m_port_1c));
+	save_item(NAME(m_port_1d));
+	save_item(NAME(m_port_1e));
+	save_item(NAME(m_prev_v9938_irq));
+	save_item(NAME(m_prev_upd7759_irq));
+	save_item(NAME(m_touchpad_x));
+	save_item(NAME(m_touchpad_y));
+	save_item(NAME(m_irq_active));
+	save_item(NAME(m_irq_enabled));
+	save_item(NAME(m_vector));
 }
 
 
