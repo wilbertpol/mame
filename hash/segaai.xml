@@ -384,13 +384,8 @@ AI-8003  Pinpon Music Melody
 	</software>
 
 	<!--
-		There appears to be a race condition together with a bug in the main IRQ handler that breaks
-		this game.
-		Easily seen by selecting the top left most game, then the top left most icon twice. The
-		game should then say 'green' through the upd7759, but the udp7759 irq handling routine
-		increments the IX register which the main IRQ handler (at $a01ae) expects to still point
-		to a memory location with the address of the next function to jump to but because of the
-		increment this breaks.
+		Only the first entry from the menu works, the color names and 'big' is spoken.
+		The other menu entries seem to hang.
 	-->
 	<software name="eigogam2" supported="no">
 		<description>Eigo de Game 2: Popoland no Himitsu</description>
