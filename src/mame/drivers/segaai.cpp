@@ -27,13 +27,9 @@ TODO:
   of clickable buttons. This is currently good enough to make most
   games playable. Eventually this should behave like a real touchpad
   so also drawing apps can work.
-- IRQ enable/disable register
-- Proper hooking up of uPD7759 and DRQ signals in slave mode.
-- Proper hooking up of uPD7759 START signal.
-- Cassette
+- Cassette, playback is controlled by the computer. Games with cassette spin up the cassette for about 2 seconds
 - Keyboard (there is probably an mcu inside it)
-- State saving
-
+  
 ===========================================================================
 
  Sega AI Computer quick PCB overview by Chris Covell
@@ -153,12 +149,12 @@ public:
 	u8 i8255_portc_r();
 	void i8255_portc_w(u8 data);
 	void upd7759_ctrl_w(offs_t offset, u8 data);
+	void upd7759_data_w(offs_t offset, u8 data);
 	void port1c_w(offs_t offset, u8 data);
 	void port1d_w(offs_t offset, u8 data);
 	void port1e_w(offs_t offset, u8 data);
 	u8 port1e_r(offs_t offset);
 
-	// unknown device writes
 	u8 irq_enable_r(offs_t offset);
 	void irq_enable_w(offs_t offset, u8 data);
 	void irq_select_w(offs_t offset, u8 data);
@@ -171,6 +167,7 @@ private:
 	static constexpr u8 VECTOR_I8251_SEND = 0xf9;
 	static constexpr u8 VECTOR_I8251_RECEIVE = 0xfa;
 	static constexpr u8 VECTOR_UPD7759 = 0xfb;
+
 	static constexpr u8 IRQ_V9938 = 0x01;
 	static constexpr u8 IRQ_UPD7759 = 0x08;
 
@@ -298,7 +295,7 @@ void segaai_state::io_map(address_map &map)
 
 	// 0x0a (w) - ??
 	// 0a: 00 written during boot
-	map(0x0b, 0x0b).w(FUNC(segaai_state::upd7759_ctrl_w));    // 315-5201
+	map(0x0b, 0x0b).w(FUNC(segaai_state::upd7759_ctrl_w));
 
 	map(0x0c, 0x0c).w(m_sound, FUNC(sn76489a_device::write));
 
@@ -312,7 +309,7 @@ void segaai_state::io_map(address_map &map)
 	// 0e <- 08
 	// 0f <- fe
 
-	map(0x14, 0x14).mirror(0x01).w(m_upd7759, FUNC(upd7759_device::port_w));
+	map(0x14, 0x14).mirror(0x01).w(FUNC(segaai_state::upd7759_data_w));
 
 	// IRQ Enable
 	map(0x16, 0x16).rw(FUNC(segaai_state::irq_enable_r), FUNC(segaai_state::irq_enable_w));
@@ -503,7 +500,7 @@ u8 segaai_state::i8255_porta_r()
 Mainboard 8255 port B
 
  76543210
- +-------- CN9 Pin 8 (1 - unit is powered??)
+ +-------- Tape input, unknown if input is signal level or bit
   +------- Tape head engaged
    +------ Tape insertion sensor (0 - tape is inserted, 1 - no tape inserted)
     +----- Tape write enable sensor
@@ -533,7 +530,10 @@ u8 segaai_state::i8255_portb_r()
 
 	// when checking whether the tape is running Popoland wants to see bit7 set and bit5 reset
 	// toggling this stops eigogam2 from booting normally into a game.
-//	m_i8255_portb ^= 0x80;
+	// For tape reading eigogam2 routines at A11EA and A120C
+	// There is a whistle tone on the cassette before normal speech starts, the code there likely
+	// checks for this whistle tone.
+	//m_i8255_portb ^= 0x80;
 
 	return (m_i8255_portb & 0xdf)/* | 0x80*/;
 }
@@ -602,7 +602,17 @@ u8 segaai_state::i8255_portc_r()
 
 void segaai_state::i8255_portc_w(u8 data)
 {
+	// Writes to bits 6,5,4, unknown what they mean
+	// Bit 0 written by cosmictr
 	LOG("i8255 port c write: %02x\n", data);
+}
+
+
+void segaai_state::upd7759_data_w(offs_t offset, u8 data)
+{
+	m_upd7759->start_w(ASSERT_LINE);
+	m_upd7759->port_w(data);
+	m_upd7759->start_w(CLEAR_LINE);
 }
 
 
@@ -641,6 +651,8 @@ u8 segaai_state::irq_enable_r(offs_t offset)
 void segaai_state::irq_enable_w(offs_t offet, u8 data)
 {
 	m_irq_enabled = data;
+	m_irq_active &= data;
+	update_irq_state();
 }
 
 // I/O Port 17 - IRQ Enable selection
@@ -656,7 +668,9 @@ void segaai_state::irq_select_w(offs_t offset, u8 data)
 	else
 	{
 		m_irq_enabled &= ~(1 << pin);
+		m_irq_active &= m_irq_enabled;
 	}
+	update_irq_state();
 }
 
 
