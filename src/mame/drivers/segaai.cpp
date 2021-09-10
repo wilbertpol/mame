@@ -29,7 +29,8 @@ TODO:
   so also drawing apps can work.
 - Cassette, playback is controlled by the computer. Games with cassette spin up the cassette for about 2 seconds
 - Keyboard (there is probably an mcu inside it)
-  
+- SEGA Prolog? How to enter?
+
 ===========================================================================
 
  Sega AI Computer quick PCB overview by Chris Covell
@@ -142,7 +143,6 @@ public:
 
 	DECLARE_WRITE_LINE_MEMBER(vdp_interrupt);
 	DECLARE_WRITE_LINE_MEMBER(upd7759_drq_w);
-	DECLARE_WRITE_LINE_MEMBER(upd7759_busy_w);
 	IRQ_CALLBACK_MEMBER(irq_callback);
 	u8 i8255_porta_r();
 	u8 i8255_portb_r();
@@ -256,32 +256,6 @@ ECF0D: B0 02                mov     al,2h
 ECF0F: E6 17                out     17h,al
 ECF11: B0 FE                mov     al,0FEh		; 11111110
 ECF13: E6 0F                out     0Fh,al
-
-ECF35: B0 08                mov     al,8h
-ECF37: E6 17                out     17h,al
-
-ED673: B0 07                mov     al,7h
-ED675: E6 17                out     17h,al
-ED677: B0 01                mov     al,1h
-+ out     0Bh,al?
-
-ED683: B0 06                mov     al,6h
-ED685: E6 17                out     17h,al
-ED687: B0 00                mov     al,0h
-+ out     0Bh,al?
-
-EDBC4: B0 0A                mov     al,0Ah
-EDBC6: E6 17                out     17h,al
-
-EDBD1: 24 01                and     al,1h
-EDBD3: 04 0A                add     al,0Ah
-EDBD5: E6 17                out     17h,al
-
-EE01E: B0 08                mov     al,8h           ; brk #31, iy == 01
-EE020: 83 FF 01             cmp     iy,1h
-EE023: 74 02                be      0EE027h
-EE025: B0 09                mov     al,9h           ; brk #31, iy == 00
-EE027: E6 17                out     17h,al
 
 */
 
@@ -439,16 +413,6 @@ WRITE_LINE_MEMBER(segaai_state::upd7759_drq_w)
 }
 
 
-WRITE_LINE_MEMBER(segaai_state::upd7759_busy_w)
-{
-	if (!(m_upd7759_ctrl & 0x01))
-	{
-//		m_0xfb_irq = state ? CLEAR_LINE : ASSERT_LINE;
-//		update_irq_state();
-	}
-}
-
-
 IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
 {
 	if (m_irq_active & m_irq_enabled & IRQ_V9938)
@@ -525,7 +489,6 @@ u8 segaai_state::i8255_portb_r()
 	else
 	{
 		m_i8255_portb |= 0x02;
-		// Bit 2 reset to indicate that touchpad data is available
 	}
 
 	// when checking whether the tape is running Popoland wants to see bit7 set and bit5 reset
@@ -610,6 +573,8 @@ void segaai_state::i8255_portc_w(u8 data)
 
 void segaai_state::upd7759_data_w(offs_t offset, u8 data)
 {
+	// Looking at the code the only way the start signal can be triggered is if it
+	// is tied to the RD signal.
 	m_upd7759->start_w(ASSERT_LINE);
 	m_upd7759->port_w(data);
 	m_upd7759->start_w(CLEAR_LINE);
@@ -767,8 +732,6 @@ void segaai_state::segaai(machine_config &config)
 	UPD7759(config, m_upd7759);
 	m_upd7759->add_route(ALL_OUTPUTS, "mono", 1.00);
 	m_upd7759->drq().set(FUNC(segaai_state::upd7759_drq_w));
-	// TODO after upd7759 updates
-//	m_upd7759->busy().set(FUNC(segaai_state::upd7759_busy_w));
 
 	// Card slot
 	SEGAAI_CARD_SLOT(config, "cardslot", segaai_card, nullptr);
