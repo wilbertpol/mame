@@ -164,9 +164,9 @@ public:
 	 clock to another timer.
 
 	 The functions below should supply both functionalities. If the signal is
-	 a regular clock signal, use the pit8253_set_clockin function. If the
+	 a regular clock signal, use the set_clockin function. If the
 	 CLKx input signal is the output of the different source, set the new_clockin
-	 to 0 with pit8253_set_clockin and call pit8253_clkX_w to change
+	 to 0 with set_clockin and call write_clkX to change
 	 the state of the input CLKx signal.
 	 */
 	WRITE_LINE_MEMBER(write_clk0) { m_counter[0]->set_clock_signal(state); }
