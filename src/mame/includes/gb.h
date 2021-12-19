@@ -104,6 +104,23 @@ public:
 
 protected:
 	static constexpr uint8_t timer_shifts[4] = {10, 4, 6, 8};
+	// Internal registers at 0xFFxx
+	static constexpr uint16_t REG_JOYP = 0x00;
+	static constexpr uint16_t REG_SB = 0x01;
+	static constexpr uint16_t REG_SC = 0x02;
+	// 0x03
+	static constexpr uint16_t REG_DIV = 0x04;
+	static constexpr uint16_t REG_TIMA = 0x05;
+	static constexpr uint16_t REG_TMA = 0x06;
+	static constexpr uint16_t REG_TAC = 0x07;
+	// 0x08
+	// 0x09
+	// 0x0a
+	// 0x0b
+	// 0x0c
+	// 0x0d
+	// 0x0e
+	static constexpr uint16_t REG_IF = 0x0f;
 	enum {
 		SIO_ENABLED = 0x80,
 		SIO_FAST_CLOCK = 0x02,
