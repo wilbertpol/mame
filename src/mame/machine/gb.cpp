@@ -225,8 +225,6 @@ MACHINE_RESET_MEMBER(gb_state,sgb)
 
 void gb_state::gb_io_w(offs_t offset, uint8_t data)
 {
-	static const uint8_t timer_shifts[4] = {10, 4, 6, 8};
-
 	switch (offset)
 	{
 	case 0x00:                      /* JOYP - Joypad */
@@ -252,7 +250,7 @@ void gb_state::gb_io_w(offs_t offset, uint8_t data)
 			m_sio_count = 16;
 			break;
 		}
-logerror("SIOCONT write, serial clock is %04x\n", m_internal_serial_clock);
+		logerror("SIOCONT write, serial clock is %04x\n", m_internal_serial_clock);
 		data |= 0x7E; // unused bits stay high
 		break;
 	case 0x03:
@@ -263,7 +261,8 @@ logerror("SIOCONT write, serial clock is %04x\n", m_internal_serial_clock);
 		{
 			gb_timer_increment();
 		}
-		LOG(("DIV write\n"));
+		// TODO The 1Mhz input clock is not reset
+//		m_divcount &= ~0x03;
 		m_divcount = 0;
 		return;
 	case 0x05:                      /* TIMA - Timer counter */
@@ -282,14 +281,10 @@ logerror("SIOCONT write, serial clock is %04x\n", m_internal_serial_clock);
 		break;
 	case 0x07:                      /* TAC - Timer control */
 		data |= 0xF8;
-		/* Check if timer is just disabled or the timer frequency is changing */
-		if ((!(data & 0x04) && (TIMEFRQ & 0x04)) || ((data & 0x04) && (TIMEFRQ & 0x04) && (data & 0x03) != (TIMEFRQ & 0x03)))
+		/* Check if TIMECNT should be incremented */
+		if (tima_input_clock(m_gb_io[0x07], m_divcount) == 1 && tima_input_clock(data, m_divcount) == 0)
 		{
-			/* Check if TIMECNT should be incremented */
-			if ((m_divcount & (m_shift_cycles - 1)) >= (m_shift_cycles >> 1))
-			{
-				gb_timer_increment();
-			}
+			gb_timer_increment();
 		}
 		m_shift = timer_shifts[data & 0x03];
 		m_shift_cycles = 1 << m_shift;
@@ -299,6 +294,18 @@ logerror("SIOCONT write, serial clock is %04x\n", m_internal_serial_clock);
 		LOG(("write if\n"));
 		data &= 0x1F;
 		m_maincpu->set_if(data);
+		// Clear any possibly pending IRQs from triggered mame timers from this timeslice.
+		// They get cancelled out by this write to the IF register
+		if (!(data & 0x01))
+			m_maincpu->set_input_line(lr35902_cpu_device::VBL_INT, CLEAR_LINE);
+		if (!(data & 0x02))
+			m_maincpu->set_input_line(lr35902_cpu_device::LCD_INT, CLEAR_LINE);
+		if (!(data & 0x04))
+			m_maincpu->set_input_line(lr35902_cpu_device::TIM_INT, CLEAR_LINE);
+		if (!(data & 0x08))
+			m_maincpu->set_input_line(lr35902_cpu_device::SIO_INT, CLEAR_LINE);
+		if (!(data & 0x10))
+			m_maincpu->set_input_line(lr35902_cpu_device::EXT_INT, CLEAR_LINE);
 		break;
 	}
 
@@ -487,8 +494,7 @@ uint8_t gb_state::gb_io_r(offs_t offset)
 	switch(offset)
 	{
 		case 0x04:
-			LOG(("read DIV, divcount = %04x\n", m_divcount));
-			return (m_divcount >> 8) & 0xFF;
+			return (m_divcount >> 8) & 0xff;
 		case 0x00:
 		case 0x01:
 		case 0x02:
@@ -500,8 +506,6 @@ uint8_t gb_state::gb_io_r(offs_t offset)
 		case 0x0F:
 			/* Make sure the internal states are up to date */
 			m_ppu->update_state();
-			LOG(("read if\n"));
-logerror("IF read, serial clock is %04x\n", m_internal_serial_clock);
 			return 0xE0 | m_maincpu->get_if();
 		default:
 			/* Unsupported registers return 0xFF */
@@ -601,6 +605,15 @@ void gb_state::gb_timer_callback(uint8_t data)
 	{
 		gb_serial_timer_tick();
 	}
+}
+
+uint8_t gb_state::tima_input_clock(uint8_t tac, uint32_t divcount)
+{
+	if (tac & 0x04)
+	{
+		return (divcount >> (timer_shifts[tac & 0x03] - 1)) & 0x01;
+	}
+	return 0;
 }
 
 

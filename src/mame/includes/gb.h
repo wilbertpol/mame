@@ -103,6 +103,7 @@ public:
 	void sgb_map(address_map &map);
 
 protected:
+	static constexpr uint8_t timer_shifts[4] = {10, 4, 6, 8};
 	enum {
 		SIO_ENABLED = 0x80,
 		SIO_FAST_CLOCK = 0x02,
@@ -124,6 +125,7 @@ protected:
 	void gb_init();
 	void gb_init_regs();
 	void gb_serial_timer_tick();
+	uint8_t tima_input_clock(uint8_t tac, uint32_t divcount);
 
 	void save_gb_base();
 	void save_gbc_only();
