@@ -15,6 +15,9 @@ public:
 	virtual u8 wave_r(offs_t offset) = 0;
 	virtual void sound_w(offs_t offset, u8 data) = 0;
 	virtual void wave_w(offs_t offset, u8 data) = 0;
+	virtual u8 pcm12_r() { return 0xff; }
+	virtual u8 pcm34_r() { return 0xff; }
+	void restart_timer();
 
 protected:
 	gameboy_sound_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock);
@@ -72,7 +75,7 @@ protected:
 		AUD3WF = 0x2F
 	};
 
-	static const unsigned int FRAME_CYCLES = 8192;
+	static constexpr unsigned int FRAME_CYCLES = 8192;
 	static const int wave_duty_table[4][8];
 
 	sound_stream *m_channel;
@@ -117,10 +120,12 @@ protected:
 		uint16_t noise_lfsr;
 	};
 
-	struct SOUND  m_snd_1;
-	struct SOUND  m_snd_2;
-	struct SOUND  m_snd_3;
-	struct SOUND  m_snd_4;
+	static constexpr int SQUARE1 = 0;
+	static constexpr int SQUARE2 = 1;
+	static constexpr int WAVE = 2;
+	static constexpr int NOISE = 3;
+
+	struct SOUND m_snd[4];
 
 	struct
 	{
@@ -135,7 +140,8 @@ protected:
 		uint8_t mode3_right;
 		uint8_t mode4_left;
 		uint8_t mode4_right;
-		uint64_t cycles;
+		uint16_t frame_cycles;
+		uint8_t frame;
 		bool wave_ram_locked;
 	} m_snd_control;
 
@@ -145,16 +151,17 @@ protected:
 
 	virtual void apu_power_off() = 0;
 	void sound_w_internal(int offset, uint8_t data);
-	void update_square_channel(struct SOUND &snd, uint64_t cycles);
-	virtual void update_wave_channel(struct SOUND &snd, uint64_t cycles) = 0;
-	void update_noise_channel(struct SOUND &snd, uint64_t cycles);
-	int32_t calculate_next_sweep(struct SOUND &snd);
-	void apply_next_sweep(struct SOUND &snd);
-	void tick_length(struct SOUND &snd);
-	void tick_sweep(struct SOUND &snd);
-	void tick_envelope(struct SOUND &snd);
+	void update_square_channel(int channel, uint64_t cycles);
+	virtual void update_wave_channel(uint64_t cycles) {};
+	void update_noise_channel(uint64_t cycles);
+	int32_t calculate_next_sweep(int channel);
+	void apply_next_sweep(int channel);
+	void tick_length(int channel);
+	void tick_sweep(int channel);
+	void tick_envelope(int channel);
 	void update_state();
 	bool dac_enabled(struct SOUND &snd);
+	void save_channel(int channel);
 	virtual void corrupt_wave_ram() { };
 	uint64_t noise_period_cycles();
 	TIMER_CALLBACK_MEMBER(timer_callback);
@@ -173,7 +180,7 @@ public:
 protected:
 	virtual void apu_power_off() override;
 	virtual void corrupt_wave_ram() override;
-	virtual void update_wave_channel(struct SOUND &snd, uint64_t cycles) override;
+	virtual void update_wave_channel(uint64_t cycles) override;
 };
 
 
@@ -185,11 +192,13 @@ public:
 	virtual u8 wave_r(offs_t offset) override;
 	virtual void wave_w(offs_t offset, u8 data) override;
 	virtual void sound_w(offs_t offset, u8 data) override;
+	virtual u8 pcm12_r() override;
+	virtual u8 pcm34_r() override;
 
 protected:
 	virtual void device_reset() override;
 	virtual void apu_power_off() override;
-	virtual void update_wave_channel(struct SOUND &snd, uint64_t cycles) override;
+	virtual void update_wave_channel(uint64_t cycles) override;
 };
 
 

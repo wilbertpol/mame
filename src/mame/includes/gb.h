@@ -121,6 +121,11 @@ protected:
 	// 0x0d
 	// 0x0e
 	static constexpr uint16_t REG_IF = 0x0f;
+	static constexpr uint16_t REG_KEY1 = 0x4d;   // GBC
+	static constexpr uint16_t REG_RP = 0x56;     // GBC
+	static constexpr uint16_t REG_SVBK = 0x70;   // GBC
+	static constexpr uint16_t REG_PCM12 = 0x76;  // GBC
+	static constexpr uint16_t REG_PCM34 = 0x77;  // GBC
 	enum {
 		SIO_ENABLED = 0x80,
 		SIO_FAST_CLOCK = 0x02,

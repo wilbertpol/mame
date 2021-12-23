@@ -258,6 +258,7 @@ void gb_state::gb_io_w(offs_t offset, uint8_t data)
 		// TODO Start apu frame timer
 //		m_divcount &= ~0x03;
 		m_divcount = 0;
+		m_apu->restart_timer();
 		return;
 	case REG_TIMA:
 		// Check if the counter is being reloaded in this cycle
@@ -622,14 +623,18 @@ void gb_state::gbc_io2_w(offs_t offset, uint8_t data)
 
 uint8_t gb_state::gbc_io2_r(offs_t offset)
 {
-	switch (offset)
+	switch (0x40 + offset)
 	{
-	case 0x0D:  // KEY1
+	case REG_KEY1:
 		return m_maincpu->get_speed();
-	case 0x16:  // RP - Infrared port
+	case REG_RP:
 		break;
-	case 0x30:  // SVBK - RAM bank select
+	case REG_SVBK:
 		return m_gbc_rambank;
+	case REG_PCM12:
+		return m_apu->pcm12_r();
+	case REG_PCM34:
+		return m_apu->pcm34_r();
 	default:
 		break;
 	}
