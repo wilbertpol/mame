@@ -114,7 +114,7 @@ image_init_result segaai_card_slot_device::call_load()
 
 		if (len != 0x20000 && len != 0x40000)
 		{
-			seterror(IMAGE_ERROR_UNSPECIFIED, "Invalid card size. Allowed sizes are: 128KB, 256KB");
+			seterror(image_error::INVALIDIMAGE, "Invalid card size. Allowed sizes are: 128KB, 256KB");
 			return image_init_result::FAIL;
 		}
 
@@ -156,11 +156,13 @@ std::string segaai_card_slot_device::get_default_card_software(get_default_card_
 	if (hook.image_file())
 	{
 		const char *slot_string = "rom_128";
-		u32 len = hook.image_file()->size();
+		uint64_t len;
+		hook.image_file()->length(len);
 		std::vector<u8> rom(len);
 		int type;
 
-		hook.image_file()->read(&rom[0], len);
+		size_t actual;
+		hook.image_file()->read(&rom[0], len, actual);
 
 		type = get_cart_type(&rom[0], len);
 		slot_string = segaai_get_slot(type);
