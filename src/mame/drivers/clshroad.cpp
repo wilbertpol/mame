@@ -20,12 +20,12 @@ TODO:
 - clshroad: erratic gameplay/sound speed.
   Being pretty logical that CPUs runs at master clock / 6 then we also need to
   halve the vblank irq rate so that opponents won't pop up in the middle of the
-  screen. Main CPU would also overrun the sound CPU way too much otherwise. 
+  screen. Main CPU would also overrun the sound CPU way too much otherwise.
   We also need to hand tune the sound frequencies compared to the other games
   so that it won't cut off BGMs abruptly during playback.
   TL;DR needs verification of all clocks with a PCB;
 - firebatl: video (https://tmblr.co/ZgJvzv2E2C_z-) shows transparency for the
-  text layer is not correctly emulated, fixed by initializing VRAM to 0xf0? 
+  text layer is not correctly emulated, fixed by initializing VRAM to 0xf0?
   (that layer seems unused by this game);
 - firebatl: bad sprite colors, most notably player ship (should be way darker);
 - firebatl: remove ROM patch;
@@ -35,7 +35,7 @@ TODO:
   - $6100 is actually OR-ed with the coinage work RAM buffer setting at $8022;
   - $6124 is shifted right once at PC=0x5df and stored to $82e6, which is later
     checked at PC=0x187 and must be $01 otherwise game goes into an infinite
-	loop after dying (without ROM patch);
+    loop after dying (without ROM patch);
   - (more ...)
 
 *******************************************************************************/
@@ -460,10 +460,10 @@ ROM_START( firebatl )
 	ROM_LOAD( "prom13.w8", 0x0900, 0x0100, CRC(4e2a2781) SHA1(7be2e066499ea0af76f6ae926fe87e02f8c36a6f) ) /* unknown */
 	ROM_LOAD( "prom1.n2",  0x0a00, 0x0020, CRC(1afc04f0) SHA1(38207cf3e15bac7034ac06469b95708d22b57da4) ) /* timing? (on the cpu board) */
 
-	ROM_REGION( 0x2000, "samples", 0 )  /* samples */
+	ROM_REGION( 0x2000, "custom:samples", 0 )
 	ROM_LOAD( "rom05.f3", 0x0000, 0x2000, CRC(21544cd6) SHA1(b9644ab3c4393cd2669d2b5b3c80d7a9f1c91ca6) )
 
-	ROM_REGION( 0x0200, "soundproms", 0 )   /* 4bit->8bit sample expansion PROMs */
+	ROM_REGION( 0x0200, "custom:soundproms", 0 )   /* 4bit->8bit sample expansion PROMs */
 	ROM_LOAD( "prom3.j4", 0x0000, 0x0100, CRC(bd2c080b) SHA1(9782bb5001e96db56bc29df398187f700bce4f8e) ) /* low 4 bits */
 	ROM_LOAD( "prom2.k2", 0x0100, 0x0100, CRC(4017a2a6) SHA1(dadef2de7a1119758c8e6d397aa42815b0218889) ) /* high 4 bits */
 ROM_END
@@ -497,10 +497,10 @@ ROM_START( clshroad )
 	ROM_LOAD( "clashrd.b11", 0x0a20, 0x0020, CRC(d453f2c5) SHA1(7fdc5bf59bad9e8f00e970565ff6f6b3773541db) ) /* unknown (possibly bad dump) */
 	ROM_LOAD( "clashrd.g10", 0x0a40, 0x0100, CRC(73afefd0) SHA1(d14c5490c5b174d54043bfdf5c6fb675e67492e7) ) /* unknown (possibly bad dump) */
 
-	ROM_REGION( 0x2000, "samples", 0 )  /* samples */
+	ROM_REGION( 0x2000, "custom:samples", 0 )
 	ROM_LOAD( "clashr1.bin", 0x0000, 0x2000, CRC(0d0a8068) SHA1(529878d0c5f078590e07ec0fffc27b212843c0ad) )
 
-	ROM_REGION( 0x0200, "soundproms", 0 )   /* 4bit->8bit sample expansion PROMs */
+	ROM_REGION( 0x0200, "custom:soundproms", 0 )   /* 4bit->8bit sample expansion PROMs */
 	ROM_LOAD( "clashrd.g8",  0x0000, 0x0100, CRC(bd2c080b) SHA1(9782bb5001e96db56bc29df398187f700bce4f8e) ) /* low 4 bits */
 	ROM_LOAD( "clashrd.g7",  0x0100, 0x0100, CRC(4017a2a6) SHA1(dadef2de7a1119758c8e6d397aa42815b0218889) ) /* high 4 bits */
 ROM_END
@@ -538,10 +538,10 @@ ROM_START( clshroads )
 	ROM_LOAD( "clashrd.b11", 0x0a20, 0x0020, CRC(d453f2c5) SHA1(7fdc5bf59bad9e8f00e970565ff6f6b3773541db) ) /* unknown (possibly bad dump) */
 	ROM_LOAD( "clashrd.g10", 0x0a40, 0x0100, CRC(73afefd0) SHA1(d14c5490c5b174d54043bfdf5c6fb675e67492e7) ) /* unknown (possibly bad dump) */
 
-	ROM_REGION( 0x2000, "samples", 0 )  /* samples */
+	ROM_REGION( 0x2000, "custom:samples", 0 )
 	ROM_LOAD( "clashr1.bin", 0x0000, 0x2000, CRC(0d0a8068) SHA1(529878d0c5f078590e07ec0fffc27b212843c0ad) )
 
-	ROM_REGION( 0x0200, "soundproms", 0 )   /* 4bit->8bit sample expansion PROMs */
+	ROM_REGION( 0x0200, "custom:soundproms", 0 )   /* 4bit->8bit sample expansion PROMs */
 	ROM_LOAD( "clashrd.g8",  0x0000, 0x0100, CRC(bd2c080b) SHA1(9782bb5001e96db56bc29df398187f700bce4f8e) ) /* low 4 bits */
 	ROM_LOAD( "clashrd.g7",  0x0100, 0x0100, CRC(4017a2a6) SHA1(dadef2de7a1119758c8e6d397aa42815b0218889) ) /* high 4 bits */
 ROM_END
@@ -579,10 +579,10 @@ ROM_START( clshroadd )
 	ROM_LOAD( "clashrd.b11", 0x0a20, 0x0020, CRC(d453f2c5) SHA1(7fdc5bf59bad9e8f00e970565ff6f6b3773541db) ) /* unknown (possibly bad dump) */
 	ROM_LOAD( "clashrd.g10", 0x0a40, 0x0100, CRC(73afefd0) SHA1(d14c5490c5b174d54043bfdf5c6fb675e67492e7) ) /* unknown (possibly bad dump) */
 
-	ROM_REGION( 0x2000, "samples", 0 )  /* samples */
+	ROM_REGION( 0x2000, "custom:samples", 0 )
 	ROM_LOAD( "clashr1.bin", 0x0000, 0x2000, CRC(0d0a8068) SHA1(529878d0c5f078590e07ec0fffc27b212843c0ad) )
 
-	ROM_REGION( 0x0200, "soundproms", 0 )   /* 4bit->8bit sample expansion PROMs */
+	ROM_REGION( 0x0200, "custom:soundproms", 0 )   /* 4bit->8bit sample expansion PROMs */
 	ROM_LOAD( "clashrd.g8",  0x0000, 0x0100, CRC(bd2c080b) SHA1(9782bb5001e96db56bc29df398187f700bce4f8e) ) /* low 4 bits */
 	ROM_LOAD( "clashrd.g7",  0x0100, 0x0100, CRC(4017a2a6) SHA1(dadef2de7a1119758c8e6d397aa42815b0218889) ) /* high 4 bits */
 ROM_END

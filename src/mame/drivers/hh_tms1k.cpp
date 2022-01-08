@@ -144,6 +144,8 @@ on Joerg Woerner's datamath.org: http://www.datamath.org/IC_List.htm
 
   (* means undumped unless noted, @ denotes it's in this driver)
 
+============================================================================
+
 ROM source notes when dumped from another publisher, but confident it's the same:
 - arrball: Tandy Zingo
 - bcheetah: Fundimensions Incredible Brain Buggy
@@ -194,7 +196,7 @@ TODO:
 #include "bus/generic/carts.h"
 #include "bus/generic/slot.h"
 
-#include "softlist.h"
+#include "softlist_dev.h"
 #include "screen.h"
 #include "speaker.h"
 
@@ -2391,7 +2393,7 @@ DEVICE_IMAGE_LOAD_MEMBER(quizwizc_state::cart_load)
 {
 	if (!image.loaded_through_softlist())
 	{
-		image.seterror(IMAGE_ERROR_UNSPECIFIED, "Can only load through softwarelist");
+		image.seterror(image_error::UNSUPPORTED, "Can only load through softwarelist");
 		return image_init_result::FAIL;
 	}
 
@@ -2579,7 +2581,7 @@ DEVICE_IMAGE_LOAD_MEMBER(tc4_state::cart_load)
 {
 	if (!image.loaded_through_softlist())
 	{
-		image.seterror(IMAGE_ERROR_UNSPECIFIED, "Can only load through softwarelist");
+		image.seterror(image_error::UNSUPPORTED, "Can only load through softwarelist");
 		return image_init_result::FAIL;
 	}
 
@@ -11962,7 +11964,7 @@ void tithermos_state::tithermos(machine_config &config)
 	m_maincpu->r().set(FUNC(tithermos_state::write_r));
 	m_maincpu->o().set(FUNC(tithermos_state::write_o));
 
-	CLOCK(config, "ac_line", 60).signal_handler().set_nop();
+	CLOCK(config, "ac_line", 60);
 
 	/* video hardware */
 	PWM_DISPLAY(config, m_display).set_size(4, 7);
@@ -13269,7 +13271,7 @@ COMP( 1975, ti1250,     0,         0, ti1250,    ti1250,    ti1250_state,    emp
 COMP( 1976, ti125076,   ti1250,    0, ti1270,    ti1250,    ti1250_state,    empty_init, "Texas Instruments", "TI-1250 (1976 version)", MACHINE_SUPPORTS_SAVE | MACHINE_NO_SOUND_HW )
 COMP( 1976, ti1270,     0,         0, ti1270,    ti1270,    ti1250_state,    empty_init, "Texas Instruments", "TI-1270", MACHINE_SUPPORTS_SAVE | MACHINE_NO_SOUND_HW )
 COMP( 1976, ti25503,    0,         0, ti25503,   ti25503,   ti25503_state,   empty_init, "Texas Instruments", "TI-2550 III", MACHINE_SUPPORTS_SAVE | MACHINE_NO_SOUND_HW )
-CONS( 1976, ti5100,     0,         0, ti5100,    ti5100,    ti5100_state,    empty_init, "Texas Instruments", "TI-5100", MACHINE_SUPPORTS_SAVE | MACHINE_NO_SOUND_HW )
+COMP( 1976, ti5100,     0,         0, ti5100,    ti5100,    ti5100_state,    empty_init, "Texas Instruments", "TI-5100", MACHINE_SUPPORTS_SAVE | MACHINE_NO_SOUND_HW )
 COMP( 1976, ti30,       0,         0, ti30,      ti30,      ti30_state,      empty_init, "Texas Instruments", "TI-30", MACHINE_SUPPORTS_SAVE | MACHINE_NO_SOUND_HW )
 COMP( 1976, tibusan,    0,         0, ti30,      tibusan,   ti30_state,      empty_init, "Texas Instruments", "TI Business Analyst", MACHINE_SUPPORTS_SAVE | MACHINE_NO_SOUND_HW )
 COMP( 1977, tiprog,     0,         0, ti30,      tiprog,    ti30_state,      empty_init, "Texas Instruments", "TI Programmer", MACHINE_SUPPORTS_SAVE | MACHINE_NO_SOUND_HW )

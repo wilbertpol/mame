@@ -119,6 +119,12 @@ project ("osd_" .. _OPTIONS["osd"])
 		MAME_DIR .. "src/osd/windows",
 	}
 
+	if _OPTIONS["gcc"]~=nil and string.find(_OPTIONS["gcc"], "clang") then
+		buildoptions_cpp {
+			"-Wno-ignored-attributes",-- many instances in ImGui
+		}
+	end
+
 	files {
 		MAME_DIR .. "src/osd/modules/render/d3d/d3dhlsl.cpp",
 		MAME_DIR .. "src/osd/modules/render/d3d/d3dcomm.h",
@@ -211,7 +217,6 @@ project ("ocore_" .. _OPTIONS["osd"])
 		MAME_DIR .. "src/osd/strconv.h",
 		MAME_DIR .. "src/osd/osdsync.cpp",
 		MAME_DIR .. "src/osd/osdsync.h",
-		MAME_DIR .. "src/osd/windows/main.cpp",
 		MAME_DIR .. "src/osd/windows/winutf8.cpp",
 		MAME_DIR .. "src/osd/windows/winutf8.h",
 		MAME_DIR .. "src/osd/windows/winutil.cpp",

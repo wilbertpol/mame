@@ -8,7 +8,7 @@
 #include <bx/math.h>
 #include <bx/readerwriter.h>
 
-#if defined(SDLMAME_WIN32) || defined(OSD_WINDOWS) || defined(OSD_UWP)
+#if defined(SDLMAME_WIN32) || defined(OSD_WINDOWS)
 // standard windows headers
 #include <windows.h>
 #if defined(SDLMAME_WIN32)
@@ -208,22 +208,6 @@ inline bool sdlSetWindow(SDL_Window* _window)
 
 	return true;
 }
-#elif defined(OSD_UWP)
-inline void winrtSetWindow(::IUnknown* _window)
-{
-	bgfx::PlatformData pd;
-	pd.ndt = NULL;
-	pd.nwh = _window;
-	pd.context = NULL;
-	pd.backBuffer = NULL;
-	pd.backBufferDS = NULL;
-	bgfx::setPlatformData(pd);
-}
-
-IInspectable* AsInspectable(Platform::Agile<Windows::UI::Core::CoreWindow> win)
-{
-	return reinterpret_cast<IInspectable*>(win.Get());
-}
 #endif
 
 int renderer_bgfx::create()
@@ -249,9 +233,6 @@ int renderer_bgfx::create()
 		}
 #ifdef OSD_WINDOWS
 		winSetHwnd(std::static_pointer_cast<win_window_info>(win)->platform_window());
-#elif defined(OSD_UWP)
-
-		winrtSetWindow(AsInspectable(std::static_pointer_cast<uwp_window_info>(win)->platform_window()));
 #elif defined(OSD_MAC)
 		macSetWindow(std::static_pointer_cast<mac_window_info>(win)->platform_window());
 #else
@@ -316,8 +297,6 @@ int renderer_bgfx::create()
 	{
 #ifdef OSD_WINDOWS
 		m_framebuffer = m_targets->create_backbuffer(std::static_pointer_cast<win_window_info>(win)->platform_window(), m_width[win->index()], m_height[win->index()]);
-#elif defined(OSD_UWP)
-		m_framebuffer = m_targets->create_backbuffer(AsInspectable(std::static_pointer_cast<uwp_window_info>(win)->platform_window()), m_width[win->index()], m_height[win->index()]);
 #elif defined(OSD_MAC)
 		m_framebuffer = m_targets->create_backbuffer(GetOSWindow(std::static_pointer_cast<mac_window_info>(win)->platform_window()), m_width[win->index()], m_height[win->index()]);
 #else
@@ -1001,8 +980,6 @@ bool renderer_bgfx::update_dimensions()
 			delete m_framebuffer;
 #ifdef OSD_WINDOWS
 			m_framebuffer = m_targets->create_backbuffer(std::static_pointer_cast<win_window_info>(win)->platform_window(), width, height);
-#elif defined(OSD_UWP)
-			m_framebuffer = m_targets->create_backbuffer(AsInspectable(std::static_pointer_cast<uwp_window_info>(win)->platform_window()), width, height);
 #elif defined(OSD_MAC)
 			m_framebuffer = m_targets->create_backbuffer(GetOSWindow(std::static_pointer_cast<mac_window_info>(win)->platform_window()), width, height);
 #else
@@ -1168,9 +1145,10 @@ void renderer_bgfx::process_atlas_packs(std::vector<std::vector<rectangle_packer
 			m_hash_to_entry[rect.hash()] = rect;
 			bgfx::TextureFormat::Enum dst_format = bgfx::TextureFormat::BGRA8;
 			uint16_t pitch = rect.width();
-			int convert_stride = 1;
-			const bgfx::Memory* mem = bgfx_util::mame_texture_data_to_bgfx_texture_data(dst_format, rect.format(), rect.rowpixels(), rect.height(), rect.palette(), rect.base(), pitch, convert_stride);
-			bgfx::updateTexture2D(m_texture_cache->texture(), 0, 0, rect.x(), rect.y(), rect.width() / convert_stride, rect.height(), mem, pitch);
+			int width_div_factor = 1;
+			int width_mul_factor = 1;
+			const bgfx::Memory* mem = bgfx_util::mame_texture_data_to_bgfx_texture_data(dst_format, rect.format(), rect.rowpixels(), rect.height(), rect.palette(), rect.base(), pitch, width_div_factor, width_mul_factor);
+			bgfx::updateTexture2D(m_texture_cache->texture(), 0, 0, rect.x(), rect.y(), (rect.width() * width_mul_factor) / width_div_factor, rect.height(), mem, pitch);
 		}
 	}
 }
