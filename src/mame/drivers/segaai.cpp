@@ -27,9 +27,24 @@ TODO:
   of clickable buttons. This is currently good enough to make most
   games playable. Eventually this should behave like a real touchpad
   so also drawing apps can work.
-- Cassette, playback is controlled by the computer. Games with cassette spin up the cassette for about 2 seconds
+- Cassette, playback is controlled by the computer. Games with cassette
+  spin up the cassette for about 2 seconds
+  - The tape sometimes seeks back and forth for 5-15 seconds for the right
+    voice clip, while the game and player (kids) wait
+  "In these tapes, by the way, the left audio channel is the narration,
+  and the right channel the data bursts right before each one. If someone
+  figures out the data format, you could pare it down to one channel and
+  "simulate" the data portion as a binary stream in emulation."
 - Keyboard (there is probably an mcu inside it)
 - SEGA Prolog? How to enter?
+
+- Sound box:
+  Note from ccovell:
+  "With the Sound Box attached, I connected the output line of the Sound
+  Box's keyboard pins to one or more input pins, and it suddenly played an
+  FM instrument and printed "piano" on the screen! From this, pressing U/D
+  on the pad cycled through the various instruments, and the PL/PR buttons
+  lowered and raised the volume."
 
 ===========================================================================
 
@@ -109,6 +124,7 @@ New JIS Keyboard Connector Pinout:
 #include "video/v9938.h"
 #include "bus/segaai/segaai_slot.h"
 #include "bus/segaai/segaai_exp.h"
+#include "imagedev/cassette.h"
 #include "machine/i8255.h"
 #include "machine/i8251.h"
 #include "speaker.h"
@@ -133,6 +149,7 @@ public:
 		, m_sound(*this, "sn76489a")
 		, m_v9938(*this, "v9938")
 		, m_upd7759(*this, "upd7759")
+		, m_cassette(*this, "cassette")
 		, m_port4(*this, "PORT4")
 		, m_port5(*this, "PORT5")
 		, m_port_tp(*this, "TP.%u", 0)
@@ -171,6 +188,15 @@ private:
 	static constexpr u8 IRQ_V9938 = 0x01;
 	static constexpr u8 IRQ_UPD7759 = 0x08;
 
+	// 8255 Port A bits
+	static constexpr u8 UPD7759_BUSY = 0x40;
+	// 8255 Port B bits
+	static constexpr u8 TOUCH_PAD_PRESSED = 0x02;
+	static constexpr u8 TOUCH_PAD_DATA_AVAILABLE = 0x04;
+
+	static constexpr u8 UPD7759_MODE = 0x01;
+	static constexpr u8 UPD7759_BANK = 0x02;
+
 	void mem_map(address_map &map);
 	void io_map(address_map &map);
 	void update_irq_state();
@@ -181,6 +207,7 @@ private:
 	required_device<sn76489a_device> m_sound;
 	required_device<v9938_device> m_v9938;
 	required_device<upd7759_device> m_upd7759;
+	required_device<cassette_image_device> m_cassette;
 	required_ioport m_port4;
 	required_ioport m_port5;
 	required_ioport_array<TOUCHPAD_ROWS> m_port_tp;
@@ -263,6 +290,7 @@ void segaai_state::io_map(address_map &map)
 {
 	map(0x00, 0x03).rw(m_v9938, FUNC(v9938_device::read), FUNC(v9938_device::write));
 	map(0x04, 0x07).rw("tmp8255", FUNC(i8255_device::read), FUNC(i8255_device::write));
+	// port 7, bit 7, engages tape?
 
 	map(0x08, 0x08).rw("i8251", FUNC(i8251_device::data_r), FUNC(i8251_device::data_w));
 	map(0x09, 0x09).rw("i8251", FUNC(i8251_device::status_r), FUNC(i8251_device::control_w));
@@ -454,7 +482,7 @@ Mainboard 8255 port A
 */
 u8 segaai_state::i8255_porta_r()
 {
-	u8 data = (m_upd7759->busy_r() ? 0x40 : 0) | (m_port4->read() & ~0x40);
+	u8 data = (m_upd7759->busy_r() ? UPD7759_BUSY : 0) | (m_port4->read() & ~UPD7759_BUSY);
 
 	return data;
 }
@@ -464,7 +492,7 @@ u8 segaai_state::i8255_porta_r()
 Mainboard 8255 port B
 
  76543210
- +-------- Tape input, unknown if input is signal level or bit
+ +-------- Tape input (right channel?), unknown if input is signal level or bit
   +------- Tape head engaged
    +------ Tape insertion sensor (0 - tape is inserted, 1 - no tape inserted)
     +----- Tape write enable sensor
@@ -481,14 +509,23 @@ u8 segaai_state::i8255_portb_r()
 	{
 		if (!get_touchpad_pressed())
 		{
-			m_i8255_portb |= 0x02;
+			m_i8255_portb |= TOUCH_PAD_PRESSED;
 		}
 
-		m_i8255_portb |= 0x04;
+		m_i8255_portb |= TOUCH_PAD_DATA_AVAILABLE;
 	}
 	else
 	{
-		m_i8255_portb |= 0x02;
+		m_i8255_portb |= TOUCH_PAD_PRESSED;
+	}
+
+	if (m_cassette->get_image() != nullptr)
+	{
+		m_i8255_portb &= ~0x20;
+	}
+	else
+	{
+		m_i8255_portb |= 0x20;
 	}
 
 	// when checking whether the tape is running Popoland wants to see bit7 set and bit5 reset
@@ -498,7 +535,7 @@ u8 segaai_state::i8255_portb_r()
 	// checks for this whistle tone.
 	//m_i8255_portb ^= 0x80;
 
-	return (m_i8255_portb & 0xdf)/* | 0x80*/;
+	return m_i8255_portb;
 }
 
 
@@ -563,11 +600,34 @@ u8 segaai_state::i8255_portc_r()
 }
 
 
+/*
+ pin 10-13 - PC0-PC3 -> RA41
+ PC0-PC3 continue on underside of pcb
+ pin 14-17 - PC4-PC7 -> RA42
+ PC3 continues on underside of pcb
+ PC2 - pin 6 upa2003c, drives upa2003c pin 11
+ PC1 - pin 4 upa2003c, drives upa2003c pin 13
+ PC0 - pin 2 upd2003c, drives upa2003c pin 15
+ these go to 3 dots to the left of resistors below upa2003c?
+ which end up on the 9 pin flat connector on the lower left side of the pcb
+ PC4 - to pin 1 of 7 pin connector bottom right side of pcb -> jis keyboard connector ?
+ CN9 - 9 pin connector goes to cassette interface
+ pin 1 - red
+ pin 2 - black
+ pin 3 - blue
+ pin 4 - yellow
+ pin 5 - white
+ pin 6 - black/grey
+ pin 7 - blue
+ pin 8 - grey
+ pin 9 - brown
+*/
 void segaai_state::i8255_portc_w(u8 data)
 {
 	// Writes to bits 6,5,4, unknown what they mean
 	// Bit 0 written by cosmictr
 	LOG("i8255 port c write: %02x\n", data);
+	osd_printf_info("i8255 port c write: %02x\n", data);
 }
 
 
@@ -575,11 +635,11 @@ void segaai_state::upd7759_data_w(offs_t offset, u8 data)
 {
 	// Looking at the code the only way the start signal can be triggered is if it
 	// is tied to the RD signal when the uPD7759 is in standalone mode.
-	if (!(m_upd7759_ctrl & 0x01)) {
+	if (!(m_upd7759_ctrl & UPD7759_MODE)) {
 		m_upd7759->start_w(ASSERT_LINE);
 	}
 	m_upd7759->port_w(data);
-	if (!(m_upd7759_ctrl & 0x01)) {
+	if (!(m_upd7759_ctrl & UPD7759_MODE)) {
 		m_upd7759->start_w(CLEAR_LINE);
 	}
 }
@@ -588,15 +648,16 @@ void segaai_state::upd7759_data_w(offs_t offset, u8 data)
 void segaai_state::upd7759_ctrl_w(offs_t offset, u8 data)
 {
 	LOG("I/O Port $0b write: $%02x\n", data);
+	osd_printf_info("I/O Port $0b write: $%02x\n", data);
 
 	m_upd7759_ctrl = data;
 
 	// bit0 is connected to /md line of the uPD7759
-	m_upd7759->md_w((m_upd7759_ctrl & 0x01) ? 0 : 1);
+	m_upd7759->md_w((m_upd7759_ctrl & UPD7759_MODE) ? 0 : 1);
 
 	// bit1 selects which ROM should be used?
 	// TODO check if this is correct
-	m_upd7759->set_rom_bank((m_upd7759_ctrl & 2) >> 1);
+	m_upd7759->set_rom_bank((m_upd7759_ctrl & UPD7759_BANK) >> 1);
 }
 
 
@@ -615,7 +676,7 @@ u8 segaai_state::irq_enable_r(offs_t offset)
 //    +----- ???
 //     +---- D7759 IRQ enable
 //      +--- ???
-//       +-- ???
+//       +-- ??? 8251 receive?
 //        +- V9938 IRQ enable
 void segaai_state::irq_enable_w(offs_t offet, u8 data)
 {
@@ -743,6 +804,11 @@ void segaai_state::segaai(machine_config &config)
 
 	// Expansion slot
 	SEGAAI_EXP_SLOT(config, "exp", segaai_exp, "soundbox");
+
+	// Built-in cassette
+	CASSETTE(config, m_cassette);
+	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_SPEAKER_ENABLED | CASSETTE_MOTOR_ENABLED);
+//	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 
 	config.set_default_layout(layout_segaai);
 }
