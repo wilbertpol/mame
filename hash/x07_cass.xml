@@ -2,6 +2,9 @@
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
 <!--
 license:CC0
+
+To load a cassette image type CLOAD followed by RUN
+
 -->
 
 <softwarelist name="x07_cass" description="Canon X-07 cassettes">

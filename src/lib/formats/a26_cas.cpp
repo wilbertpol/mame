@@ -140,18 +140,21 @@ static const cassette_image::LegacyWaveFiller a26_legacy_fill_wave = {
 	0
 };
 
-static cassette_image::error a26_cassette_identify( cassette_image *cassette, cassette_image::Options *opts ) {
+static cassette_image::error a26_cassette_identify(cassette_image *cassette, cassette_image::Options *opts) {
 	uint64_t size;
 
-	size = cassette->image_size( );
-	if ( size == A26_CAS_SIZE ) {
-		return cassette->legacy_identify( opts, &a26_legacy_fill_wave );
+	size = cassette->image_size();
+	if (size == A26_CAS_SIZE) {
+		opts->channels = 1;
+		opts->bits_per_sample = 16;
+		opts->sample_frequency = A26_WAV_FREQUENCY;
+		return cassette_image::error::SUCCESS;
 	}
 	return cassette_image::error::INVALID_IMAGE;
 }
 
-static cassette_image::error a26_cassette_load( cassette_image *cassette ) {
-	return cassette->legacy_construct( &a26_legacy_fill_wave );
+static cassette_image::error a26_cassette_load(cassette_image *cassette) {
+	return cassette->legacy_construct(&a26_legacy_fill_wave);
 }
 
 static const cassette_image::Format a26_cassette_format = {

@@ -150,7 +150,10 @@ static const cassette_image::LegacyWaveFiller rk20_legacy_fill_wave = {
 };
 
 static cassette_image::error rk20_cassette_identify( cassette_image *cassette, cassette_image::Options *opts ) {
-	return cassette->legacy_identify( opts, &rk20_legacy_fill_wave );
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = RK_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 static cassette_image::error rk20_cassette_load( cassette_image *cassette ) {
@@ -168,7 +171,10 @@ static const cassette_image::LegacyWaveFiller rk22_legacy_fill_wave = {
 };
 
 static cassette_image::error rk22_cassette_identify( cassette_image *cassette, cassette_image::Options *opts ) {
-	return cassette->legacy_identify( opts, &rk22_legacy_fill_wave );
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = RK_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 static cassette_image::error rk22_cassette_load( cassette_image *cassette ) {
@@ -186,7 +192,10 @@ static const cassette_image::LegacyWaveFiller gam_legacy_fill_wave = {
 };
 
 static cassette_image::error gam_cassette_identify( cassette_image *cassette, cassette_image::Options *opts ) {
-	return cassette->legacy_identify( opts, &gam_legacy_fill_wave );
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = RK_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 static cassette_image::error gam_cassette_load( cassette_image *cassette ) {
@@ -204,7 +213,10 @@ static const cassette_image::LegacyWaveFiller rk60_legacy_fill_wave = {
 };
 
 static cassette_image::error rk60_cassette_identify( cassette_image *cassette, cassette_image::Options *opts ) {
-	return cassette->legacy_identify( opts, &rk60_legacy_fill_wave );
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = RK_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 static cassette_image::error rk60_cassette_load( cassette_image *cassette ) {

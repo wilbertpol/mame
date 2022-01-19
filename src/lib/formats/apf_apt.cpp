@@ -195,7 +195,10 @@ static const cassette_image::LegacyWaveFiller apf_cpf_fill_intf =
 
 static cassette_image::error apf_cpf_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &apf_cpf_fill_intf);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = APF_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 static cassette_image::error apf_cpf_load(cassette_image *cassette)
@@ -226,7 +229,10 @@ static const cassette_image::LegacyWaveFiller apf_apt_fill_intf =
 
 static cassette_image::error apf_apt_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &apf_apt_fill_intf);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = APF_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 static cassette_image::error apf_apt_load(cassette_image *cassette)

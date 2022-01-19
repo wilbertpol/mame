@@ -777,17 +777,6 @@ done:
     waveform accesses to/from the raw image
 *********************************************************************/
 
-cassette_image::error cassette_image::legacy_identify(Options *opts,
-	const LegacyWaveFiller *legacy_args)
-{
-	opts->channels = 1;
-	opts->bits_per_sample = 16;
-	opts->sample_frequency = legacy_args->sample_frequency;
-	return error::SUCCESS;
-}
-
-
-
 cassette_image::error cassette_image::legacy_construct(const LegacyWaveFiller *legacy_args)
 {
 	error err;

@@ -262,7 +262,10 @@ static const cassette_image::LegacyWaveFiller kc_kcc_legacy_fill_wave =
 
 static cassette_image::error kc_kcc_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &kc_kcc_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = KC_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 
@@ -314,7 +317,10 @@ static const cassette_image::LegacyWaveFiller kc_tap_legacy_fill_wave =
 
 static cassette_image::error kc_tap_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &kc_tap_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = KC_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 
@@ -366,7 +372,10 @@ static const cassette_image::LegacyWaveFiller kc_sss_legacy_fill_wave =
 
 static cassette_image::error kc_sss_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &kc_sss_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = KC_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 

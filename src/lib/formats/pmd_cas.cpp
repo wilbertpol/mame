@@ -195,7 +195,10 @@ static const cassette_image::LegacyWaveFiller pmd85_legacy_fill_wave =
 
 static cassette_image::error pmd85_cassette_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &pmd85_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = PMD85_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 static cassette_image::error pmd85_cassette_load(cassette_image *cassette)

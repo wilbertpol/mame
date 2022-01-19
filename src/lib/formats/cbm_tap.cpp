@@ -351,7 +351,10 @@ static const cassette_image::LegacyWaveFiller cbm_legacy_fill_wave = {
 
 static cassette_image::error cbm_cassette_identify( cassette_image *cassette, cassette_image::Options *opts )
 {
-	return cassette->legacy_identify( opts, &cbm_legacy_fill_wave );
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = CBM_WAV_FREQUENCY;
+	return cassette_image::error::SUCCESS;
 }
 
 

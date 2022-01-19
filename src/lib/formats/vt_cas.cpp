@@ -8,51 +8,29 @@
 
 #define SILENCE 8000
 
-static int generic_fill_wave(int16_t *buffer, int length, uint8_t *code, int bitsamples, int bytesamples, int lo, int16_t *(*fill_wave_byte)(int16_t *buffer, int byte))
+
+static void generic_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes, int bitsamples, int bytesamples, int lo, void (*fill_wave_byte)(std::vector<int16_t> &samples, uint8_t byte))
 {
-	static int nullbyte;
+	int nullbyte = 0;
 
-	if( code == CODE_HEADER )
+	for (int i = 0; i < SILENCE; i++)
+		samples.push_back(0);
+
+	for (int i = 0; i < bytes.size(); i++)
 	{
-		int i;
-
-		if( length < SILENCE )
-			return -1;
-		for( i = 0; i < SILENCE; i++ )
-			*buffer++ = 0;
-
-		nullbyte = 0;
-
-		return SILENCE;
+		fill_wave_byte(samples, bytes[i]);
+		if (!nullbyte && bytes[i] == 0)
+		{
+			for (int i = 0; i < 2*bitsamples; i++)
+				samples.push_back(lo);
+			nullbyte = 1;
+		}
 	}
 
-	if( code == CODE_TRAILER )
-	{
-		int i;
-
-		/* silence at the end */
-		for( i = 0; i < length; i++ )
-			*buffer++ = 0;
-		return length;
-	}
-
-	if( length < bytesamples )
-		return -1;
-
-	buffer = fill_wave_byte(buffer, *code);
-
-	if( !nullbyte && *code == 0 )
-	{
-		int i;
-		for( i = 0; i < 2*bitsamples; i++ )
-			*buffer++ = lo;
-		nullbyte = 1;
-		return bytesamples + 2 * bitsamples;
-	}
-
-	return bytesamples;
+	// silence at the end
+	for (int i = 0; i < 600 * bitsamples; i++ )
+		samples.push_back(0);
 }
-
 
 /*********************************************************************
     vtech 1
@@ -64,57 +42,54 @@ static int generic_fill_wave(int16_t *buffer, int length, uint8_t *code, int bit
 #define V1_BITSAMPLES   6
 #define V1_BYTESAMPLES  8*V1_BITSAMPLES
 
-static int16_t *vtech1_fill_wave_byte(int16_t *buffer, int byte)
-{
-	int i;
 
-	for( i = 7; i >= 0; i-- )
+static void vtech1_fill_wave_byte(std::vector<int16_t> &samples, uint8_t byte)
+{
+	for (int i = 7; i >= 0; i--)
 	{
-		*buffer++ = V1_HI;  /* initial cycle */
-		*buffer++ = V1_LO;
-		if( (byte >> i) & 1 )
+		samples.push_back(V1_HI);  /* initial cycle */
+		samples.push_back(V1_LO);
+		if ((byte >> i) & 1)
 		{
-			*buffer++ = V1_HI; /* two more cycles */
-			*buffer++ = V1_LO;
-			*buffer++ = V1_HI;
-			*buffer++ = V1_LO;
+			samples.push_back(V1_HI); /* two more cycles */
+			samples.push_back(V1_LO);
+			samples.push_back(V1_HI);
+			samples.push_back(V1_LO);
 		}
 		else
 		{
-			*buffer++ = V1_HI; /* one slow cycle */
-			*buffer++ = V1_HI;
-			*buffer++ = V1_LO;
-			*buffer++ = V1_LO;
+			samples.push_back(V1_HI); /* one slow cycle */
+			samples.push_back(V1_HI);
+			samples.push_back(V1_LO);
+			samples.push_back(V1_LO);
 		}
 	}
-	return buffer;
 }
 
-static int vtech1_cassette_fill_wave(int16_t *buffer, int length, uint8_t *code)
-{
-	return generic_fill_wave(buffer, length, code, V1_BITSAMPLES, V1_BYTESAMPLES, V1_LO, vtech1_fill_wave_byte);
-}
-
-static const cassette_image::LegacyWaveFiller vtech1_legacy_fill_wave =
-{
-	vtech1_cassette_fill_wave,  // fill_wave
-	1,                          // chunk_size
-	V1_BYTESAMPLES,             // chunk_samples
-	nullptr,                    // chunk_sample_calc
-	600*V1_BITSAMPLES,          // sample_frequency
-	600*V1_BITSAMPLES,          // header_samples
-	600*V1_BITSAMPLES           // trailer_samples
-};
 
 static cassette_image::error vtech1_cas_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &vtech1_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = 600 * V1_BITSAMPLES;
+	return cassette_image::error::SUCCESS;
 }
+
 
 static cassette_image::error vtech1_cas_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&vtech1_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	generic_fill_wave(samples, bytes, V1_BITSAMPLES, V1_BYTESAMPLES, V1_LO, vtech1_fill_wave_byte);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / (600 * V1_BITSAMPLES), samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format vtech1_cas_format =
 {
@@ -123,6 +98,7 @@ static const cassette_image::Format vtech1_cas_format =
 	vtech1_cas_load,
 	nullptr
 };
+
 
 CASSETTE_FORMATLIST_START(vtech1_cassette_formats)
 	CASSETTE_FORMAT(vtech1_cas_format)
@@ -155,61 +131,51 @@ static const int16_t vtech2_bit1[VT2_BITSAMPLES] =
 };
 
 
-static int16_t *vtech2_fill_wave_bit(int16_t *buffer, int bit)
+static void vtech2_fill_wave_bit(std::vector<int16_t> &samples, uint8_t bit)
 {
-	int i;
-	if( bit )
+	if (bit)
 	{
-		for( i = 0; i < VT2_BITSAMPLES; i++ )
-			*buffer++ = vtech2_bit1[i];
+		for (int i = 0; i < VT2_BITSAMPLES; i++)
+			samples.push_back(vtech2_bit1[i]);
 	}
 	else
 	{
-		for( i = 0; i < VT2_BITSAMPLES; i++ )
-			*buffer++ = vtech2_bit0[i];
+		for (int i = 0; i < VT2_BITSAMPLES; i++)
+			samples.push_back(vtech2_bit0[i]);
 	}
-	return buffer;
 }
 
 
-static int16_t *vtech2_fill_wave_byte(int16_t *buffer, int byte)
+static void vtech2_fill_wave_byte(std::vector<int16_t> &samples, uint8_t byte)
 {
-	buffer = vtech2_fill_wave_bit(buffer, (byte >> 7) & 1);
-	buffer = vtech2_fill_wave_bit(buffer, (byte >> 6) & 1);
-	buffer = vtech2_fill_wave_bit(buffer, (byte >> 5) & 1);
-	buffer = vtech2_fill_wave_bit(buffer, (byte >> 4) & 1);
-	buffer = vtech2_fill_wave_bit(buffer, (byte >> 3) & 1);
-	buffer = vtech2_fill_wave_bit(buffer, (byte >> 2) & 1);
-	buffer = vtech2_fill_wave_bit(buffer, (byte >> 1) & 1);
-	buffer = vtech2_fill_wave_bit(buffer, (byte >> 0) & 1);
-	return buffer;
+	for (int i = 0 ; i < 8; i++)
+		vtech2_fill_wave_bit(samples, (byte >> (7-i)) & 1);
 }
 
-static int vtech2_cassette_fill_wave(int16_t *buffer, int length, uint8_t *code)
-{
-	return generic_fill_wave(buffer, length, code, VT2_BITSAMPLES, VT2_BYTESAMPLES, VT2_LO, vtech2_fill_wave_byte);
-}
-
-static const cassette_image::LegacyWaveFiller vtech2_legacy_fill_wave =
-{
-	vtech2_cassette_fill_wave,  /* fill_wave */
-	1,                          /* chunk_size */
-	VT2_BYTESAMPLES,            /* chunk_samples */
-	nullptr,                       /* chunk_sample_calc */
-	600*VT2_BITSAMPLES,         /* sample_frequency */
-	600*VT2_BITSAMPLES,         /* header_samples */
-	600*VT2_BITSAMPLES          /* trailer_samples */
-};
 
 static cassette_image::error vtech2_cas_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &vtech2_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = 600 * VT2_BITSAMPLES;
+	return cassette_image::error::SUCCESS;
 }
+
 
 static cassette_image::error vtech2_cas_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&vtech2_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	generic_fill_wave(samples, bytes, VT2_BITSAMPLES, VT2_BYTESAMPLES, VT2_LO, vtech2_fill_wave_byte);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / (600 * VT2_BITSAMPLES), samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format vtech2_cas_format =
 {
@@ -218,6 +184,7 @@ static const cassette_image::Format vtech2_cas_format =
 	vtech2_cas_load,
 	nullptr
 };
+
 
 CASSETTE_FORMATLIST_START(vtech2_cassette_formats)
 	CASSETTE_FORMAT(vtech2_cas_format)

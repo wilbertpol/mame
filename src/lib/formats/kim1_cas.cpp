@@ -173,7 +173,10 @@ static const cassette_image::LegacyWaveFiller kim1_kim_legacy_fill_wave =
 
 static cassette_image::error kim1_kim_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &kim1_kim_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = 44100;
+	return cassette_image::error::SUCCESS;
 }
 
 

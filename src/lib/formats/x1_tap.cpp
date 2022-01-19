@@ -29,102 +29,67 @@
 #define WAVE_HIGH        0x5a9e
 #define WAVE_LOW        -0x5a9e
 
-static int cas_size; // FIXME: global variables prevent multiple instances
-static int samplerate;
-static int new_format;
 
-static int x1_fill_wave(int16_t* buffer, uint8_t data, int sample_pos)
+static void x1_fill_wave(std::vector<int16_t> &samples, uint8_t data)
 {
-	int x;
-	int sample_count = 0;
-
 	// one byte = 8 samples
-	for(x=0;x<8;x++)
+	for (int x = 0; x < 8; x++)
 	{
-		if(buffer)
-			buffer[sample_pos+x] = (data & (1 << (7-x))) ? WAVE_HIGH : WAVE_LOW;
-		sample_count++;
+		samples.push_back((data & (1 << (7-x))) ? WAVE_HIGH : WAVE_LOW);
 	}
-
-	return sample_count;
 }
 
-static int x1_handle_tap(int16_t* buffer, const uint8_t* casdata)
-{
-	int sample_count = 0;
-	int data_pos = new_format ? 0x28 : 0x04;
-
-	if (samplerate != 8000)
-	{
-		LOG_FORMATS("TAP: images that are not 8000Hz are not yet supported\n");
-		return -1;
-	}
-
-	while (sample_count < cas_size)
-	{
-		sample_count += x1_fill_wave(buffer, casdata[data_pos], sample_count);
-		data_pos++;
-	}
-
-	return sample_count;
-}
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-static int x1_cas_to_wav_size (const uint8_t *casdata, int caslen)
-{
-	uint32_t ret;
-
-	if (!memcmp(casdata, "TAPE", 4))  // new TAP format
-	{
-		ret = casdata[0x20] | (casdata[0x21] << 8) | (casdata[0x22] << 16) | (casdata[0x23] << 24);
-		cas_size = ret;
-
-		samplerate = casdata[0x1c] | (casdata[0x1d] << 8) | (casdata[0x1e] << 16) | (casdata[0x1f] << 24);
-		new_format = 1;
-	}
-	else  // old TAP format
-	{
-		ret = (caslen - 4) * 8; // each byte = 8 samples
-		cas_size = ret;
-
-		samplerate = casdata[0x00] | (casdata[0x01] << 8) | (casdata[0x02] << 16) | (casdata[0x03] << 24);
-		new_format = 0;
-	}
-
-	return ret;
-}
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-static int x1_cas_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
-{
-	return x1_handle_tap(buffer,bytes);
-}
-
-static const cassette_image::LegacyWaveFiller x1_legacy_fill_wave =
-{
-	x1_cas_fill_wave,                       /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	x1_cas_to_wav_size,                 /* chunk_sample_calc */
-	8000,                                   /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error x1_cas_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &x1_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = 8000;
+	return cassette_image::error::SUCCESS;
 }
-
 
 
 static cassette_image::error x1_cas_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&x1_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> casdata(file_size);
+	cassette->image_read(&casdata[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	int samplerate;
+	bool new_format;
+
+	if (file_size < 4)
+		return cassette_image::error::INVALID_IMAGE;
+
+	if (!memcmp(&casdata[0], "TAPE", 4))  // new TAP format
+	{
+		if (file_size < 0x28)
+			return cassette_image::error::INVALID_IMAGE;
+
+		samplerate = casdata[0x1c] | (casdata[0x1d] << 8) | (casdata[0x1e] << 16) | (casdata[0x1f] << 24);
+		new_format = true;
+	}
+	else  // old TAP format
+	{
+		samplerate = casdata[0x00] | (casdata[0x01] << 8) | (casdata[0x02] << 16) | (casdata[0x03] << 24);
+		new_format = false;
+	}
+
+	if (samplerate != 8000)
+	{
+		LOG_FORMATS("TAP: images that are not 8000Hz are not yet supported\n");
+		return cassette_image::error::UNSUPPORTED;
+	}
+
+	for (uint64_t data_pos = new_format ? 0x28 : 0x04; data_pos < file_size; data_pos++)
+	{
+		x1_fill_wave(samples, casdata[data_pos]);
+	}
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / 8000, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
 

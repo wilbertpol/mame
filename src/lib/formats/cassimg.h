@@ -172,7 +172,6 @@ public:
 	/* legacy code support */
 #define CODE_HEADER     ((uint8_t*)-1)
 #define CODE_TRAILER    ((uint8_t*)-2)
-	error legacy_identify(Options *opts, const LegacyWaveFiller *legacy_args);
 	error legacy_construct(const LegacyWaveFiller *legacy_args);
 
 	/* debug calls */

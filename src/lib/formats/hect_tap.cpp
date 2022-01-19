@@ -264,7 +264,10 @@ static const cassette_image::LegacyWaveFiller hector_forth_legacy_fill_wave =
 
 static cassette_image::error hector_k7_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &hector_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = 44100;
+	return cassette_image::error::SUCCESS;
 }
 
 
@@ -275,7 +278,10 @@ static cassette_image::error hector_k7_load(cassette_image *cassette)
 
 static cassette_image::error hector_k7forth_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &hector_forth_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = 44100;
+	return cassette_image::error::SUCCESS;
 }
 
 

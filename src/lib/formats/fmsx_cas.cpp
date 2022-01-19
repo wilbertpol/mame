@@ -120,7 +120,10 @@ static const cassette_image::LegacyWaveFiller fmsx_legacy_fill_wave =
 
 static cassette_image::error fmsx_cas_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
-	return cassette->legacy_identify(opts, &fmsx_legacy_fill_wave);
+	opts->channels = 1;
+	opts->bits_per_sample = 16;
+	opts->sample_frequency = 22050;
+	return cassette_image::error::SUCCESS;
 }
 
 
