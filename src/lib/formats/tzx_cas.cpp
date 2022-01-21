@@ -45,12 +45,6 @@ TODO:
 
 static const uint8_t TZX_HEADER[8] = { 'Z','X','T','a','p','e','!',0x1a };
 
-/*
-  Global variables
-
-  Initialized by tzx_cas_get_wave_size, used (and cleaned up) by tzx_cas_fill_wave
- */
-
 
 static void toggle_wave_data(int16_t &wave_data)
 {
