@@ -33,106 +33,57 @@ header and leader bytes.
 
 #define SORCERER_WAV_FREQUENCY   4788
 
-// image size
-static int sorcerer_image_size;
-static bool level;
 
-static int sorcerer_put_samples(int16_t *buffer, int sample_pos, int count)
+static void sorcerer_put_samples(std::vector<int16_t> &samples, bool &level, int count)
 {
-	if (buffer)
-	{
-		for (int i=0; i<count; i++)
-			buffer[sample_pos + i] = level ? WAVEENTRY_LOW : WAVEENTRY_HIGH;
+	for (int i=0; i < count; i++)
+		samples.push_back(level ? WAVEENTRY_LOW : WAVEENTRY_HIGH);
 
-		level ^= 1;
-	}
-
-	return count;
+	level ^= 1;
 }
 
-static int sorcerer_output_bit(int16_t *buffer, int sample_pos, bool bit)
-{
-	int samples = 0;
 
+static void sorcerer_output_bit(std::vector<int16_t> &samples, bool &level, bool bit)
+{
 	if (bit)
 	{
-		samples += sorcerer_put_samples(buffer, sample_pos + samples, 2);
-		samples += sorcerer_put_samples(buffer, sample_pos + samples, 2);
+		sorcerer_put_samples(samples, level, 2);
+		sorcerer_put_samples(samples, level, 2);
 	}
 	else
 	{
-		samples += sorcerer_put_samples(buffer, sample_pos + samples, 4);
+		sorcerer_put_samples(samples, level, 4);
 	}
-
-	return samples;
 }
 
-static int sorcerer_output_byte(int16_t *buffer, int sample_pos, uint8_t byte)
-{
-	int samples = 0;
-	uint8_t i;
 
+static void sorcerer_output_byte(std::vector<int16_t> &samples, bool &level, uint8_t byte)
+{
 	/* start */
-	samples += sorcerer_output_bit (buffer, sample_pos + samples, 0);
+	sorcerer_output_bit(samples, level, 0);
 
 	/* data */
-	for (i = 0; i<8; i++)
-		samples += sorcerer_output_bit (buffer, sample_pos + samples, (byte >> i) & 1);
+	for (int i = 0; i < 8; i++)
+		sorcerer_output_bit(samples, level, (byte >> i) & 1);
 
 	/* stop */
-	for (i = 0; i<2; i++)
-		samples += sorcerer_output_bit (buffer, sample_pos + samples, 1);
-
-	return samples;
+	for (int i = 0; i < 2; i++)
+		sorcerer_output_bit(samples, level, 1);
 }
 
-static int sorcerer_handle_cassette(int16_t *buffer, const uint8_t *bytes)
-{
-	uint32_t sample_count = 0;
-	uint32_t i;
 
+static void sorcerer_handle_cassette(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
+{
+	bool level = false;
 	/* idle */
-	for (i=0; i<2000; i++)
-		sample_count += sorcerer_output_bit(buffer, sample_count, 1);
+	for (int i = 0; i < 2000; i++)
+		sorcerer_output_bit(samples, level, 1);
 
 	/* data */
-	for (i=0; i<sorcerer_image_size; i++)
-		sample_count += sorcerer_output_byte(buffer, sample_count, bytes[i]);
-
-	return sample_count;
+	for (int i = 0; i < bytes.size(); i++)
+		sorcerer_output_byte(samples, level, bytes[i]);
 }
 
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-
-static int sorcerer_cassette_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	return sorcerer_handle_cassette(buffer, bytes);
-}
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-
-static int sorcerer_cassette_calculate_size_in_samples(const uint8_t *bytes, int length)
-{
-	sorcerer_image_size = length;
-
-	return sorcerer_handle_cassette(nullptr, bytes);
-}
-
-static const cassette_image::LegacyWaveFiller sorcerer_legacy_fill_wave =
-{
-	sorcerer_cassette_fill_wave,                 /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	sorcerer_cassette_calculate_size_in_samples, /* chunk_sample_calc */
-	SORCERER_WAV_FREQUENCY,                      /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error sorcerer_cassette_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
@@ -142,10 +93,21 @@ static cassette_image::error sorcerer_cassette_identify(cassette_image *cassette
 	return cassette_image::error::SUCCESS;
 }
 
+
 static cassette_image::error sorcerer_cassette_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&sorcerer_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	sorcerer_handle_cassette(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / SORCERER_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format sorcerer_cassette_image_format =
 {
@@ -154,6 +116,7 @@ static const cassette_image::Format sorcerer_cassette_image_format =
 	sorcerer_cassette_load,
 	nullptr
 };
+
 
 CASSETTE_FORMATLIST_START(sorcerer_cassette_formats)
 	CASSETTE_FORMAT(sorcerer_cassette_image_format)
