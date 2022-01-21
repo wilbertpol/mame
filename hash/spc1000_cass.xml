@@ -2,6 +2,12 @@
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
 <!--
 license:CC0
+
+To load from cassette:
+- Press B to enter BASIC
+- Enter command LOAD
+- Press play on tape
+- Enter command RUN
 -->
 
 <softwarelist name="spc1000_cass" description="Samsung SPC-1000 cassettes">

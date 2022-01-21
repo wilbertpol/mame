@@ -29,92 +29,43 @@ IPL: This seems a quickload format containing RAM dump, not a real tape
 
 #define SPC1000_WAV_FREQUENCY   17000
 
-// image size
-static int spc1000_image_size; // FIXME: global variable prevents multiple instances
 
-static int spc1000_put_samples(int16_t *buffer, int sample_pos, int count, int level)
+static void spc1000_put_samples(std::vector<int16_t> &samples, int count, int level)
 {
-	if (buffer)
-	{
-		for (int i=0; i<count; i++)
-			buffer[sample_pos + i] = level;
-	}
-
-	return count;
+	for (int i=0; i<count; i++)
+		samples.push_back(level);
 }
 
-static int spc1000_output_bit(int16_t *buffer, int sample_pos, bool bit)
-{
-	int samples = 0;
 
+static void spc1000_output_bit(std::vector<int16_t> &samples, bool bit)
+{
 	if (bit)
 	{
-		samples += spc1000_put_samples(buffer, sample_pos + samples, 9, WAVEENTRY_LOW);
-		samples += spc1000_put_samples(buffer, sample_pos + samples, 9, WAVEENTRY_HIGH);
+		spc1000_put_samples(samples, 9, WAVEENTRY_LOW);
+		spc1000_put_samples(samples, 9, WAVEENTRY_HIGH);
 	}
 	else
 	{
-		samples += spc1000_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
-		samples += spc1000_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
+		spc1000_put_samples(samples, 4, WAVEENTRY_LOW);
+		spc1000_put_samples(samples, 4, WAVEENTRY_HIGH);
 	}
-
-	return samples;
 }
 
-static int spc1000_handle_tap(int16_t *buffer, const uint8_t *bytes)
-{
-	uint32_t sample_count = 0;
 
+static void spc1000_handle_tap(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
+{
 	/* data */
-	for (uint32_t i = 0; i < spc1000_image_size; i++)
-		sample_count += spc1000_output_bit(buffer, sample_count, bytes[i] & 1);
-
-	return sample_count;
+	for (uint32_t i = 0; i < bytes.size(); i++)
+		spc1000_output_bit(samples, bytes[i] & 1);
 }
 
-static int spc1000_handle_cas(int16_t *buffer, const uint8_t *bytes)
-{
-	uint32_t sample_count = 0;
 
+static void spc1000_handle_cas(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
+{
 	/* data (skipping first 16 bytes, which is CAS header) */
-	for (uint32_t i = 0x10; i < spc1000_image_size; i++)
+	for (uint32_t i = 0x10; i < bytes.size(); i++)
 		for (int j = 0; j < 8; j++)
-			sample_count += spc1000_output_bit(buffer, sample_count, (bytes[i] >> (7 - j)) & 1);
-
-	return sample_count;
-}
-
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-
-static int spc1000_tap_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	return spc1000_handle_tap(buffer, bytes);
-}
-
-static int spc1000_cas_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	return spc1000_handle_cas(buffer, bytes);
-}
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-
-static int spc1000_tap_calculate_size_in_samples(const uint8_t *bytes, int length)
-{
-	spc1000_image_size = length;
-
-	return spc1000_handle_tap(nullptr, bytes);
-}
-
-static int spc1000_cas_calculate_size_in_samples(const uint8_t *bytes, int length)
-{
-	spc1000_image_size = length;
-
-	return spc1000_handle_cas(nullptr, bytes);
+			spc1000_output_bit(samples, (bytes[i] >> (7 - j)) & 1);
 }
 
 
@@ -124,17 +75,6 @@ static int spc1000_cas_calculate_size_in_samples(const uint8_t *bytes, int lengt
 
 
 // TAP
-static const cassette_image::LegacyWaveFiller spc1000_tap_legacy_fill_wave =
-{
-	spc1000_tap_fill_wave,                 /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	spc1000_tap_calculate_size_in_samples, /* chunk_sample_calc */
-	SPC1000_WAV_FREQUENCY,                      /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
-
 static cassette_image::error spc1000_tap_cassette_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
 	opts->channels = 1;
@@ -143,10 +83,21 @@ static cassette_image::error spc1000_tap_cassette_identify(cassette_image *casse
 	return cassette_image::error::SUCCESS;
 }
 
+
 static cassette_image::error spc1000_tap_cassette_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&spc1000_tap_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	spc1000_handle_tap(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / SPC1000_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format spc1000_tap_cassette_image_format =
 {
@@ -158,17 +109,6 @@ static const cassette_image::Format spc1000_tap_cassette_image_format =
 
 
 // CAS
-static const cassette_image::LegacyWaveFiller spc1000_cas_legacy_fill_wave =
-{
-	spc1000_cas_fill_wave,                 /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	spc1000_cas_calculate_size_in_samples, /* chunk_sample_calc */
-	SPC1000_WAV_FREQUENCY,                      /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
-
 static cassette_image::error spc1000_cas_cassette_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
 	opts->channels = 1;
@@ -177,10 +117,24 @@ static cassette_image::error spc1000_cas_cassette_identify(cassette_image *casse
 	return cassette_image::error::SUCCESS;
 }
 
+
 static cassette_image::error spc1000_cas_cassette_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&spc1000_cas_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	if (bytes.size() < 0x10)
+		return cassette_image::error::INVALID_IMAGE;
+
+	spc1000_handle_cas(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / SPC1000_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format spc1000_cas_cassette_image_format =
 {
@@ -189,7 +143,6 @@ static const cassette_image::Format spc1000_cas_cassette_image_format =
 	spc1000_cas_cassette_load,
 	nullptr
 };
-
 
 
 CASSETTE_FORMATLIST_START(spc1000_cassette_formats)
