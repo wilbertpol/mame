@@ -19,12 +19,10 @@ static const uint8_t CasHeader[17] =
 #define SMPLO   -32768
 #define SMPHI   32767
 
-static int cas_size; // FIXME: global variable prevents multiple instances
-
 /*******************************************************************
    Generate samples for the tape image
 ********************************************************************/
-static int svi_cas_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
+static void svi_cas_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
 	int cas_pos, samples_pos, n, i;
 
@@ -32,69 +30,69 @@ static int svi_cas_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
 	samples_pos = 0;
 
 	/* write CAS_INIT_SAMPLES of silence */
-	n = CAS_INIT_SAMPLES; while (n--) buffer[samples_pos++] = 0;
+	n = CAS_INIT_SAMPLES; while (n--) samples.push_back(0);
 
-	while (samples_pos < sample_count && cas_pos < cas_size)
+	while (cas_pos < bytes.size())
 	{
 		/* write CAS_HEADER_PERIODS of header */
-		for (i=0;i<CAS_HEADER_PERIODS;i++)
+		for (int i = 0; i < CAS_HEADER_PERIODS; i++)
 		{
 			/* write a "0" */
 			n = !(i % 4) ? 21 : 18;
-			while (n--) buffer[samples_pos++] = SMPHI;
-			n = 19; while (n--) buffer[samples_pos++] = SMPLO;
+			while (n--) samples.push_back(SMPHI);
+			n = 19; while (n--) samples.push_back(SMPLO);
 			/* write a "1" */
-			n = 9; while (n--) buffer[samples_pos++] = SMPHI;
-			n = 9; while (n--) buffer[samples_pos++] = SMPLO;
+			n = 9; while (n--) samples.push_back(SMPHI);
+			n = 9; while (n--) samples.push_back(SMPLO);
 		}
 
 		/* write "0x7f" */
 		/* write a "0" */
-		n = 21; while (n--) buffer[samples_pos++] = SMPHI;
-		n = 19; while (n--) buffer[samples_pos++] = SMPLO;
+		n = 21; while (n--) samples.push_back(SMPHI);
+		n = 19; while (n--) samples.push_back(SMPLO);
 
 		for (i=0;i<7;i++)
 		{
 			/* write a "1" */
-			n = 9; while (n--) buffer[samples_pos++] = SMPHI;
-			n = 9; while (n--) buffer[samples_pos++] = SMPLO;
+			n = 9; while (n--) samples.push_back(SMPHI);
+			n = 9; while (n--) samples.push_back(SMPLO);
 		}
 
-		while (samples_pos < sample_count && cas_pos < cas_size)
+		while (cas_pos < bytes.size())
 		{
-			n = 21; while (n--) buffer[samples_pos++] = SMPHI;
-			n = 19; while (n--) buffer[samples_pos++] = SMPLO;
+			n = 21; while (n--) samples.push_back(SMPHI);
+			n = 19; while (n--) samples.push_back(SMPLO);
 
-			for (i=0;i<8;i++)
+			for (i = 0; i < 8; i++)
 			{
-				int bit = (bytes[cas_pos] & (0x80 >> i) );
+				int bit = (bytes[cas_pos] & (0x80 >> i));
 
 				/* write this one bit */
 				if (bit)
 				{
 					/* write a "1" */
-					n = 9; while (n--) buffer[samples_pos++] = SMPHI;
-					n = 9; while (n--) buffer[samples_pos++] = SMPLO;
+					n = 9; while (n--) samples.push_back(SMPHI);
+					n = 9; while (n--) samples.push_back(SMPLO);
 				}
 				else
 				{
 					/* write a "0" */
-					n = 18; while (n--) buffer[samples_pos++] = SMPHI;
-					n = 19; while (n--) buffer[samples_pos++] = SMPLO;
+					n = 18; while (n--) samples.push_back(SMPHI);
+					n = 19; while (n--) samples.push_back(SMPLO);
 				}
 			}
 
 			cas_pos++;
 
 			/* check if we've hit a new header (or end of block) */
-			if ( (cas_pos + 17) < cas_size)
+			if ( (cas_pos + 17) < bytes.size())
 			{
-				if (!memcmp (bytes + cas_pos, CasHeader, 17) )
+				if (!memcmp (&bytes[cas_pos], CasHeader, 17) )
 				{
 					cas_pos += 17;
 
 					/* end of block marker */
-					n = CAS_EMPTY_SAMPLES; while (n--) buffer[samples_pos++] = SMPHI;
+					n = CAS_EMPTY_SAMPLES; while (n--) samples.push_back(SMPHI);
 
 					break; /* falls back to loop above; plays header again */
 				}
@@ -103,85 +101,8 @@ static int svi_cas_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
 	}
 
 	/* end of block marker */
-	n = CAS_EMPTY_SAMPLES; while (n--) buffer[samples_pos++] = SMPHI;
-
-	return samples_pos;
+	n = CAS_EMPTY_SAMPLES; while (n--) samples.push_back(SMPHI);
 }
-
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-static int svi_cas_to_wav_size(const uint8_t *casdata, int caslen)
-{
-	int cas_pos, samples_pos, size, i;
-
-	if (caslen < 17) return -1;
-	if (memcmp (casdata, CasHeader, sizeof (CasHeader) ) ) return -1;
-
-	cas_size = caslen;
-
-	cas_pos = 17;
-
-	samples_pos = CAS_INIT_SAMPLES;
-
-	while (cas_pos < caslen)
-	{
-		size = CAS_HEADER_PERIODS * ( CAS_PERIOD_0 + CAS_PERIOD_1 ) +
-				( CAS_HEADER_PERIODS / 4 ) * 3;
-
-		samples_pos += size;
-
-		samples_pos += 21 + 19 + 7 * CAS_PERIOD_1;
-
-		while (cas_pos < caslen)
-		{
-			samples_pos += 21;
-			samples_pos += 19;
-
-			for (i=0;i<8;i++)
-			{
-				int bit = (casdata[cas_pos] & (0x80 >> i) );
-
-				samples_pos += bit ? CAS_PERIOD_1 : CAS_PERIOD_0;
-			}
-
-			cas_pos++;
-
-			/* check if we've hit a new header (or end of block) */
-			if ( (cas_pos + 17) < caslen)
-			{
-				if (!memcmp (casdata + cas_pos, CasHeader, 17) )
-				{
-					cas_pos += 17;
-
-					/* end of block marker */
-					samples_pos += CAS_EMPTY_SAMPLES;
-
-					break; /* falls back to loop above; plays header again */
-				}
-			}
-		}
-	}
-
-	/* end of block marker */
-	samples_pos += CAS_EMPTY_SAMPLES;
-
-	return samples_pos;
-}
-
-
-static const cassette_image::LegacyWaveFiller svi_legacy_fill_wave =
-{
-	svi_cas_fill_wave,                      /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	svi_cas_to_wav_size,                    /* chunk_sample_calc */
-	44100,                                  /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
-
 
 
 static cassette_image::error svi_cas_identify(cassette_image *cassette, cassette_image::Options *opts)
@@ -193,12 +114,19 @@ static cassette_image::error svi_cas_identify(cassette_image *cassette, cassette
 }
 
 
-
 static cassette_image::error svi_cas_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&svi_legacy_fill_wave);
-}
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
 
+	svi_cas_fill_wave(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / 44100, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
+}
 
 
 static const cassette_image::Format svi_cas_format =
@@ -208,7 +136,6 @@ static const cassette_image::Format svi_cas_format =
 	svi_cas_load,
 	nullptr
 };
-
 
 
 CASSETTE_FORMATLIST_START(svi_cassette_formats)

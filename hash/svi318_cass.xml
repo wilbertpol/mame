@@ -122,11 +122,13 @@ Ballonies (198x)
 
 
 	<!-- Official Software -->
+	<!-- does not work on sv318 -->
 	<software name="telebuny">
 		<description>Telebunny</description>
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-241T" />
+		<info name="usage" value="bload&quot;cas:&quot;,r" />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
