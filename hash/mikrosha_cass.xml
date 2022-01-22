@@ -2,6 +2,9 @@
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
 <!--
 license:CC0
+
+The general method of loading a tape is to type I, press Return, select Play. When it's finished, type G and press Return to run it.
+
 -->
 <softwarelist name="mikrosha_cass" description="Mikrosha cassettes">
 
