@@ -63,131 +63,100 @@ TAP - has an ID header of TAP_DGOS_BEE or MBEE, null terminated.
 
 #define MBEE_WAV_FREQUENCY   9600
 
-// image size
-static int mbee_image_size;
-static bool mbee_speed;
 
-static int mbee_put_samples(int16_t *buffer, int sample_pos, int count, int level)
+static void mbee_put_samples(std::vector<int16_t> &samples, int count, int level)
 {
-	if (buffer)
-	{
-		for (int i=0; i<count; i++)
-			buffer[sample_pos + i] = level;
-	}
-
-	return count;
+	for (int i=0; i<count; i++)
+		samples.push_back(level);
 }
 
-static int mbee_output_bit(int16_t *buffer, int sample_pos, bool bit)
+
+static void mbee_output_bit(std::vector<int16_t> &samples, bool mbee_speed, bool bit)
 {
-	int samples = 0;
 	if (mbee_speed)
 	{
 		if (bit)
 		{
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
+			mbee_put_samples(samples, 2, WAVEENTRY_LOW);
+			mbee_put_samples(samples, 2, WAVEENTRY_HIGH);
+			mbee_put_samples(samples, 2, WAVEENTRY_LOW);
+			mbee_put_samples(samples, 2, WAVEENTRY_HIGH);
 		}
 		else
 		{
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
+			mbee_put_samples(samples, 4, WAVEENTRY_LOW);
+			mbee_put_samples(samples, 4, WAVEENTRY_HIGH);
 		}
 	}
 	else
 	{
 		if (bit)
 		{
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
+			for (int i = 0; i < 8; i++)
+			{
+				mbee_put_samples(samples, 2, WAVEENTRY_LOW);
+				mbee_put_samples(samples, 2, WAVEENTRY_HIGH);
+			}
 		}
 		else
 		{
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
-			samples += mbee_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
+			for (int i = 0; i < 4; i++)
+			{
+				mbee_put_samples(samples, 4, WAVEENTRY_LOW);
+				mbee_put_samples(samples, 4, WAVEENTRY_HIGH);
+			}
 		}
 	}
-
-	return samples;
 }
 
-static int mbee_output_byte(int16_t *buffer, int sample_pos, uint8_t byte)
+
+static void mbee_output_byte(std::vector<int16_t> &samples, bool mbee_speed, uint8_t byte)
 {
-	int samples = 0;
-	uint8_t i;
+	// start
+	mbee_output_bit(samples, mbee_speed, 0);
 
-	/* start */
-	samples += mbee_output_bit (buffer, sample_pos + samples, 0);
+	// data
+	for (int i = 0; i < 8; i++)
+		mbee_output_bit(samples, mbee_speed, (byte >> i) & 1);
 
-	/* data */
-	for (i = 0; i<8; i++)
-		samples += mbee_output_bit (buffer, sample_pos + samples, (byte >> i) & 1);
-
-	/* stop */
-	for (i = 0; i<2; i++)
-		samples += mbee_output_bit (buffer, sample_pos + samples, 1);
-
-	return samples;
+	// stop 
+	for (int i = 0; i < 2; i++)
+		mbee_output_bit(samples, mbee_speed, 1);
 }
 
-static int mbee_handle_tap(int16_t *buffer, const uint8_t *bytes)
+
+static void mbee_handle_tap(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	uint32_t sample_count = 0;
 	uint32_t byte_count = 0;
-	uint32_t i = 0;
-	bool temp_speed = 0;
-	uint8_t temp_blocks = 0;
-	uint16_t temp_size = 0;
+	bool mbee_speed;
 
 	// TAP file starts with a null-terminate ID string. We just skip this.
-	while (bytes[byte_count])
+	while (byte_count < bytes.size() && bytes[byte_count])
 		byte_count++;
 
 	// there can be a library of files, loop through them all
-	while (byte_count < mbee_image_size)
+	while (byte_count < bytes.size())
 	{
-		mbee_speed = 0;
+		mbee_speed = false;
 
 		// now output the leader
-		while ( (!bytes[byte_count]) && (byte_count < mbee_image_size) )
-			sample_count += mbee_output_byte(buffer, sample_count, bytes[byte_count++]);
+		while (byte_count < bytes.size() && !bytes[byte_count])
+			mbee_output_byte(samples, mbee_speed, bytes[byte_count++]);
 
 		// make sure SOH is where we expect
-		if (bytes[byte_count] != 1 )
+		if (bytes[byte_count] != 1 || byte_count + 18 >= bytes.size())
 			break;
 
 		// store the size for later
-		temp_blocks = bytes[byte_count + 9];
-		temp_size = bytes[byte_count + 8] + temp_blocks*256;
+		uint8_t temp_blocks = bytes[byte_count + 9];
+		uint16_t temp_size = bytes[byte_count + 8] + temp_blocks*256;
 
 		// store the speed for later
-		temp_speed = (bytes[byte_count + 15]) ? 1 : 0;
+		bool temp_speed = bytes[byte_count + 15];
 
-		/* header */
-		for (i=0; i<18; i++)
-			sample_count += mbee_output_byte(buffer, sample_count, bytes[byte_count++]);
+		// header
+		for (int i = 0; i < 18; i++)
+			mbee_output_byte(samples, mbee_speed, bytes[byte_count++]);
 
 		// change speed
 		mbee_speed = temp_speed;
@@ -195,46 +164,12 @@ static int mbee_handle_tap(int16_t *buffer, const uint8_t *bytes)
 		// calculate size of program including CRC bytes
 		temp_size = temp_size + temp_blocks + 1;
 
-		/* data */
-		for (i=0; i<temp_size; i++)
-			sample_count += mbee_output_byte(buffer, sample_count, bytes[byte_count++]);
-
+		// data
+		for (int i=0; i < temp_size && byte_count < bytes.size(); i++)
+			mbee_output_byte(samples, mbee_speed, bytes[byte_count++]);
 	}
-
-	return sample_count;
 }
 
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-
-static int mbee_tap_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	return mbee_handle_tap(buffer, bytes);
-}
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-
-static int mbee_tap_calculate_size_in_samples(const uint8_t *bytes, int length)
-{
-	mbee_image_size = length;
-
-	return mbee_handle_tap(nullptr, bytes);
-}
-
-static const cassette_image::LegacyWaveFiller mbee_tap_config =
-{
-	mbee_tap_fill_wave,                 /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	mbee_tap_calculate_size_in_samples, /* chunk_sample_calc */
-	MBEE_WAV_FREQUENCY,                      /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error mbee_tap_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
@@ -244,10 +179,21 @@ static cassette_image::error mbee_tap_identify(cassette_image *cassette, cassett
 	return cassette_image::error::SUCCESS;
 }
 
+
 static cassette_image::error mbee_tap_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&mbee_tap_config);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	mbee_handle_tap(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / MBEE_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format mbee_tap_image_format =
 {
@@ -256,6 +202,7 @@ static const cassette_image::Format mbee_tap_image_format =
 	mbee_tap_load,
 	nullptr
 };
+
 
 CASSETTE_FORMATLIST_START(mbee_cassette_formats)
 	CASSETTE_FORMAT(mbee_tap_image_format)
