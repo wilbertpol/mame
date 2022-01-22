@@ -37,124 +37,78 @@ enough to make it work.
 #define PHC25_WAV_FREQUENCY   9600
 #define PHC25_HEADER_BYTES    16
 
-// image size
-static int phc25_image_size; // FIXME: global variable prevents multiple instances
 
-static int phc25_put_samples(int16_t *buffer, int sample_pos, int count, int level)
+static void phc25_put_samples(std::vector<int16_t> &samples, int count, int level)
 {
-	if (buffer)
-	{
-		for (int i=0; i<count; i++)
-			buffer[sample_pos + i] = level;
-	}
-
-	return count;
+	for (int i = 0; i < count; i++)
+		samples.push_back(level);
 }
 
-static int phc25_output_bit(int16_t *buffer, int sample_pos, bool bit)
-{
-	int samples = 0;
 
+static void phc25_output_bit(std::vector<int16_t> &samples, bool bit)
+{
 	if (bit)
 	{
-		samples += phc25_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-		samples += phc25_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-		samples += phc25_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-		samples += phc25_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
+		phc25_put_samples(samples, 2, WAVEENTRY_LOW);
+		phc25_put_samples(samples, 2, WAVEENTRY_HIGH);
+		phc25_put_samples(samples, 2, WAVEENTRY_LOW);
+		phc25_put_samples(samples, 2, WAVEENTRY_HIGH);
 	}
 	else
 	{
-		samples += phc25_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
-		samples += phc25_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
+		phc25_put_samples(samples, 4, WAVEENTRY_LOW);
+		phc25_put_samples(samples, 4, WAVEENTRY_HIGH);
 	}
-
-	return samples;
 }
 
-static int phc25_output_byte(int16_t *buffer, int sample_pos, uint8_t byte)
+
+static void phc25_output_byte(std::vector<int16_t> &samples, uint8_t byte)
 {
-	int samples = 0;
-	uint8_t i;
+	// start
+	phc25_output_bit(samples, 0);
 
-	/* start */
-	samples += phc25_output_bit (buffer, sample_pos + samples, 0);
+	// data
+	for (int i = 0; i < 8; i++)
+		phc25_output_bit(samples, (byte >> i) & 1);
 
-	/* data */
-	for (i = 0; i<8; i++)
-		samples += phc25_output_bit (buffer, sample_pos + samples, (byte >> i) & 1);
-
-	/* stop */
-	for (i = 0; i<4; i++)
-		samples += phc25_output_bit (buffer, sample_pos + samples, 1);
-
-	return samples;
+	// stop
+	for (int i = 0; i < 4; i++)
+		phc25_output_bit(samples, 1);
 }
 
-static int phc25_handle_cassette(int16_t *buffer, const uint8_t *bytes)
+
+static void phc25_handle_cassette(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	uint32_t sample_count = 0;
 	uint32_t byte_count = 0;
-	uint32_t i;
 
 	// silence
 //  sample_count += phc25_put_samples(buffer, 6640, 2, WAVEENTRY_HIGH);
 
-	/* start */
+	// start
 //  for (i=0; i<12155; i++)
-	for (i=0; i<2155; i++)
-		sample_count += phc25_output_bit(buffer, sample_count, 1);
+	for (int i = 0; i < 2155; i++)
+		phc25_output_bit(samples, 1);
 
-	/* header */
-	for (int i=0; i<PHC25_HEADER_BYTES; i++)
-		sample_count += phc25_output_byte(buffer, sample_count, bytes[i]);
+	// header
+	for (int i = 0; i < PHC25_HEADER_BYTES && i < bytes.size(); i++)
+		phc25_output_byte(samples, bytes[i]);
 
 	byte_count = PHC25_HEADER_BYTES;
 
-	/* pause */
-	for (i=0; i<1630; i++)
-		sample_count += phc25_output_bit(buffer, sample_count, 1);
+	// pause
+	for (int i = 0; i < 1630; i++)
+		phc25_output_bit(samples, 1);
 
-	/* data */
-	for (i=byte_count; i<phc25_image_size-1; i++)
-		sample_count += phc25_output_byte(buffer, sample_count, bytes[i]);
+	// data
+	for (int i = byte_count; i < bytes.size() - 1; i++)
+		phc25_output_byte(samples, bytes[i]);
 
 	// silence
-	sample_count += phc25_put_samples(buffer, 1000, 2, WAVEENTRY_HIGH);
-
-	return sample_count;
+	// The original code put the bit of silence at sample position 1000, was that really needed? The
+	// images seem to load fine without it.
+	//sample_count += phc25_put_samples(buffer, 1000, 2, WAVEENTRY_HIGH);
 }
 
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-
-static int phc25_cassette_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	return phc25_handle_cassette(buffer, bytes);
-}
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-
-static int phc25_cassette_calculate_size_in_samples(const uint8_t *bytes, int length)
-{
-	phc25_image_size = length;
-
-	return phc25_handle_cassette(nullptr, bytes);
-}
-
-static const cassette_image::LegacyWaveFiller phc25_legacy_fill_wave =
-{
-	phc25_cassette_fill_wave,                 /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	phc25_cassette_calculate_size_in_samples, /* chunk_sample_calc */
-	PHC25_WAV_FREQUENCY,                      /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error phc25_cassette_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
@@ -164,10 +118,21 @@ static cassette_image::error phc25_cassette_identify(cassette_image *cassette, c
 	return cassette_image::error::SUCCESS;
 }
 
+
 static cassette_image::error phc25_cassette_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&phc25_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	 phc25_handle_cassette(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / PHC25_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format phc25_cassette_image_format =
 {
@@ -176,6 +141,7 @@ static const cassette_image::Format phc25_cassette_image_format =
 	phc25_cassette_load,
 	nullptr
 };
+
 
 CASSETTE_FORMATLIST_START(phc25_cassette_formats)
 	CASSETTE_FORMAT(phc25_cassette_image_format)
