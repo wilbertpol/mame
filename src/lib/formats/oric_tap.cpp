@@ -36,14 +36,14 @@ enum
 
 #define ORIC_LEADER_LENGTH 512
 
+
 struct oric_t
 {
 	int cassette_state;
 	int data_count;
 	int data_length;
-	int tap_size;
 };
-static oric_t oric;
+
 
 /* to write a bit to the tape, the rom routines output either 4 periods at 1200 Hz for a 0 or 8 periods at 2400 Hz for a 1  */
 /* 4800 is twice 2400Hz */
@@ -51,42 +51,19 @@ static oric_t oric;
 /* 8 periods at 2400Hz */
 /* hi,lo, hi,lo, hi,lo, hi,lo */
 
-static int16_t *oric_emit_level(int16_t *p, int count, int16_t wave_state)
+static void oric_emit_level(std::vector<int16_t> &samples, int count, int16_t wave_state)
 {
-	int i;
-
-	for (i=0; i<count; i++)
+	for (int i = 0; i < count; i++)
 	{
-		*(p++) = wave_state;
+		samples.push_back(wave_state);
 	}
-	return p;
 }
 
 /* 4 periods at 1200Hz */
-static int16_t* oric_output_bit(int16_t *p, uint8_t b)
+static void oric_output_bit(std::vector<int16_t> &samples, uint8_t b)
 {
-	p = oric_emit_level(p, 1, WAVEENTRY_HIGH);
-	p = oric_emit_level(p, b ? 1 : 2, WAVEENTRY_LOW);
-
-	return p;
-}
-
-static int oric_get_bit_size_in_samples(uint8_t b)
-{
-	int count;
-
-	count = 1;
-
-	if (b)
-	{
-		count++;
-	}
-	else
-	{
-		count+=2;
-	}
-
-	return count;
+	oric_emit_level(samples, 1, WAVEENTRY_HIGH);
+	oric_emit_level(samples, b ? 1 : 2, WAVEENTRY_LOW);
 }
 
 
@@ -119,133 +96,79 @@ static int oric_get_bit_size_in_samples(uint8_t b)
     1   * ?         ->      ???
 */
 
-static int oric_calculate_byte_size_in_samples(uint8_t byte)
+
+static void oric_output_byte(std::vector<int16_t> &samples, uint8_t byte)
 {
-	int count;
-	int i;
-	uint8_t parity;
-	uint8_t data;
+	// start bit
+	oric_output_bit(samples, 0);
 
-	count = 0;
+	// set initial parity
+	uint8_t parity = 1;
 
-
-	/* start bit */
-	count+=oric_get_bit_size_in_samples(0);
-
-	/* set initial parity */
-	parity = 1;
-
-	/* data bits, written bit 0, bit 1...bit 7 */
-	data = byte;
-	for (i=0; i<8; i++)
+	// data bits, written bit 0, bit 1...bit 7
+	uint8_t data = byte;
+	for (int i = 0; i < 8; i++)
 	{
-		uint8_t data_bit;
-
-		data_bit = data & 0x01;
+		uint8_t data_bit = data & 0x01;
 
 		parity = parity + data_bit;
 
-		count+=oric_get_bit_size_in_samples(data_bit);
-		data = data>>1;
+		oric_output_bit(samples, data_bit);
+		data = data >> 1;
 	}
 
-	/* parity */
-	count+=oric_get_bit_size_in_samples((parity & 0x01));
+	// parity
+	oric_output_bit(samples, parity & 0x01);
 
-	/* stop bits */
-	count+=oric_get_bit_size_in_samples(1);
-	count+=oric_get_bit_size_in_samples(1);
-	count+=oric_get_bit_size_in_samples(1);
-	count+=oric_get_bit_size_in_samples(1);
-
-	return count;
+	// stop bits
+	oric_output_bit(samples, 1);
+	oric_output_bit(samples, 1);
+	oric_output_bit(samples, 1);
+	oric_output_bit(samples, 1);
 }
 
 
-static int16_t *oric_output_byte(int16_t *p, uint8_t byte)
+static void oric_fill_pause(std::vector<int16_t> &samples, int sample_count)
 {
-	int i;
-	uint8_t parity;
-	uint8_t data;
-
-	/* start bit */
-	p = oric_output_bit(p, 0);
-
-	/* set initial parity */
-	parity = 1;
-
-	/* data bits, written bit 0, bit 1...bit 7 */
-	data = byte;
-	for (i=0; i<8; i++)
+	for (int i = 0; i < sample_count; i++)
 	{
-		uint8_t data_bit;
-
-		data_bit = data & 0x01;
-
-		parity = parity + data_bit;
-
-		p = oric_output_bit(p, data_bit);
-		data = data>>1;
+		samples.push_back(WAVEENTRY_NULL);
 	}
-
-	/* parity */
-	p = oric_output_bit(p, parity & 0x01);
-
-	/* stop bits */
-	p = oric_output_bit(p, 1);
-	p = oric_output_bit(p, 1);
-	p = oric_output_bit(p, 1);
-	p = oric_output_bit(p, 1);
-
-	return p;
 }
 
-static int16_t *oric_fill_pause(int16_t *p, int sample_count)
-{
-	int i;
-
-	for (i=0; i<sample_count; i++)
-	{
-		*(p++) = WAVEENTRY_NULL;
-	}
-
-	return p;
-}
 
 static int oric_seconds_to_samples(float seconds)
 {
 	return (int)((float)seconds*(float)ORIC_WAV_FREQUENCY);
 }
 
-/* length is length of .tap file! */
-static int oric_cassette_calculate_size_in_samples(const uint8_t *bytes, int length)
+
+static void oric_cassette_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
+	oric_t oric = { 0 };
 	unsigned char header[9];
-	int count;
 
-	const uint8_t *data_ptr;
-	int i;
-	uint8_t data;
-
-	oric.tap_size = length;
+	// header and trailer act as pauses */
+	// the trailer is required so that the via sees the last bit of the last byte
+	// header samples
+	for (int i = 0; i < ORIC_WAVESAMPLES_HEADER; i++)
+		samples.push_back(WAVEENTRY_NULL);
 
 	oric.cassette_state = ORIC_CASSETTE_SEARCHING_FOR_SYNC_BYTE;
-	count = 0;
-	data_ptr = bytes;
+	int pos = 0;
 
-	while (data_ptr<(bytes+length))
+	while (pos < bytes.size())
 	{
-		data = data_ptr[0];
-		data_ptr++;
+		uint8_t data = bytes[pos++];
 
 		switch (oric.cassette_state)
 		{
 			case ORIC_CASSETTE_SEARCHING_FOR_SYNC_BYTE:
 			{
-				if (data==ORIC_SYNC_BYTE)
+				if (data == ORIC_SYNC_BYTE)
 				{
 					LOG_FORMATS("found sync byte!\n");
-					/* found first sync byte */
+					// found first sync byte
 					oric.cassette_state = ORIC_CASSETTE_GOT_SYNC_BYTE;
 				}
 			}
@@ -253,25 +176,22 @@ static int oric_cassette_calculate_size_in_samples(const uint8_t *bytes, int len
 
 			case ORIC_CASSETTE_GOT_SYNC_BYTE:
 			{
-				if (data!=ORIC_SYNC_BYTE)
+				if (data != ORIC_SYNC_BYTE)
 				{
-					/* 0.25 second pause */
-					count += oric_seconds_to_samples(0.25);
+					// 0.25 second pause
+					oric_fill_pause(samples, oric_seconds_to_samples(0.25));
 
 					LOG_FORMATS("found end of sync bytes!\n");
-
-					/* oric writes approx 512 bytes */
-					/* found end of sync bytes */
-					for (i=0; i<ORIC_LEADER_LENGTH; i++)
+					// found end of sync bytes
+					for (int i = 0; i < ORIC_LEADER_LENGTH; i++)
 					{
-						count+=oric_calculate_byte_size_in_samples(0x016);
+						oric_output_byte(samples, 0x016);
 					}
 
-					if (data==0x024)
+					if (data == 0x024)
 					{
 						//LOG_FORMATS("reading header!\n");
-						count+=oric_calculate_byte_size_in_samples(0x024);
-
+						oric_output_byte(samples, data);
 						oric.cassette_state = ORIC_CASSETTE_READ_HEADER;
 						oric.data_count = 0;
 						oric.data_length = 9;
@@ -283,11 +203,10 @@ static int oric_cassette_calculate_size_in_samples(const uint8_t *bytes, int len
 			case ORIC_CASSETTE_READ_HEADER:
 			{
 				header[oric.data_count] = data;
-				count+=oric_calculate_byte_size_in_samples(data);
-
+				oric_output_byte(samples, data);
 				oric.data_count++;
 
-				if (oric.data_count==oric.data_length)
+				if (oric.data_count == oric.data_length)
 				{
 					//LOG_FORMATS("finished reading header!\n");
 					oric.cassette_state = ORIC_CASSETTE_READ_FILENAME;
@@ -297,19 +216,19 @@ static int oric_cassette_calculate_size_in_samples(const uint8_t *bytes, int len
 
 			case ORIC_CASSETTE_READ_FILENAME:
 			{
-				count+=oric_calculate_byte_size_in_samples(data);
+				oric_output_byte(samples, data);
 
-				/* got end of filename? */
-				if (data==0)
+				// got end of filename?
+				if (data == 0)
 				{
 					uint16_t end, start;
 					LOG_FORMATS("got end of filename\n");
 
-					/* 100 1 bits to separate header from data */
-										for (i=0; i<100; i++)
-										{
-											count+=oric_get_bit_size_in_samples(1);
-										}
+					// oric includes a small delay, but I don't see it being 1 bits
+					for (int i=0; i<100; i++)
+					{
+						oric_output_bit(samples, 1);
+					}
 
 					oric.cassette_state = ORIC_CASSETTE_WRITE_DATA;
 					oric.data_count = 0;
@@ -318,17 +237,17 @@ static int oric_cassette_calculate_size_in_samples(const uint8_t *bytes, int len
 					start = (((header[6] & 0x0ff)<<8) | (header[7] & 0x0ff));
 					LOG(("start (from header): %02x\n",start));
 					LOG(("end (from header): %02x\n",end));
-										oric.data_length = end - start + 1;
+					oric.data_length = end - start + 1;
 				}
 			}
 			break;
 
 			case ORIC_CASSETTE_WRITE_DATA:
 			{
-				count+=oric_calculate_byte_size_in_samples(data);
+				oric_output_byte(samples, data);
 				oric.data_count++;
 
-				if (oric.data_count==oric.data_length)
+				if (oric.data_count == oric.data_length)
 				{
 					LOG_FORMATS("finished writing data!\n");
 					oric.cassette_state = ORIC_CASSETTE_SEARCHING_FOR_SYNC_BYTE;
@@ -339,159 +258,10 @@ static int oric_cassette_calculate_size_in_samples(const uint8_t *bytes, int len
 		}
 	}
 
-	return count;
+	// trailer samples
+	for (int i = 0; i < ORIC_WAVESAMPLES_TRAILER; i++)
+		samples.push_back(WAVEENTRY_NULL);
 }
-
-/* length is length of sample buffer to fill! */
-static int oric_cassette_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	unsigned char header[9];
-	uint8_t *data_ptr;
-	int16_t *p;
-	int i;
-	uint8_t data;
-
-	p = buffer;
-
-
-	/* header and trailer act as pauses */
-	/* the trailer is required so that the via sees the last bit of the last
-	    byte */
-	if (bytes == CODE_HEADER) {
-		for (i = 0; i < ORIC_WAVESAMPLES_HEADER; i++)
-			*(p++) = WAVEENTRY_NULL;
-	}
-	else if (bytes == CODE_TRAILER) {
-		for (i = 0; i < ORIC_WAVESAMPLES_TRAILER; i++)
-			*(p++) = WAVEENTRY_NULL;
-	}
-	else
-{
-	/* the length is the number of samples left in the buffer and NOT the number of bytes for the input file */
-	length = length - ORIC_WAVESAMPLES_TRAILER;
-
-	oric.cassette_state = ORIC_CASSETTE_SEARCHING_FOR_SYNC_BYTE;
-	data_ptr = bytes;
-
-	while ((data_ptr<(bytes + oric.tap_size)) && (p < (buffer+length)) )
-	{
-		data = data_ptr[0];
-		data_ptr++;
-
-		switch (oric.cassette_state)
-		{
-			case ORIC_CASSETTE_SEARCHING_FOR_SYNC_BYTE:
-			{
-				if (data==ORIC_SYNC_BYTE)
-				{
-					LOG_FORMATS("found sync byte!\n");
-					/* found first sync byte */
-					oric.cassette_state = ORIC_CASSETTE_GOT_SYNC_BYTE;
-				}
-			}
-			break;
-
-			case ORIC_CASSETTE_GOT_SYNC_BYTE:
-			{
-				if (data!=ORIC_SYNC_BYTE)
-				{
-					/* 0.25 second pause */
-					p = oric_fill_pause(p, oric_seconds_to_samples(0.25));
-
-					LOG_FORMATS("found end of sync bytes!\n");
-					/* found end of sync bytes */
-					for (i=0; i<ORIC_LEADER_LENGTH; i++)
-					{
-						p = oric_output_byte(p,0x016);
-					}
-
-					if (data==0x024)
-					{
-						//LOG_FORMATS("reading header!\n");
-						p = oric_output_byte(p,data);
-						oric.cassette_state = ORIC_CASSETTE_READ_HEADER;
-						oric.data_count = 0;
-						oric.data_length = 9;
-					}
-				}
-			}
-			break;
-
-			case ORIC_CASSETTE_READ_HEADER:
-			{
-				header[oric.data_count] = data;
-				p = oric_output_byte(p, data);
-				oric.data_count++;
-
-				if (oric.data_count==oric.data_length)
-				{
-					//LOG_FORMATS("finished reading header!\n");
-					oric.cassette_state = ORIC_CASSETTE_READ_FILENAME;
-				}
-			}
-			break;
-
-			case ORIC_CASSETTE_READ_FILENAME:
-			{
-				p = oric_output_byte(p, data);
-
-				/* got end of filename? */
-				if (data==0)
-				{
-					uint16_t end, start;
-					LOG_FORMATS("got end of filename\n");
-
-					/* oric includes a small delay, but I don't see
-					it being 1 bits */
-					for (i=0; i<100; i++)
-					{
-											p = oric_output_bit(p,1);
-					}
-
-					oric.cassette_state = ORIC_CASSETTE_WRITE_DATA;
-					oric.data_count = 0;
-
-					end = (((header[4] & 0x0ff)<<8) | (header[5] & 0x0ff));
-					start = (((header[6] & 0x0ff)<<8) | (header[7] & 0x0ff));
-					LOG(("start (from header): %02x\n",start));
-					LOG(("end (from header): %02x\n",end));
-										oric.data_length = end - start + 1;
-				}
-			}
-			break;
-
-			case ORIC_CASSETTE_WRITE_DATA:
-			{
-				p = oric_output_byte(p, data);
-				oric.data_count++;
-
-				if (oric.data_count==oric.data_length)
-				{
-					LOG_FORMATS("finished writing data!\n");
-					oric.cassette_state = ORIC_CASSETTE_SEARCHING_FOR_SYNC_BYTE;
-				}
-			}
-			break;
-
-		}
-	}
-}
-	return p - buffer;
-}
-
-
-
-static const cassette_image::LegacyWaveFiller oric_legacy_fill_wave =
-{
-	oric_cassette_fill_wave,                    /* fill_wave */
-	-1,                                         /* chunk_size */
-	0,                                          /* chunk_samples */
-	oric_cassette_calculate_size_in_samples,    /* chunk_sample_calc */
-	ORIC_WAV_FREQUENCY,                         /* sample_frequency */
-	ORIC_WAVESAMPLES_HEADER,                    /* header_samples */
-	ORIC_WAVESAMPLES_TRAILER                    /* trailer_samples */
-};
-
 
 
 static cassette_image::error oric_tap_identify(cassette_image *cassette, cassette_image::Options *opts)
@@ -503,12 +273,19 @@ static cassette_image::error oric_tap_identify(cassette_image *cassette, cassett
 }
 
 
-
 static cassette_image::error oric_tap_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&oric_legacy_fill_wave);
-}
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
 
+	oric_cassette_fill_wave(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / ORIC_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
+}
 
 
 static const cassette_image::Format oric_tap_format =
@@ -518,7 +295,6 @@ static const cassette_image::Format oric_tap_format =
 	oric_tap_load,
 	nullptr
 };
-
 
 
 CASSETTE_FORMATLIST_START(oric_cassette_formats)
