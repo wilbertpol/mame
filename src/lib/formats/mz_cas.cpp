@@ -36,282 +36,193 @@
 #define STM_0       20
 #define STM_L       1
 
-static int fill_wave_1(int16_t *buffer, int offs)
+
+static void fill_wave_1(std::vector<int16_t> &samples)
 {
-	buffer[offs++] = HI;
-	buffer[offs++] = HI;
-	buffer[offs++] = LO;
-	buffer[offs++] = LO;
-	return LONG_PULSE;
+	samples.push_back(HI);
+	samples.push_back(HI);
+	samples.push_back(LO);
+	samples.push_back(LO);
 }
 
-static int fill_wave_0(int16_t *buffer, int offs)
+
+static void fill_wave_0(std::vector<int16_t> &samples)
 {
-	buffer[offs++] = HI;
-	buffer[offs++] = LO;
-	return SHORT_PULSE;
+	samples.push_back(HI);
+	samples.push_back(LO);
 }
 
-static int fill_wave_b(int16_t *buffer, int offs, int byte)
+
+static void fill_wave_b(std::vector<int16_t> &samples, uint8_t byte)
 {
-	int i, count = 0;
+	// data bits are preceded by a long pulse
+	fill_wave_1(samples);
 
-	/* data bits are preceded by a long pulse */
-	count += fill_wave_1(buffer, offs + count);
-
-	for( i = 7; i >= 0; i-- )
+	for (int i = 7; i >= 0; i--)
 	{
-		if( (byte >> i) & 1 )
-			count += fill_wave_1(buffer, offs + count);
+		if ((byte >> i) & 1)
+			fill_wave_1(samples);
 		else
-			count += fill_wave_0(buffer, offs + count);
+			fill_wave_0(samples);
 	}
-	return count;
 }
 
-static int fill_wave(int16_t *buffer, int length, uint8_t *code)
+
+static void fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	static int16_t *beg;
-	static uint16_t csum = 0;
-	static int header = 1, bytecount = 0;
-	int count = 0;
+	// header
+	LOG(1,"mz700 fill_wave",("LGAP %d samples\n", LGAP * SHORT_PULSE));
+	// fill long gap - LGAP
+	for (int i = 0; i < LGAP; i++)
+		fill_wave_0(samples);
 
-	if( code == CODE_HEADER )
+	// make a long tape mark - LTM
+	LOG(1,"mz700_fill_wave",("LTM 1 %d samples\n", LTM_1 * LONG_PULSE));
+	for (int i = 0; i < LTM_1; i++)
+		fill_wave_1(samples);
+
+	LOG(1,"mz700_fill_wave",("LTM 0 %d samples\n", LTM_0 * SHORT_PULSE));
+	for (int i = 0; i < LTM_0; i++)
+		fill_wave_0(samples);
+
+	// L
+	LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
+	fill_wave_1(samples);
+
+	// HDR begins here
+	int pos = 0;
+	uint16_t csum = 0;
+	while (pos < bytes.size() && pos < 128)
 	{
-		int i;
+		if (bytes[pos] & 0x01) csum++;
+		if (bytes[pos] & 0x02) csum++;
+		if (bytes[pos] & 0x04) csum++;
+		if (bytes[pos] & 0x08) csum++;
+		if (bytes[pos] & 0x10) csum++;
+		if (bytes[pos] & 0x20) csum++;
+		if (bytes[pos] & 0x40) csum++;
+		if (bytes[pos] & 0x80) csum++;
 
-		/* is there insufficient space for the LGAP? */
-		if( count + LGAP * SHORT_PULSE > length )
-			return -1;
-		LOG(1,"mz700 fill_wave",("LGAP %d samples\n", LGAP * SHORT_PULSE));
-		/* fill long gap */
-		for( i = 0; i < LGAP; i++ )
-			count += fill_wave_0(buffer, count);
-
-		/* make a long tape mark */
-		/* is there insufficient space for the LTM 1? */
-		if( count + LTM_1 * LONG_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("LTM 1 %d samples\n", LTM_1 * LONG_PULSE));
-		for( i = 0; i < LTM_1; i++ )
-			count += fill_wave_1(buffer, count);
-
-		/* is there insufficient space for the LTM 0? */
-		if( count + LTM_0 * SHORT_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("LTM 0 %d samples\n", LTM_0 * SHORT_PULSE));
-		for( i = 0; i < LTM_0; i++ )
-			count += fill_wave_0(buffer, count);
-
-		/* is there insufficient space for the L? */
-		if( count + LTM_L * LONG_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
-		count += fill_wave_1(buffer, count);
-
-		/* reset header, bytecount and checksum */
-		header = 1;
-		bytecount = 0;
-		csum = 0;
-
-		/* HDR begins here */
-		beg = buffer + count;
-
-		return count;
+		fill_wave_b(samples, bytes[pos++]);
 	}
 
-	if( code == CODE_TRAILER )
+	if (pos == 128)
 	{
-		int i, file_length;
-		int16_t *end = buffer;
+		LOG(1,"mz700_fill_wave",("CHKH 0x%04X\n", csum & 0xffff));
+		// CHKH
+		fill_wave_b(samples, (csum >> 8) & 0xff);
+		fill_wave_b(samples, csum & 0xff);
 
-		/* is there insufficient space for the CHKF? */
-		if( count + 2 * BYTE_SAMPLES > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("CHKF 0x%04X\n", csum));
-		count += fill_wave_b(buffer, count, csum >> 8);
-		count += fill_wave_b(buffer, count, csum & 0xff);
-
-		/* is there insufficient space for the L */
-		if( count + LTM_L * LONG_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("L\n"));
-		count += fill_wave_1(buffer, count);
-
-		/* is there insufficient space for the 256S pulses? */
-		if( count + 256 * SHORT_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("256S\n"));
-		for (i = 0; i < 256; i++)
-			count += fill_wave_0(buffer, count);
-
-		file_length = (int)(end - beg) / sizeof(int16_t);
-		/* is there insufficient space for the FILEC ? */
-		if( count + file_length > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("FILEC %d samples\n", file_length));
-		memcpy(buffer + count, beg, file_length * sizeof(int16_t));
-		count += file_length;
-
-		/* is there insufficient space for the CHKF ? */
-		if( count + 2 * BYTE_SAMPLES > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("CHKF 0x%04X\n", csum));
-		count += fill_wave_b(buffer, count, csum >> 8);
-		count += fill_wave_b(buffer, count, csum & 0xff);
-
-		/* is there insufficient space for the L ? */
-		if( count + STM_L * LONG_PULSE > length )
-			return -1;
 		LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
-		count += fill_wave_1(buffer, count);
+		// L
+		fill_wave_1(samples);
+
+		// 256S
+		LOG(1,"mz700_fill_wave",("256S\n"));
+		for (int i = 0; i < 256; i++)
+			fill_wave_0(samples);
+
+		// copy of HDR - HDRC
+		pos = 0;
+		uint32_t hdrc_start = samples.size();
+		while (pos < bytes.size() && pos < 128)
+		{
+			fill_wave_b(samples, bytes[pos++]);
+		}
+		LOG(1,"mz700_fill_wave",("HDRC %lu samples\n", samples.size() - hdrc_start));
+
+		LOG(1,"mz700_fill_wave",("CHKH 0x%04X\n", csum & 0xffff));
+		fill_wave_b(samples, (csum >> 8) & 0xff);
+		fill_wave_b(samples, csum & 0xff);
+
+		// L
+		LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
+		fill_wave_1(samples);
+
+		LOG(1,"mz700_fill_wave",("SILENCE %d samples\n", SILENCE));
+		// fill silence
+		for (int i = 0; i < SILENCE; i++)
+			samples.push_back(0);
+
+		LOG(1,"mz700_fill_wave",("SGAP %d samples\n", SGAP * SHORT_PULSE));
+		// fill short gap - SGAP
+		for (int i = 0; i < SGAP; i++)
+			fill_wave_0(samples);
+
+		// make a short tape mark - STM
+
+		LOG(1,"mz700_fill_wave",("STM 1 %d samples\n", STM_1 * LONG_PULSE));
+		for (int i = 0; i < STM_1; i++)
+			fill_wave_1(samples);
+
+		LOG(1,"mz700_fill_wave",("STM 0 %d samples\n", STM_0 * SHORT_PULSE));
+		for (int i = 0; i < STM_0; i++)
+			fill_wave_0(samples);
+
+		// L
+		LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
+		fill_wave_1(samples);
+	}
+
+	// FILE begins here
+	csum = 0;
+	int file_start = pos;
+
+	while (pos < bytes.size())
+	{
+		if (bytes[pos] & 0x01) csum++;
+		if (bytes[pos] & 0x02) csum++;
+		if (bytes[pos] & 0x04) csum++;
+		if (bytes[pos] & 0x08) csum++;
+		if (bytes[pos] & 0x10) csum++;
+		if (bytes[pos] & 0x20) csum++;
+		if (bytes[pos] & 0x40) csum++;
+		if (bytes[pos] & 0x80) csum++;
+
+		fill_wave_b(samples, bytes[pos++]);
+	}
+
+	// trailer
+	{
+		// CHKF
+		LOG(1,"mz700_fill_wave",("CHKF 0x%04X\n", csum));
+		fill_wave_b(samples, csum >> 8);
+		fill_wave_b(samples, csum & 0xff);
+
+		// L
+		LOG(1,"mz700_fill_wave",("L\n"));
+		fill_wave_1(samples);
+
+		// 256S
+		LOG(1,"mz700_fill_wave",("256S\n"));
+		for (int i = 0; i < 256; i++)
+			fill_wave_0(samples);
+
+		// FILEC
+		pos = file_start;
+		uint32_t filec_start = samples.size();
+		while (pos < bytes.size())
+		{
+			fill_wave_b(samples, bytes[pos++]);
+		}
+
+		LOG(1,"mz700_fill_wave",("FILEC %lu samples\n", samples.size() - filec_start));
+
+		// CHKF
+		LOG(1,"mz700_fill_wave",("CHKF 0x%04X\n", csum));
+		fill_wave_b(samples, csum >> 8);
+		fill_wave_b(samples, csum & 0xff);
+
+		// L
+		LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
+		fill_wave_1(samples);
 
 		LOG(1,"mz700_fill_wave",("silence %d samples\n", SILENCE));
-		/* silence at the end */
-		for( i = 0; i < SILENCE; i++ )
-			buffer[count++] = 0;
-
-		return count;
+		// silence at the end
+		for (int i = 0; i < SILENCE; i++)
+			samples.push_back(0);
 	}
-
-	if( header == 1 && bytecount == 128 )
-	{
-		int i, hdr_length;
-		int16_t *end = buffer;
-
-		/* is there insufficient space for the CHKH ? */
-		if( count + 2 * BYTE_SAMPLES > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("CHKH 0x%04X\n", csum & 0xffff));
-		count += fill_wave_b(buffer, count, (csum >> 8) & 0xff);
-		count += fill_wave_b(buffer, count, csum & 0xff);
-
-		/* is there insufficient space for the L ? */
-		if( count + LONG_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
-		count += fill_wave_1(buffer, count);
-
-		/* is there insufficient space for the 256S ? */
-		if( count + 256 * SHORT_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("256S\n"));
-		for (i = 0; i < 256; i++)
-			count += fill_wave_0(buffer, count);
-
-		hdr_length = (int)(end - beg) / sizeof(int16_t);
-		/* is there insufficient space for the HDRC ? */
-		if( count + hdr_length > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("HDRC %d samples\n", hdr_length));
-		memcpy(buffer + count, beg, hdr_length * sizeof(int16_t));
-		count += hdr_length;
-
-		/* is there insufficient space for CHKH ? */
-		if( count + 2 * BYTE_SAMPLES > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("CHKH 0x%04X\n", csum & 0xffff));
-		count += fill_wave_b(buffer, count, (csum >> 8) & 0xff);
-		count += fill_wave_b(buffer, count, csum & 0xff);
-
-		/* is there insufficient space for the L ? */
-		if( count + LONG_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
-		count += fill_wave_1(buffer, count);
-
-		/* is there sufficient space for the SILENCE? */
-		if( count + SILENCE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("SILENCE %d samples\n", SILENCE));
-		/* fill silence */
-		for( i = 0; i < SILENCE; i++ )
-			buffer[count++] = 0;
-
-		/* is there sufficient space for the SGAP? */
-		if( count + SGAP * SHORT_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("SGAP %d samples\n", SGAP * SHORT_PULSE));
-		/* fill short gap */
-		for( i = 0; i < SGAP; i++ )
-			count += fill_wave_0(buffer, count);
-
-		/* make a short tape mark */
-
-		/* is there sufficient space for the STM 1? */
-		if( count + STM_1 * LONG_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("STM 1 %d samples\n", STM_1 * LONG_PULSE));
-		for( i = 0; i < STM_1; i++ )
-			count += fill_wave_1(buffer, count);
-
-		/* is there sufficient space for the STM 0? */
-		if( count + STM_0 * SHORT_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("STM 0 %d samples\n", STM_0 * SHORT_PULSE));
-		for( i = 0; i < STM_0; i++ )
-			count += fill_wave_0(buffer, count);
-
-		/* is there sufficient space for the L? */
-		if( count + STM_L * LONG_PULSE > length )
-			return -1;
-		LOG(1,"mz700_fill_wave",("L %d samples\n", LONG_PULSE));
-		count += fill_wave_1(buffer, count);
-
-		bytecount = 0;
-		header = 0;
-		csum = 0;
-
-		/* FILE begins here */
-		beg = buffer + count;
-	}
-
-	if( length < BYTE_SAMPLES )
-		return -1;
-
-	if (*code & 0x01) csum++;
-	if (*code & 0x02) csum++;
-	if (*code & 0x04) csum++;
-	if (*code & 0x08) csum++;
-	if (*code & 0x10) csum++;
-	if (*code & 0x20) csum++;
-	if (*code & 0x40) csum++;
-	if (*code & 0x80) csum++;
-
-	bytecount++;
-
-	count += fill_wave_b(buffer, count, *code);
-
-	return count;
 }
-
-#define MZ700_WAVESAMPLES_HEADER    (   \
-		LGAP * SHORT_PULSE +            \
-		LTM_1 * LONG_PULSE +            \
-		LTM_0 * SHORT_PULSE +           \
-		LTM_L * LONG_PULSE +            \
-		2 * 2 * BYTE_SAMPLES +          \
-	SILENCE +                           \
-	SGAP * SHORT_PULSE +                \
-		STM_1 * LONG_PULSE +            \
-		STM_0 * SHORT_PULSE +           \
-		STM_L * LONG_PULSE +            \
-		2 * 2 * BYTE_SAMPLES)
-
-
-
-
-static const cassette_image::LegacyWaveFiller mz700_legacy_fill_wave =
-{
-	fill_wave,                  /* fill_wave */
-	1,                          /* chunk_size */
-	2 * BYTE_SAMPLES,           /* chunk_samples */
-	nullptr,                       /* chunk_sample_calc */
-	4400,                       // sample_frequency (tested ok with MZ-80K, MZ-80A, MZ-700, MZ-800, MZ-1500)
-	MZ700_WAVESAMPLES_HEADER,   /* header_samples */
-	1                           /* trailer_samples */
-};
-
 
 
 static cassette_image::error mz700_cas_identify(cassette_image *cassette, cassette_image::Options *opts)
@@ -323,12 +234,19 @@ static cassette_image::error mz700_cas_identify(cassette_image *cassette, casset
 }
 
 
-
 static cassette_image::error mz700_cas_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&mz700_legacy_fill_wave);
-}
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
 
+	fill_wave(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / 4400, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
+}
 
 
 static const cassette_image::Format mz700_cas_format =
@@ -338,7 +256,6 @@ static const cassette_image::Format mz700_cas_format =
 	mz700_cas_load,
 	nullptr
 };
-
 
 
 CASSETTE_FORMATLIST_START(mz700_cassette_formats)
