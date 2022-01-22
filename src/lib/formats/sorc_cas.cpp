@@ -39,7 +39,7 @@ static void sorcerer_put_samples(std::vector<int16_t> &samples, bool &level, int
 	for (int i=0; i < count; i++)
 		samples.push_back(level ? WAVEENTRY_LOW : WAVEENTRY_HIGH);
 
-	level ^= 1;
+	level = !level;
 }
 
 
