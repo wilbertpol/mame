@@ -18,131 +18,96 @@ it's all a guess.
 #define FC100_WAV_FREQUENCY   9600
 #define FC100_HEADER_BYTES    16
 
-// image size
-static int fc100_image_size; // FIXME: global variable prevents multiple instances
 
-static int fc100_put_samples(int16_t *buffer, int sample_pos, int count, int level)
+static void fc100_put_samples(std::vector<int16_t> &samples, int count, int level)
 {
-	if (buffer)
-	{
-		for (int i=0; i<count; i++)
-			buffer[sample_pos + i] = level;
-	}
-
-	return count;
+	for (int i = 0; i < count; i++)
+		samples.push_back(level);
 }
 
-static int fc100_output_bit(int16_t *buffer, int sample_pos, bool bit)
-{
-	int samples = 0;
 
+static void fc100_output_bit(std::vector<int16_t> &samples, bool bit)
+{
 	if (bit)
 	{
-		samples += fc100_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-		samples += fc100_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-		samples += fc100_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
-		samples += fc100_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
+		fc100_put_samples(samples, 2, WAVEENTRY_LOW);
+		fc100_put_samples(samples, 2, WAVEENTRY_HIGH);
+		fc100_put_samples(samples, 2, WAVEENTRY_LOW);
+		fc100_put_samples(samples, 2, WAVEENTRY_HIGH);
 	}
 	else
 	{
-		samples += fc100_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
-		samples += fc100_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
+		fc100_put_samples(samples, 4, WAVEENTRY_LOW);
+		fc100_put_samples(samples, 4, WAVEENTRY_HIGH);
 	}
-
-	return samples;
-}
-
-static int fc100_output_byte(int16_t *buffer, int sample_pos, uint8_t byte)
-{
-	int samples = 0;
-	uint8_t i;
-
-	/* start */
-	samples += fc100_output_bit (buffer, sample_pos + samples, 0);
-
-	/* data */
-	for (i = 0; i<8; i++)
-		samples += fc100_output_bit (buffer, sample_pos + samples, (byte >> i) & 1);
-
-	/* stop */
-	for (i = 0; i<4; i++)
-		samples += fc100_output_bit (buffer, sample_pos + samples, 1);
-
-	return samples;
-}
-
-static int fc100_handle_cassette(int16_t *buffer, const uint8_t *bytes)
-{
-	uint32_t sample_count = 0;
-	uint32_t byte_count = 0;
-	uint32_t i;
-
-
-	/* start */
-	for (i=0; i<2155; i++)
-		sample_count += fc100_output_bit(buffer, sample_count, 1);
-
-	/* header */
-	for (int i=0; i<FC100_HEADER_BYTES; i++)
-		sample_count += fc100_output_byte(buffer, sample_count, bytes[i]);
-
-	byte_count = FC100_HEADER_BYTES;
-
-	/* pause */
-	for (i=0; i<1630; i++)
-		sample_count += fc100_output_bit(buffer, sample_count, 1);
-
-	/* data */
-	for (i=byte_count; i<fc100_image_size; i++)
-		sample_count += fc100_output_byte(buffer, sample_count, bytes[i]);
-
-	return sample_count;
 }
 
 
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-
-static int fc100_cassette_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
+static void fc100_output_byte(std::vector<int16_t> &samples, uint8_t byte)
 {
-	return fc100_handle_cassette(buffer, bytes);
+	// start
+	fc100_output_bit(samples, 0);
+
+	// data
+	for (int i = 0; i < 8; i++)
+		fc100_output_bit(samples, (byte >> i) & 1);
+
+	// stop
+	for (int i = 0; i < 4; i++)
+		fc100_output_bit(samples, 1);
 }
 
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
 
-static int fc100_cassette_calculate_size_in_samples(const uint8_t *bytes, int length)
+static void fc100_handle_cassette(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	fc100_image_size = length;
+	// start
+	for (int i = 0; i < 2155; i++)
+		fc100_output_bit(samples, 1);
 
-	return fc100_handle_cassette(nullptr, bytes);
+	// header
+	for (int i = 0; i < FC100_HEADER_BYTES; i++)
+		fc100_output_byte(samples, bytes[i]);
+
+	// pause
+	for (int i = 0; i < 1630; i++)
+		fc100_output_bit(samples, 1);
+
+	// data
+	for (int i = FC100_HEADER_BYTES; i < bytes.size(); i++)
+		fc100_output_byte(samples, bytes[i]);
 }
 
-static const cassette_image::LegacyWaveFiller fc100_legacy_fill_wave =
-{
-	fc100_cassette_fill_wave,                 /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	fc100_cassette_calculate_size_in_samples, /* chunk_sample_calc */
-	FC100_WAV_FREQUENCY,                      /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error fc100_cassette_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
 	opts->channels = 1;
 	opts->bits_per_sample = 16;
 	opts->sample_frequency = FC100_WAV_FREQUENCY;
+
+	if (cassette->image_size() < FC100_HEADER_BYTES)
+		return cassette_image::error::INVALID_IMAGE;
+
 	return cassette_image::error::SUCCESS;
 }
 
+
 static cassette_image::error fc100_cassette_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&fc100_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	if (file_size < FC100_HEADER_BYTES)
+		return cassette_image::error::INVALID_IMAGE;
+
+	fc100_handle_cassette(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / FC100_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format fc100_cassette_image_format =
 {
@@ -151,6 +116,7 @@ static const cassette_image::Format fc100_cassette_image_format =
 	fc100_cassette_load,
 	nullptr
 };
+
 
 CASSETTE_FORMATLIST_START(fc100_cassette_formats)
 	CASSETTE_FORMAT(fc100_cassette_image_format)
