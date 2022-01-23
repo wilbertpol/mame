@@ -42,156 +42,92 @@ e. A checksum byte (8-bit addition)
 /* frequency of wave */
 #define APF_WAV_FREQUENCY   8000
 
-/* 500 microsecond of bit 0 and 1000 microsecond of bit 1 */
-static int apf_image_size;
+// 500 microsecond of bit 0 and 1000 microsecond of bit 1
 
-static int apf_put_samples(int16_t *buffer, int sample_pos, int count, int level)
+
+static void apf_put_samples(std::vector<int16_t> &samples, int count, int level)
 {
-	if (buffer)
-	{
-		for (int i=0; i<count; i++)
-			buffer[sample_pos + i] = level;
-	}
-
-	return count;
+	for (int i = 0; i < count; i++)
+		samples.push_back(level);
 }
 
-static int apf_output_bit(int16_t *buffer, int sample_pos, bool bit)
-{
-	int samples = 0;
 
+static void apf_output_bit(std::vector<int16_t> &samples, bool bit)
+{
 	if (bit)
 	{
-		samples += apf_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_HIGH);
-		samples += apf_put_samples(buffer, sample_pos + samples, 4, WAVEENTRY_LOW);
+		apf_put_samples(samples, 4, WAVEENTRY_HIGH);
+		apf_put_samples(samples, 4, WAVEENTRY_LOW);
 	}
 	else
 	{
-		samples += apf_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_HIGH);
-		samples += apf_put_samples(buffer, sample_pos + samples, 2, WAVEENTRY_LOW);
+		apf_put_samples(samples, 2, WAVEENTRY_HIGH);
+		apf_put_samples(samples, 2, WAVEENTRY_LOW);
 	}
-
-	return samples;
 }
 
-static int apf_output_byte(int16_t *buffer, int sample_pos, uint8_t byte)
+
+static void apf_output_byte(std::vector<int16_t> &samples, uint8_t byte)
 {
-	int samples = 0;
-	uint8_t i;
-
-	/* data */
-	for (i = 0; i<8; i++)
-		samples += apf_output_bit (buffer, sample_pos + samples, (byte >> (7-i)) & 1);
-
-	return samples;
+	for (int i = 0; i < 8; i++)
+		apf_output_bit(samples, (byte >> (7-i)) & 1);
 }
 
-static int apf_apt_handle_cassette(int16_t *buffer, const uint8_t *bytes)
+
+static void apf_apt_handle_cassette(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	uint32_t sample_count = 0;
-	uint32_t i;
 	uint8_t cksm = 0;
 	uint32_t temp = 0;
 
 	// silence
-	sample_count += apf_put_samples(buffer, 0, 12000, 0);
+	apf_put_samples(samples, 12000, 0);
 
-	for (i=0; i<apf_image_size; i++)
+	for (int i = 0; i < bytes.size(); i++)
 	{
-		sample_count += apf_output_byte(buffer, sample_count, bytes[i]);
-		if (bytes[i]==0xfe)
+		apf_output_byte(samples, bytes[i]);
+		if (bytes[i] == 0xfe)
 		{
 			temp = i+1;
-			i = apf_image_size;
+			i = bytes.size();
 		}
 	}
 
-	/* data */
-	for (i= temp; i<(temp+0x1e00); i++)
+	// data
+	for (uint32_t i = temp; i < (temp + 0x1e00) && i < bytes.size(); i++)
 	{
 		cksm += bytes[i];
-		sample_count += apf_output_byte(buffer, sample_count, bytes[i]);
+		apf_output_byte(samples, bytes[i]);
 	}
 
-	/* checksum byte */
-	sample_count += apf_output_byte(buffer, sample_count, cksm);
-
-	return sample_count;
+	// checksum byte
+	apf_output_byte(samples, cksm);
 }
 
-static int apf_cpf_handle_cassette(int16_t *buffer, const uint8_t *bytes)
+
+static void apf_cpf_handle_cassette(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	uint32_t sample_count = 0;
-	uint32_t i;
 	uint8_t cksm = 0;
 
 	// silence
-	sample_count += apf_put_samples(buffer, 0, 12000, 0);
+	apf_put_samples(samples, 12000, 0);
 
-	/* start */
-	for (i=0; i<10000; i++)
-		sample_count += apf_output_bit(buffer, sample_count, 1);
+	// start
+	for (int i = 0; i < 10000; i++)
+		apf_output_bit(samples, 1);
 
-	sample_count += apf_output_bit(buffer, sample_count, 0);
+	apf_output_bit(samples, 0);
 
-	/* data */
-	for (i=0; i<apf_image_size; i++)
+	// data
+	for (int i = 0; i < bytes.size(); i++)
 	{
 		cksm += bytes[i];
-		sample_count += apf_output_byte(buffer, sample_count, bytes[i]);
+		apf_output_byte(samples, bytes[i]);
 	}
 
-	/* checksum byte */
-	sample_count += apf_output_byte(buffer, sample_count, cksm);
-
-	return sample_count;
+	// checksum byte
+	apf_output_byte(samples, cksm);
 }
 
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-
-static int apf_apt_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	return apf_apt_handle_cassette(buffer, bytes);
-}
-
-static int apf_cpf_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	return apf_cpf_handle_cassette(buffer, bytes);
-}
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-
-static int apf_apt_calculate_size_in_samples(const uint8_t *bytes, int length)
-{
-	apf_image_size = length;
-
-	return apf_apt_handle_cassette(nullptr, bytes);
-}
-
-static int apf_cpf_calculate_size_in_samples(const uint8_t *bytes, int length)
-{
-	apf_image_size = length;
-
-	return apf_cpf_handle_cassette(nullptr, bytes);
-}
-
-//*********************************************************************************
-
-static const cassette_image::LegacyWaveFiller apf_cpf_fill_intf =
-{
-	apf_cpf_fill_wave,                      /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	apf_cpf_calculate_size_in_samples,      /* chunk_sample_calc */
-	APF_WAV_FREQUENCY,                      /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error apf_cpf_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
@@ -201,10 +137,21 @@ static cassette_image::error apf_cpf_identify(cassette_image *cassette, cassette
 	return cassette_image::error::SUCCESS;
 }
 
+
 static cassette_image::error apf_cpf_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&apf_cpf_fill_intf);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	apf_cpf_handle_cassette(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / APF_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format apf_cpf_format =
 {
@@ -214,18 +161,6 @@ static const cassette_image::Format apf_cpf_format =
 	nullptr
 };
 
-//*********************************************************************************
-
-static const cassette_image::LegacyWaveFiller apf_apt_fill_intf =
-{
-	apf_apt_fill_wave,                      /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	apf_apt_calculate_size_in_samples,      /* chunk_sample_calc */
-	APF_WAV_FREQUENCY,                      /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error apf_apt_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
@@ -235,10 +170,21 @@ static cassette_image::error apf_apt_identify(cassette_image *cassette, cassette
 	return cassette_image::error::SUCCESS;
 }
 
+
 static cassette_image::error apf_apt_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&apf_apt_fill_intf);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	apf_apt_handle_cassette(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / APF_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format apf_apt_format =
 {
@@ -248,7 +194,6 @@ static const cassette_image::Format apf_apt_format =
 	nullptr
 };
 
-//*********************************************************************************
 
 CASSETTE_FORMATLIST_START(apf_cassette_formats)
 	CASSETTE_FORMAT(apf_cpf_format)
