@@ -23,14 +23,11 @@ Updated 3/1/10 : use real value for timing.
 #define SMPHI   32767
 
 
-static int cas_size; // FIXME: global variable prevents multiple instances
-
-
 enum
 {
-	Header_cycles = 77, /* Valeur Th?orique 66 = 44100 * 1.5 / 1000  // mesur? sur jeu Formule1 = 1,75ms*/
-	Zero_cycles =   27, /* Valeur Th?orique 17 = 44100 * 0.4 / 1000  // mesur? sur jeu Formule1 = 0,61ms*/
-	Un_cycles =     50  /* Valeur Th?orique 40 = 44100 * 0.9 / 1000  // mesur? sur jeu Formule1 = 1,13ms*/
+	HEADER_CYCLES = 77, /* Valeur Th?orique 66 = 44100 * 1.5 / 1000  // mesur? sur jeu Formule1 = 1,75ms*/
+	ZERO_CYCLES =   27, /* Valeur Th?orique 17 = 44100 * 0.4 / 1000  // mesur? sur jeu Formule1 = 0,61ms*/
+	UN_CYCLES =     50  /* Valeur Th?orique 40 = 44100 * 0.9 / 1000  // mesur? sur jeu Formule1 = 1,13ms*/
 };
 
 /* Here I prefer use the value that I read on a real tape, and not the theorical value; note that these
@@ -39,227 +36,121 @@ enum
 /*******************************************************************
    Generate one high-low cycle of sample data
 ********************************************************************/
-static inline int hector_tap_cycle(int16_t *buffer, int sample_pos, int high, int low)
+static void hector_tap_cycle(std::vector<int16_t> &samples, int high, int low)
 {
 	int i = 0;
 
-	if ( buffer )
+	while (i < high)
 	{
-		while( i < high)
-		{
-			buffer[ sample_pos + i ] = SMPHI;
-			i++;
-		}
-
-		while( i < high + low )
-		{
-			buffer[ sample_pos + i ] = SMPLO;
-			i++;
-		}
+		samples.push_back(SMPHI);
+		i++;
 	}
-	return high + low;
+
+	while (i < high + low)
+	{
+		samples.push_back(SMPLO);
+		i++;
+	}
 }
 
 
-static inline int hector_tap_byte(int16_t *buffer, int sample_pos, uint8_t data)
+static void hector_tap_byte(std::vector<int16_t> &samples, uint8_t data)
 {
-/* Writing an entire byte */
-	int i, samples;
-
-	samples = 0;
-	for ( i = 0; i < 8; i++ )
+	// Writing an entire byte
+	for (int i = 0; i < 8; i++ )
 	{
-		if ( data & 0x01 )
-			samples += hector_tap_cycle( buffer, sample_pos + samples, Un_cycles/2, Un_cycles/2 );
+		if (data & 0x01)
+			hector_tap_cycle(samples, UN_CYCLES / 2, UN_CYCLES / 2);
 		else
-			samples += hector_tap_cycle( buffer, sample_pos + samples, Zero_cycles/2, Zero_cycles/2 );
+			hector_tap_cycle(samples, ZERO_CYCLES / 2, ZERO_CYCLES / 2);
 
 		data >>= 1;
 	}
-	return samples;
 }
 
 
-static inline int hector_tap_synchro(int16_t *buffer, int sample_pos, int nb_synchro)
+static void hector_tap_synchro(std::vector<int16_t> &samples, int nb_synchro)
 {
-/* Writing an entire byte */
-	int i, samples;
-
-	samples = 0;
-	for ( i = 0; i < nb_synchro ; i++ )
-			samples += hector_tap_cycle( buffer, sample_pos + samples, Header_cycles/2, Header_cycles/2 );
-
-	return samples;
+	for (int i = 0; i < nb_synchro ; i++ )
+			hector_tap_cycle(samples, HEADER_CYCLES / 2, HEADER_CYCLES / 2);
 }
 
 
-static int hector_handle_tap(int16_t *buffer, const uint8_t *casdata)
+static void hector_handle_tap(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	int data_pos, sample_count/*, block_count*/;
-	int previous_block=0;
+	int data_pos = 0;
+	int previous_block = 0;
 
-	data_pos = 0;
-	sample_count = 0;
-	/*block_count = 0;*/
-	previous_block = 0;
+	// First 768 cycle of synchro 
+	hector_tap_synchro(samples, 768 - 4);
 
-	/* First 768 cycle of synchro */
-	sample_count += hector_tap_synchro( buffer, sample_count, 768-4 );
-
-	/* on the entire file*/
-	while( data_pos < cas_size )
+	// on the entire file
+	while (data_pos < bytes.size())
 	{
-		uint16_t  block_size;
-
 		if (previous_block == 0xFE)
-				/* Starting a block with 150 cycle of synchro to let time to Hector to do the job ! */
-				sample_count += hector_tap_synchro( buffer, sample_count, 150 );
+			// Starting a block with 150 cycle of synchro to let time to Hector to do the job !
+			hector_tap_synchro(samples, 150);
 		else
-					/* Starting a block with 4 cycle of synchro */
-				sample_count += hector_tap_synchro( buffer, sample_count, 4 );
+			// Starting a block with 4 cycle of synchro
+			hector_tap_synchro(samples, 4);
 
-		if (data_pos>1)
-				previous_block = casdata[data_pos-1];
+		if (data_pos > 1)
+			previous_block = bytes[data_pos - 1];
 
-		/* Handle block lenght on tape data */
-		block_size = casdata[data_pos] ;
-		if (block_size==0)
-			block_size=256;
+		// Handle block length on tape data
+		uint16_t block_size = bytes[data_pos];
+		if (block_size == 0)
+			block_size = 256;
 
-		/*block_count++;*/
-		sample_count += hector_tap_byte(buffer, sample_count, casdata[data_pos] );
+		hector_tap_byte(samples, bytes[data_pos]);
 		data_pos++;
 
-		/* Data samples */
-		for ( ; block_size ; data_pos++, block_size-- )
+		// Data samples
+		for ( ; block_size ; data_pos++, block_size--)
 		{
-			/* Make sure there are enough bytes left */
-			if ( data_pos > cas_size )
-				return -1;
-
-			sample_count += hector_tap_byte( buffer, sample_count, casdata[data_pos] );
-
+			if (data_pos < bytes.size())
+				hector_tap_byte(samples, bytes[data_pos]);
 		}
 	}
-	/*Finish by a zero*/
-	sample_count += hector_tap_byte( buffer, sample_count, 0 );
-
-	return sample_count;
+	// Finish by a zero
+	hector_tap_byte(samples, 0);
 }
+
 /*******************************************************************
 ////  FORTH DATA CASSETTE
 *******************************************************************/
 
 
-static int hector_handle_forth_tap(int16_t *buffer, const uint8_t *casdata)
+static void hector_handle_forth_tap(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	int data_pos, sample_count/*, block_count*/;
-	/*int previous_block=0;*/
+	int data_pos = 0;
 
-	data_pos = 0;
-	sample_count = 0;
-	/*block_count = 0;*/
-	/*previous_block = 0;*/
-
-	/* Out if len of file not modulo 822 octets    */
-	if ( (cas_size % 822) != 0 )
-		return -1;
-
-	/* on the entire file*/
-	while( data_pos < cas_size )
+	// on the entire file
+	while (data_pos < bytes.size())
 	{
-		uint16_t  block_size;
+		// Starting a block with 768 cycle of synchro
+		hector_tap_synchro(samples, 768);
 
-		/* Starting a block with 768 cycle of synchro*/
-		sample_count += hector_tap_synchro( buffer, sample_count, 768 );
+		// Handle block length on tape data
+		uint16_t block_size = 822 ; // Fixed size for the forth
 
-		/* Handle block lenght on tape data */
-		block_size = 822 ; /* Fixed size for the forth*/
-
-		/*block_count=0;*/
-
-		/* Data samples */
-		for ( ; block_size ; data_pos++, block_size-- )
+		// Data samples
+		for ( ; block_size ; data_pos++, block_size--)
 		{
-			/* Make sure there are enough bytes left */
-			if ( data_pos > cas_size )
-				return -1;
-
-			sample_count += hector_tap_byte( buffer, sample_count, casdata[data_pos] );
+			if (data_pos < bytes.size())
+				hector_tap_byte(samples, bytes[data_pos]);
 
 		}
 	}
 
-	/*Finish by a zero*/
-	sample_count += hector_tap_byte( buffer, sample_count, 0 );
-
-	return sample_count;
+	// Finish by a zero
+	hector_tap_byte(samples, 0);
 }
+
+
 /*******************************************************************
 /////  END FORTH DATA CASSETTE
 *******************************************************************/
-
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-static int hector_tap_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
-{
-	return hector_handle_tap( buffer, bytes );
-}
-
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image  FORTH
-********************************************************************/
-static int hector_tap_forth_to_wav_size(const uint8_t *casdata, int caslen)
-{
-	cas_size = caslen ;
-
-	return hector_handle_forth_tap( nullptr, casdata );
-}
-
-/*******************************************************************
-   Generate samples for the tape image FORTH
-********************************************************************/
-static int hector_tap_forth_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
-{
-	return hector_handle_forth_tap( buffer, bytes ); //forth removed here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-}
-
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image classical
-********************************************************************/
-static int hector_tap_to_wav_size(const uint8_t *casdata, int caslen)
-{
-	cas_size = caslen ;
-
-	return hector_handle_tap( nullptr, casdata );//forth removed here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-}
-
-
-static const cassette_image::LegacyWaveFiller hector_legacy_fill_wave =
-{
-	hector_tap_fill_wave,                   /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	hector_tap_to_wav_size,                 /* chunk_sample_calc */
-	44100,                                  /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
-
-static const cassette_image::LegacyWaveFiller hector_forth_legacy_fill_wave =
-{
-	hector_tap_forth_fill_wave,             /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	hector_tap_forth_to_wav_size,           /* chunk_sample_calc */
-	44100,                                  /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 
 static cassette_image::error hector_k7_identify(cassette_image *cassette, cassette_image::Options *opts)
@@ -273,21 +164,48 @@ static cassette_image::error hector_k7_identify(cassette_image *cassette, casset
 
 static cassette_image::error hector_k7_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&hector_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	hector_handle_tap(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / 44100, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static cassette_image::error hector_k7forth_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
 	opts->channels = 1;
 	opts->bits_per_sample = 16;
 	opts->sample_frequency = 44100;
+
+	if ((cassette->image_size() % 822) != 0)
+		return cassette_image::error::INVALID_IMAGE;
+
 	return cassette_image::error::SUCCESS;
 }
 
 
 static cassette_image::error hector_k7forth_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&hector_forth_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	// Out if len of file not modulo 822 octets
+	if ((file_size % 822) != 0)
+		return cassette_image::error::INVALID_IMAGE;
+
+	hector_handle_forth_tap(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / 44100, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
 
