@@ -37,136 +37,120 @@ enum
 	KC_IMAGE_KCM
 };
 
-// image size
-static int kc_image_size; // FIXME: global variable prevents multiple instances
 
 /*******************************************************************
    Generate one high-low cycle of sample data
 ********************************************************************/
-static inline int kc_cas_cycle(int16_t *buffer, int sample_pos, int len)
+static void kc_cas_cycle(std::vector<int16_t> &samples, int len)
 {
 	int num_samples = KC_WAV_FREQUENCY / (len * 2);
 
-	if (buffer)
-	{
-		for (int i=0; i<num_samples; i++)
-			buffer[ sample_pos + i ] = SMPHI;
+	for (int i = 0; i < num_samples; i++)
+		samples.push_back(SMPHI);
 
-		for (int i=0; i<num_samples; i++)
-			buffer[ sample_pos + num_samples + i ] = SMPLO;
-	}
-
-	return num_samples * 2;
+	for (int i = 0; i < num_samples; i++)
+		samples.push_back(SMPLO);
 }
 
 
 /*******************************************************************
    Generate n samples of silence
 ********************************************************************/
-static inline int kc_cas_silence(int16_t *buffer, int sample_pos, int len)
+static void kc_cas_silence(std::vector<int16_t> &samples, int len)
 {
-	int i = 0;
-
-	if ( buffer )
-		for( i = 0; i < len; i++)
-			buffer[ sample_pos + i ] = SILENCE;
-
-	return len;
+	for (int i = 0; i < len; i++)
+		samples.push_back(SILENCE);
 }
 
 
 /*******************************************************************
    Generate samples for 1 byte
 ********************************************************************/
-static inline int kc_cas_byte(int16_t *buffer, int sample_pos, uint8_t data)
+static void kc_cas_byte(std::vector<int16_t> &samples, uint8_t data)
 {
-	int samples = 0;
-
 	// write the byte
-	for ( int i = 0; i < 8; i++ )
+	for (int i = 0; i < 8; i++)
 	{
-		if ( data & 0x01 )
+		if (data & 0x01)
 		{
-			samples += kc_cas_cycle( buffer, sample_pos + samples, FREQ_BIT_1 );
+			kc_cas_cycle(samples, FREQ_BIT_1);
 		}
 		else
 		{
-			samples += kc_cas_cycle( buffer, sample_pos + samples, FREQ_BIT_0 );
+			kc_cas_cycle(samples, FREQ_BIT_0);
 		}
 
 		data >>= 1;
 	}
 
 	// byte separator
-	samples += kc_cas_cycle( buffer, sample_pos + samples, FREQ_SEPARATOR);
-
-	return samples;
+	kc_cas_cycle(samples, FREQ_SEPARATOR);
 }
 
-static int kc_handle_cass(int16_t *buffer, const uint8_t *casdata, int type)
+
+static void kc_handle_cass(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes, int type)
 {
 	int data_pos = (type == KC_IMAGE_KCC || type == KC_IMAGE_KCM) ? 0 : 16;
-	int sample_count = 0;
 	int block_id = 1;
 
 	// 1 sec of silence at start
-	sample_count += kc_cas_silence(buffer, sample_count, KC_WAV_FREQUENCY);
+	kc_cas_silence(samples, KC_WAV_FREQUENCY);
 
 	// 8000 cycles of BIT_1 for synchronization
-	for (int i=0; i<8000; i++)
-		sample_count += kc_cas_cycle( buffer, sample_count, FREQ_BIT_1);
+	for (int i = 0; i < 8000; i++)
+		kc_cas_cycle(samples, FREQ_BIT_1);
 
 	// on the entire file
-	while( data_pos < kc_image_size )
+	while (data_pos < bytes.size())
 	{
 		uint8_t checksum = 0;
 
 		// 200 cycles of BIT_1 every block
-		for (int i=0; i<200; i++)
-			sample_count += kc_cas_cycle( buffer, sample_count, FREQ_BIT_1);
+		for (int i = 0; i < 200; i++)
+			kc_cas_cycle(samples, FREQ_BIT_1);
 
 		// separator
-		sample_count += kc_cas_cycle( buffer, sample_count, FREQ_SEPARATOR);
+		kc_cas_cycle(samples, FREQ_SEPARATOR);
 
 		// in TAP and TP2 file the first byte is the ID
 		if (type == KC_IMAGE_TAP || type == KC_IMAGE_TP2 || type == KC_IMAGE_KCM)
-			block_id = casdata[data_pos++];
+			block_id = bytes[data_pos++];
 
 		// is the last block ?
-		if (data_pos + 128 >= kc_image_size && type == KC_IMAGE_KCC)
+		if (data_pos + 128 >= bytes.size() && type == KC_IMAGE_KCC)
 			block_id = 0xff;
 
 		// write the block ID
-		sample_count += kc_cas_byte( buffer, sample_count, block_id );
+		kc_cas_byte(samples, block_id);
 
 		// write the 128 bytes of the block
-		for (int i=0; i<128; i++)
+		for (int i = 0; i < 128; i++)
 		{
 			uint8_t data = 0;
 
-			if (data_pos < kc_image_size)
-				data = casdata[data_pos++];
+			if (data_pos < bytes.size())
+				data = bytes[data_pos++];
 
 			// calculate the checksum
 			checksum += data;
 
 			// write a byte
-			sample_count += kc_cas_byte( buffer, sample_count, data );
+			kc_cas_byte(samples, data);
 		}
 
 		// TP2 and KCM files also have the checksum byte
-		if (type == KC_IMAGE_TP2 || type == KC_IMAGE_KCM)
-			checksum = casdata[data_pos++];
+		if ((type == KC_IMAGE_TP2 || type == KC_IMAGE_KCM) && data_pos < bytes.size())
+			checksum = bytes[data_pos++];
 
 		// 8bit checksum
-		sample_count += kc_cas_byte( buffer, sample_count, checksum );
+		kc_cas_byte(samples, checksum);
 
 		// more TAP and TP2 can be combined into the same file
-		if ((type == KC_IMAGE_TAP || type == KC_IMAGE_TP2) && block_id == 0xff && data_pos < kc_image_size)
+		if ((type == KC_IMAGE_TAP || type == KC_IMAGE_TP2) && block_id == 0xff && data_pos < bytes.size())
 		{
-			if (casdata[data_pos] == 0xc3 || casdata[data_pos] == 0x4b)
+			if (bytes[data_pos] == 0xc3 || bytes[data_pos] == 0x4b)
 			{
-				sample_count += kc_cas_silence(buffer, sample_count, KC_WAV_FREQUENCY/10);
+				kc_cas_silence(samples, KC_WAV_FREQUENCY/10);
 
 				data_pos += 16;
 			}
@@ -175,90 +159,49 @@ static int kc_handle_cass(int16_t *buffer, const uint8_t *casdata, int type)
 		block_id++;
 	}
 
-	sample_count += kc_cas_cycle( buffer, sample_count, FREQ_SEPARATOR);
+	kc_cas_cycle(samples, FREQ_SEPARATOR);
 
 	// 1 sec of silence
-	sample_count += kc_cas_silence(buffer, sample_count, KC_WAV_FREQUENCY);
-
-	return sample_count;
+	kc_cas_silence(samples, KC_WAV_FREQUENCY);
 }
 
 
-static int kc_handle_kcc(int16_t *buffer, const uint8_t *casdata)
+static cassette_image::error kc_handle_tap(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	return kc_handle_cass(buffer, casdata, KC_IMAGE_KCC);
+	if (bytes.size() > 13 && !strncmp((const char *)&bytes[1], "KC-TAPE by AF", 13))
+	{
+		kc_handle_cass(samples, bytes, KC_IMAGE_TAP);
+		return cassette_image::error::SUCCESS;
+	}
+	else if (bytes.size() > 4 && !strncmp((const char *)&bytes[0], "KC85", 4))
+	{
+		kc_handle_cass(samples, bytes, KC_IMAGE_TP2);
+		return cassette_image::error::SUCCESS;
+	}
+	else if (bytes.size() > 1 && bytes[0] == 0x01)
+	{
+		kc_handle_cass(samples, bytes, KC_IMAGE_KCM);
+		return cassette_image::error::SUCCESS;
+	}
+	return cassette_image::error::INVALID_IMAGE;
 }
 
 
-static int kc_handle_tap(int16_t *buffer, const uint8_t *casdata)
+static void kc_handle_sss(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	if (!strncmp((const char *)(casdata + 1), "KC-TAPE by AF", 13))
-	{
-		return kc_handle_cass(buffer, casdata, KC_IMAGE_TAP);
-	}
-	else if (!strncmp((const char *)(casdata), "KC85", 4))
-	{
-		return kc_handle_cass(buffer, casdata, KC_IMAGE_TP2);
-	}
-	else if (casdata[0] == 0x01)
-	{
-		return kc_handle_cass(buffer, casdata, KC_IMAGE_KCM);
-	}
-	else
-	{
-		return (int)cassette_image::error::INVALID_IMAGE;
-	}
-}
-
-static int kc_handle_sss(int16_t *buffer, const uint8_t *casdata)
-{
-	std::vector<uint8_t> sss(kc_image_size + 11);
+	std::vector<uint8_t> sss(bytes.size() + 11);
 
 	// tries to generate the missing head
 	memset(&sss[0], 0xd3, 3);
 	memset(&sss[3], 0x20, 8);
-	memcpy(&sss[11], casdata, kc_image_size);
+	memcpy(&sss[11], &bytes[0], bytes.size());
 
 	// set an arbitrary filename
 	sss[3] = 'A';
 
-	int retval = kc_handle_cass(buffer, &sss[0], KC_IMAGE_KCC);
-
-	return retval;
+	kc_handle_cass(samples, sss, KC_IMAGE_KCC);
 }
 
-
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-static int kc_kcc_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
-{
-	return kc_handle_kcc(buffer, bytes);
-}
-
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image classical
-********************************************************************/
-static int kc_kcc_to_wav_size(const uint8_t *casdata, int caslen)
-{
-	kc_image_size = caslen ;
-
-	return kc_handle_kcc( nullptr, casdata );
-}
-
-
-static const cassette_image::LegacyWaveFiller kc_kcc_legacy_fill_wave =
-{
-	kc_kcc_fill_wave,                       /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	kc_kcc_to_wav_size,                     /* chunk_sample_calc */
-	KC_WAV_FREQUENCY,                       /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error kc_kcc_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
@@ -271,7 +214,16 @@ static cassette_image::error kc_kcc_identify(cassette_image *cassette, cassette_
 
 static cassette_image::error kc_kcc_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&kc_kcc_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	kc_handle_cass(samples, bytes, KC_IMAGE_KCC);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / KC_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
 
@@ -284,37 +236,6 @@ static const cassette_image::Format kc_kcc_format =
 };
 
 
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-static int kc_tap_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
-{
-	return kc_handle_tap(buffer, bytes);
-}
-
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image classical
-********************************************************************/
-static int kc_tap_to_wav_size(const uint8_t *casdata, int caslen)
-{
-	kc_image_size = caslen ;
-
-	return kc_handle_tap( nullptr, casdata );
-}
-
-
-static const cassette_image::LegacyWaveFiller kc_tap_legacy_fill_wave =
-{
-	kc_tap_fill_wave,                       /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	kc_tap_to_wav_size,                     /* chunk_sample_calc */
-	KC_WAV_FREQUENCY,                       /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
-
 static cassette_image::error kc_tap_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
 	opts->channels = 1;
@@ -326,7 +247,18 @@ static cassette_image::error kc_tap_identify(cassette_image *cassette, cassette_
 
 static cassette_image::error kc_tap_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&kc_tap_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	cassette_image::error err = kc_handle_tap(samples, bytes);
+	if (err != cassette_image::error::SUCCESS)
+		return err;
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / KC_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
 
@@ -339,37 +271,6 @@ static const cassette_image::Format kc_tap_format =
 };
 
 
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-static int kc_sss_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
-{
-	return kc_handle_sss(buffer, bytes);
-}
-
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image classical
-********************************************************************/
-static int kc_sss_to_wav_size(const uint8_t *casdata, int caslen)
-{
-	kc_image_size = caslen ;
-
-	return kc_handle_sss( nullptr, casdata );
-}
-
-
-static const cassette_image::LegacyWaveFiller kc_sss_legacy_fill_wave =
-{
-	kc_sss_fill_wave,                       /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	kc_sss_to_wav_size,                     /* chunk_sample_calc */
-	KC_WAV_FREQUENCY,                       /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
-
 static cassette_image::error kc_sss_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
 	opts->channels = 1;
@@ -381,8 +282,18 @@ static cassette_image::error kc_sss_identify(cassette_image *cassette, cassette_
 
 static cassette_image::error kc_sss_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&kc_sss_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	kc_handle_sss(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / KC_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
+
 
 static const cassette_image::Format kc_sss_format =
 {
