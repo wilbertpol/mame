@@ -129,9 +129,6 @@ below could be not working.  FP ]
 
 #define CBM_HEADER_SIZE 20
 
-static int16_t    wave_data = 0;
-static int      len;
-
 
 /* This in fact gives the number of samples for half of the pulse */
 static inline int tap_data_to_samplecount(int data, int frequency)
@@ -149,34 +146,30 @@ static void toggle_wave_data(int low, int high)
 }
 #endif
 
-static void toggle_wave_data(void )
+static void toggle_wave_data(int16_t &wave_data)
 {
 	wave_data = (wave_data == WAVE_HIGH) ? WAVE_LOW : WAVE_HIGH;
 }
 
-static void cbm_output_wave( int16_t **buffer, int length )
-{
-	if (buffer == nullptr)
-		return;
 
+static void cbm_output_wave(std::vector<int16_t> &samples, int16_t wave_data, int length)
+{
 	for( ; length > 0; length-- )
 	{
-		**buffer = wave_data;
-		*buffer = *buffer + 1;
+		samples.push_back(wave_data);
 	}
 }
 
 
-static int cbm_tap_do_work( int16_t **buffer, int length, const uint8_t *data )
+static cassette_image::error cbm_tap_do_work(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	int i, j = 0;
-	int size = 0;
+	int j = 0;
+	int16_t wave_data = 0;
 
-	int version, system, video_standard;
 	int tap_frequency = 0;
 
 	int byte_samples = 0;
-	uint8_t over_pulse_bytes[3] = {0 , 0, 0 };
+	uint8_t over_pulse_bytes[3] = { 0, 0, 0 };
 	int over_pulse_length = 0;
 	/* These waveamp_* values are currently stored but not used.
 	  Further investigations are needed to find real pulse amplitude
@@ -184,28 +177,25 @@ static int cbm_tap_do_work( int16_t **buffer, int length, const uint8_t *data )
 	/* int waveamp_high, waveamp_low; */
 
 	/* is the .tap file corrupted? */
-	if ((data == nullptr) || (length <= CBM_HEADER_SIZE))
-		return -1;
+	if (bytes.size() <= CBM_HEADER_SIZE)
+		return cassette_image::error::INVALID_IMAGE;
 
-	version = data[0x0c];
-	system = data[0x0d];
-	video_standard = data[0x0e];
+	uint8_t version = bytes[0x0c];
+	uint8_t system = bytes[0x0d];
+	uint8_t video_standard = bytes[0x0e];
 
-	/* Log .TAP info but only once */
-	if (!(buffer == nullptr))
-	{
-		LOG_FORMATS("TAP version    : %d\n", version);
-		LOG_FORMATS("Machine type   : %d\n", system);
-		LOG_FORMATS("Video standard : %d\n", video_standard);
-		LOG_FORMATS("Tape frequency : %d\n", (tap_frequency) << 3);
-	}
+	/* Log .TAP info */
+	LOG_FORMATS("TAP version    : %d\n", version);
+	LOG_FORMATS("Machine type   : %d\n", system);
+	LOG_FORMATS("Video standard : %d\n", video_standard);
+	LOG_FORMATS("Tape frequency : %d\n", (tap_frequency) << 3);
 
 
 	/* is this a supported version? */
 	if ((version < 0) || (version > 2))
 	{
 		LOG_FORMATS("Unsupported .tap version: %d \n", version);
-		return -1;
+		return cassette_image::error::UNSUPPORTED;
 	}
 
 
@@ -227,9 +217,9 @@ static int cbm_tap_do_work( int16_t **buffer, int length, const uint8_t *data )
 	}
 
 
-	for (i = CBM_HEADER_SIZE; i < length; i++)
+	for (int i = CBM_HEADER_SIZE; i < bytes.size(); i++)
 	{
-		uint8_t byte = data[i];
+		uint8_t byte = bytes[i];
 
 		/* .TAP v0 */
 		/* Here is simple:
@@ -267,7 +257,7 @@ static int cbm_tap_do_work( int16_t **buffer, int length, const uint8_t *data )
 			{
 				/* If we have a long pulse close to the end of the .TAP, check that bytes still
 				  to be read are enough to complete it. */
-				if (length - i + j >= 4)
+				if (bytes.size() - i + j >= 4)
 				{
 					/* Here we read the 3 following bytes, using an index j
 					  j = 0 -> The 0x00 byte: we simply skip everything and go on
@@ -302,54 +292,23 @@ static int cbm_tap_do_work( int16_t **buffer, int length, const uint8_t *data )
 
 		if (j == 0)
 		{
-			cbm_output_wave( buffer, byte_samples );
-			size += byte_samples;
+			cbm_output_wave(samples, wave_data, byte_samples);
 //          toggle_wave_data(waveamp_low, waveamp_high);
-			toggle_wave_data();
+			toggle_wave_data(wave_data);
 			if (version < 2)
 			{
-				cbm_output_wave( buffer, byte_samples );
-				size += byte_samples;
+				cbm_output_wave(samples, wave_data, byte_samples);
 //              toggle_wave_data(waveamp_low, waveamp_high);
-				toggle_wave_data();
+				toggle_wave_data(wave_data);
 			}
 		}
 	}
 
-	return size;
+	return cassette_image::error::SUCCESS;
 }
 
 
-static int cbm_tap_to_wav_size( const uint8_t *tapdata, int taplen )
-{
-	int size = cbm_tap_do_work(nullptr, taplen, tapdata);
-	len = taplen;
-
-	return size;
-}
-
-static int cbm_tap_fill_wave( int16_t *buffer, int length, uint8_t *bytes )
-{
-	int16_t *p = buffer;
-
-	return cbm_tap_do_work(&p, len, (const uint8_t *)bytes);
-}
-
-
-
-
-static const cassette_image::LegacyWaveFiller cbm_legacy_fill_wave = {
-	cbm_tap_fill_wave,      /* fill_wave */
-	-1,                     /* chunk_size */
-	0,                      /* chunk_samples */
-	cbm_tap_to_wav_size,    /* chunk_sample_calc */
-	CBM_WAV_FREQUENCY,      /* sample_frequency */
-	0,                      /* header_samples */
-	0                       /* trailer_samples */
-};
-
-
-static cassette_image::error cbm_cassette_identify( cassette_image *cassette, cassette_image::Options *opts )
+static cassette_image::error cbm_cassette_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
 	opts->channels = 1;
 	opts->bits_per_sample = 16;
@@ -358,9 +317,20 @@ static cassette_image::error cbm_cassette_identify( cassette_image *cassette, ca
 }
 
 
-static cassette_image::error cbm_cassette_load( cassette_image *cassette )
+static cassette_image::error cbm_cassette_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct( &cbm_legacy_fill_wave );
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	cassette_image::error err = cbm_tap_do_work(samples, bytes);
+	if (err != cassette_image::error::SUCCESS)
+		return err;
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / CBM_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
 
