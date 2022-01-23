@@ -117,18 +117,6 @@ public:
 		double one_frequency_high = 0;
 	};
 
-	/* code to adapt existing legacy fill_wave functions */
-	struct LegacyWaveFiller
-	{
-		int (*fill_wave)(int16_t *, int, uint8_t *) = nullptr;
-		int chunk_size = 0;
-		int chunk_samples = 0;
-		int (*chunk_sample_calc)(const uint8_t *bytes, int length) = nullptr;
-		uint32_t sample_frequency = 0;
-		int header_samples = 0;
-		int trailer_samples = 0;
-	};
-
 	~cassette_image();
 
 	// calls for accessing the raw cassette image
@@ -168,11 +156,6 @@ public:
 	error put_modulated_data_bit(int channel, double time_index,
 		uint8_t data, const Modulation &modulation,
 		double *time_displacement);
-
-	/* legacy code support */
-#define CODE_HEADER     ((uint8_t*)-1)
-#define CODE_TRAILER    ((uint8_t*)-2)
-	error legacy_construct(const LegacyWaveFiller *legacy_args);
 
 	/* debug calls */
 	void dump(const char *filename);
