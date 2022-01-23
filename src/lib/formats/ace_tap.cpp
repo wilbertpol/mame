@@ -18,151 +18,94 @@ For more information see:
 #define SMPHI   32767
 
 
-static int cas_size;
-
-
 /*******************************************************************
    Generate one high-low cycle of sample data
 ********************************************************************/
-static inline int ace_tap_cycle(int16_t *buffer, int sample_pos, int high, int low)
+static void ace_tap_cycle(std::vector<int16_t> &samples, int high, int low)
 {
 	int i = 0;
 
-	if ( buffer )
+	while (i < high)
 	{
-		while( i < high)
-		{
-			buffer[ sample_pos + i ] = SMPHI;
-			i++;
-		}
-
-		while( i < high + low )
-		{
-			buffer[ sample_pos + i ] = SMPLO;
-			i++;
-		}
+		samples.push_back(SMPHI);
+		i++;
 	}
-	return high + low;
+
+	while (i < high + low)
+	{
+		samples.push_back(SMPLO);
+		i++;
+	}
 }
 
 
-static inline int ace_tap_silence(int16_t *buffer, int sample_pos, int samples)
+static void ace_tap_silence(std::vector<int16_t> &samples, int count)
 {
-	int i = 0;
-
-	if ( buffer )
-	{
-		while( i < samples )
-		{
-			buffer[ sample_pos + i ] = SILENCE;
-			i++;
-		}
-	}
-	return samples;
+	for (int i = 0; i < count; i++)
+		samples.push_back(SILENCE);
 }
 
 
-static inline int ace_tap_byte(int16_t *buffer, int sample_pos, uint8_t data)
+static void ace_tap_byte(std::vector<int16_t> &samples, uint8_t data)
 {
-	int i, samples;
-
-	samples = 0;
-	for ( i = 0; i < 8; i++ )
+	for (int i = 0; i < 8; i++)
 	{
-		if ( data & 0x80 )
-			samples += ace_tap_cycle( buffer, sample_pos + samples, 21, 22 );
+		if (data & 0x80)
+			ace_tap_cycle(samples, 21, 22);
 		else
-			samples += ace_tap_cycle( buffer, sample_pos + samples, 10, 11 );
+			ace_tap_cycle(samples, 10, 11);
 
 		data <<= 1;
 	}
-	return samples;
 }
 
 
-static int ace_handle_tap(int16_t *buffer, const uint8_t *casdata)
+static cassette_image::error ace_handle_tap(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	int data_pos, sample_count;
+	// Make sure the file starts with a valid header
+	if (bytes.size() < 0x1c)
+		return cassette_image::error::INVALID_IMAGE;
+	if (bytes[0] != 0x1a || bytes[1] != 0x00)
+		return cassette_image::error::INVALID_IMAGE;
 
-	/* Make sure the file starts with a valid header */
-	if ( cas_size < 0x1C )
-		return -1;
-	if ( casdata[0] != 0x1A || casdata[1] != 0x00 )
-		return -1;
+	int data_pos = 0;
 
-	data_pos = 0;
-	sample_count = 0;
-
-	while( data_pos < cas_size )
+	while (data_pos + 1 < bytes.size())
 	{
-		uint16_t  block_size;
-		int     i;
 
-		/* Handle a block of tape data */
-		block_size = casdata[data_pos] + ( casdata[data_pos + 1] << 8 );
+		// Handle a block of tape data
+		uint16_t block_size = bytes[data_pos] + (bytes[data_pos + 1] << 8);
 		data_pos += 2;
 
-		/* Make sure there are enough bytes left */
-		if ( data_pos > cas_size )
-			return -1;
+		// Make sure there are enough bytes left
+		if (data_pos > bytes.size())
+			return cassette_image::error::INVALID_IMAGE;
 
-		/* 2 seconds silence */
-		sample_count += ace_tap_silence( buffer, sample_count, 2 * 44100 );
+		// 2 seconds silence
+		ace_tap_silence(samples, 2 * 44100);
 
-		/* Add pilot tone samples: 4096 for header, 512 for data */
-		for( i = ( block_size == 0x001A ) ? 4096 : 512; i; i-- )
-			sample_count += ace_tap_cycle( buffer, sample_count, 27, 27 );
+		// Add pilot tone samples: 4096 for header, 512 for data
+		for (int i = (block_size == 0x001a) ? 4096 : 512; i; i--)
+			ace_tap_cycle(samples, 27, 27);
 
-		/* Sync samples */
-		sample_count += ace_tap_cycle( buffer, sample_count, 8, 11 );
+		// Sync samples
+		ace_tap_cycle(samples, 8, 11);
 
-		/* Output block type identification byte */
-		sample_count += ace_tap_byte( buffer, sample_count, ( block_size != 0x001A ) ? 0xFF : 0x00 );
+		// Output block type identification byte
+		ace_tap_byte(samples, (block_size != 0x001a) ? 0xFF : 0x00);
 
-		/* Data samples */
-		for ( ; block_size ; data_pos++, block_size-- )
-			sample_count += ace_tap_byte( buffer, sample_count, casdata[data_pos] );
+		// Data samples
+		for ( ; block_size && data_pos < bytes.size() ; data_pos++, block_size--)
+			ace_tap_byte(samples, bytes[data_pos]);
 
-		/* End mark samples */
-		sample_count += ace_tap_cycle( buffer, sample_count, 12, 57 );
+		// End mark samples
+		ace_tap_cycle(samples, 12, 57);
 
-		/* 3 seconds silence */
-		sample_count += ace_tap_silence( buffer, sample_count, 3 * 44100 );
+		// 3 seconds silence
+		ace_tap_silence(samples, 3 * 44100);
 	}
-	return sample_count;
+	return cassette_image::error::SUCCESS;
 }
-
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-static int ace_tap_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
-{
-	return ace_handle_tap( buffer, bytes );
-}
-
-
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-static int ace_tap_to_wav_size(const uint8_t *casdata, int caslen)
-{
-	cas_size = caslen;
-
-	return ace_handle_tap( nullptr, casdata );
-}
-
-
-static const cassette_image::LegacyWaveFiller ace_legacy_fill_wave =
-{
-	ace_tap_fill_wave,                  /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	ace_tap_to_wav_size,                /* chunk_sample_calc */
-	44100,                                  /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 
 static cassette_image::error ace_tap_identify(cassette_image *cassette, cassette_image::Options *opts)
@@ -176,7 +119,18 @@ static cassette_image::error ace_tap_identify(cassette_image *cassette, cassette
 
 static cassette_image::error ace_tap_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&ace_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	cassette_image::error err = ace_handle_tap(samples, bytes);
+	if (err != cassette_image::error::SUCCESS)
+		return err;
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / 44100, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
 
