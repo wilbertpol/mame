@@ -82,6 +82,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="blckonyx" supported="no">
 		<description>The Black Onyx</description>
 		<year>1985</year>
@@ -304,6 +305,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Does not find program -->
 	<software name="firecrysa" cloneof="firecrys" supported="no">
 		<description>The Fire Crystal (Alt)</description>
 		<year>1986</year>
@@ -343,6 +345,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="hfox" supported="no">
 		<description>Hurry Fox</description>
 		<year>1985</year>
@@ -406,6 +409,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="lizard" supported="no">
 		<description>Lizard</description>
 		<year>1985</year>
@@ -553,6 +557,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Does not find program -->
 	<software name="plazmali" supported="no">
 		<description>Plazma Line</description>
 		<year>1985</year>
@@ -566,6 +571,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Does not find program -->
 	<software name="plazmalia" cloneof="plazmali" supported="no">
 		<description>Plazma Line (Alt)</description>
 		<year>1985</year>
@@ -579,8 +585,8 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
-<!-- is this broken? program does not load -->
-	<software name="poibos" supported="no">
+	<!-- Is this working correctly? -->
+	<software name="poibos" supported="partial">
 		<description>Poibos Part-1 - Dasshutsu</description>
 		<year>1985</year>
 		<publisher>応用電算技研</publisher>
@@ -709,6 +715,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="yakyukyo" supported="no">
 		<description>Yakyuu Kyou</description>
 		<year>1985</year>
@@ -722,6 +729,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="yakyukyoa" cloneof="yakyukyo" supported="no">
 		<description>Yakyuu Kyou (Alt)</description>
 		<year>1985</year>
@@ -735,6 +743,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Does not find program -->
 	<software name="zgundam" supported="no">
 		<description>Z Gundam</description>
 		<year>1986</year>
@@ -775,7 +784,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
-	<software name="3dbomb" supported="no">
+	<software name="3dbomb">
 		<description>3D Bomberman</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
@@ -879,6 +888,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="dezeni" supported="no">
 		<description>Dezeni Land</description>
 		<year>1983?</year>
@@ -1250,7 +1260,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
-	<software name="maharito" supported="no">
+	<software name="maharito">
 		<description>Maharito</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
@@ -1436,6 +1446,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="spartanxa" cloneof="spartanx" supported="no">
 		<description>Spartan X (Alt)</description>
 		<year>1984?</year>
@@ -1460,6 +1471,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="mephius" supported="no">
 		<description>Star Arthur Densetsu I - Wakusei Mephius</description>
 		<year>19??</year>
@@ -1485,6 +1497,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="sstream" supported="no">
 		<description>Star Stream</description>
 		<year>19??</year>
@@ -1579,6 +1592,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="tomathim" supported="no">
 		<description>Salad no Kuni no Tomato Hime</description>
 		<year>1984?</year>
@@ -1591,6 +1605,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="tomathima" cloneof="tomathim" supported="no">
 		<description>Salad no Kuni no Tomato Hime (Alt)</description>
 		<year>1984?</year>
@@ -1615,6 +1630,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="wingman" supported="no">
 		<description>Wingman</description>
 		<year>1985</year>
@@ -1670,6 +1686,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- Program load error -->
 	<software name="xevious" supported="no">
 		<description>Xevious</description>
 		<year>19??</year>
@@ -1946,6 +1963,7 @@ Titles, publishers and release dates taken from:
 		</part>
 	</software>
 
+	<!-- File mode error -->
 	<software name="minami" supported="no">
 		<description>Minami Taihei-yo Adventure</description>
 		<year>19??</year>

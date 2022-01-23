@@ -40,11 +40,43 @@ static void x1_fill_wave(std::vector<int16_t> &samples, uint8_t data)
 }
 
 
+static cassette_image::error parse_header(cassette_image *cassette, int &sample_rate, bool &new_format)
+{
+	uint64_t file_size = cassette->image_size();
+
+	if (file_size < 4)
+		return cassette_image::error::INVALID_IMAGE;
+
+	std::vector<uint8_t> bytes(0x20);
+	cassette->image_read(&bytes[0], 0, 0x20);
+	if (!memcmp(&bytes[0], "TAPE", 4))
+	{
+		if (file_size <= 0x28)
+			return cassette_image::error::INVALID_IMAGE;
+		sample_rate = bytes[0x1c] | (bytes[0x1d] << 8) | (bytes[0x1e] << 16) | (bytes[0x1f] << 24);
+		new_format = true;
+	}
+	else
+	{
+		sample_rate = bytes[0x00] | (bytes[0x01] << 8) | (bytes[0x02] << 16) | (bytes[0x03] << 24);
+		new_format = false;
+	}
+	return cassette_image::error::SUCCESS;
+}
+
+
 static cassette_image::error x1_cas_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
+	int sample_rate;
+	bool new_format;
+
+	cassette_image::error err = parse_header(cassette, sample_rate, new_format);
+	if (err != cassette_image::error::SUCCESS)
+		return err;
+
 	opts->channels = 1;
 	opts->bits_per_sample = 16;
-	opts->sample_frequency = 8000;
+	opts->sample_frequency = sample_rate;
 	return cassette_image::error::SUCCESS;
 }
 
@@ -56,30 +88,16 @@ static cassette_image::error x1_cas_load(cassette_image *cassette)
 	cassette->image_read(&casdata[0], 0, file_size);
 	std::vector<int16_t> samples;
 
-	int samplerate;
+	int sample_rate;
 	bool new_format;
 
-	if (file_size < 4)
-		return cassette_image::error::INVALID_IMAGE;
+	cassette_image::error err = parse_header(cassette, sample_rate, new_format);
+	if (err != cassette_image::error::SUCCESS)
+		return err;
 
-	if (!memcmp(&casdata[0], "TAPE", 4))  // new TAP format
+	if (sample_rate != 8000)
 	{
-		if (file_size < 0x28)
-			return cassette_image::error::INVALID_IMAGE;
-
-		samplerate = casdata[0x1c] | (casdata[0x1d] << 8) | (casdata[0x1e] << 16) | (casdata[0x1f] << 24);
-		new_format = true;
-	}
-	else  // old TAP format
-	{
-		samplerate = casdata[0x00] | (casdata[0x01] << 8) | (casdata[0x02] << 16) | (casdata[0x03] << 24);
-		new_format = false;
-	}
-
-	if (samplerate != 8000)
-	{
-		LOG_FORMATS("TAP: images that are not 8000Hz are not yet supported\n");
-		return cassette_image::error::UNSUPPORTED;
+		LOG_FORMATS("TAP: Supprt for images that are not 8000Hz is preliminary\n");
 	}
 
 	for (uint64_t data_pos = new_format ? 0x28 : 0x04; data_pos < file_size; data_pos++)
@@ -88,7 +106,7 @@ static cassette_image::error x1_cas_load(cassette_image *cassette)
 	}
 
 	return cassette->put_samples(0, 0.0,
-			(double)samples.size() / 8000, samples.size(), 2,
+			(double)samples.size() / sample_rate, samples.size(), 2,
 			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
@@ -99,6 +117,7 @@ static const cassette_image::Format x1_cassette_format = {
 	x1_cas_load,
 	nullptr
 };
+
 
 CASSETTE_FORMATLIST_START(x1_cassette_formats)
 	CASSETTE_FORMAT(x1_cassette_format)
