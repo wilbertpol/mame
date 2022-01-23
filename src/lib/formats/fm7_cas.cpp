@@ -11,81 +11,43 @@
 #define WAVE_HIGH        0x5a9e
 #define WAVE_LOW        -0x5a9e
 
-static int cas_size; // FIXME: global variable prevents multiple instances
 
-static int fm7_fill_wave(int16_t* buffer, uint8_t high, uint8_t low, int sample_pos)
+static void fm7_fill_wave(std::vector<int16_t> &samples, uint8_t high, uint8_t low)
 {
 	uint16_t data = (high << 8) + low;
-	int sample_count = 0;
-	int x = 0;
 	int count = (data & 0x7fff);
 
-	if(data & 0x8000)
+	if (data & 0x8000)
 	{
-		for(x=0;x<count;x++)
+		for (int x = 0; x < count; x++)
 		{
-			if(buffer)
-				buffer[sample_pos+x] = WAVE_HIGH;
+			samples.push_back(WAVE_HIGH);
 		}
 	}
 	else
 	{
-		for(x=0;x<count;x++)
+		for (int x = 0; x < count; x++)
 		{
-			if(buffer)
-				buffer[sample_pos+x] = WAVE_LOW;
+			samples.push_back(WAVE_LOW);
 		}
 	}
-
-	sample_count += count;
-	return sample_count;
 }
 
-static int fm7_handle_t77(int16_t* buffer, const uint8_t* casdata)
+
+static cassette_image::error fm7_handle_t77(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	int sample_count = 0;
+	if (bytes.size() < 16 || memcmp(&bytes[0], "XM7 TAPE IMAGE 0",16))  // header check
+		return cassette_image::error::INVALID_IMAGE;
+
 	int data_pos = 16;
-
-	if(memcmp(casdata, "XM7 TAPE IMAGE 0",16))  // header check
-		return -1;
-
-	while(data_pos < cas_size)
+	while (data_pos + 1 < bytes.size())
 	{
-		sample_count += fm7_fill_wave(buffer,casdata[data_pos],casdata[data_pos+1],sample_count);
-		data_pos+=2;
+		fm7_fill_wave(samples, bytes[data_pos], bytes[data_pos + 1]);
+		data_pos += 2;
 	}
-
-	return sample_count;
+	return cassette_image::error::SUCCESS;
 }
 
-/*******************************************************************
-   Calculate the number of samples needed for this tape image
-********************************************************************/
-static int fm7_cas_to_wav_size (const uint8_t *casdata, int caslen)
-{
-	cas_size = caslen;
-
-	return fm7_handle_t77(nullptr,casdata);
-}
-
-/*******************************************************************
-   Generate samples for the tape image
-********************************************************************/
-static int fm7_cas_fill_wave(int16_t *buffer, int sample_count, uint8_t *bytes)
-{
-	return fm7_handle_t77(buffer,bytes);
-}
-
-static const cassette_image::LegacyWaveFiller fm7_legacy_fill_wave =
-{
-	fm7_cas_fill_wave,                      /* fill_wave */
-	-1,                                     /* chunk_size */
-	0,                                      /* chunk_samples */
-	fm7_cas_to_wav_size,                    /* chunk_sample_calc */
-	110250,                                 /* sample_frequency */
-	0,                                      /* header_samples */
-	0                                       /* trailer_samples */
-};
 
 static cassette_image::error fm7_cas_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
@@ -96,10 +58,20 @@ static cassette_image::error fm7_cas_identify(cassette_image *cassette, cassette
 }
 
 
-
 static cassette_image::error fm7_cas_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&fm7_legacy_fill_wave);
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
+
+	cassette_image::error err = fm7_handle_t77(samples, bytes);
+	if (err != cassette_image::error::SUCCESS)
+		return err;
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / 110250, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
 
@@ -109,6 +81,7 @@ static const cassette_image::Format fm7_cassette_format = {
 	fm7_cas_load,
 	nullptr
 };
+
 
 CASSETTE_FORMATLIST_START(fm7_cassette_formats)
 	CASSETTE_FORMAT(fm7_cassette_format)
