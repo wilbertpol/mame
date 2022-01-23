@@ -19,9 +19,6 @@
 #define GTP_BLOCK_TURBO     0x01
 #define GTP_BLOCK_NAME      0x10
 
-static int16_t    wave_data; // FIXME: global variable prevent multiple instances
-static int16_t    len;
-
 #define PULSE_WIDTH     30
 #define PERIOD_BASE     150
 #define PERIOD_1        75
@@ -31,151 +28,88 @@ static int16_t    len;
 #define INTERBLOCK_PAUSE    100000
 
 
-static void gtp_output_wave( int16_t **buffer, int length ) {
-	if ( buffer == nullptr ) {
-		return;
-	}
-
-	for( ; length > 0; length-- ) {
-		**buffer = wave_data;
-		*buffer = *buffer + 1;
-	}
+static void gtp_output_wave(std::vector<int16_t> &samples, int16_t wave_data, int length)
+{
+	for( ; length > 0; length-- )
+		samples.push_back(wave_data);
 }
 
 
-
-static int gtp_mod_1( int16_t **buffer )
+static void gtp_mod_1(std::vector<int16_t> &samples)
 {
-	wave_data = WAVE_LOW;
-	gtp_output_wave(buffer,PULSE_WIDTH);
-	wave_data = WAVE_HIGH;
-	gtp_output_wave(buffer,PULSE_WIDTH);
-	wave_data = WAVE_NULL;
-	gtp_output_wave(buffer,PERIOD_1 - 2 * PULSE_WIDTH);
-	wave_data = WAVE_LOW;
-	gtp_output_wave(buffer,PULSE_WIDTH);
-	wave_data = WAVE_HIGH;
-	gtp_output_wave(buffer,PULSE_WIDTH);
-	wave_data = WAVE_NULL;
-	gtp_output_wave(buffer,PERIOD_1 - 2 * PULSE_WIDTH);
-
-	return PERIOD_1 * 2;
+	gtp_output_wave(samples, WAVE_LOW, PULSE_WIDTH);
+	gtp_output_wave(samples, WAVE_HIGH, PULSE_WIDTH);
+	gtp_output_wave(samples, WAVE_NULL, PERIOD_1 - 2 * PULSE_WIDTH);
+	gtp_output_wave(samples, WAVE_LOW, PULSE_WIDTH);
+	gtp_output_wave(samples, WAVE_HIGH, PULSE_WIDTH);
+	gtp_output_wave(samples, WAVE_NULL, PERIOD_1 - 2 * PULSE_WIDTH);
 }
 
-static int gtp_mod_0( int16_t **buffer )
-{
-	wave_data = WAVE_LOW;
-	gtp_output_wave(buffer,PULSE_WIDTH);
-	wave_data = WAVE_HIGH;
-	gtp_output_wave(buffer,PULSE_WIDTH);
-	wave_data = WAVE_NULL;
-	gtp_output_wave(buffer,PERIOD_0 - 2 * PULSE_WIDTH);
 
-	return PERIOD_0;
+static void gtp_mod_0(std::vector<int16_t> &samples)
+{
+	gtp_output_wave(samples, WAVE_LOW, PULSE_WIDTH);
+	gtp_output_wave(samples, WAVE_HIGH, PULSE_WIDTH);
+	gtp_output_wave(samples, WAVE_NULL, PERIOD_0 - 2 * PULSE_WIDTH);
 }
 
-static int gtp_byte( int16_t **buffer, uint8_t val )
+
+static void gtp_byte(std::vector<int16_t> &samples, uint8_t val)
 {
-	uint8_t b;
-	int j,size = 0;
-	for (j=0;j<8;j++) {
-		b = (val >> j) & 1;
+	for (int j = 0; j < 8; j++) {
+		uint8_t b = (val >> j) & 1;
 		if (b==0) {
-			size += gtp_mod_0(buffer);
+			gtp_mod_0(samples);
 		} else {
-			size += gtp_mod_1(buffer);
+			gtp_mod_1(samples);
 		}
 	}
-	return size;
 }
 
-static int gtp_sync( int16_t **buffer )
+
+static void gtp_sync(std::vector<int16_t> &samples)
 {
-	int i;
-	int size = 0;
-
-	for(i=0;i<100;i++) {
-		if (i!=0) {
+	for (int i = 0; i < 100; i++) {
+		if (i) {
 			// Interbyte pause
-			wave_data = WAVE_NULL;
-			gtp_output_wave(buffer,INTERBYTE_PAUSE);
-			size += INTERBYTE_PAUSE;
+			gtp_output_wave(samples, WAVE_NULL, INTERBYTE_PAUSE);
 		}
-		size += gtp_byte(buffer,0);
+		gtp_byte(samples, 0);
 	}
-	return size;
 }
 
-static int gtp_cas_to_wav_size( const uint8_t *casdata, int caslen ) {
-	int size,n;
-	size = 0;
-	n = 0;
-	if (casdata == nullptr) return -1;
-	while(n<caslen) {
-		int block_type = casdata[n];
-		int block_size = casdata[n+2]*256 + casdata[n+1];
-		n+=5;
-		if (block_type==GTP_BLOCK_STANDARD) {
-			// Interblock pause
-			size += INTERBLOCK_PAUSE;
-			size += 100 * (PERIOD_0 * 8 + INTERBYTE_PAUSE) - INTERBYTE_PAUSE;
-			size += (PERIOD_0 * 8 + INTERBYTE_PAUSE) * block_size;
-		}
-		n += block_size;
-	}
-	len = caslen;
-	return size;
-}
 
-static int gtp_cas_fill_wave( int16_t *buffer, int length, uint8_t *bytes ) {
-	int i,size,n;
-	size = 0;
-	n = 0;
-	if (bytes == nullptr) return -1;
-	while(n<len)
+static void gtp_cas_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
+{
+	int n = 0;
+
+	while (n < bytes.size())
 	{
+		if (n + 5 >= bytes.size())
+			break;
 		int block_type = bytes[n];
 		int block_size = bytes[n+2]*256 + bytes[n+1];
 		n+=5;
-		if (block_type==GTP_BLOCK_STANDARD) {
+		if (block_type == GTP_BLOCK_STANDARD) {
 			// Interblock pause
-			wave_data = WAVE_NULL;
-			gtp_output_wave(&buffer,INTERBLOCK_PAUSE);
-			size += INTERBLOCK_PAUSE;
-			size += gtp_sync(&buffer);
+			gtp_output_wave(samples, WAVE_NULL, INTERBLOCK_PAUSE);
+			gtp_sync(samples);
 
-			for (i=0;i<block_size;i++) {
+			for (int i = 0; i < block_size; i++) {
 				// Interbyte pause
-				wave_data = WAVE_NULL;
-				gtp_output_wave(&buffer,INTERBYTE_PAUSE);
-				size += INTERBYTE_PAUSE;
+				gtp_output_wave(samples, WAVE_NULL, INTERBYTE_PAUSE);
 
-				size += gtp_byte(&buffer,bytes[n]);
+				gtp_byte(samples, bytes[n]);
 				n++;
 			}
 		} else {
 			n += block_size;
 		}
 	}
-	return size;
 }
 
 
-
-
-static const cassette_image::LegacyWaveFiller gtp_legacy_fill_wave = {
-	gtp_cas_fill_wave,          /* fill_wave */
-	-1,                 /* chunk_size */
-	0,                  /* chunk_samples */
-	gtp_cas_to_wav_size,            /* chunk_sample_calc */
-	GTP_WAV_FREQUENCY,          /* sample_frequency */
-	0,                  /* header_samples */
-	0                   /* trailer_samples */
-};
-
-
-
-static cassette_image::error gtp_cassette_identify( cassette_image *cassette, cassette_image::Options *opts ) {
+static cassette_image::error gtp_cassette_identify(cassette_image *cassette, cassette_image::Options *opts) {
 	opts->channels = 1;
 	opts->bits_per_sample = 16;
 	opts->sample_frequency = GTP_WAV_FREQUENCY;
@@ -183,14 +117,23 @@ static cassette_image::error gtp_cassette_identify( cassette_image *cassette, ca
 }
 
 
+static cassette_image::error gtp_cassette_load(cassette_image *cassette) {
+		uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
 
-static cassette_image::error gtp_cassette_load( cassette_image *cassette ) {
-	return cassette->legacy_construct( &gtp_legacy_fill_wave );
+	gtp_cas_fill_wave(samples, bytes);
+	printf("samples.size = %lu\n", samples.size());
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / GTP_WAV_FREQUENCY, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
 }
 
 
-
-static const cassette_image::Format gtp_cassette_format = {
+static const cassette_image::Format gtp_cassette_format =
+{
 	"gtp",
 	gtp_cassette_identify,
 	gtp_cassette_load,
