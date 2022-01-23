@@ -16,106 +16,64 @@
 #define LVIV_LVT_HEADER_PILOT_LENGTH        5190
 #define LVIV_LVT_BLOCK_PILOT_LENGTH         1298
 
-static int16_t *lviv_emit_level(int16_t *p, int count, int level)
+
+static void lviv_emit_level(std::vector<int16_t> &samples, int count, int level)
 {
-	for (int i=0; i<count; i++)
+	for (int i = 0; i < count; i++)
 	{
-		*(p++) = level;
+		samples.push_back(level);
 	}
-	return p;
 }
 
-static int16_t* lviv_output_bit(int16_t *p, uint8_t b)
+
+static void lviv_output_bit(std::vector<int16_t> &samples, uint8_t b)
 {
 	if (b)
 	{
-		p = lviv_emit_level (p, 15, WAVEENTRY_HIGH);
-		p = lviv_emit_level (p, 15, WAVEENTRY_LOW);
-		p = lviv_emit_level (p, 15, WAVEENTRY_HIGH);
-		p = lviv_emit_level (p, 15, WAVEENTRY_LOW);
+		lviv_emit_level(samples, 15, WAVEENTRY_HIGH);
+		lviv_emit_level(samples, 15, WAVEENTRY_LOW);
+		lviv_emit_level(samples, 15, WAVEENTRY_HIGH);
+		lviv_emit_level(samples, 15, WAVEENTRY_LOW);
 	}
 	else
 	{
-		p = lviv_emit_level (p, 30, WAVEENTRY_HIGH);
-		p = lviv_emit_level (p, 30, WAVEENTRY_LOW);
+		lviv_emit_level(samples, 30, WAVEENTRY_HIGH);
+		lviv_emit_level(samples, 30, WAVEENTRY_LOW);
 	}
-		return p;
 }
 
-static int16_t* lviv_output_byte(int16_t *p, uint8_t byte)
+
+static void lviv_output_byte(std::vector<int16_t> &samples, uint8_t byte)
 {
-	p = lviv_output_bit (p, 0);
+	lviv_output_bit(samples, 0);
 
-	for (int i=0; i<8; i++)
-		p = lviv_output_bit(p,(byte>>i) & 0x01);
+	for (int i = 0; i < 8; i++)
+		lviv_output_bit(samples, (byte>>i) & 0x01);
 
-	p = lviv_output_bit (p, 1);
-	p = lviv_output_bit (p, 1);
-	return p;
+	lviv_output_bit(samples, 1);
+	lviv_output_bit(samples, 1);
 }
 
-/*************************************************************************************/
 
-static int lviv_cassette_calculate_size_in_samples(const uint8_t *bytes, int length)
+static void lviv_cassette_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	int size;
+	for (int i = 0; i < LVIV_LVT_HEADER_PILOT_LENGTH; i++)
+		lviv_output_bit(samples, 1);
 
-	size =  LVIV_LVT_HEADER_PILOT_SAMPLES +
-		LVIV_LVT_HEADER_DATA_SAMPLES +
-		LVIV_LVT_PAUSE_SAMPLES +
-		LVIV_LVT_BLOCK_PILOT_SAMPLES +
-		(length-0x10)*11*LVIV_LVT_BIT_SAMPLES;
-
-	return size;
-}
-
-/*************************************************************************************/
-
-static int lviv_cassette_fill_wave(int16_t *buffer, int length, uint8_t *bytes)
-{
-	int16_t * p = buffer;
-
-	int data_size;
-
-	for (int i=0; i<LVIV_LVT_HEADER_PILOT_LENGTH; i++)
-		p = lviv_output_bit (p, 1);
-
-	for (int i=0; i<10; i++)
-		p = lviv_output_byte (p, bytes[0x09]);
+	for (int i = 0; i < 10; i++)
+		lviv_output_byte(samples, bytes[0x09]);
 
 	for (int i=0; i<6; i++)
-		p = lviv_output_byte (p, bytes[0x0a+i]);
+		lviv_output_byte(samples, bytes[0x0a+i]);
 
-	p = lviv_emit_level (p, LVIV_LVT_PAUSE_SAMPLES, WAVEENTRY_HIGH);
+	lviv_emit_level(samples, LVIV_LVT_PAUSE_SAMPLES, WAVEENTRY_HIGH);
 
-	for (int i=0; i<LVIV_LVT_BLOCK_PILOT_LENGTH; i++)
-		p = lviv_output_bit (p, 1);
+	for (int i = 0; i < LVIV_LVT_BLOCK_PILOT_LENGTH; i++)
+		lviv_output_bit(samples, 1);
 
-	data_size = length - ( LVIV_LVT_HEADER_PILOT_SAMPLES +
-					LVIV_LVT_HEADER_DATA_SAMPLES +
-						LVIV_LVT_PAUSE_SAMPLES +
-					LVIV_LVT_BLOCK_PILOT_SAMPLES );
-	data_size/=660;
-
-	for (int i=0; i<data_size; i++)
-		p = lviv_output_byte (p, bytes[0x10+i]);
-
-	return p - buffer;
+	for (int i = 0x10; i < bytes.size(); i++)
+		lviv_output_byte(samples, bytes[i]);
 }
-
-
-
-static const cassette_image::LegacyWaveFiller lviv_legacy_fill_wave =
-{
-	lviv_cassette_fill_wave,                    /* fill_wave */
-	-1,                                         /* chunk_size */
-	0,                                          /* chunk_samples */
-	lviv_cassette_calculate_size_in_samples,    /* chunk_sample_calc */
-	44100,                                      /* sample_frequency */
-	0,                                          /* header_samples */
-	0                                           /* trailer_samples */
-};
-
 
 
 static cassette_image::error lviv_lvt_identify(cassette_image *cassette, cassette_image::Options *opts)
@@ -127,12 +85,22 @@ static cassette_image::error lviv_lvt_identify(cassette_image *cassette, cassett
 }
 
 
-
 static cassette_image::error lviv_lvt_load(cassette_image *cassette)
 {
-	return cassette->legacy_construct(&lviv_legacy_fill_wave);
-}
+	uint64_t file_size = cassette->image_size();
+	std::vector<uint8_t> bytes(file_size);
+	cassette->image_read(&bytes[0], 0, file_size);
+	std::vector<int16_t> samples;
 
+	if (file_size < 0x10)
+		return cassette_image::error::INVALID_IMAGE;
+
+	lviv_cassette_fill_wave(samples, bytes);
+
+	return cassette->put_samples(0, 0.0,
+			(double)samples.size() / 44100, samples.size(), 2,
+			&samples[0], cassette_image::WAVEFORM_16BIT);
+}
 
 
 static const cassette_image::Format lviv_lvt_image_format =
@@ -142,7 +110,6 @@ static const cassette_image::Format lviv_lvt_image_format =
 	lviv_lvt_load,
 	nullptr
 };
-
 
 
 CASSETTE_FORMATLIST_START(lviv_lvt_format)

@@ -2,6 +2,11 @@
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
 <!--
 license:CC0
+
+Because of the odd default key mapping the usual load commands are typed as follows:
+BLOAD"",R -> ',' + 'K' + 'J' + 'F' + 'L' + 'shift + 2' + 'shift + 2' + 'HOME' + 'H'
+CLOAD -> 'W' + 'K' + 'J' + 'F' + 'L' + 'shift + 2' + 'shift + 2'
+RUN -> 'H' + 'E' + 'Y'
 -->
 <softwarelist name="lviv" description="Lviv cassettes">
 
