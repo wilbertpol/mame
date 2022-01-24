@@ -10,12 +10,6 @@ SWTPC 6800 kit based computers.
 
 UEF files are chunk based and optionally compressed.
 
-The UEF format supports gzipped images, i'm doing the gunzip step during uef_cas_to_wav_size
-because that is when the length of the original file is known. This is needed to determine
-the size of memory to alloc for the decoding.
-
-Not nice, but it works...
-
 */
 #include "uef_cas.h"
 #include "imageutl.h"
@@ -51,7 +45,7 @@ static const uint8_t GZ_HEADER[2] = { 0x1f, 0x8b };
 
 
 static const uint8_t* skip_gz_header(const uint8_t *p, int length)
- {
+{
 	const uint8_t *max_p = p + length;
 	if (p + 10 >= max_p)
 		return nullptr;

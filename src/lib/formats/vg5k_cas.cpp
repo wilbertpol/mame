@@ -124,7 +124,7 @@ static cassette_image::error vg5k_handle_tap(std::vector<int16_t> &samples, std:
 		for (; block_size; data_pos++, block_size--)
 		{
 			/* Make sure there are enough bytes left */
-			if (data_pos > casdata.size())
+			if (data_pos >= casdata.size())
 				return cassette_image::error::INVALID_IMAGE;
 
 			vg5k_cas_byte(samples, casdata[data_pos]);

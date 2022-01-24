@@ -11,7 +11,7 @@ To load a cassette:
 - Enter command 'LOAD ""' (press J, shift + P, shift + P, ENTER)
 - Play the cassette
 - Eventually you get a blank screen with just 0/0, this is an
-  indication that the file was loaded succesfully
+  indication that the file was loaded succesfully, press ENTER
 - Enter command 'RUN' (press R)
 -->
 

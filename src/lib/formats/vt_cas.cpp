@@ -28,7 +28,7 @@ static void generic_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t
 	}
 
 	// silence at the end
-	for (int i = 0; i < 600 * bitsamples; i++ )
+	for (int i = 0; i < 600 * bitsamples; i++)
 		samples.push_back(0);
 }
 
@@ -47,18 +47,18 @@ static void vtech1_fill_wave_byte(std::vector<int16_t> &samples, uint8_t byte)
 {
 	for (int i = 7; i >= 0; i--)
 	{
-		samples.push_back(V1_HI);  /* initial cycle */
+		samples.push_back(V1_HI);  // initial cycle
 		samples.push_back(V1_LO);
 		if ((byte >> i) & 1)
 		{
-			samples.push_back(V1_HI); /* two more cycles */
+			samples.push_back(V1_HI); // two more cycles
 			samples.push_back(V1_LO);
 			samples.push_back(V1_HI);
 			samples.push_back(V1_LO);
 		}
 		else
 		{
-			samples.push_back(V1_HI); /* one slow cycle */
+			samples.push_back(V1_HI); // one slow cycle
 			samples.push_back(V1_HI);
 			samples.push_back(V1_LO);
 			samples.push_back(V1_LO);
