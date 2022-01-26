@@ -128,7 +128,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-241T" />
-		<info name="usage" value="bload&quot;cas:&quot;,r" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -137,11 +137,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="sasa">
 		<description>Sasa</description>
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-243T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -155,6 +157,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-293T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -168,6 +171,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-216T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -181,6 +185,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-211T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -194,6 +199,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-242T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -207,6 +213,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-234T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="16384">
@@ -220,6 +227,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-233T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="16384">
@@ -233,6 +241,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-219T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="8042">
@@ -246,6 +255,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-257T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="7303">
@@ -259,6 +269,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-260T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="8126">
@@ -272,6 +283,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>SIL</publisher>
 		<info name="serial" value="SD-260T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="7992">
@@ -285,6 +297,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-228T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="8554">
@@ -298,6 +311,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Intellisoft</publisher>
 		<info name="serial" value="SD-229T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="10467">
@@ -311,6 +325,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Intellisoft</publisher>
 		<info name="serial" value="SD-239T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="7903">
@@ -324,6 +339,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-225T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="11944">
@@ -332,11 +348,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="justwrit">
 		<description>Just Write JR</description>
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-294C Should be a cartridge but a Tape dump exist" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -350,6 +368,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>SIL</publisher>
 		<info name="serial" value="SD-308T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="7170">
@@ -363,6 +382,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>SIL</publisher>
 		<info name="serial" value="SD-301T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="8845">
@@ -376,6 +396,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Softy</publisher>
 		<info name="serial" value="SD-221T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="11919">
@@ -384,11 +405,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="muscmntr">
 		<description>Music Mentor</description>
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-236T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -402,6 +425,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-256T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="15975">
@@ -415,6 +439,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-255T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="10151">
@@ -423,11 +448,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- out of memory on svi318 -->
 	<software name="firstep">
 		<description>First Steps</description>
 		<year>1983</year>
 		<publisher>Softy</publisher>
 		<info name="serial" value="SD-222T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="19433">
@@ -436,11 +463,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- out of memory on svi318 -->
 	<software name="findit">
 		<description>Findit</description>
 		<year>1984</year>
 		<publisher>Spectravideo Israel</publisher>
 		<info name="serial" value="SD-252T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="11547">
@@ -454,6 +483,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo Israel</publisher>
 		<info name="serial" value="SD-254T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="9399">
@@ -467,6 +497,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-267T" />
+3		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="7631">
@@ -480,6 +511,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-349T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="6877">
@@ -493,6 +525,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>John McLachlan</publisher>
 		<info name="serial" value="SD-311T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="2764">
@@ -506,6 +539,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Yoga Computing</publisher>
 		<info name="serial" value="SD-347T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="8857">
@@ -519,6 +553,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Yoga Computing</publisher>
 		<info name="serial" value="SD-617T not sure if it is the same one as it boots it says graph master 2" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="11049">
@@ -532,6 +567,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-333T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="6658">
@@ -545,6 +581,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>SIL</publisher>
 		<info name="serial" value="SD-326T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="6417">
@@ -558,6 +595,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-348T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="9228">
@@ -566,11 +604,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="jngljim">
 		<description>Jungle Jim</description>
 		<year>1984</year>
 		<publisher>TM Software</publisher>
 		<info name="serial" value="SD-663T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="23763">
@@ -584,6 +624,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-663T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="9709">
@@ -597,6 +638,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Waitaki Software</publisher>
 		<info name="serial" value="SD-343T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="10756">
@@ -610,6 +652,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-342T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="7332">
@@ -623,6 +666,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-315T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="1946">
@@ -636,6 +680,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-314T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="4576">
@@ -649,6 +694,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-316T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="1902">
@@ -657,11 +703,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="ninja">
 		<description>Ninja</description>
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-292T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -675,6 +723,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-669T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="6016">
@@ -683,11 +732,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="ppatrol">
 		<description>Planet Patrol</description>
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-669T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="17124">
@@ -696,11 +747,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="ppatrola" cloneof="ppatrol">
 		<description>Planet Patrol (Alt)</description>
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-669T" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -714,6 +767,7 @@ Ballonies (198x)
 		<year>1985</year>
 		<publisher>Intersoft</publisher>
 		<info name="serial" value="SD-669T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="20450">
@@ -727,6 +781,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>SIL</publisher>
 		<info name="serial" value="SD-???T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="6266">
@@ -740,6 +795,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-245T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="6823">
@@ -753,6 +809,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>A.C. Hunt</publisher>
 		<info name="serial" value="SD-245T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="10420">
@@ -766,6 +823,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>C.A.E.</publisher>
 		<info name="serial" value="SD-245T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="3027">
@@ -779,6 +837,7 @@ Ballonies (198x)
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-269T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="10828">
@@ -792,6 +851,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-323T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="2860">
@@ -805,6 +865,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-341T" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="4164">
@@ -815,11 +876,13 @@ Ballonies (198x)
 
 	<!-- Released as a cartridge but exist as a tape image too -->
 
+	<!-- does not work on svi318 -->
 	<software name="flipper">
 		<description>Flipper Slipper</description>
 		<year>1984</year>
 		<publisher>John McLachlan</publisher>
 		<info name="serial" value="SD-291C" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -828,11 +891,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="ffreddy">
 		<description>Frantic Freddy</description>
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-232C" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="16700">
@@ -841,11 +906,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="ffreddya" cloneof="ffreddy">
 		<description>Frantic Freddy (Alt)</description>
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-232C" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -854,11 +921,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="secalpha">
 		<description>Sector Alpha</description>
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-220C" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -867,11 +936,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- does not work on svi318 -->
 	<software name="scrsfrce">
 		<description>Super Cross Force</description>
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-220C" />
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -889,6 +960,7 @@ Ballonies (198x)
 		<description>Assiduity (Ger)</description>
 		<year>1984</year>
 		<publisher>Lars Lewejohann</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="21671">
@@ -901,6 +973,7 @@ Ballonies (198x)
 		<description>BASIC Tutorial</description>
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="12288">
@@ -913,6 +986,7 @@ Ballonies (198x)
 		<description>Crazy Teeth</description>
 		<year>1984</year>
 		<publisher>Dan Haggren</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="16384">
@@ -921,10 +995,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
-	<software name="deklarat">
+	<!-- Device I/O error -->
+	<software name="deklarat" supported="no">
 		<description>Deklarations-Program (Swe)</description>
 		<year>1985</year>
 		<publisher>Gite Sundberg</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="51369">
@@ -937,6 +1013,7 @@ Ballonies (198x)
 		<description>Demo 5 v3.1</description>
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -957,10 +1034,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="diamoned">
 		<description>Diamond Luis Editor (Fin)</description>
 		<year>1986</year>
 		<publisher>Ikesoft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="33546">
@@ -969,10 +1048,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not finish loading on svi318 -->
 	<software name="explorer">
 		<description>Explorer III</description>
 		<year>1986</year>
 		<publisher>Robert Lindh</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="24552">
@@ -985,6 +1066,7 @@ Ballonies (198x)
 		<description>Flipper Man (Nor)</description>
 		<year>1984</year>
 		<publisher>Computerworld - Mikrodata</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="4336">
@@ -993,10 +1075,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work in svi318 -->
 	<software name="fluffy">
 		<description>Fluffy</description>
 		<year>1987</year>
 		<publisher>JTM Software</publisher>
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="57344">
@@ -1005,10 +1089,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="grachess">
 		<description>Graphic Chess</description>
 		<year>1986</year>
 		<publisher>JTM Software</publisher>
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="57344">
@@ -1021,6 +1107,7 @@ Ballonies (198x)
 		<description>Hollow (Ger)</description>
 		<year>1984</year>
 		<publisher>Lars Lewejohann</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="9642">
@@ -1029,10 +1116,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="jetalf">
 		<description>Jet Alf</description>
 		<year>1984</year>
 		<publisher>ELS</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -1045,6 +1134,7 @@ Ballonies (198x)
 		<description>Jet Alf and the Manic Masters Revenge</description>
 		<year>1984</year>
 		<publisher>ELS</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="28672">
@@ -1057,6 +1147,7 @@ Ballonies (198x)
 		<description>LABYX (Nor)</description>
 		<year>1985</year>
 		<publisher>Hjemmedata Magazine</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="9935">
@@ -1065,10 +1156,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="megalone">
 		<description>Megalone</description>
 		<year>1986</year>
 		<publisher>JD Team</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="58425">
@@ -1077,10 +1170,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="megalonea" cloneof="megalone">
 		<description>Megalone (Alt)</description>
 		<year>1986</year>
 		<publisher>JD Team</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="65636">
@@ -1089,10 +1184,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="msxemu">
 		<description>MSX Emulator</description>
 		<year>1983</year>
 		<publisher>H. Klopper - P. Zevenhoven</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="58425">
@@ -1105,6 +1202,7 @@ Ballonies (198x)
 		<description>Music Demo 1</description>
 		<year>1986</year>
 		<publisher>Bach TP</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="28672">
@@ -1113,10 +1211,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="musicd2">
 		<description>Music Demo 2</description>
 		<year>1987</year>
 		<publisher>Bach TP</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="20480">
@@ -1125,10 +1225,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="musicd3">
 		<description>Music Demo 3</description>
 		<year>1988</year>
 		<publisher>Bach TP</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="20480">
@@ -1137,10 +1239,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="muscmntra" cloneof="muscmntr">
 		<description>Music Mentor (Cracked by Hacke)</description>
 		<year>1983</year>
 		<publisher>Spectravideo</publisher>
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -1149,10 +1253,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="pengwyn">
 		<description>Pengwyn</description>
 		<year>1983</year>
 		<publisher>H. Klopper - P. Zevenhoven</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="16384">
@@ -1161,6 +1267,7 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="perijour">
 		<description>Perilous Journey</description>
 		<year>1984</year>
@@ -1177,6 +1284,7 @@ Ballonies (198x)
 		<description>Pogo Stick (Ger)</description>
 		<year>1985</year>
 		<publisher>Choice Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="12307">
@@ -1189,6 +1297,7 @@ Ballonies (198x)
 		<description>Robot Ball</description>
 		<year>1983</year>
 		<publisher>Mirage Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -1201,6 +1310,7 @@ Ballonies (198x)
 		<description>Stockholm Adventure</description>
 		<year>1983</year>
 		<publisher>Mirage Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="40960">
@@ -1209,10 +1319,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="struggle">
 		<description>Struggle for Livelihood (Ger)</description>
 		<year>1985</year>
 		<publisher>Choice Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="19310">
@@ -1225,6 +1337,7 @@ Ballonies (198x)
 		<description>Three Wall Smash</description>
 		<year>1984</year>
 		<publisher>Ian McLachlan</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="2232">
@@ -1237,6 +1350,7 @@ Ballonies (198x)
 		<description>Typing Tutor v1.1</description>
 		<year>1983</year>
 		<publisher>S.G. Bright</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="6938">
@@ -1250,10 +1364,12 @@ Ballonies (198x)
 	<!-- Conversions from MSX titles -->
 	<!-- Where these unofficial? Who sold them? -->
 
+	<!-- Does not work on svi318 -->
 	<software name="alien8">
 		<description>Alien 8 (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Ultimate Play the Game</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1262,10 +1378,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="arkanoid">
 		<description>Arkanoid (MSX Conversion)</description>
 		<year>1986</year>
 		<publisher>Taito</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53248">
@@ -1274,11 +1392,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="cpk">
 		<description>Cabbage Patch Kids (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 716" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="33158">
@@ -1287,11 +1407,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="circusc">
 		<description>Circus Charlie (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 712" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass" interface="svi318_cass">
 			<dataarea name="cass" size="33156">
@@ -1300,11 +1422,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="comicbak">
 		<description>Comic Bakery (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 714" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1313,11 +1437,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="goonies">
 		<description>The Goonies (MSX Conversion)</description>
 		<year>1986</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 724" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53248">
@@ -1326,11 +1452,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="gooniesa" cloneof="goonies">
 		<description>The Goonies (MSX Conversion, Alt)</description>
 		<year>1986</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 724" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53248">
@@ -1339,10 +1467,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="gunfrght">
 		<description>Gun Fright (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Ultimate Play The Game</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="57344">
@@ -1351,10 +1481,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="hero">
 		<description>H.E.R.O. (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Activision</publisher>
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -1363,10 +1495,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="hobbit">
 		<description>The Hobbit (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Melbourne House</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="81920">
@@ -1375,11 +1509,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="hyperol">
 		<description>Hyper Olympic 1 (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 710" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1388,11 +1524,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="hyperol2">
 		<description>Hyper Olympic 2 (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 711" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="33157">
@@ -1401,11 +1539,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="hprrlly">
 		<description>Hyper Rally (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 718" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1414,11 +1554,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="hyperspt">
 		<description>Hyper Sports 1 (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 715" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="33156">
@@ -1427,11 +1569,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="hypersp2">
 		<description>Hyper Sports 2 (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 717" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="33156">
@@ -1440,10 +1584,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="ik">
 		<description>International Karate (MSX Conversion)</description>
 		<year>1986</year>
 		<publisher>Endurance Games - Darksloke</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="69632">
@@ -1452,10 +1598,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="jacknip2">
 		<description>Jack the Nipper II - In Coconut Capers (MSX Conversion, Trained)</description>
 		<year>1987</year>
 		<publisher>Gremlin Graphics</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="77824">
@@ -1464,11 +1612,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="knightmr">
 		<description>Knightmare (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 717" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53248">
@@ -1477,11 +1627,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="baseball">
 		<description>Konami's Baseball (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 724" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1490,11 +1642,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="boxing">
 		<description>Konami's Boxing (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 736" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53248">
@@ -1503,11 +1657,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="pingpong">
 		<description>Konami's Ping Pong (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 731" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1516,11 +1672,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="soccer">
 		<description>Konami's Soccer (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 732" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53248">
@@ -1529,11 +1687,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="tennis">
 		<description>Konami's Tennis (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 720" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1542,11 +1702,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mgcltree">
 		<description>Magical Tree (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 713" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="33154">
@@ -1555,11 +1717,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mopirngr">
 		<description>Mopi Ranger (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 728" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1568,10 +1732,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mrdo">
 		<description>Mr. Do (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Nippon Columbia</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1580,10 +1746,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="punchy">
 		<description>Punchy (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Mr. Micro</publisher>
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32768">
@@ -1592,10 +1760,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="rambo3">
 		<description>Rambo III (MSX Conversion)</description>
 		<year>1988</year>
 		<publisher>Ocean Software - Mr. Haward</publisher>
+		<info name="usage" value="RUN&quot;CAS:&quot; and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="245741">
@@ -1604,10 +1774,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="rambo3a" cloneof="rambo3">
 		<description>Rambo III (MSX Conversion, Alt)</description>
 		<year>1988</year>
 		<publisher>Ocean Software - Mr. Haward</publisher>
+		<info name="usage" value="RUN&quot;CAS:&quot; and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="205177">
@@ -1616,11 +1788,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="roadfght">
 		<description>Road Fighter (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 730" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1629,10 +1803,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="robocop">
 		<description>Robocop (MSX Conversion)</description>
 		<year>1988</year>
 		<publisher>Ocean Software - Mr. Haward</publisher>
+		<info name="usage" value="RUN&quot;CAS:&quot; and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="249946">
@@ -1641,11 +1817,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="skyjag">
 		<description>Sky Jaguar (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 721" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="33150">
@@ -1654,10 +1832,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="timetrax">
 		<description>Time Trax (MSX Conversion)</description>
 		<year>1986</year>
 		<publisher>Bug-Byte Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="64522">
@@ -1666,11 +1846,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="trackfld">
 		<description>Track and Field 1 (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 710" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="33161">
@@ -1679,11 +1861,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="yiear1">
 		<description>Yie Ar Kung-Fu (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 725" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="36864">
@@ -1692,11 +1876,13 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="yiear2">
 		<description>Yie Ar Kung-Fu II - The Emperor Yie-Gah (MSX Conversion)</description>
 		<year>1985</year>
 		<publisher>Konami</publisher>
 		<info name="serial" value="RC 737" />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53248">
@@ -1705,10 +1891,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="zaklwood">
 		<description>Zakil Wood (MSX Conversion)</description>
 		<year>1984</year>
 		<publisher>Mr. Micro</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="63082">
@@ -1721,10 +1909,12 @@ Ballonies (198x)
 
 	<!-- ColecoVision Conversions -->
 
+	<!-- Does not work on svi318 -->
 	<software name="cavenger">
 		<description>Cosmic Avenger (ColecoVision Conversion)</description>
 		<year>1982</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1733,10 +1923,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="cpk_col">
 		<description>Cabbage Patch Kids (ColecoVision Conversion)</description>
 		<year>1984</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53248">
@@ -1745,10 +1937,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="decathln">
 		<description>Decathlon (ColecoVision Conversion)</description>
 		<year>1984</year>
 		<publisher>Activision - Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1757,10 +1951,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="dkong">
 		<description>Donkey Kong (ColecoVision Conversion)</description>
 		<year>1982</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1769,10 +1965,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="apshai">
 		<description>Gateway to Apshai (ColecoVision Conversion)</description>
 		<year>1984</year>
 		<publisher>Epyx - Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50278">
@@ -1781,10 +1979,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="looping">
 		<description>Looping (ColecoVision Conversion)</description>
 		<year>1983</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1793,10 +1993,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mtrap">
 		<description>Mouse Trap (ColecoVision Conversion)</description>
 		<year>1983</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1805,10 +2007,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="pepper2">
 		<description>Pepper 2 (ColecoVision Conversion)</description>
 		<year>1983</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1817,10 +2021,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="smurf">
 		<description>Smurf Rescue in Gargamel's Castle (ColecoVision Conversion)</description>
 		<year>1983</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1829,10 +2035,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="wargames">
 		<description>War Games (ColecoVision Conversion)</description>
 		<year>1984</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1841,10 +2049,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="zaxxon">
 		<description>Zaxxon (ColecoVision Conversion)</description>
 		<year>1982</year>
 		<publisher>Buggy Software</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="50277">
@@ -1865,6 +2075,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 01</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="133428">
@@ -1877,6 +2088,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 02</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="187832">
@@ -1889,6 +2101,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 03</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="148558">
@@ -1901,6 +2114,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 04</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="172739">
@@ -1913,6 +2127,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 05</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="121583">
@@ -1925,6 +2140,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 06</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="77414">
@@ -1937,6 +2153,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 07</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="104300">
@@ -1949,6 +2166,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 08</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="104753">
@@ -1961,6 +2179,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 09</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="128399">
@@ -1973,6 +2192,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 10</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="84964">
@@ -1985,6 +2205,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 11</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="115783">
@@ -1997,6 +2218,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 12</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="112709">
@@ -2009,6 +2231,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 13</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="104794">
@@ -2021,6 +2244,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 14</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="110783">
@@ -2033,6 +2257,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 15</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="133155">
@@ -2045,6 +2270,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 16</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="113781">
@@ -2057,6 +2283,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 17</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="87955">
@@ -2069,6 +2296,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 18</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="132352">
@@ -2081,6 +2309,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 19</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="93389">
@@ -2093,6 +2322,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 20</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="32120">
@@ -2105,6 +2335,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 21</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="102798">
@@ -2117,6 +2348,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 22</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="196649">
@@ -2129,6 +2361,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 23</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="131712">
@@ -2141,6 +2374,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 24</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="120207">
@@ -2153,6 +2387,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 25</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="143760">
@@ -2165,6 +2400,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 26</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="86332">
@@ -2177,6 +2413,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 27</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="118644">
@@ -2189,6 +2426,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 28</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="123478">
@@ -2201,6 +2439,7 @@ Ballonies (198x)
 		<description>Burken Soft Game Pac 29</description>
 		<year>19??</year>
 		<publisher>Burken Soft</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="119281">
@@ -2215,6 +2454,7 @@ Ballonies (198x)
 		<description>Joystick 01</description>
 		<year>1985</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="54061">
@@ -2227,6 +2467,7 @@ Ballonies (198x)
 		<description>Joystick 02</description>
 		<year>1985</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="53966">
@@ -2239,6 +2480,7 @@ Ballonies (198x)
 		<description>Joystick 03</description>
 		<year>1985</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="61624">
@@ -2251,6 +2493,7 @@ Ballonies (198x)
 		<description>Joystick 04</description>
 		<year>1985</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="101310">
@@ -2263,6 +2506,7 @@ Ballonies (198x)
 		<description>Joystick 05</description>
 		<year>1986</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="93553">
@@ -2275,6 +2519,7 @@ Ballonies (198x)
 		<description>Joystick 06</description>
 		<year>1986</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="96205">
@@ -2287,6 +2532,7 @@ Ballonies (198x)
 		<description>Joystick 07</description>
 		<year>1986</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="116787">
@@ -2299,6 +2545,7 @@ Ballonies (198x)
 		<description>Joystick 08</description>
 		<year>1986</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="76865">
@@ -2311,6 +2558,7 @@ Ballonies (198x)
 		<description>Joystick 09</description>
 		<year>1986</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="92282">
@@ -2323,6 +2571,7 @@ Ballonies (198x)
 		<description>Joystick 11</description>
 		<year>1986</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="66292">
@@ -2335,6 +2584,7 @@ Ballonies (198x)
 		<description>Joystick 15</description>
 		<year>1987</year>
 		<publisher>Saga &amp; Joystick</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="48120">
@@ -2345,10 +2595,12 @@ Ballonies (198x)
 
 	<!-- MKOD -->
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod01">
 		<description>MKOD Collection 01</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="275740">
@@ -2357,10 +2609,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod02">
 		<description>MKOD Collection 02</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="274085">
@@ -2369,10 +2623,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod03">
 		<description>MKOD Collection 03</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="410724">
@@ -2381,10 +2637,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod04">
 		<description>MKOD Collection 04</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="410236">
@@ -2393,10 +2651,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod05">
 		<description>MKOD Collection 05</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="204827">
@@ -2405,10 +2665,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod06">
 		<description>MKOD Collection 06</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="258348">
@@ -2417,10 +2679,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod07">
 		<description>MKOD Collection 07</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="400275">
@@ -2429,10 +2693,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod08">
 		<description>MKOD Collection 08</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="394343">
@@ -2441,10 +2707,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod09">
 		<description>MKOD Collection 09</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="201374">
@@ -2453,10 +2721,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod10">
 		<description>MKOD Collection 10</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="360864">
@@ -2465,10 +2735,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not wor on svi318 -->
 	<software name="mkod11">
 		<description>MKOD Collection 11</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="393752">
@@ -2477,10 +2749,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod12">
 		<description>MKOD Collection 12</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="302039">
@@ -2489,10 +2763,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod13">
 		<description>MKOD Collection 13</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="251726">
@@ -2501,10 +2777,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod14">
 		<description>MKOD Collection 14</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="216234">
@@ -2513,10 +2791,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod15">
 		<description>MKOD Collection 15</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="94478">
@@ -2525,10 +2805,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod16">
 		<description>MKOD Collection 16</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="98664">
@@ -2537,10 +2819,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod17">
 		<description>MKOD Collection 17</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="407796">
@@ -2549,10 +2833,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod18">
 		<description>MKOD Collection 18</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="376850">
@@ -2561,10 +2847,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="mkod19">
 		<description>MKOD Collection 19</description>
 		<year>19??</year>
 		<publisher>MKOD</publisher>
+		<info name="usage" value="BLOAD&quot;CAS:&quot;,R and start the tape." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="82220">
@@ -2591,6 +2879,7 @@ Ballonies (198x)
 		<description>BASIC Collection 02 (Swe)</description>
 		<year>1985</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="70792">
@@ -2599,10 +2888,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="basicc03">
 		<description>BASIC Collection 03 (Swe)</description>
 		<year>1985</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="154453">
@@ -2615,6 +2906,7 @@ Ballonies (198x)
 		<description>BASIC Collection 04 (Swe)</description>
 		<year>1985</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="173268">
@@ -2623,10 +2915,12 @@ Ballonies (198x)
 		</part>
 	</software>
 
+	<!-- Does not work on svi318 -->
 	<software name="basicc05">
 		<description>BASIC Collection 05 (Swe)</description>
 		<year>1985</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="55633">
