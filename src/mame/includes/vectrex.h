@@ -144,6 +144,7 @@ private:
 	attotime m_vector_start_time;
 	uint8_t m_cb2 = 0;
 	void (vectrex_base_state::*vector_add_point_function)(int, int, rgb_t, int);
+	void *m_signal_ptr = nullptr;
 
 	required_device<mc1408_device> m_dac;
 	required_device<ay8910_device> m_ay8912;
