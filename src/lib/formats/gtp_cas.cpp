@@ -124,7 +124,6 @@ static cassette_image::error gtp_cassette_load(cassette_image *cassette) {
 	std::vector<int16_t> samples;
 
 	gtp_cas_fill_wave(samples, bytes);
-	printf("samples.size = %lu\n", samples.size());
 
 	return cassette->put_samples(0, 0.0,
 			(double)samples.size() / GTP_WAV_FREQUENCY, samples.size(), 2,
