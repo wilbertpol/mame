@@ -2,12 +2,6 @@
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
 <!--
 license:CC0
-
-To load from cassette:
-- Press B to enter BASIC
-- Enter command LOAD
-- Press play on tape
-- Enter command RUN
 -->
 
 <softwarelist name="spc1000_cass" description="Samsung SPC-1000 cassettes">
@@ -16,7 +10,7 @@ To load from cassette:
 		<description>Demo</description>
 		<year>198?</year>
 		<publisher>Samsung Software</publisher>
-		<info name="usage" value="When asked for next demo, mount a new part" />
+		<info name="usage" value="B to enter BASIC, LOAD, play on tape, RUN; when asked for next demo, mount a new part" />
 		<part name="cass1" interface="spc1000_cass">
 			<dataarea name="cass" size="354254">
 				<rom name="demo1.tap" size="354254" crc="2d2d802f" sha1="8aa8101d27de44e4279f5aca8846f47f3115fbed"/>
