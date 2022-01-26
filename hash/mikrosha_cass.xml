@@ -2,9 +2,6 @@
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
 <!--
 license:CC0
-
-The general method of loading a tape is to type I, press Return, select Play. When it's finished, type G and press Return to run it.
-
 -->
 <softwarelist name="mikrosha_cass" description="Mikrosha cassettes">
 
@@ -14,6 +11,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>6GAMES</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="14310">
 				<rom name="6games.rkm" size="14310" crc="1a1ac8d3" sha1="fc8c1a48043caaf42487677a070d81caf119238b"/>
@@ -25,6 +23,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>Alien Ambush</description>
 		<year>1990</year>
 		<publisher>Sedov E. A.</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="5604">
 				<rom name="alambush.rkm" size="5604" crc="4b247561" sha1="5f6130c571bb4877b27c1e4c37a17db680e8b2ab"/>
@@ -32,6 +31,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="ball">
 		<description>The Ball Game</description>
 		<year>1990</year>
@@ -47,6 +47,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>Barmen (v1.5)</description>
 		<year>1988</year>
 		<publisher>ALG</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="4102">
 				<rom name="barmen.rkm" size="4102" crc="01a1e046" sha1="f129df0395d261edf50c4c79a8d3375249a935ef"/>
@@ -54,6 +55,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="bomber">
 		<description>Bomber Aircraft</description>
 		<year>1990</year>
@@ -65,6 +67,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="bdash">
 		<description>Boulder Dash (v2)</description>
 		<year>1989</year>
@@ -76,6 +79,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="chess">
 		<description>Chess</description>
 		<year>19??</year>
@@ -91,6 +95,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>Cirk (v1.2)</description>
 		<year>1986</year>
 		<publisher>Popov S.N.</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="7655">
 				<rom name="circus.rkm" size="7655" crc="bd44cf25" sha1="2cc3472632e962b0e32637a4eea9090b5307eba9"/>
@@ -102,6 +107,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>Cross Fire (v004)</description>
 		<year>1988</year>
 		<publisher>Zyryanov A.V.</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="11127">
 				<rom name="crossfir.rkm" size="11127" crc="0e204a60" sha1="f41be5612ea4648ce51a2495fa2c2b20c4e910fb"/>
@@ -113,6 +119,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>DIGGER</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="16903">
 				<rom name="digger.rkm" size="16903" crc="3c87e474" sha1="df90405bf22d34b3b950c286433106ee793634a7"/>
@@ -124,6 +131,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>GARDEN</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="2775">
 				<rom name="garden.rkm" size="2775" crc="f3775690" sha1="acade9758e93c4c0cfb2b21c965ffb675d8a265e"/>
@@ -135,6 +143,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>GONKA</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="6407">
 				<rom name="gonka.rkm" size="6407" crc="2fe3906e" sha1="538df44ced2d99bf64b0214eb14ff15316eb6bc9"/>
@@ -146,6 +155,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>HOCKEY</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="3782">
 				<rom name="hockey.rkm" size="3782" crc="ec827443" sha1="5eee9e1754e06c696a0ad3fac8682a3e27e90814"/>
@@ -157,6 +167,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>KINDZADZ</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="7942">
 				<rom name="kindzadz.rkm" size="7942" crc="c74f0aeb" sha1="9d3ccc98f310500664e67af1a5570b0fc59145b2"/>
@@ -168,6 +179,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>KLAD</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="13142">
 				<rom name="klad.rkm" size="13142" crc="230df87b" sha1="a4ec0fff855880940e4e52d44a2c77904ed46358"/>
@@ -179,6 +191,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>LESTNICA</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="7974">
 				<rom name="lestnica.rkm" size="7974" crc="4a84d351" sha1="2f6ed3300a887599829e04e515b9994b95c33ccb"/>
@@ -186,6 +199,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="life">
 		<description>LIFE</description>
 		<year>19??</year>
@@ -201,6 +215,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>LIFE (Alt)</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="4044">
 				<rom name="life_alt.rkm" size="4044" crc="97b09fb4" sha1="6a466c2c3c05ae5a088d53d5dbda0343b844c873"/>
@@ -212,6 +227,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>LIQSKY</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="6150">
 				<rom name="liqsky.rkm" size="6150" crc="80b8c8d4" sha1="1fdcdcf29c86aac21af7a7e175733241e7dc0b18"/>
@@ -223,6 +239,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>MACH3</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="10828">
 				<rom name="mach3.rkm" size="10828" crc="0cd7a8de" sha1="12d28b2c9f33944512bc3989e3a18d2f947099ea"/>
@@ -234,6 +251,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>MARS</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="2566">
 				<rom name="mars.rkm" size="2566" crc="fd41d17b" sha1="c07be352e17220e646f3070d7ae73bb49cda935a"/>
@@ -241,6 +259,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="maze">
 		<description>MAZE</description>
 		<year>19??</year>
@@ -252,6 +271,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="mines">
 		<description>MINES</description>
 		<year>19??</year>
@@ -263,6 +283,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="othello">
 		<description>OTHELLO</description>
 		<year>19??</year>
@@ -278,6 +299,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>PACMAN</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="4614">
 				<rom name="pacman.rkm" size="4614" crc="c4d20c46" sha1="d849257cee833763cf6343b45749cdf59dfe674d"/>
@@ -289,6 +311,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>PANIKA</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="5087">
 				<rom name="panika.rkm" size="5087" crc="d3fea12a" sha1="d5b701507e1296040b8e501414a4666f5eb45d34"/>
@@ -296,6 +319,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="pentis">
 		<description>PENTIS</description>
 		<year>19??</year>
@@ -311,6 +335,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>PERELET</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="5639">
 				<rom name="perelet.rkm" size="5639" crc="c0db3b48" sha1="ad6031227f51cff998bdf2f90dfe6d5125470dc5"/>
@@ -322,6 +347,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>REVERSI</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="3590">
 				<rom name="reversi.rkm" size="3590" crc="a9de9e39" sha1="04bba2c8ef8e12c813058cd7a8b09c1089effd41"/>
@@ -329,6 +355,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="reversi2">
 		<description>REVERSI2</description>
 		<year>19??</year>
@@ -344,6 +371,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>RIKOSHET</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="12246">
 				<rom name="rikoshet.rkm" size="12246" crc="cf0a24e5" sha1="34ba2bab06e6d10b4edffea8b32e0f54aef0abf0"/>
@@ -355,6 +383,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>ROCKER</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="1899">
 				<rom name="rocker.rkm" size="1899" crc="fb1e15b0" sha1="e7551d9140783cabebb7887f8c7dfe7154d0a108"/>
@@ -366,6 +395,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>SABOTEUR</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="3350">
 				<rom name="saboteur.rkm" size="3350" crc="c3e61ae9" sha1="b1693f1609c3bbe759481ee07dd983413868dcc7"/>
@@ -373,6 +403,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="shturmk">
 		<description>SHTURM_K</description>
 		<year>19??</year>
@@ -388,6 +419,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>SKACHKI</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="1456">
 				<rom name="skachki.rkm" size="1456" crc="b513f4b8" sha1="a2781309d727979add0d89c4f52220b473f7361c"/>
@@ -399,6 +431,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>SNAKES</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="4566">
 				<rom name="snakes.rkm" size="4566" crc="09319e81" sha1="0ab0a944c50a37d7367daf81394a155a9c1a4b6b"/>
@@ -410,6 +443,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>SPRINT</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="3356">
 				<rom name="sprint.rkm" size="3356" crc="0984170e" sha1="19788fdf347ebca03d86665755a40ee9fc381404"/>
@@ -421,6 +455,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>STAKAN</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="2310">
 				<rom name="stakan.rkm" size="2310" crc="5fde6b74" sha1="489bee9edb1a409fc64d8a3e04cee49b76a67595"/>
@@ -432,6 +467,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>STAKAN2</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="1532">
 				<rom name="stakan2.rkm" size="1532" crc="95df4998" sha1="77ac182d1463276940227e3c3a6b571346115492"/>
@@ -443,6 +479,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>STAKAN3</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="1272">
 				<rom name="stakan3.rkm" size="1272" crc="a32917e9" sha1="46c578096ad22b81c4697d62cd50e97972a05092"/>
@@ -454,6 +491,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>STARRID</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="16723">
 				<rom name="starrid.rkm" size="16723" crc="d9040afe" sha1="0b3b44167855e3c7766812a9922dc742ddd0570c"/>
@@ -465,6 +503,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>STARWARS</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="4983">
 				<rom name="starwars.rkm" size="4983" crc="4e701c5c" sha1="2711d35391476175f04d0eaf33f365a6e2053f16"/>
@@ -476,6 +515,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>TENNIS</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="727">
 				<rom name="tennis.rkm" size="727" crc="e65a672a" sha1="a0759475bc6aeab32cc13014847a84763a627591"/>
@@ -483,6 +523,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="tennisdk">
 		<description>TENNISDK</description>
 		<year>19??</year>
@@ -498,6 +539,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>TETRIS</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="3176">
 				<rom name="tetris.rkm" size="3176" crc="2ec6d032" sha1="6c5952dd68960bf5ee325473976a38954600db29"/>
@@ -509,6 +551,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>TORPATT</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="4359">
 				<rom name="torpatt.rkm" size="4359" crc="db4b71f6" sha1="19397cb13a5b1a63665dc16a9113f6bb14342585"/>
@@ -516,6 +559,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="udav">
 		<description>UDAV</description>
 		<year>19??</year>
@@ -531,6 +575,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>VOLCANO</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="4103">
 				<rom name="volcano.rkm" size="4103" crc="94694d56" sha1="733eb02c1762aac2a27bd7eaa706b439208174cb"/>
@@ -542,6 +587,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>WAYP</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="2982">
 				<rom name="wayp.rkm" size="2982" crc="aeb2eb07" sha1="6cbf9217d3e804173b0261a3da9934be2c37abed"/>
@@ -549,6 +595,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		</part>
 	</software>
 
+	<!-- Unknown how to load, bugs in format handling, or bad dump -->
 	<software name="xonix">
 		<description>XONIX</description>
 		<year>19??</year>
@@ -564,6 +611,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>XONIXZM</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="3814">
 				<rom name="xonixzm.rkm" size="3814" crc="d658b31f" sha1="dcc475751e4f8d464012c18f9ad977dbe050c622"/>
@@ -575,6 +623,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>Xonix (Micron)</description>
 		<year>19??</year>
 		<publisher>Micron</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="2822">
 				<rom name="xonmicr.rkm" size="2822" crc="a2658748" sha1="561ac9989c2b8605719d0b340a513fb5a691d7dd"/>
@@ -586,6 +635,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>Z-Stanciya</description>
 		<year>1987</year>
 		<publisher>SNP</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="1895">
 				<rom name="zstation.rkm" size="1895" crc="d496dea7" sha1="4aabce2dc4349a82c1ba59be8705f2f8cac77401"/>
@@ -600,6 +650,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>Mikrosha BASIC</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="6662">
 				<rom name="basic.rkm" size="6662" crc="c5a43e45" sha1="57eb33af3215d0d1ff36a2826915f57697fbda5d"/>
@@ -611,6 +662,7 @@ The general method of loading a tape is to type I, press Return, select Play. Wh
 		<description>Disassembler Mikron</description>
 		<year>19??</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="I, quickly start the tape, G" />
 		<part name="cass" interface="mikrosha_cass">
 			<dataarea name="cass" size="4102">
 				<rom name="disasm.rkm" size="4102" crc="6ed063ca" sha1="26f7fbd5f38a6854a57537514cd5cb73ab7fe252"/>
