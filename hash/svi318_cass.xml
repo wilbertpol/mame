@@ -497,7 +497,7 @@ Ballonies (198x)
 		<year>1984</year>
 		<publisher>Spectravideo</publisher>
 		<info name="serial" value="SD-267T" />
-3		<info name="usage" value="CLOAD, start the tape, RUN." />
+		<info name="usage" value="CLOAD, start the tape, RUN." />
 
 		<part name="cass1" interface="svi318_cass">
 			<dataarea name="cass" size="7631">
