@@ -26,6 +26,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>3D Bomb Alley</description>
 		<year>198?</year>
 		<publisher>Software Invasion</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7383">
 				<rom name="3dbomballey_e.uef" size="7383" crc="029daa46" sha1="5ff4de0edd47c72aa93040b484093441cfb3e0d8"/>
@@ -48,6 +49,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>3D Dotty (Play It Again Sam 10)</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13394">
 				<rom name="3ddotty-piasrr_e.uef" size="13394" crc="3b93b49b" sha1="c9b68482852432d8d865902c1a54c10955b1512f"/>
@@ -55,10 +57,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Does not start? -->
 	<software name="3dmaze">
 		<description>3D Maze</description>
 		<year>1983</year>
 		<publisher>I.J.K.</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3052">
 				<rom name="3dmaze-ijk_e.uef" size="3052" crc="6cb1d6b3" sha1="77de4eff1b62db16d226518746488aba83a090eb"/>
@@ -70,6 +74,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>3D Pool</description>
 		<year>1989</year>
 		<publisher>Firebird</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21062">
 				<rom name="3dpool_e.uef" size="21062" crc="c5d2f6af" sha1="c634ece8747af0caf7b38a172377ae17cd553fd3"/>
@@ -81,6 +86,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>3D Tank Zone</description>
 		<year>1983</year>
 		<publisher>Dynabyte</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9664">
 				<rom name="3dtankzone_e.uef" size="9664" crc="ca219221" sha1="bb27e387139f613e2563de3d8603b36e252cf80e"/>
@@ -88,6 +94,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Invalid image/unsupported (Z_DATA_ERROR) -->
 	<software name="747flsim">
 		<description>747 Flight Simulator</description>
 		<year>1984</year>
@@ -103,6 +110,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>747</description>
 		<year>1984</year>
 		<publisher>Doctor Soft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8498">
 				<rom name="747_e.uef" size="8498" crc="34181c66" sha1="cfa5ebd1b7d0cc668b8908deea46e0424e8e1b7c"/>
@@ -114,6 +122,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>A Question of Sport</description>
 		<year>198?</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="93815">
 				<rom name="aquestionofsport_e.uef" size="93815" crc="4cc02427" sha1="9fdaeb0d8c691e2bf266bf9c8485b233a2dec82c"/>
@@ -125,6 +134,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 42 (Jan 1986)</description>
 		<year>1986</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21077">
 				<rom name="au42-jan86_e.uef" size="21077" crc="2b40e0a5" sha1="740dbce8c6fcd256f32ab26993ab916d8ec6d6ce"/>
@@ -136,6 +146,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 48 (Jul 1986)</description>
 		<year>1986</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14516">
 				<rom name="au48-jul86_e.uef" size="14516" crc="e370d4ca" sha1="927b92ed2ff23143c0c5096de4d8c9c7627595a1"/>
@@ -147,6 +158,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 50 (Sep 1986)</description>
 		<year>1986</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="31104">
 				<rom name="au50-sep86_e.uef" size="31104" crc="c8660724" sha1="f52ac3c80f93192bd20945aea37ab2c42e290440"/>
@@ -158,6 +170,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 52 (Nov 1986)</description>
 		<year>1986</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="33391">
 				<rom name="au52-nov86_e.uef" size="33391" crc="75a0f90e" sha1="20da64244415eae26d33c9997fac0dc4c9d14d44"/>
@@ -169,6 +182,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 53 (Dec 1986)</description>
 		<year>1986</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="26967">
 				<rom name="au53-dec86_e.uef" size="26967" crc="9438b52d" sha1="b6ec5c3cfa481c25b81e6715b76f533934b81c3a"/>
@@ -180,6 +194,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 54 (Jan 1987)</description>
 		<year>1987</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="26491">
 				<rom name="au54-jan87_e.uef" size="26491" crc="0b32218c" sha1="d38b5bc0bddf0b738f1612406ae3e84554ff7862"/>
@@ -191,6 +206,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 55 (Feb 1987)</description>
 		<year>1987</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="30306">
 				<rom name="au55-feb87_e.uef" size="30306" crc="0f289642" sha1="5b22dd4cfe1e9c9f869bdd34ea4c94cea8455451"/>
@@ -202,6 +218,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 56 (Mar 1987)</description>
 		<year>1987</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="35774">
 				<rom name="au56-mar87_e.uef" size="35774" crc="d3b63e4f" sha1="f750e41080c030093095795059e4fcf99cf61ecc"/>
@@ -213,6 +230,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 57 (Apr 1987)</description>
 		<year>1987</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="36379">
 				<rom name="au57-apr87_e.uef" size="36379" crc="16403bd8" sha1="ec706ace1d84255d54b8e6d0927f4a4789b4253e"/>
@@ -224,6 +242,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 58 (May 1987)</description>
 		<year>1987</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14073">
 				<rom name="au58-may87_e.uef" size="14073" crc="3486c99c" sha1="700ab48ec62c4a66fad93358b0c781125be643a2"/>
@@ -235,6 +254,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 59 (Jun 1987)</description>
 		<year>1987</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14962">
 				<rom name="au59-jun87_e.uef" size="14962" crc="62f819ea" sha1="81b117ac6474cf924c1e92d3c6b1179c1abf17ee"/>
@@ -246,6 +266,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Acorn User Issue 60 (Jul 1987)</description>
 		<year>1987</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12631">
 				<rom name="au60-jul87_e.uef" size="12631" crc="ba301c10" sha1="68d8ffe371e3d2a397d355da83a50c8a45c7d5f1"/>
@@ -257,6 +278,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Adventure Anthology</description>
 		<year>198?</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24401">
 				<rom name="adventureanthology_e.uef" size="24401" crc="0a78200e" sha1="ec1b67e24df40b9d1c954e35d0d88c0de1e9072f"/>
@@ -268,6 +290,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Adventureland</description>
 		<year>198?</year>
 		<publisher>Adventure International</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10808">
 				<rom name="adv1-adventureland_e.uef" size="10808" crc="ac7d7728" sha1="2a918a18b44e40d3068bb6bea6f63cb335dab64e"/>
@@ -279,6 +302,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Adventure</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8515">
 				<rom name="adventure-micropower_e.uef" size="8515" crc="8eabc302" sha1="3073bb57401655b711c679f93ab10fcac037f3f4"/>
@@ -286,10 +310,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Does not load completely, graphics corruption at the end of loading -->
 	<software name="airline">
 		<description>Airline</description>
 		<year>1983</year>
 		<publisher>CCS</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10205">
 				<rom name="airline_e.uef" size="10205" crc="7c34ac2c" sha1="83fa877553d44caa2cdee801c5228e322275c07c"/>
@@ -301,6 +327,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Alien Break In</description>
 		<year>1983</year>
 		<publisher>Romik</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8719">
 				<rom name="alienbreakin_e.uef" size="8719" crc="c1b4fc6f" sha1="8cfbc512cd7e390a81648fc2ed30afd963e8cf16"/>
@@ -312,6 +339,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Alien Dropout</description>
 		<year>1984</year>
 		<publisher>Superior Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6159">
 				<rom name="aliendropout_e.uef" size="6159" crc="ee1a010f" sha1="66b630a737a1b781dac34f7addf8779eae2d9a7d"/>
@@ -323,6 +351,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Alphatron</description>
 		<year>1984</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8006">
 				<rom name="alphatron_e.uef" size="8006" crc="cd292d4e" sha1="e33904775b1fc42a481c06e5e6dca6b93c1e21b0"/>
@@ -334,6 +363,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Angles</description>
 		<year>198?</year>
 		<publisher>Garland Computing</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6353">
 				<rom name="t-angl.uef" size="6353" crc="c4f45fce" sha1="4bd270479b843d0c3706b449e6ddac260f720f24"/>
@@ -345,6 +375,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Arcade Game Creator</description>
 		<year>198?</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12465">
 				<rom name="arcadegamecreator_e.uef" size="12465" crc="40495057" sha1="afebb3dd31041bc1bd9dfb06160f7ab5c04524b2"/>
@@ -352,10 +383,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="arsoccer">
+	<!-- Graphics corruption during/after loading -->
+	<software name="arsoccer" supported="partial">
 		<description>Arcade Soccer</description>
 		<year>1989</year>
 		<publisher>4th Dimension</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21822">
 				<rom name="arcadesoccer_e.uef" size="21822" crc="d11a213b" sha1="6436c12493d1b65875ece102f04042f8607ef516"/>
@@ -368,6 +401,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLG14" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14491">
 				<rom name="arcadians_e.uef" size="14491" crc="cfda79c2" sha1="250bdfd3ed9855c9f30e3b41f84fe1928dc77e6a"/>
@@ -380,6 +414,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="GLG14" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14907">
 				<rom name="arcadians-german_e.uef" size="14907" crc="4632a13f" sha1="f8c04362a01bb126ed022d5d5131747d4952bca8"/>
@@ -391,6 +426,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Arcadians (The Acornsoft Hits Vol.2)</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14546">
 				<rom name="arcadians-srr_e.uef" size="14546" crc="83d9dd81" sha1="b968b539fdb05789f3ed39f5e60b222f831d55e6"/>
@@ -400,8 +436,9 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 
 	<software name="arena3k">
 		<description>Arena 3000</description>
-		<year>198?</year>
+		<year>1983</year>
 		<publisher>Microdeal</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10480">
 				<rom name="arena3000_e.uef" size="10480" crc="7205ac5e" sha1="58efe5b93f94848f4af4307b928365d766c694ee"/>
@@ -413,6 +450,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Repton Around the World in 40 Screens</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="56169">
 				<rom name="reptonaroundtheworld_e.uef" size="56169" crc="c9014cac" sha1="08749ac1a58ef0827908e16ca3c0c92badef9be4"/>
@@ -422,8 +460,9 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 
 	<software name="arrowd1">
 		<description>Arrow of Death Part 1</description>
-		<year>198?</year>
+		<year>1986</year>
 		<publisher>Adventure International</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11347">
 				<rom name="mystadv3-arrowofdeath_e.uef" size="11347" crc="bd340c5f" sha1="dbeec1c55a2a94f9804c0a5db2cc61d13202f3ee"/>
@@ -431,10 +470,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="arrowd2">
+	<!-- Errors during loading, game title unreadable on title screen -->
+	<software name="arrowd2" supported="no">
 		<description>Arrow of Death Part 2</description>
 		<year>198?</year>
 		<publisher>Adventure International</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8858">
 				<rom name="mystadv4-arrowofdeathpart2_e.uef" size="8858" crc="e49aa474" sha1="a086cc89431069edcf14d46bccf997b9794164d3"/>
@@ -446,6 +487,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Assembly Language Course</description>
 		<year>198?</year>
 		<publisher>Honeyfold</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6911">
 				<rom name="beginnersassembly_e.uef" size="6911" crc="b0c9df8a" sha1="7dec13357d2abe16e375dc92f6b3030f9d1d19cf"/>
@@ -457,6 +499,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Astro Plumber</description>
 		<year>1985</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7829">
 				<rom name="astroplumber_e.uef" size="7829" crc="56492221" sha1="dd4d8617a55b5c5fc7e2c02c20b339db566e6b08"/>
@@ -468,6 +511,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Atom Smasher</description>
 		<year>1983</year>
 		<publisher>Romik</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4995">
 				<rom name="atomsmasher_e.uef" size="4995" crc="5605b46f" sha1="f84edf6818c580f0a3697b1f3742410e10f380d7"/>
@@ -479,6 +523,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Ballistix</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19641">
 				<rom name="ballistix_e.uef" size="19641" crc="9f619b68" sha1="f5070049f88acc6f57ba8e9c5e11558540cdaaef"/>
@@ -490,6 +535,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Balloon Buster</description>
 		<year>1989</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9995">
 				<rom name="balloonbuster_e.uef" size="9995" crc="4418fcc8" sha1="5e8ffe72097401fab3b76438ea7c56a94e08ff06"/>
@@ -501,6 +547,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bandits at 3 O'clock</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6436">
 				<rom name="banditsat3oclock_e.uef" size="6436" crc="e4032ec6" sha1="7cb0cd1331bdae0aa20f332d6352acd55396bfab"/>
@@ -512,6 +559,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bar Billiards</description>
 		<year>1987</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7914">
 				<rom name="barbilliards_e.uef" size="7914" crc="1f4a813a" sha1="34d9172c19546cb9672638910a59dfb46c3e3c9c"/>
@@ -519,10 +567,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Graphics corruption during loading -->
 	<software name="barbar">
 		<description>Barbarian</description>
 		<year>1988</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="50735">
 				<rom name="barbarian_e.uef" size="50735" crc="79d9a8af" sha1="a51fdbc8e3d0663a8a7bb1e595c1dfd0c9496f8c"/>
@@ -534,6 +584,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Barbarian 2</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="41308">
 				<rom name="barbarian2_e.uef" size="41308" crc="71488a15" sha1="cadface993e7a31bb5a253e36ee93d75eaf33144"/>
@@ -545,6 +596,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Baron</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="22584">
 				<rom name="baron_e.uef" size="22584" crc="865de835" sha1="ceee28097bb3682fe0799a91d20570e2ec3c3299"/>
@@ -552,6 +604,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Invalid image / bad image parsing (Z_DATA_ERROR) -->
 	<software name="batl1917">
 		<description>Battle 1917</description>
 		<year>1983</year>
@@ -567,6 +620,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Battlezone 2000</description>
 		<year>1983</year>
 		<publisher>Lothlorien</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5499">
 				<rom name="battlezone2000_be.uef" size="5499" crc="da72a0f3" sha1="aed27242a6fc841b22d36274aa8c4e402c41fb33"/>
@@ -574,6 +628,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Invalid image / bad image parsing (Z_DATA_ERROR) -->
 	<software name="bzonesix">
 		<description>Battlezone Six</description>
 		<year>198?</year>
@@ -585,6 +640,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Error during loading -->
 	<software name="treeknowg" cloneof="treeknow">
 		<description>Baum der Weisheit (Ger)</description>
 		<year>1983</year>
@@ -601,6 +657,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>BBC Mastermind Quizmaster</description>
 		<year>1984</year>
 		<publisher>Mirrorsoft-Ivan Berg</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5436">
 				<rom name="mastermindquizmaster_be.uef" size="5436" crc="1cd42c57" sha1="f2c1171a603128cf7f9abc5e32dc9afe41c8e97e"/>
@@ -612,6 +669,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Beach Head</description>
 		<year>1984</year>
 		<publisher>U.S. Gold</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17628">
 				<rom name="beachhead_e.uef" size="17628" crc="9fb53671" sha1="4874c0a41920183e64e1bc2b6318328cc9f29631"/>
@@ -623,6 +681,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Beach Head (Americana)</description>
 		<year>198?</year>
 		<publisher>Americana</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17628">
 				<rom name="beachhead_e.uef" size="17628" crc="9fb53671" sha1="4874c0a41920183e64e1bc2b6318328cc9f29631"/>
@@ -630,6 +689,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Invalid image / bad image parsing (Z_DATA_ERROR) -->
 	<software name="bertboot">
 		<description>Bert Boot</description>
 		<year>1984</year>
@@ -645,6 +705,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Best of Acorn User</description>
 		<year>198?</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="25889">
 				<rom name="bestofacornuser_e.uef" size="25889" crc="7e7eef08" sha1="36ddec4e9aaf4d2c14fd7b5ff9240ff39afa131a"/>
@@ -656,6 +717,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Best of PCW Software</description>
 		<year>198?</year>
 		<publisher>PCW</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="140340">
 				<rom name="pcwbestofsoftware_e.uef" size="140340" crc="79f4e934" sha1="250b7b91a1910f21cd0b1c302dfac979d9d0db7a"/>
@@ -667,6 +729,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Birdie Barrage</description>
 		<year>1984</year>
 		<publisher>CDS</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7232">
 				<rom name="birdiebarrage_e.uef" size="7232" crc="7b8925e5" sha1="7c06617c1ae63f80b538635346024c6dacbb65d4"/>
@@ -679,6 +742,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1983</year>
 		<publisher>Romik</publisher>
 		<info name="author" value="Clive Webster" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4781">
 				<rom name="birdsofprey_e.uef" size="4781" crc="bb351757" sha1="0a7e05484605bb7a614614ba3da5a2362c4e170e"/>
@@ -691,6 +755,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Firebird</publisher>
 		<info name="author" value="Andrew Frigaard" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6385">
 				<rom name="t-bird.uef" size="6385" crc="8035ad27" sha1="5045567cab5e62231c93dd2c3365c9ad3928027b"/>
@@ -702,6 +767,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Blagger</description>
 		<year>198?</year>
 		<publisher>Alligata</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6969">
 				<rom name="blagger_e.uef" size="6969" crc="a3b4c644" sha1="673c85fc90d7d3dc647cc10fa7ca30d4a4282c36"/>
@@ -713,6 +779,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Blagger (Play It Again Sam 12)</description>
 		<year>1990</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8117">
 				<rom name="blagger-piasrr_e.uef" size="8117" crc="03a2522f" sha1="f2e6786e1fafff6ffbe0c4a0dd9aa07207d5f58b"/>
@@ -725,6 +792,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Software Invasion</publisher>
 		<info name="author" value="Simon Vout" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11295">
 				<rom name="blitzkrieg_e.uef" size="11295" crc="c0ad9e3a" sha1="ad1a648291ed70842c1866b6c2132ba5870c620b"/>
@@ -732,10 +800,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="bbgoldru">
+	<!-- Does not fully load -->
+	<software name="bbgoldru" supported="no">
 		<description>Blockbusters Gold Run</description>
 		<year>1985</year>
 		<publisher>Macsen</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="25425">
 				<rom name="blockbustersgoldrun_e.uef" size="25425" crc="b7d5c561" sha1="fb4b6d955acd4f9b6aa510acbb7f1a0378b6f4f8"/>
@@ -743,10 +813,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="bbusters">
+	<!-- Does not fully load -->
+	<software name="bbusters" supported="no">
 		<description>Blockbusters</description>
 		<year>1985</year>
 		<publisher>Macsen</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="28292">
 				<rom name="blockbusters_e.uef" size="28292" crc="19d3fcae" sha1="4c2d992dfeb30cb4087f5c449d68bc13aa82e886"/>
@@ -754,10 +826,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="bloodmut">
+	<!-- Graphics corruption during loading -->
+	<software name="bloodmut" supported="partial">
 		<description>Blood of the Mutineers</description>
 		<year>1988</year>
 		<publisher>Robico</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18393">
 				<rom name="bloodofthemutineers_e.uef" size="18393" crc="f0a0432d" sha1="565668bb90a13eea67bb64d186cf1e110ffe292c"/>
@@ -765,10 +839,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="bobbycha">
+	<!-- Does not fully load -->
+	<software name="bobbycha" supported="no">
 		<description>Bobby Charlton Soccer</description>
 		<year>1985</year>
 		<publisher>DACC</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13019">
 				<rom name="bobbycharltonsoccer_e.uef" size="13019" crc="7a31bf08" sha1="c810fe4a68f576024674494c9038418bb075bb58"/>
@@ -776,7 +852,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="boffin">
+	<!-- Invalid Image / bad image parsing (Z_DATA_EROR) -->
+	<software name="boffin" supported="no">
 		<description>Boffin</description>
 		<year>1985</year>
 		<publisher>Addictive</publisher>
@@ -791,6 +868,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bomber Baron</description>
 		<year>1986</year>
 		<publisher>Optyx</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4218">
 				<rom name="bomberbaron_e.uef" size="4218" crc="6ea5df24" sha1="0e6831ccb38491df0d4beb669cd07cf5c1908697"/>
@@ -798,11 +876,13 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Graphics corruption during loading -->
 	<software name="bonecrun">
 		<description>Bone Cruncher</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
 		<info name="author" value="Martyn Howard" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="23578">
 				<rom name="bonecruncher_e.uef" size="23578" crc="5db04665" sha1="43e10472909f0aaccb6603ea9939532cb0cf2e66"/>
@@ -810,10 +890,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="bdash">
+	<!-- Error during loading -->
+	<software name="bdash" supported="no">
 		<description>Boulder Dash</description>
 		<year>1988</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="25449">
 				<rom name="boulderdash_e.uef" size="25449" crc="be7128a5" sha1="4d683d1f7aaf547cb754c90098f10a3c6f6b1102"/>
@@ -825,6 +907,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bouncing Bombs</description>
 		<year>198?</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6100">
 				<rom name="bouncingbombs_e.uef" size="6100" crc="95f1d532" sha1="19c7a6a071e49b0729499d554688b7fe7729093a"/>
@@ -837,6 +920,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLG31" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9849">
 				<rom name="boxer_e.uef" size="9849" crc="2d28715d" sha1="ae57a0b43a28f0dc288f2fa5a3f9151827424565"/>
@@ -848,6 +932,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bozo the Brave</description>
 		<year>1985</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5010">
 				<rom name="bozothebrave_e.uef" size="5010" crc="c661df8c" sha1="be5461dd2e5d3ec6e4d3c7c95a11ba3325ba670e"/>
@@ -859,6 +944,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Braz</description>
 		<year>1987</year>
 		<publisher>Livewire</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9790">
 				<rom name="braz_e.uef" size="9790" crc="07302d17" sha1="ce64e8ddf6c4b9d4809f58a2d7c86babe8831dd1"/>
@@ -866,11 +952,13 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="breakthr">
+	<!-- Game does not load completely -->
+	<software name="breakthr" supported="no">
 		<description>Breakthrough</description>
 		<year>1990</year>
 		<publisher>Audiogenic</publisher>
 		<info name="usage" value="Load with *RUN" />
+		<info name="usage" value="*RUN" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20169">
 				<rom name="breakthrough_run_e.uef" size="20169" crc="347ae5a5" sha1="5def500c9f1ddabf8b12b0e1843be05386958ff4"/>
@@ -882,6 +970,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Brian Cloughs Football Fortunes</description>
 		<year>1987</year>
 		<publisher>CDS</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15364">
 				<rom name="briancloughsfootballfortunes_be.uef" size="15364" crc="dcb909b0" sha1="6a7c00520ec5dd83e0021a5d171782690c4227e2"/>
@@ -893,6 +982,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Brian Jacks Superstar Challenge</description>
 		<year>1985</year>
 		<publisher>Martech</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13095">
 				<rom name="brianjackssuperstarchallenge_e.uef" size="13095" crc="e1bfbfa9" sha1="fd30a4eb212ea404e01e1452004933670fc75f43"/>
@@ -916,6 +1006,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Buffalo Bills Rodeo Games</description>
 		<year>1989</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="98630">
 				<rom name="buffalobillsrodeogames_e.uef" size="98630" crc="3887f88f" sha1="dfe060875a3954c65240682cb920c8ea1262ef53"/>
@@ -927,6 +1018,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bug Blaster</description>
 		<year>1984</year>
 		<publisher>Alligata</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7910">
 				<rom name="bugblaster_e.uef" size="7910" crc="e8303f52" sha1="3bb2403ec12a71960616eb02a95a67b3576820ff"/>
@@ -938,6 +1030,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bug Blaster (Play It Again Sam 5)</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13622">
 				<rom name="bugblaster-piasrr_e.uef" size="13622" crc="b9a65e81" sha1="1b60ec24d61afa9b13766b1e991b66687bdab7e6"/>
@@ -949,6 +1042,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bug Eyes</description>
 		<year>1985</year>
 		<publisher>Icon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<!-- Re-release in 198? by Alternative is identical -->
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9837">
@@ -961,6 +1055,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Bugs</description>
 		<year>1984</year>
 		<publisher>Virgin Games</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4276">
 				<rom name="bugs_e.uef" size="4276" crc="baccb319" sha1="65db34438d85422e2dccd3c1ad47ec1c1df21205"/>
@@ -968,6 +1063,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Invalid image / bad image parsing (Z_DATA_ERROR)-->
 	<software name="bullseye">
 		<description>Bullseye</description>
 		<year>1984</year>
@@ -979,10 +1075,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Small graphics corruption on the title loading screen (left side in the middle) -->
 	<software name="bumblbee">
 		<description>Bumble Bee</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9285">
 				<rom name="bumblebee_e.uef" size="9285" crc="fc97c541" sha1="a5e4a20152e6d54a5abb64dc2087a538756c1a4a"/>
@@ -990,10 +1088,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="bunfun">
+	<!-- Does not load completely -->
+	<software name="bunfun" supported="no">
 		<description>Bun Fun</description>
 		<year>1984</year>
 		<publisher>Squirrel Soft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4513">
 				<rom name="bunfun_e.uef" size="4513" crc="faba33cc" sha1="c77ed41ded904cf66c0ecc023a8cae80c2ecde5a"/>
@@ -1006,6 +1106,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLE03" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Stokmark"/>
 			<dataarea name="cass" size="5903">
@@ -1024,6 +1125,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Camelot</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17573">
 				<rom name="camelot_e.uef" size="17573" crc="a93d9465" sha1="fdd354ba34d1d920f37df2105c8795c2ea434b51"/>
@@ -1031,7 +1133,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="cascad50">
+	<!-- Unsupported chunk type 0115/0113/0114 -->
+	<software name="cascad50" supported="no">
 		<description>Cascade 50</description>
 		<year>1983</year>
 		<publisher>Cascade</publisher>
@@ -1053,6 +1156,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Castle Assault</description>
 		<year>1985</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7407">
 				<rom name="castleassault_e.uef" size="7407" crc="a94b7309" sha1="8ed698f5e668fe345f04d5b24a0029377f94bf1a"/>
@@ -1064,6 +1168,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Castle Frankenstein</description>
 		<year>1984</year>
 		<publisher>Epic</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15627">
 				<rom name="castlefrankenstein_e.uef" size="15627" crc="abba8793" sha1="414c28f247e99cf9a979ee1757bca3815c454d4f"/>
@@ -1076,6 +1181,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLG17" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16066">
 				<rom name="castleofriddles_e.uef" size="16066" crc="62c43ded" sha1="b9ee76f443c2419e0cce65eb60b7cad34cffc52d"/>
@@ -1083,10 +1189,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="cskullrd">
+	<!-- Graphics corruption during loading, game does not start -->
+	<software name="cskullrd" supported="no">
 		<description>Castle of the Skull Lord</description>
 		<year>1984</year>
 		<publisher>Samurai</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8770">
 				<rom name="castleofskulllord-bugged_e.uef" size="8770" crc="4ee5f158" sha1="a6c4fa607121a434e4e26485fb55b61b7937fcdd"/>
@@ -1098,6 +1206,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Caterpillar (I.J.K.)</description>
 		<year>1984</year>
 		<publisher>I.J.K.</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5599">
 				<rom name="caterpillar-ijk_e.uef" size="5599" crc="41720f24" sha1="9f943d1f41d12b993e7dcdf169392e7ec66dc19b"/>
@@ -1109,6 +1218,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Caterpillar (Romik)</description>
 		<year>1984</year>
 		<publisher>Romik</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5861">
 				<rom name="caterpillar-romik_e.uef" size="5861" crc="c73cb3a8" sha1="20a91ba7afd2a39148c9088c37eb48f93063d3ce"/>
@@ -1116,7 +1226,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="caveman">
+	<!-- Error after loading -->
+	<software name="caveman" supported="no">
 		<description>Caveman</description>
 		<year>198?</year>
 		<publisher>Kansas</publisher>
@@ -1132,6 +1243,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Caveman Capers</description>
 		<year>1985</year>
 		<publisher>Icon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<!-- Re-release in 198? by Alternative is identical -->
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8335">
@@ -1144,6 +1256,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Centibug</description>
 		<year>1984</year>
 		<publisher>Superior Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5876">
 				<rom name="centibug_e.uef" size="5876" crc="b1f171ec" sha1="ce9c8c0468981855a538d9d4aaf183612e02c5da"/>
@@ -1156,6 +1269,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLG10" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11945">
 				<rom name="chess-acornsoft_e.uef" size="11945" crc="e7df9652" sha1="d370f4df6c6cae8f0aabb426394e9ba718f3336a"/>
@@ -1167,6 +1281,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Chess (Micro Power)</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*RUN" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5959">
 				<rom name="chess-micropower_e.uef" size="5959" crc="fa4b456e" sha1="34f86f5d22888c38e2d3bacba9b5845b89a31529"/>
@@ -1174,7 +1289,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="chipbust">
+	<!-- Unsupported chunk type 0113 -->
+	<software name="chipbust" supported="no">
 		<description>Chip Buster</description>
 		<year>1985</year>
 		<publisher>Software Invasion</publisher>
@@ -1189,6 +1305,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Chuckie Egg</description>
 		<year>1984</year>
 		<publisher>A&amp;F Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8182">
 				<rom name="chuckieegg_e.uef" size="8182" crc="80183697" sha1="e727562710a44cb8f88e6331bb2b7b4279f9e477"/>
@@ -1200,6 +1317,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Circus</description>
 		<year>198?</year>
 		<publisher>Adventure International</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11077">
 				<rom name="adv_07_circus.uef" size="11077" crc="24a9b79b" sha1="9cab835198d3c24e16965703cf689665121c868f"/>
@@ -1211,6 +1329,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Circus Games</description>
 		<year>1988</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="60698">
 				<rom name="circusgames_e.uef" size="60698" crc="6c71d2db" sha1="5fda62d7de2348006ab3f38955439e5a678b2e2f"/>
@@ -1218,10 +1337,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Graphics corruption in top and bottom border -->
 	<software name="citadel">
 		<description>Citadel (Play It Again Sam 1)</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20372">
 				<rom name="citadel-piasrr_e.uef" size="20372" crc="b70794ef" sha1="805549616c54bc2745dc19b01d90a25164c1e342"/>
@@ -1233,6 +1354,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Classic Arcade Games</description>
 		<year>198?</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="32639">
 				<rom name="classicarcadegames_e.uef" size="32639" crc="1fcbc4ec" sha1="668f984549565a2df4046037fb64a708f73b40e4"/>
@@ -1240,10 +1362,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Game does not start? -->
 	<software name="clogger">
 		<description>Clogger</description>
 		<year>1988</year>
 		<publisher>Impact</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="25452">
 				<rom name="clogger_e.uef" size="25452" crc="387d73a9" sha1="b6612bee0f893e7dcfbfe4e9a54686db5bfd972a"/>
@@ -1255,6 +1379,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Codename: Droid</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="23751">
 				<rom name="codenamedroid_e.uef" size="23751" crc="478717fa" sha1="d48f7487d5d61b2d533c3b5bfb6735773ffb13d9"/>
@@ -1266,6 +1391,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Colossus Bridge 4</description>
 		<year>1988</year>
 		<publisher>CDS</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18376">
 				<rom name="colossus4bridge_e.uef" size="18376" crc="a0a3ab59" sha1="3760e2c2f319d4327d4ca95a7ac613ad73bd1a18"/>
@@ -1273,10 +1399,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Graphics corruption in the bottom border -->
 	<software name="colos4ch">
 		<description>Colossus Chess 4</description>
 		<year>1986</year>
 		<publisher>CDS</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15702">
 				<rom name="colossus4chess_e.uef" size="15702" crc="44af3a47" sha1="acf829702e1dc8464398b1e51ed51530075bedec"/>
@@ -1288,6 +1416,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Combat Lynx</description>
 		<year>1984</year>
 		<publisher>Durell</publisher>
+		<info name="usage" value="*RUN" />
 		<!-- Re-release in 198? by Alternative is identical -->
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19039">
@@ -1300,6 +1429,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Commander 3 Joystick</description>
 		<year>1984</year>
 		<publisher>Bud Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Joystick Adval Utility"/>
 			<dataarea name="cass" size="1171">
@@ -1318,6 +1448,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Commando</description>
 		<year>1985</year>
 		<publisher>Elite</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19252">
 				<rom name="commando_e.uef" size="19252" crc="6263812b" sha1="8037952f630df867707dac948bc6968fbce72d66"/>
@@ -1329,6 +1460,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Commando (Play It Again Sam 3)</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21296">
 				<rom name="commando-piasrr_e.uef" size="21296" crc="fb487314" sha1="620e8ff4d2b043bbfb0a5a0204d652ffed068a4f"/>
@@ -1340,6 +1472,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Commonwealth Games</description>
 		<year>1986</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="54617">
 				<rom name="commonwealthgames_e.uef" size="54617" crc="785549bf" sha1="e75c16fffe258807c6f41a804394d8a0f53bc550"/>
@@ -1347,10 +1480,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Error after load -->
 	<software name="condred">
 		<description>Condition Red</description>
 		<year>198?</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10494">
 				<rom name="conditionred_e.uef" size="10494" crc="2bdd17ab" sha1="17aaf73faa0bc26598c4b8d6b9bba86444022bf8"/>
@@ -1362,6 +1497,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Constellation</description>
 		<year>1984</year>
 		<publisher>Superior Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4832">
 				<rom name="constellation-superior_e.uef" size="4832" crc="dc567bd6" sha1="292418b6b8c6b14b8c534c2632f37af6c57d56ed"/>
@@ -1369,10 +1505,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Error after load -->
 	<software name="cbridge">
 		<description>Contract Bridge</description>
 		<year>1984</year>
 		<publisher>Alligata</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8671">
 				<rom name="contractbridge_e.uef" size="8671" crc="95bc1f15" sha1="f1b167a422517dfe09a1d4ed18e515a622996a6e"/>
@@ -1384,6 +1522,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Corn Cropper</description>
 		<year>1984</year>
 		<publisher>CCS</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9915">
 				<rom name="corncropper_e.uef" size="9915" crc="ea309a17" sha1="a0e4440355865b16aee39d26b636d87b3acc5d9a"/>
@@ -1395,6 +1534,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Corporate Climber</description>
 		<year>198?</year>
 		<publisher>Dynabyte</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7135">
 				<rom name="corporateclimber_e.uef" size="7135" crc="022cd5dd" sha1="86299501800638d8bcbe1bc39b6b76681ace7b59"/>
@@ -1406,6 +1546,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Cosmic Camouflage</description>
 		<year>1988</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12295">
 				<rom name="cosmiccamouflage_e.uef" size="12295" crc="9e3cb164" sha1="09ba1f92c3ae7e71834200b8e611ed451f3126cc"/>
@@ -1417,6 +1558,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Counting Fun</description>
 		<year>1984</year>
 		<publisher>Gemini</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4314">
 				<rom name="t-coun.uef" size="4314" crc="50a22118" sha1="182337955afa4ce114530b28c0d1ba986fdce045"/>
@@ -1428,6 +1570,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Crack Up</description>
 		<year>1989</year>
 		<publisher>Atlantis</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7887">
 				<rom name="crackup_e.uef" size="7887" crc="ec432faa" sha1="ecab2edbe4cdf4a0e0d2cc36f4199cb2a2723355"/>
@@ -1439,6 +1582,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Crazee Rider</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="26817">
 				<rom name="crazeerider_e.uef" size="26817" crc="4dbebd36" sha1="d7d7acac6fe8985b2e25cafe2e58aee82a7c42e9"/>
@@ -1451,6 +1595,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1983</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLG26" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9423">
 				<rom name="crazytracer_e.uef" size="9423" crc="e3682ecf" sha1="9d1aa72ab53870dcc6a38540e859f178dc7b237b"/>
@@ -1458,10 +1603,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="croaker">
+	<!-- Error after loading -->
+	<software name="croaker" supported="no">
 		<description>Croaker</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5502">
 				<rom name="croaker_e.uef" size="5502" crc="784ea736" sha1="2d10ee198d095e7d525e2f7de2dbe08a160024df"/>
@@ -1473,6 +1620,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Crown Jewels</description>
 		<year>1984</year>
 		<publisher>Alligata</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9498">
 				<rom name="crownjewels_e.uef" size="9498" crc="fcc7a08a" sha1="bca85f8718727b535de69ff6c2f28786f2bd26ef"/>
@@ -1484,6 +1632,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Crystal Castles</description>
 		<year>1986</year>
 		<publisher>U.S. Gold</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12457">
 				<rom name="crystalcastles_e.uef" size="12457" crc="2662f88e" sha1="1e101f9130009dc5db6b5f6c4f43ac59f7a5bcf7"/>
@@ -1495,6 +1644,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Custard Pie Fight</description>
 		<year>1984</year>
 		<publisher>Comsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5117">
 				<rom name="custardpiefight_e.uef" size="5117" crc="98f0166a" sha1="777e011ebc0b52c516c7f972d5c4dc509aae96ff"/>
@@ -1506,6 +1656,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Cybertron Mission</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8835">
 				<rom name="cybertronmission_e.uef" size="8835" crc="c69d2572" sha1="2d1969ce23a82a7ba33647e789c3626568002dc2"/>
@@ -1517,6 +1668,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Cyborg Warriors</description>
 		<year>1991</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15793">
 				<rom name="cyborgwarriors_e.uef" size="15793" crc="b5aff38d" sha1="abee878cdaf1ee175f35580eb33309fad00e84b7"/>
@@ -1528,6 +1680,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Cylon Attack</description>
 		<year>1984</year>
 		<publisher>A&amp;F Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17773">
 				<rom name="cylonattack_e.uef" size="17773" crc="bfe29e83" sha1="6a0b66335e732c095f95f6aec852becba9b30a7b"/>
@@ -1539,6 +1692,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Cylon Invasion</description>
 		<year>1985</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5970">
 				<rom name="cyloninvasion_e.uef" size="5970" crc="88ed3000" sha1="c6e68ded7f2dcb425e912b277e91bd70f3c04cae"/>
@@ -1550,6 +1704,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Dallas</description>
 		<year>1983</year>
 		<publisher>CCS</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8253">
 				<rom name="dallas_e.uef" size="8253" crc="5e113f65" sha1="2a719eb365442010cb955e7f28720365b9705eb8"/>
@@ -1561,6 +1716,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Danger UXB</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5800">
 				<rom name="dangeruxb_e.uef" size="5800" crc="356398d8" sha1="aff202c442882a5b2eb303fb353a25cf6333ca97"/>
@@ -1572,6 +1728,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Dare Devil Dennis</description>
 		<year>1983</year>
 		<publisher>Visions</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7441">
 				<rom name="daredevildenis_e.uef" size="7441" crc="29525c90" sha1="04f65a1a1bca3909fa53b48d2b655f55a78369da"/>
@@ -1583,6 +1740,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Darts</description>
 		<year>1985</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6800">
 				<rom name="darts-blueribbon_e.uef" size="6800" crc="362795bd" sha1="be8664912fc2fa39fef4f0db4ade52210c3689fa"/>
@@ -1594,6 +1752,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Data File</description>
 		<year>198?</year>
 		<publisher>Kansas</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6579">
 				<rom name="datafile_e.uef" size="6579" crc="a824ca53" sha1="7bfa56819fae911f157558e256c6d278361cf328"/>
@@ -1605,6 +1764,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Death Star (The Superior Collection Vol.3)</description>
 		<year>1987</year>
 		<publisher>Superior Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9388">
 				<rom name="deathstar-scrr_e.uef" size="9388" crc="893add95" sha1="476ab5207aca4c3d2b48cd88178742f7aedc1c2a"/>
@@ -1616,6 +1776,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Death Star (Blue Ribbon)</description>
 		<year>198?</year>
 		<publisher>Superior Software/Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9330">
 				<rom name="deathstar-brrr_e.uef" size="9330" crc="f8384ea1" sha1="6f293419173378ada33ea316276f90d55f98b71f"/>
@@ -1623,10 +1784,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="denisdri">
+	<!-- Error while loading the game -->
+	<software name="denisdri" supported="no">
 		<description>Denis Through the Drinking Glass</description>
 		<year>1984</year>
 		<publisher>Melbourne House</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20577">
 				<rom name="denisthroughthedrinkingglass_e.uef" size="20577" crc="88830df4" sha1="e5fe867ca4bee8d10144771eb5f3c18e1cfaf2b4"/>
@@ -1639,6 +1802,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1983</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLB01" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10631">
 				<rom name="deskdiary_e.uef" size="10631" crc="e0a376f4" sha1="e2e3abe886aa94855351094f7dd3259c9b648934"/>
@@ -1650,6 +1814,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Despatch Rider</description>
 		<year>1987</year>
 		<publisher>Audiogenic</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11723">
 				<rom name="despatchrider_e.uef" size="11723" crc="082d4200" sha1="9912f778341011cec90ad9a7946d8707c23ce156"/>
@@ -1657,10 +1822,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="diaminebr" cloneof="diamine">
+	<!-- Game does not load completely -->
+	<software name="diaminebr" cloneof="diamine" supported="no">
 		<description>Diamond Mine (Blue Ribbon)</description>
 		<year>1985</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4881">
 				<rom name="diamondmine-blueribbon_e.uef" size="4881" crc="d825ace8" sha1="80c46593a5e1d5a9e03ecb7ee10a08c84eb6c730"/>
@@ -1668,10 +1835,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="diamine">
+	<!-- Game does not load completely -->
+	<software name="diamine" supported="no">
 		<description>Diamond Mine</description>
 		<year>1983</year>
 		<publisher>MRM Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4920">
 				<rom name="diamondmine-mrm_e.uef" size="4920" crc="f48d29e6" sha1="dc9b3f980f0ea8ccc4c76eb1b2d4f60c226a9dfa"/>
@@ -1683,6 +1852,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Diamond Mine 2</description>
 		<year>1985</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7911">
 				<rom name="diamondmine2-blueribbon_e.uef" size="7911" crc="242b5e00" sha1="02ca341b3e1af2a4b8e499913cc53b457e192c2f"/>
@@ -1690,10 +1860,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="diampete">
+	<!-- Does not load completely -->
+	<software name="diampete" supported="no">
 		<description>Diamond Pete</description>
 		<year>198?</year>
 		<publisher>Alligata</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9194">
 				<rom name="diamondpete_e.uef" size="9194" crc="ff982b0a" sha1="8b9fca9f394363e1ae4411461ee3701126fcdba5"/>
@@ -1705,6 +1877,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Disassembler</description>
 		<year>198?</year>
 		<publisher>Superior Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="2612">
 				<rom name="disassembler-superior_e.uef" size="2612" crc="e786b8bc" sha1="c0e3d5ee0be0944aedb6ba2cdd695da42d66a986"/>
@@ -1716,6 +1889,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Dogfight for Aces Only</description>
 		<year>198?</year>
 		<publisher>Slogger</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10080">
 				<rom name="dogfight-opus_e.uef" size="10080" crc="bdde02c3" sha1="c693536b24412fe415f32bd94afb9b7e45ce9448"/>
@@ -1727,6 +1901,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Dominoes (Blue Ribbon)</description>
 		<year>198?</year>
 		<publisher>Blue Ribbon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6339">
 				<rom name="dominoes_e.uef" size="6339" crc="49bb1c26" sha1="50e1e07251503da925505b263a0b14f2f8bd506b"/>
@@ -1734,10 +1909,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Error during loading -->
 	<software name="dracisla">
 		<description>Dracula Island</description>
 		<year>1986</year>
 		<publisher>Kansas</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9320">
 				<rom name="draculaisland_e.uef" size="9320" crc="9151891d" sha1="d46f95742ef63565016363d906ef0267b4497402"/>
@@ -1745,10 +1922,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- How to start the game? -->
 	<software name="drainman">
 		<description>Drain Mania</description>
 		<year>1985</year>
 		<publisher>Icon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13725">
 				<rom name="drainmania_e.uef" size="13725" crc="1e2913a2" sha1="c0f447986e3f426e714a92cb7fab9ca4c37e9436"/>
@@ -1761,6 +1940,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>198?</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLG20" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Draughts"/>
 			<dataarea name="cass" size="6150">
@@ -1779,6 +1959,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Draughts (Superior Software)</description>
 		<year>1984</year>
 		<publisher>Superior Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3939">
 				<rom name="draughts-superior_e.uef" size="3939" crc="5da73d42" sha1="09dad980a0e1b0d12fa59319627df5c5a2936b4d"/>
@@ -1790,6 +1971,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Draw</description>
 		<year>198?</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8280">
 				<rom name="draw_e.uef" size="8280" crc="d1418e04" sha1="0354ed40034c4ed52f567a0f2515a6e1a14e25f1"/>
@@ -1797,10 +1979,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="dunjunz">
+	<!-- Game does not start-->
+	<software name="dunjunz" supported="no">
 		<description>Dunjunz</description>
 		<year>1987</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="29079">
 				<rom name="dunjunz_e.uef" size="29079" crc="9d95a59d" sha1="156fcf50a207afa8c8d847b28667d2a490c3c6a4"/>
@@ -1812,6 +1996,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Eddie Kidd Jump Challenge</description>
 		<year>1985</year>
 		<publisher>Martech</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13591">
 				<rom name="eddiekiddjumpchallenge_e.uef" size="13591" crc="4c00fa33" sha1="d3123c27fcd6164a7e2aca3aa200e0bc1cff8663"/>
@@ -1823,6 +2008,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Einfuhrungs Kassette (Ger)</description>
 		<year>1983</year>
 		<publisher>Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="49580">
 				<rom name="introductorycassette-german_e.uef" size="49580" crc="85bc6c80" sha1="e218442dca4696f8c5ed7d6e8e1b144de7ca02fa"/>
@@ -1830,10 +2016,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="elcomp1">
+	<!-- Error after loading -->
+	<software name="elcomp1" supported="no">
 		<description>Electron Computing 1</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="32377">
 				<rom name="electroncomputing1_e.uef" size="32377" crc="1a01a4d7" sha1="165ff98655a3a71df36350a3aec8dcde94e9c615"/>
@@ -1841,7 +2029,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="elcomp2">
+	<!-- Unable to load image, Z_DATA_ERROR -->
+	<software name="elcomp2" supported="no">
 		<description>Electron Computing 2</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
@@ -1852,7 +2041,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="elcomp3">
+	<!-- Unable to load image, Z_DATA_ERROR -->
+	<software name="elcomp3" supported="no">
 		<description>Electron Computing 3</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
@@ -1863,10 +2053,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="elcomp4">
+	<!-- Error after loading -->
+	<software name="elcomp4" supported="no">
 		<description>Electron Computing 4</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="48541">
 				<rom name="electroncomputing4_e.uef" size="48541" crc="d86234df" sha1="7556b88441afe7bc8fbea794c31bc4e643c91938"/>
@@ -1874,10 +2066,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="elcomp5">
+	<!-- Error after loading -->
+	<software name="elcomp5" supported="no">
 		<description>Electron Computing 5</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="30482">
 				<rom name="electroncomputing5_e.uef" size="30482" crc="53c16815" sha1="c5689552fd330bab52c4fd04e9cd20846822a10e"/>
@@ -1885,10 +2079,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="elcomp6">
+	<!-- Error after loading -->
+	<software name="elcomp6" supported="no">
 		<description>Electron Computing 6</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="32680">
 				<rom name="electroncomputing6_e.uef" size="32680" crc="c7ccb2b5" sha1="4c1b12a69a69d0c490edc6256e481360ca933a6f"/>
@@ -1896,10 +2092,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="elcomp7">
+	<!-- Error afrter loading -->
+	<software name="elcomp7" supported="no">
 		<description>Electron Computing 7</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="34119">
 				<rom name="electroncomputing7_e.uef" size="34119" crc="e54c30db" sha1="b53c03bdf54754909ff3ae6835654862dda93b62"/>
@@ -1911,6 +2109,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Elbug Introductory Cassette</description>
 		<year>1983</year>
 		<publisher>Elbug</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16321">
 				<rom name="elbugintroductorycassette_e.uef" size="16321" crc="68cab51a" sha1="351d3141e02be1ef972a97aa3789a63b34ec96c5"/>
@@ -1918,7 +2117,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="einvader">
+	<!-- Error loading image, Z_DATA_ERROR -->
+	<software name="einvader" supported="no">
 		<description>Electron Invaders</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
@@ -1933,6 +2133,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.1, No.1-4</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20200">
 				<rom name="eu1-1-4_e.uef" size="20200" crc="16531ed8" sha1="1bea1e108914fc46a17707a81d29f860e075a81e"/>
@@ -1940,10 +2141,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser105">
+	<!-- Error after loading -->
+	<software name="euser105" supported="no">
 		<description>Electron User Vol.1, No.5: Lunar Lander</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11633">
 				<rom name="eu1-5_e.uef" size="11633" crc="710c6dd0" sha1="a58314345b1d6b08cfeed0909750deb768ed3d5a"/>
@@ -1955,6 +2158,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.1, No.6: Chicken!</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20922">
 				<rom name="eu1-6_e.uef" size="20922" crc="517bd47f" sha1="5ef852c51d36e6683200c82906c6d1a284d550f8"/>
@@ -1962,10 +2166,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser107">
+	<!-- Error after loading -->
+	<software name="euser107" supported="no">
 		<description>Electron User Vol.1, No.7: Space Hike</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15524">
 				<rom name="eu1-7_e.uef" size="15524" crc="55d09d6b" sha1="b851e0f86ab62ffd4b5f51d9b14287980824de9b"/>
@@ -1977,6 +2183,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.1, No.8: Rally Driver</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16419">
 				<rom name="eu1-8_e.uef" size="16419" crc="9fc455b7" sha1="84881bda718dc96f6a58a8c4f39ff569bd2612fb"/>
@@ -1984,10 +2191,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser109">
+	<!-- Error after loading -->
+	<software name="euser109" supported="no">
 		<description>Electron User Vol.1, No.9: Money Maze</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8644">
 				<rom name="eu1-9_e.uef" size="8644" crc="d8d39340" sha1="0f5e5296f873c7e4e6e06420498384ca2b225145"/>
@@ -1995,10 +2204,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser110">
+	<!-- Error after loading -->
+	<software name="euser110" supported="no">
 		<description>Electron User Vol.1, No.10: Golf</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12791">
 				<rom name="eu1-10_e.uef" size="12791" crc="8f0e3ba6" sha1="cc37e7ccb9829ccee099093d114e89a54ee1770a"/>
@@ -2010,6 +2221,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.1, No.11: Castles of Sand</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17561">
 				<rom name="eu1-11_e.uef" size="17561" crc="051db8c4" sha1="4ac73f632acb98a8c6404dbebcffce335059b14f"/>
@@ -2021,6 +2233,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.1, No.12: Haunted House</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19574">
 				<rom name="eu1-12_e.uef" size="19574" crc="f176a6d0" sha1="c70fb87b1165a1c0bb21d56692a7c863aab6402f"/>
@@ -2028,10 +2241,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser201">
+	<!-- Error after loading -->
+	<software name="euser201" supported="no">
 		<description>Electron User Vol.2, No.1: Break Free!</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14025">
 				<rom name="eu2-1_e.uef" size="14025" crc="6ed8dc89" sha1="cf8ca1fb02860ac300f3d209cc5c2b45165fe312"/>
@@ -2039,10 +2254,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser202">
+	<!-- Error after loading -->
+	<software name="euser202" supported="no">
 		<description>Electron User Vol.2, No.2: Star Fighter</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16010">
 				<rom name="eu2-2_e.uef" size="16010" crc="d0ff3150" sha1="695d5d0afcefc2ddebfd73404023e5e66a139416"/>
@@ -2050,10 +2267,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser203">
+	<!-- Error after loading -->
+	<software name="euser203" supported="no">
 		<description>Electron User Vol.2, No.3: Christmas Box</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16233">
 				<rom name="eu2-3_e.uef" size="16233" crc="2a8cd001" sha1="0da879179e15ad656ef0cde096a848882ee7020a"/>
@@ -2065,6 +2284,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.2, No.4</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19039">
 				<rom name="eu2-4_e.uef" size="19039" crc="a22d0af2" sha1="177fb907562f909dac94974c52901810bcbaa929"/>
@@ -2076,6 +2296,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.2, No.5: The Kingdom of Craal</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="30558">
 				<rom name="eu2-5_e.uef" size="30558" crc="17592809" sha1="3afa91790b20bc9a13721214e2795d6376f372ce"/>
@@ -2087,6 +2308,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.2, No.6</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21741">
 				<rom name="eu2-6_e.uef" size="21741" crc="9250085f" sha1="4d9f77288e2b98b197e43876e17fb9e1bf054282"/>
@@ -2094,10 +2316,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser207">
+	<!-- Error after loading -->
+	<software name="euser207" supported="no">
 		<description>Electron User Vol.2, No.7</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="22557">
 				<rom name="eu2-7_e.uef" size="22557" crc="357c0c19" sha1="3ba0b9c556b52f2857d158731d725a54cd1cd597"/>
@@ -2109,6 +2333,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.2, No.8: Skramble</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18137">
 				<rom name="eu2-8_e.uef" size="18137" crc="66031002" sha1="29949537b8b149c8a0895002ab51ea0f34148aff"/>
@@ -2120,6 +2345,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.2, No.9</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="23864">
 				<rom name="eu2-9_e.uef" size="23864" crc="86885dde" sha1="7d8ef371334a4fa5d12aa1f2a8c9dd6a6d75b4b6"/>
@@ -2131,6 +2357,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.2, No.10: Manic Mole!</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19220">
 				<rom name="eu2-10_e.uef" size="19220" crc="5f8be92c" sha1="f395f95995466b15bdfe57f1b50b55fab3ef96ca"/>
@@ -2142,6 +2369,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.2, No.11</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18067">
 				<rom name="eu2-11_e.uef" size="18067" crc="8b62ebb4" sha1="7996f49e06c52523b372f6d77443fee5289215a2"/>
@@ -2149,10 +2377,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Drops to prompt after loading? -->
 	<software name="euser212">
 		<description>Electron User Vol.2, No.12</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="22271">
 				<rom name="eu2-12_e.uef" size="22271" crc="db3824cc" sha1="464dfaf9490d0857a518b621e40d2cf03c7c2296"/>
@@ -2164,6 +2394,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.1</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15405">
 				<rom name="eu3-1_e.uef" size="15405" crc="f4eeffbe" sha1="0b63f2a51a8f387de941ca198b10a17bd915a9b1"/>
@@ -2171,10 +2402,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser302">
+	<!-- Error after loading -->
+	<software name="euser302" supported="no">
 		<description>Electron User Vol.3, No.2</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17905">
 				<rom name="eu3-2_e.uef" size="17905" crc="398d6843" sha1="490ab44d30a5a97d1e7dc891f56445e7850244bf"/>
@@ -2186,6 +2419,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.3</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19990">
 				<rom name="eu3-3_e.uef" size="19990" crc="41d6b19b" sha1="6c0d105e9f0e740ce2f043a2ea1dadcfc3a7af46"/>
@@ -2197,6 +2431,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.4</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13591">
 				<rom name="eu3-4_e.uef" size="13591" crc="a61b72e8" sha1="3390b74b07d9c8155d2b0e98f8f289e79485f902"/>
@@ -2204,7 +2439,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser305">
+	<!-- Image file does not load, unsupported chunk type 0005 -->
+	<software name="euser305" supported="no">
 		<description>Electron User Vol.3, No.5</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
@@ -2219,6 +2455,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.6</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19441">
 				<rom name="eu3-6_e.uef" size="19441" crc="928cfb3a" sha1="6f13ed693e561213aecf8f9cbaea773af74bf7e4"/>
@@ -2230,6 +2467,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.7</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11371">
 				<rom name="eu3-7_e.uef" size="11371" crc="506a466c" sha1="4e94f92945eec765ebe9170ff142d6c86961f663"/>
@@ -2237,10 +2475,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser308">
+	<!-- Error after loading -->
+	<software name="euser308" supported="no">
 		<description>Electron User Vol.3, No.8</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13799">
 				<rom name="eu3-8_e.uef" size="13799" crc="09108806" sha1="ccf439f60924c78eeb1daf0a05ea6d2836b0c0b9"/>
@@ -2252,6 +2492,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.9</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15641">
 				<rom name="eu3-9_e.uef" size="15641" crc="67552812" sha1="587118e6b3b6e2045eb1728657284833e4beb496"/>
@@ -2263,6 +2504,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.10</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17768">
 				<rom name="eu3-10_e.uef" size="17768" crc="3b1cec66" sha1="72126331596fdebe690c5814809b023ca4579a1e"/>
@@ -2274,6 +2516,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.11</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18516">
 				<rom name="eu3-11_e.uef" size="18516" crc="e1c5b902" sha1="3e2433012c3eb44f149367b8b1b3fcd61401f5dd"/>
@@ -2285,6 +2528,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.3, No.12</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20682">
 				<rom name="eu3-12_e.uef" size="20682" crc="6b31890d" sha1="fd13f0f47eeb77307a96150e91fd060f1a242ff2"/>
@@ -2296,6 +2540,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.1</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21261">
 				<rom name="eu4-1_e.uef" size="21261" crc="ff0b251c" sha1="71d128792c1271d6689faf65fd53ea910dde0c28"/>
@@ -2307,6 +2552,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.2</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15428">
 				<rom name="eu4-2_e.uef" size="15428" crc="f328dded" sha1="857b589101498d60b4dce75b3699c0d3ebe01437"/>
@@ -2318,6 +2564,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.3</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17747">
 				<rom name="eu4-3_e.uef" size="17747" crc="7638447d" sha1="1d6ef1cfa0ef888f5b74fdd34da518834504a583"/>
@@ -2329,6 +2576,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.4</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12642">
 				<rom name="eu4-4_e.uef" size="12642" crc="074524aa" sha1="e0cdf5a68584bde99403fed5f2f7305fbf2c1173"/>
@@ -2340,6 +2588,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.5</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17034">
 				<rom name="eu4-5_e.uef" size="17034" crc="b4cddbc8" sha1="7d4ebf0975dfb1f0b13c6c3b9ccb051f58c61fa4"/>
@@ -2351,6 +2600,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.6</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="23990">
 				<rom name="eu4-6_e.uef" size="23990" crc="49308204" sha1="c8826ff31d8e6964d629c2408eef7e0db6829a22"/>
@@ -2362,6 +2612,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.7</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15190">
 				<rom name="eu4-7_e.uef" size="15190" crc="fce023d3" sha1="9209852e321f008f19731f2cc4a89eebcb624bde"/>
@@ -2373,6 +2624,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.8</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18371">
 				<rom name="eu4-8_e.uef" size="18371" crc="f5e6ff84" sha1="7a6e9652c048408a2db85f74a79712b39257dcc6"/>
@@ -2384,6 +2636,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.9</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24635">
 				<rom name="eu4-9_e.uef" size="24635" crc="73c3bc86" sha1="bc2b43c94078a3e53c5065609aa10a3cd4b0c9f4"/>
@@ -2395,6 +2648,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.10</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20300">
 				<rom name="eu4-10_e.uef" size="20300" crc="47bdbf5b" sha1="dbe97a2fdbc39659cace4afec364ada973728b04"/>
@@ -2406,6 +2660,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.11</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15608">
 				<rom name="eu4-11_e.uef" size="15608" crc="539674ba" sha1="187a99dd4a336db90b67bdf411f6f6522a48d878"/>
@@ -2417,6 +2672,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.4, No.12</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="25055">
 				<rom name="eu4-12_e.uef" size="25055" crc="6be38dce" sha1="05526ca006897eb960cbabd981ebd46ed8a9ef9e"/>
@@ -2428,6 +2684,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.1</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13386">
 				<rom name="eu5-1_e.uef" size="13386" crc="47ecded0" sha1="f9b1b0b6d26126b3ccca8cd41faa7417472b0d58"/>
@@ -2439,6 +2696,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.2</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13748">
 				<rom name="eu5-2_e.uef" size="13748" crc="d4d741e8" sha1="b45cfeb35911edf98df91210bcd32468f20793b5"/>
@@ -2450,6 +2708,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.3</description>
 		<year>1987</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13725">
 				<rom name="eu5-3_e.uef" size="13725" crc="21391e66" sha1="5ec4b4416ab27f3c192f4508a73fd4582ff754d5"/>
@@ -2461,6 +2720,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.4</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19231">
 				<rom name="eu5-4_e.uef" size="19231" crc="7f5dfec7" sha1="b31d9a8b7003942a8bd8112466d2787814c2b0a5"/>
@@ -2472,6 +2732,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.5</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18840">
 				<rom name="eu5-5_e.uef" size="18840" crc="751a03cf" sha1="e217d3f317d1cc419cc3edf3b99513e5425250d2"/>
@@ -2483,6 +2744,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.6</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19762">
 				<rom name="eu5-6_e.uef" size="19762" crc="d5b3aa34" sha1="99d86681c900329d0ec69e62a8a658b7dc2597dc"/>
@@ -2494,6 +2756,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.7</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24754">
 				<rom name="eu5-7_e.uef" size="24754" crc="a70286ec" sha1="4736d7bb571be5939e2850de9859c4b29bbfc5e1"/>
@@ -2505,6 +2768,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.8</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16851">
 				<rom name="eu5-8_e.uef" size="16851" crc="82ffa545" sha1="8494edf40111105a7a306326fa7c1292595578f1"/>
@@ -2516,6 +2780,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.9</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11630">
 				<rom name="eu5-9_e.uef" size="11630" crc="90efc0f0" sha1="d131d98100fafc9a5f4686eb41b785262c7cee4b"/>
@@ -2527,6 +2792,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.10</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18294">
 				<rom name="eu5-10_e.uef" size="18294" crc="3f0812cf" sha1="f2049e2863dd74fa6af68efb304b4b9ef202276a"/>
@@ -2538,6 +2804,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.11</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13104">
 				<rom name="eu5-11_e.uef" size="13104" crc="c361d598" sha1="9bcd609f13f9fc874d1721d2a61387c066476f7f"/>
@@ -2549,6 +2816,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.5, No.12</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16145">
 				<rom name="eu5-12_e.uef" size="16145" crc="e753cccd" sha1="63d417d8dbea0b83daaeb2aadf4b5bcd5b04af6a"/>
@@ -2560,6 +2828,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.1</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="23050">
 				<rom name="eu6-1_e.uef" size="23050" crc="cea7bf60" sha1="be2e16e0cb90e771b30d504d359c709155e0c667"/>
@@ -2571,6 +2840,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.2</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15169">
 				<rom name="eu6-2_e.uef" size="15169" crc="45194564" sha1="c2b30edc0bd5453dc7ccd04f54ea16f3b7510c19"/>
@@ -2582,6 +2852,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.3</description>
 		<year>1988</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13276">
 				<rom name="eu6-3_e.uef" size="13276" crc="b4b89cc8" sha1="b7f5cccb37c053644850f893cb1c9e6e0ac3e502"/>
@@ -2589,10 +2860,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="euser604">
+	<!-- Graphics corruption on first title -->
+	<software name="euser604" supported="no">
 		<description>Electron User Vol.6, No.4</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10297">
 				<rom name="eu6-4_e.uef" size="10297" crc="a3b53468" sha1="e160388c43bb095e0287c4ebf52a1e4ff6fd0230"/>
@@ -2604,6 +2877,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.5</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12168">
 				<rom name="eu6-5_e.uef" size="12168" crc="5077448d" sha1="bf83b555a508331a0432234eeb13a8f2214ff08e"/>
@@ -2615,6 +2889,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.6</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11843">
 				<rom name="eu6-6_e.uef" size="11843" crc="ae93e82c" sha1="4cb5e941f017d02c833929ef9ecfdcaedd2d4fdf"/>
@@ -2626,6 +2901,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.7</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11438">
 				<rom name="eu6-7_e.uef" size="11438" crc="c178a4d6" sha1="8112b9e3b56cd887c4f23b190d1dadb1a002ee36"/>
@@ -2637,6 +2913,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.8</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16776">
 				<rom name="eu6-8_e.uef" size="16776" crc="ddea04ce" sha1="b0cc2b6c1e9b184c1108436b8a12ca4db96a6a8e"/>
@@ -2648,6 +2925,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.9</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="23858">
 				<rom name="eu6-9_e.uef" size="23858" crc="ebdc111b" sha1="7647ed7746c9d654d501db4d0228d3e49525361f"/>
@@ -2659,6 +2937,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.10</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17916">
 				<rom name="eu6-10_e.uef" size="17916" crc="7e0f543d" sha1="2c2cce4810228c66f4bf320661c473fef6a2edf9"/>
@@ -2670,6 +2949,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.11</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17287">
 				<rom name="eu6-11_e.uef" size="17287" crc="8346b588" sha1="4a919f960b6cb9ce04053c1c4a60265ca0e5a7b1"/>
@@ -2681,6 +2961,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.6, No.12</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19444">
 				<rom name="eu6-12_e.uef" size="19444" crc="1d29a910" sha1="1a7d78e967600fa0ec2e744a306fcb1a435c7244"/>
@@ -2692,6 +2973,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.1</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21433">
 				<rom name="eu7-1_e.uef" size="21433" crc="e0b17aca" sha1="832c08467187a61931e44e9e6a7f524cb1384d71"/>
@@ -2703,6 +2985,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.2</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="23884">
 				<rom name="eu7-2_e.uef" size="23884" crc="31b8f957" sha1="91c3300298add49ddc2f56e3ab93226cdc8cbe54"/>
@@ -2714,6 +2997,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.3</description>
 		<year>1989</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18717">
 				<rom name="eu7-3_e.uef" size="18717" crc="b3378f25" sha1="a8493a3cdfd54989d1d6e7a6e07cb9bdce7e04fb"/>
@@ -2725,6 +3009,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.4</description>
 		<year>1990</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16769">
 				<rom name="eu7-4_e.uef" size="16769" crc="3b251b5f" sha1="015cb29863dd83594fe6c30818d385ad7b61e0df"/>
@@ -2736,6 +3021,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.5</description>
 		<year>1990</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16813">
 				<rom name="eu7-5_e.uef" size="16813" crc="05498408" sha1="3123eab74d47cf34d80d36ff873165b03f5dce8f"/>
@@ -2747,6 +3033,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.6</description>
 		<year>1990</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="23284">
 				<rom name="eu7-6_e.uef" size="23284" crc="fe00d4e2" sha1="9ee6f76d4a1ab893bb1d9ee7b0c46f64cee92d04"/>
@@ -2758,6 +3045,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.7</description>
 		<year>1990</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17076">
 				<rom name="eu7-7_e.uef" size="17076" crc="d3d61c81" sha1="b7f8bb0980ff011bbe92d10ac67810f2d88891d7"/>
@@ -2769,6 +3057,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.8</description>
 		<year>1990</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17596">
 				<rom name="eu7-8_e.uef" size="17596" crc="a6f27613" sha1="8525d3487bea6e89b95efa8103218edddc764df8"/>
@@ -2780,6 +3069,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.9</description>
 		<year>1990</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7733">
 				<rom name="eu7-9_e.uef" size="7733" crc="3b97a9b7" sha1="3f483aa48cc2bcecb25b94be5922623b736468c3"/>
@@ -2791,6 +3081,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Electron User Vol.7, No.10</description>
 		<year>1990</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="28506">
 				<rom name="eu7-10_e.uef" size="28506" crc="406f741d" sha1="40466e277428d1bafbab1a99a85bc910e675b0db"/>
@@ -2804,6 +3095,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<publisher>Acornsoft</publisher>
 		<info name="author" value="Ian Bell and David Braben" />
 		<info name="release" value="SLG38" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24486">
 				<rom name="elite_e.uef" size="24486" crc="b4552c81" sha1="6af8263b24b759d8d6f7d4f79717cb018a655aa5"/>
@@ -2816,6 +3108,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1986</year>
 		<publisher>Superior Software/Acornsoft</publisher>
 		<info name="author" value="Ian Bell and David Braben" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24515">
 				<rom name="elite-srr_e.uef" size="24515" crc="daa78649" sha1="ae2e718087151fbd56275c8bf1611adaf03d8a6c"/>
@@ -2827,6 +3120,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Elixir</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20934">
 				<rom name="elixir_e.uef" size="20934" crc="050074c6" sha1="b5d1e63b873766b1808dd616657a63b474d0dcff"/>
@@ -2838,6 +3132,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Enigma</description>
 		<year>1983</year>
 		<publisher>Brainbox</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6227">
 				<rom name="enigma_e.uef" size="6227" crc="7f96928a" sha1="3d6bd4f8edce86b9eabcda1acb6d8b984e173ae9"/>
@@ -2849,6 +3144,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Er*Bert</description>
 		<year>1984</year>
 		<publisher>Microbyte</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7842">
 				<rom name="erbert_e.uef" size="7842" crc="14d5a9db" sha1="c70e796d59f618cc278475fe3771aa968e34bcab"/>
@@ -2856,10 +3152,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="embalpha">
+	<!-- Error after loading -->
+	<software name="embalpha" supported="no">
 		<description>Escape from Moonbase Alpha</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6239">
 				<rom name="escapefrommoonbasealpha_e.uef" size="6239" crc="a124ab73" sha1="1e59506f87b68ff91be641e2b4592632f5d62145"/>
@@ -2871,6 +3169,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Escape from Pulsar Seven</description>
 		<year>198?</year>
 		<publisher>Adventure International</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11854">
 				<rom name="mystadv5-escapefrompulsar7_e.uef" size="11854" crc="77bfd2d0" sha1="e11361bde1bcde8978b18a8e11d94e2ac3e5379d"/>
@@ -2878,10 +3177,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="etype">
+	<!-- Software fails to load -->
+	<software name="etype" supported="no">
 		<description>E-Type</description>
 		<year>1990</year>
 		<publisher>4th Dimension</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="25578">
 				<rom name="etype_e.uef" size="25578" crc="d7b70e9d" sha1="21dba7718c5800f8b60790cba14d4ac638a8b100"/>
@@ -2893,6 +3194,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>European Knowledge</description>
 		<year>198?</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11251">
 				<rom name="europeanknowledge_e.uef" size="11251" crc="c56f1a2f" sha1="32a28203ccfdf53b37e16951e300de231fb290f1"/>
@@ -2900,10 +3202,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="evenstar">
+	<!-- Graphics corruption in top and bottom borders while loading. Software fails to load -->
+	<software name="evenstar" supported="no">
 		<description>Evening Star</description>
 		<year>1987</year>
 		<publisher>Hewson Consultants</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16345">
 				<rom name="eveningstar_e.uef" size="16345" crc="bfe66960" sha1="7337a96ffd94835d4bcc7f028a328d9080c4e2cb"/>
@@ -2911,10 +3215,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Graphics corruption during loading -->
 	<software name="exile">
 		<description>Exile</description>
 		<year>1988</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="50599">
 				<rom name="exile_e.uef" size="50599" crc="c67c1df2" sha1="f261a37bf31a353d2ff103840d7f18d5578e5923"/>
@@ -2922,10 +3228,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Error after loading the software -->
 	<software name="expladv">
 		<description>Exploring Adventures</description>
 		<year>1984</year>
 		<publisher>Duckworth</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Castlemaze Adventure"/>
 			<dataarea name="cass" size="7690">
@@ -2950,6 +3258,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Feasibility Experiment</description>
 		<year>198?</year>
 		<publisher>Adventure International</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12102">
 				<rom name="mystadv6-circus_e.uef" size="12102" crc="4a558738" sha1="cf7264efba98d4d75f94147faf4b873313b407a4"/>
@@ -2961,6 +3270,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Felicity Farm Girl</description>
 		<year>1984</year>
 		<publisher>Gemini</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5065">
 				<rom name="t-feli.uef" size="5065" crc="cec38a26" sha1="60bff9c5cbe8a5c4398ffa2b11b7a842c89cabb8"/>
@@ -2968,10 +3278,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="felixmon">
+	<!-- Software fails to load -->
+	<software name="felixmon" supported="no">
 		<description>Felix and the Fruit Monsters</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7240">
 				<rom name="felixandthefruitmonsters_e.uef" size="7240" crc="ca2d61e1" sha1="225dc191efb7ea202ab1375ac52bce11c2eb62af"/>
@@ -2979,10 +3291,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="felixfac">
+	<!-- Software fails to load -->
+	<software name="felixfac" supported="no">
 		<description>Felix in the Factory</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7984">
 				<rom name="felixinthefactory_e.uef" size="7984" crc="389405a2" sha1="d4b02c2e563b7b8cf4cf17d951fac7aa92eef720"/>
@@ -2994,6 +3308,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Felix Meets the Evil Weevils</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11153">
 				<rom name="felixmeetstheevilweevils_e.uef" size="11153" crc="ad658ae2" sha1="9f897e150db556abea8e1d91d0c854c44e3884f1"/>
@@ -3001,10 +3316,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="fighterp">
+	<!-- Error after loading software -->
+	<software name="fighterp" supported="no">
 		<description>Fighter Pilot</description>
 		<year>1984</year>
 		<publisher>Kansas</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3866">
 				<rom name="fighterpilot_e.uef" size="3866" crc="55f85a37" sha1="26134f4f53e16c4b1380694c8e5137359ae46443"/>
@@ -3016,6 +3333,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Finest Favourites</description>
 		<year>198?</year>
 		<publisher>Acorn User</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="26998">
 				<rom name="finestfavourites_e.uef" size="26998" crc="791bee2f" sha1="175600476e07ea5132371e833936536a4074ed70"/>
@@ -3028,6 +3346,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1984</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLG??" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10091">
 				<rom name="firebug_e.uef" size="10091" crc="d483899a" sha1="56419688be06edd504be7fec750de738b9dd54b7"/>
@@ -3035,7 +3354,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="firetrak">
+	<!-- Image image, Z_DATA_ERROR -->
+	<software name="firetrak" supported="no">
 		<description>FireTrack</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
@@ -3062,6 +3382,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>First Byte Joystick Utility</description>
 		<year>1984</year>
 		<publisher>First Byte</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Games"/>
 			<dataarea name="cass" size="3982">
@@ -3080,6 +3401,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>First Steps with the Mr.Men</description>
 		<year>1983</year>
 		<publisher>Mirrorsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Mr.Greedy's Ice Cream Hunt"/>
 			<dataarea name="cass" size="4412">
@@ -3106,10 +3428,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="fpath737">
+	<!-- Software fails to load/start -->
+	<software name="fpath737" supported="no">
 		<description>Flight Path 737</description>
 		<year>198?</year>
 		<publisher>Midas</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12000">
 				<rom name="flightpath737_e.uef" size="12000" crc="49ad1a42" sha1="efec80e3107cd1de38b558df3ccd81c8007a1f5f"/>
@@ -3121,6 +3445,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Football Manager</description>
 		<year>1984</year>
 		<publisher>Addictive</publisher>
+		<info name="usage" value="*RUN" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11842">
 				<rom name="footballmanager_e.uef" size="11842" crc="e0bcc03a" sha1="5158d883226a417319277fe83f4fb66f8a62c5bd"/>
@@ -3128,10 +3453,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="footbyea">
+	<!-- Software fails to load -->
+	<software name="footbyea" supported="no">
 		<description>Footballer of the Year</description>
 		<year>198?</year>
 		<publisher>Gremlin</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<!-- Re-release in 198? by Kixx is identical -->
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17729">
@@ -3140,11 +3467,13 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Software fails to load -->
 	<software name="forthg">
 		<description>FORTH (Ger)</description>
 		<year>1983</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="GLL01" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17704">
 				<rom name="forth-german_e.uef" size="17704" crc="a86e46bd" sha1="d210ebdaa4c1ab1e4afbfc388430eaea2f31c91b"/>
@@ -3152,11 +3481,13 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="forth">
+	<!-- Software fails to load -->
+	<software name="forth" supported="no">
 		<description>FORTH</description>
 		<year>1983</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLL01" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17677">
 				<rom name="forth_e.uef" size="17677" crc="e34b79a8" sha1="296690ee06d80ebbca0bd8fcf16214b67cee2424"/>
@@ -3168,6 +3499,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Frak!</description>
 		<year>1984</year>
 		<publisher>Aardvark</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24221">
 				<rom name="frakv11_e.uef" size="24221" crc="f1330371" sha1="7d8c89dcd98bc0a74ea72b479ee1da0ea4de5595"/>
@@ -3179,6 +3511,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Frak! (Alternative)</description>
 		<year>198?</year>
 		<publisher>Alternative</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24221">
 				<rom name="frakv11_e.uef" size="24221" crc="f1330371" sha1="7d8c89dcd98bc0a74ea72b479ee1da0ea4de5595"/>
@@ -3190,6 +3523,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Frak! (Play It Again Sam 4)</description>
 		<year>1988</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24923">
 				<rom name="frakv2-piasrr_e.uef" size="24923" crc="443256ca" sha1="5cdf9969a764b4e86caeab103ef879e65e671055"/>
@@ -3201,6 +3535,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Frankenstein 2000</description>
 		<year>1985</year>
 		<publisher>Icon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<!-- Re-release in 198? by Atlantis is identical -->
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11973">
@@ -3213,6 +3548,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Frankenstein 2000 (Audiogenic)</description>
 		<year>198?</year>
 		<publisher>Audiogenic</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11973">
 				<rom name="frankenstein2000_e.uef" size="11973" crc="769a3084" sha1="7bcb667bdc782a4b15cb89a1005b91ba4b77cf2c"/>
@@ -3225,6 +3561,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1983</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="SLG28" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14563">
 				<rom name="freefall_e.uef" size="14563" crc="0cd0301f" sha1="f665f593aae7347fc2ddc50e5175411c96ac70b7"/>
@@ -3237,6 +3574,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<year>1983</year>
 		<publisher>Acornsoft</publisher>
 		<info name="release" value="GLG22" />
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14454">
 				<rom name="freefall-german_e.uef" size="14454" crc="0206f8b1" sha1="b3e4e95fb5b89036ab4e7c4cf6e8719c1ae57c34"/>
@@ -3248,6 +3586,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>French On The Run</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="54382">
 				<rom name="frenchontherun_e.uef" size="54382" crc="00576757" sha1="5b7790b17623159f96f3a3d457521b5ebaab94b5"/>
@@ -3259,6 +3598,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>French on the Run (Swift)</description>
 		<year>198?</year>
 		<publisher>Swift</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="54434">
 				<rom name="frenchontherun-srr_e.uef" size="54434" crc="eb28b7f1" sha1="236a5f45c26d8e29ca236d6b2c025d12c2e7ea77"/>
@@ -3270,6 +3610,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Frenzy</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8754">
 				<rom name="frenzy_e.uef" size="8754" crc="1cdf4de0" sha1="3bfd09de8eb677da12d30b0ea379b8abe7a30374"/>
@@ -3281,6 +3622,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Froot Raid</description>
 		<year>1987</year>
 		<publisher>Audiogenic</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8450">
 				<rom name="frootraid_e.uef" size="8450" crc="1d68adf8" sha1="fe63309620b712fb37281b9436f0e9b161b42a66"/>
@@ -3288,10 +3630,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<software name="fruitmd">
+	<!-- Software fails to load/start -->
+	<software name="fruitmd" supported="no">
 		<description>Fruit Machine</description>
 		<year>1984</year>
 		<publisher>Doctor Soft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9426">
 				<rom name="fruitmachine-doctorsoft_e.uef" size="9426" crc="2d7110fd" sha1="9e5c9b36c003d373c96de3243481a01b24713683"/>
@@ -3303,6 +3647,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Fruit Machine (Superior Software)</description>
 		<year>1983</year>
 		<publisher>Superior Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5154">
 				<rom name="fruitmachine-superior_e.uef" size="5154" crc="ffd61e29" sha1="a807626ad18683b598f7ce163f2f02686b0fa225"/>
@@ -3314,6 +3659,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Fruit Machine (Alligata)</description>
 		<year>1983</year>
 		<publisher>Alligata</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4594">
 				<rom name="fruitmachine-alligata_e.uef" size="4594" crc="4754cf44" sha1="968f49b04beed1a0f8d3d817efaae69248617828"/>
@@ -3325,6 +3671,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>Fruit Machine Simulator</description>
 		<year>198?</year>
 		<publisher>Codemasters</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10917">
 				<rom name="fruitmachinesimulator_e.uef" size="10917" crc="57049296" sha1="67e03cfdf480705576176ad79818fc3f8329f1cb"/>
@@ -3332,6 +3679,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
+	<!-- Unsupported chunk type 0113 -->
 	<software name="futuresh">
 		<description>Future Shock</description>
 		<year>1986</year>
