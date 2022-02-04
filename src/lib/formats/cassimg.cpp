@@ -87,20 +87,20 @@ constexpr size_t my_round(double d)
     waveform accesses to/from the raw image
 *********************************************************************/
 
-const int8_t *choose_wave(const cassette_image::Modulation &modulation, size_t &wave_bytes_length)
+const int8_t *choose_wave(const cassette_image::Modulation &modulation, size_t &wave_bytes_length, uint16_t phase = 0)
 {
-	static const int8_t square_wave[] = { -128, 127 };
-	static const int8_t sine_wave[] = { 0, 48, 89, 117, 127, 117, 89, 48, 0, -48, -89, -117, -127, -117, -89, -48 };
+	static const int8_t square_wave[] = { -128, 127, -128, 127 };
+	static const int8_t sine_wave[] = { 0, 48, 89, 117, 127, 117, 89, 48, 0, -48, -89, -117, -127, -117, -89, -48, 0, 48, 89, 117, 127, 117, 89, 48, 0, -48, -89, -117, -127, -117, -89, -48 };
 
 	if (modulation.flags & cassette_image::MODULATION_SINEWAVE)
 	{
-		wave_bytes_length = std::size(sine_wave);
-		return sine_wave;
+		wave_bytes_length = std::size(sine_wave) / 2;
+		return sine_wave + (((phase % 360) * (std::size(sine_wave) / 2)) / 360);
 	}
 	else
 	{
-		wave_bytes_length = std::size(square_wave);
-		return square_wave;
+		wave_bytes_length = std::size(square_wave) / 2;
+		return square_wave + (((phase % 360) * (std::size(sine_wave) / 2)) / 360);
 	}
 }
 
@@ -645,14 +645,14 @@ cassette_image::error cassette_image::modulation_identify(const Modulation &modu
 
 cassette_image::error cassette_image::put_modulated_data(int channel, double time_index,
 	const void *data, size_t data_length, const Modulation &modulation,
-	double *time_displacement)
+	double *time_displacement, uint16_t phase)
 {
 	error err;
 	const uint8_t *data_bytes = (const uint8_t *)data;
 	size_t wave_bytes_length;
 	double total_displacement = 0.0;
 
-	const int8_t *wave_bytes = choose_wave(modulation, wave_bytes_length);
+	const int8_t *wave_bytes = choose_wave(modulation, wave_bytes_length, phase);
 
 	while (data_length--)
 	{
@@ -747,16 +747,45 @@ cassette_image::error cassette_image::read_modulated_data(int channel, double ti
 
 cassette_image::error cassette_image::put_modulated_data_bit(int channel, double time_index,
 	uint8_t data, const Modulation &modulation,
-	double *time_displacement)
+	double *time_displacement, uint16_t phase)
 {
 	error err;
 	size_t wave_bytes_length;
 	double total_displacement = 0.0;
 
-	const int8_t *wave_bytes = choose_wave(modulation, wave_bytes_length);
+	const int8_t *wave_bytes = choose_wave(modulation, wave_bytes_length, phase);
 
 	double pulse_frequency = (data) ? modulation.one_frequency_canonical : modulation.zero_frequency_canonical;
 	double pulse_period = 1 / pulse_frequency;
+	err = put_samples(0, time_index, pulse_period, wave_bytes_length, 1, wave_bytes, WAVEFORM_8BIT);
+	if (err != error::SUCCESS)
+		goto done;
+	time_index += pulse_period;
+	total_displacement += pulse_period;
+
+	err = error::SUCCESS;
+
+done:
+	if (time_displacement)
+		*time_displacement = total_displacement;
+	return err;
+}
+
+
+
+cassette_image::error cassette_image::put_modulated_data_half_bit(int channel, double time_index,
+	uint8_t data, const Modulation &modulation,
+	double *time_displacement, uint16_t phase)
+{
+	error err;
+	size_t wave_bytes_length;
+	double total_displacement = 0.0;
+
+	const int8_t *wave_bytes = choose_wave(modulation, wave_bytes_length, phase);
+
+	double pulse_frequency = (data) ? modulation.one_frequency_canonical : modulation.zero_frequency_canonical;
+	double pulse_period = 1 / pulse_frequency;
+	wave_bytes_length /= 2;
 	err = put_samples(0, time_index, pulse_period, wave_bytes_length, 1, wave_bytes, WAVEFORM_8BIT);
 	if (err != error::SUCCESS)
 		goto done;

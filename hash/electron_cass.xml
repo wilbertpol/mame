@@ -57,7 +57,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Does not start? -->
+	<!-- Software does not finish loading/start -->
 	<software name="3dmaze">
 		<description>3D Maze</description>
 		<year>1983</year>
@@ -94,11 +94,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image/unsupported (Z_DATA_ERROR) -->
 	<software name="747flsim">
 		<description>747 Flight Simulator</description>
 		<year>1984</year>
 		<publisher>DACC</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5752">
 				<rom name="747flightsimulator_e.uef" size="5752" crc="aa4c4d8c" sha1="339bdc221b08b6d9767d423d298bd605deeb05fc"/>
@@ -310,7 +310,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Does not load completely, graphics corruption at the end of loading -->
+	<!-- Does not load completely/start, graphics corruption at the end of loading -->
 	<software name="airline">
 		<description>Airline</description>
 		<year>1983</year>
@@ -470,7 +470,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Errors during loading, game title unreadable on title screen -->
+	<!-- Software fails to start, game title unreadable on title screen -->
 	<software name="arrowd2" supported="no">
 		<description>Arrow of Death Part 2</description>
 		<year>198?</year>
@@ -604,11 +604,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image / bad image parsing (Z_DATA_ERROR) -->
 	<software name="batl1917">
 		<description>Battle 1917</description>
 		<year>1983</year>
 		<publisher>CCS</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3854">
 				<rom name="battle1917_e.uef" size="3854" crc="05c5a30e" sha1="fa47ff472d6ae71bdd269e7a93735bef26abc99d"/>
@@ -628,7 +628,6 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image / bad image parsing (Z_DATA_ERROR) -->
 	<software name="bzonesix">
 		<description>Battlezone Six</description>
 		<year>198?</year>
@@ -640,7 +639,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Error during loading -->
+	<!-- Software does not load/start -->
 	<software name="treeknowg" cloneof="treeknow">
 		<description>Baum der Weisheit (Ger)</description>
 		<year>1983</year>
@@ -689,11 +688,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image / bad image parsing (Z_DATA_ERROR) -->
 	<software name="bertboot">
 		<description>Bert Boot</description>
 		<year>1984</year>
 		<publisher>Highlight Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7172">
 				<rom name="bertboot_e.uef" size="7172" crc="57acfa15" sha1="29d1b9d0678edadc1d49173721a759b7e1f75c80"/>
@@ -839,7 +838,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Does not fully load -->
+	<!-- Does not fully load, drops back to prompt -->
 	<software name="bobbycha" supported="no">
 		<description>Bobby Charlton Soccer</description>
 		<year>1985</year>
@@ -852,11 +851,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid Image / bad image parsing (Z_DATA_EROR) -->
-	<software name="boffin" supported="no">
+	<software name="boffin">
 		<description>Boffin</description>
 		<year>1985</year>
 		<publisher>Addictive</publisher>
+		<info name="usage" value="*RUN" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16537">
 				<rom name="boffin2-modified_be.uef" size="16537" crc="ee48b1fe" sha1="29e33cc6bbf31b1b9443918aa34cf3c689c00c2d"/>
@@ -952,13 +951,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Game does not load completely -->
+	<!-- Software fails to load -->
 	<software name="breakthr" supported="no">
 		<description>Breakthrough</description>
 		<year>1990</year>
 		<publisher>Audiogenic</publisher>
 		<info name="usage" value="Load with *RUN" />
-		<info name="usage" value="*RUN" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20169">
 				<rom name="breakthrough_run_e.uef" size="20169" crc="347ae5a5" sha1="5def500c9f1ddabf8b12b0e1843be05386958ff4"/>
@@ -1063,11 +1061,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image / bad image parsing (Z_DATA_ERROR)-->
 	<software name="bullseye">
 		<description>Bullseye</description>
 		<year>1984</year>
 		<publisher>Macsen</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="22053">
 				<rom name="bullseye_e.uef" size="22053" crc="e5cf04e5" sha1="8f601c6b9f5baff7d8dc7d438962846928f49621"/>
@@ -1133,7 +1131,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unsupported chunk type 0115/0113/0114 -->
+	<!-- Software fails to load -->
 	<software name="cascad50" supported="no">
 		<description>Cascade 50</description>
 		<year>1983</year>
@@ -1289,11 +1287,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unsupported chunk type 0113 -->
-	<software name="chipbust" supported="no">
+	<software name="chipbust">
 		<description>Chip Buster</description>
 		<year>1985</year>
 		<publisher>Software Invasion</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12848">
 				<rom name="chipbuster_e.hq.uef" size="12848" crc="deee29e5" sha1="0f5749861e0399e84f3fe110b69603071689f3d0"/>
@@ -1505,7 +1503,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Error after load -->
+	<!-- Error after load, not enough memory? -->
 	<software name="cbridge">
 		<description>Contract Bridge</description>
 		<year>1984</year>
@@ -1860,7 +1858,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Does not load completely -->
+	<!-- Software fails to load -->
 	<software name="diampete" supported="no">
 		<description>Diamond Pete</description>
 		<year>198?</year>
@@ -1909,7 +1907,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Error during loading -->
+	<!-- Error during loading, out of memory? -->
 	<software name="dracisla">
 		<description>Dracula Island</description>
 		<year>1986</year>
@@ -2029,11 +2027,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unable to load image, Z_DATA_ERROR -->
+	<!-- Software does not load/start -->
 	<software name="elcomp2" supported="no">
 		<description>Electron Computing 2</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="33997">
 				<rom name="electroncomputing2_e.uef" size="33997" crc="15fc6e0b" sha1="6cea10862b922fa000330ec8dabd23b51b34f8ff"/>
@@ -2041,11 +2040,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unable to load image, Z_DATA_ERROR -->
+	<!-- Software does not load/start -->
 	<software name="elcomp3" supported="no">
 		<description>Electron Computing 3</description>
 		<year>1983</year>
 		<publisher>Electron Computing</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="28633">
 				<rom name="electroncomputing3_e.uef" size="28633" crc="8e1b530f" sha1="abcc806233e5efb1db5e881cca7803441ee55d3f"/>
@@ -2117,11 +2117,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Error loading image, Z_DATA_ERROR -->
-	<software name="einvader" supported="no">
+	<software name="einvader">
 		<description>Electron Invaders</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6929">
 				<rom name="electroninvaders_e.uef" size="6929" crc="30fd1e16" sha1="99cc722c927d8f48c791a7ba000c063a88849a3d"/>
@@ -2439,11 +2439,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Image file does not load, unsupported chunk type 0005 -->
+	<!-- Software does not load/start -->
 	<software name="euser305" supported="no">
 		<description>Electron User Vol.3, No.5</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19149">
 				<rom name="eu3-5_e.uef" size="19149" crc="7a0296c3" sha1="4b2b110be5d6f3b4192dfa154ded2bc99b9eebdf"/>
@@ -3152,7 +3153,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Error after loading -->
+	<!-- Error after loading, not enough memory -->
 	<software name="embalpha" supported="no">
 		<description>Escape from Moonbase Alpha</description>
 		<year>1983</year>
@@ -3177,7 +3178,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
+	<!-- Software fails to load/start -->
 	<software name="etype" supported="no">
 		<description>E-Type</description>
 		<year>1990</year>
@@ -3316,7 +3317,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Error after loading software -->
+	<!-- Software fails to load/start -->
 	<software name="fighterp" supported="no">
 		<description>Fighter Pilot</description>
 		<year>1984</year>
@@ -3354,11 +3355,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Image image, Z_DATA_ERROR -->
-	<software name="firetrak" supported="no">
+	<software name="firetrak">
 		<description>FireTrack</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19805">
 				<rom name="firetrack_e.uef" size="19805" crc="b74d3f60" sha1="5995f766121b7442e6b158e5a979b78c07ac619e"/>
@@ -3467,7 +3468,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
+	<!-- Software fails to load, not enough memory -->
 	<software name="forthg">
 		<description>FORTH (Ger)</description>
 		<year>1983</year>
@@ -3481,7 +3482,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
+	<!-- Software fails to load, not enough memory? -->
 	<software name="forth" supported="no">
 		<description>FORTH</description>
 		<year>1983</year>
@@ -3679,11 +3680,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unsupported chunk type 0113 -->
 	<software name="futuresh">
 		<description>Future Shock</description>
 		<year>1986</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="22428">
 				<rom name="futureshock_e.hq.uef" size="22428" crc="a6bde267" sha1="700cf9e0cc9253e10b69c136210a645b64e434ac"/>
@@ -3752,7 +3753,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to load -->
 	<software name="gatecras" supported="no">
 		<description>Gatecrasher</description>
 		<year>198?</year>
@@ -4059,8 +4060,8 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="heltersk" supported="no">
+	<!-- Graphics corruption at bottom of screen during gameplay -->
+	<software name="heltersk" supported="partial">
 		<description>Helter Skelter</description>
 		<year>1990</year>
 		<publisher>Audiogenic</publisher>
@@ -4223,7 +4224,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to start, drops back to prompt -->
 	<software name="qpthing" supported="no">
 		<description>Questprobe: Human Torch and The Thing</description>
 		<year>198?</year>
@@ -4297,7 +4298,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to start -->
+	<!-- Software fails to load/start -->
 	<software name="ianbotha">
 		<description>Ian Botham's Test Match</description>
 		<year>1986</year>
@@ -4334,11 +4335,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
-	<software name="imogen" supported="no">
+	<software name="imogen">
 		<description>Imogen</description>
 		<year>1987</year>
 		<publisher>Superior Software/Acornsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="58595">
 				<rom name="imogen_e.uef" size="58595" crc="a36e6d41" sha1="c80a4146bbb1f1f1b3a258a06241d5ad16431a9d"/>
@@ -4418,7 +4419,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to start -->
+	<!-- Software fails to start, not enough memory? -->
 	<software name="invaderi" supported="no">
 		<description>Invaders (I.J.K.)</description>
 		<year>198?</year>
@@ -4480,8 +4481,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
-	<software name="jetsetw" supported="no">
+	<software name="jetsetw">
 		<description>Jet Set Willy</description>
 		<year>1984</year>
 		<publisher>Tynesoft</publisher>
@@ -4603,11 +4603,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unsupported chunk type 0113 -->
-	<software name="kastle" supported="no">
+	<software name="kastle">
 		<description>Kastle</description>
 		<year>1987</year>
 		<publisher>Tynesoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19262">
 				<rom name="kastle_e.hq.uef" size="19262" crc="8735f931" sha1="d1e814336c58781fdf045fe76928141ea497c7d6"/>
@@ -4771,7 +4771,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to start -->
 	<software name="lockluck" supported="no">
 		<description>Locks of Luck</description>
 		<year>1986</year>
@@ -5013,7 +5013,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to start -->
+	<!-- Software fails to start, not enough memory? -->
 	<software name="mteacht2" supported="no">
 		<description>Merlin Teaches Tables 2</description>
 		<year>1984</year>
@@ -5071,7 +5071,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to start -->
+	<!-- Software fails to start, not enough memory? -->
 	<software name="mexico86" supported="no">
 		<description>Mexico 86</description>
 		<year>1986</year>
@@ -5139,11 +5139,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
+	<!-- Software fails to load/start, not enough memory? -->
 	<software name="minedout" supported="no">
 		<description>Mined-Out</description>
 		<year>1983</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8962">
 				<rom name="minedout_e.uef" size="8962" crc="46725e3e" sha1="89dee5d9fb4113545839fd81560b6fa78ec3eda1"/>
@@ -5196,11 +5197,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
 	<software name="misscont">
 		<description>Missile Control</description>
 		<year>1983</year>
 		<publisher>Gemini</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10010">
 				<rom name="missilecontrol_e.uef" size="10010" crc="afcfad7b" sha1="bc3e9daee7fbe881e146d234491d8f4720faed5c"/>
@@ -5357,11 +5358,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
+	<!-- Software fails to load/start -->
 	<software name="javastar" supported="no">
 		<description>The Mystery of the Java Star</description>
 		<year>1985</year>
 		<publisher>Shards Software</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="35175">
 				<rom name="mysteryofthejavastar_e.uef" size="35175" crc="a017d0ca" sha1="37a0987ecd0e011b12d88b429e3d1570042b96f5"/>
@@ -5646,11 +5648,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
-	<software name="pengwyn" supported="no">
+	<software name="pengwyn">
 		<description>Pengwyn</description>
 		<year>1983</year>
 		<publisher>Postern</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6915">
 				<rom name="pengwyn_e.uef" size="6915" crc="9f6299a0" sha1="4e1e44e16cd30506f8e32d3ce9e3630df3530b30"/>
@@ -5744,7 +5746,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to load/start, drops back to prompt -->
 	<software name="phartomb" supported="no">
 		<description>Pharoahs Tomb</description>
 		<year>1983</year>
@@ -5770,11 +5772,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
-	<software name="pinball" supported="no">
+	<software name="pinball">
 		<description>Pinball</description>
 		<year>1983</year>
 		<publisher>Microbyte</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7021">
 				<rom name="pinball-microbyte_e.uef" size="7021" crc="d6bdfea3" sha1="33101b824c503eb652682ec0f2de247deffa11b4"/>
@@ -5946,11 +5948,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unsupported chunk type 0113 -->
-	<software name="proboxin" supported="no">
+	<!-- Game screen is only bottom half of the screen? -->
+	<software name="proboxin" supported="partial">
 		<description>Pro Boxing Simulator</description>
 		<year>198?</year>
 		<publisher>Codemasters</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21508">
 				<rom name="proboxingsimulator_e.hq.uef" size="21508" crc="da9ede60" sha1="aded29e58876d5979de2ff1cb041cae03c083fa8"/>
@@ -5983,11 +5986,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
-	<software name="psycast2" supported="no">
+	<!-- Graphics corruption during load -->
+	<software name="psycast2">
 		<description>Psycastria 2</description>
 		<year>1989</year>
 		<publisher>Audiogenic</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20454">
 				<rom name="psycastria2_e.uef" size="20454" crc="467bd920" sha1="6e66ccf674f42f7a7d9662549f06e73ff27c4e30"/>
@@ -6312,7 +6316,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to load, not enough memory? -->
 	<software name="revzor" supported="no">
 		<description>Revenge of Zor</description>
 		<year>1983</year>
@@ -6389,7 +6393,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to start, not enough memory -->
 	<software name="ringtime" supported="no">
 		<description>Ring of Time</description>
 		<year>1983</year>
@@ -6525,11 +6529,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
+	<!-- Software fails to load -->
 	<software name="sascomm" supported="no">
 		<description>SAS Commander</description>
 		<year>1984</year>
 		<publisher>Comsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7282">
 				<rom name="sascommander_e.uef" size="7282" crc="613f9c22" sha1="2396b0aebf869e66d8834e598643c8f311a0073b"/>
@@ -6609,7 +6614,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to load -->
 	<software name="shangwar" supported="no">
 		<description>Shanghai Warriors</description>
 		<year>1989</year>
@@ -6622,7 +6627,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to load -->
 	<software name="shark" supported="no">
 		<description>Shark</description>
 		<year>1988</year>
@@ -6736,7 +6741,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Softeware fails to start -->
+	<!-- Software fails to start, not enough memory? -->
 	<software name="snake" supported="no">
 		<description>Snake</description>
 		<year>198?</year>
@@ -6811,11 +6816,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
+	<!-- Software fails to start, not enough memory -->
 	<software name="soccersu" supported="no">
 		<description>Soccer Supremo</description>
 		<year>1984</year>
 		<publisher>Qualsoft</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8680">
 				<rom name="soccersupremo_e.uef" size="8680" crc="6b8c32f6" sha1="f6e4a20ba9afddbc7e5e3f49ecbb5ab671d294e5"/>
@@ -6941,11 +6947,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
+	<!-- Software fails to load/start -->
 	<software name="spstatal" supported="no">
 		<description>Space Station Alpha</description>
 		<year>198?</year>
 		<publisher>Icon</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6307">
 				<rom name="spacestationalpha_e.uef" size="6307" crc="1d1cced2" sha1="9edbf0e085a69099dbecc76f83c665ed8f61394c"/>
@@ -7083,7 +7090,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unsupported chunk type 0113 -->
+	<!-- Software fails to start -->
 	<software name="spyvsspy" supported="no">
 		<description>Spy vs Spy</description>
 		<year>1984</year>
@@ -7121,8 +7128,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unsupported chunk type 0113 -->
-	<software name="stairhel" supported="no">
+	<software name="stairhel">
 		<description>Stairway to Hell</description>
 		<year>1985</year>
 		<publisher>Software Invasion</publisher>
@@ -7146,7 +7152,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to start, not enough memory? -->
 	<software name="starfo7" supported="no">
 		<description>Star Force Seven</description>
 		<year>198?</year>
@@ -7184,7 +7190,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to start -->
 	<software name="starwars" supported="no">
 		<description>Star Wars</description>
 		<year>1987</year>
@@ -7247,7 +7253,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
+	<!-- Software fails to start -->
 	<software name="spkbegin" supported="no">
 		<description>Starter Pack: Beginners</description>
 		<year>1984</year>
@@ -7743,7 +7749,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software does not load -->
+	<!-- Software does not load/start, out of memory? -->
 	<software name="tesselat" supported="no">
 		<description>Tesselator</description>
 		<year>1985</year>
@@ -7755,11 +7761,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
-	<software name="tmatch" supported="no">
+	<software name="tmatch">
 		<description>Test Match</description>
 		<year>1983</year>
 		<publisher>CRL</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Side 1"/>
 			<dataarea name="cass" size="10182">
@@ -7786,7 +7792,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to start, not enough memory? -->
 	<software name="banprinc" supported="no">
 		<description>The Banished Prince</description>
 		<year>1984</year>
@@ -7825,7 +7831,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- How is this supposed to work? -->
 	<software name="electape">
 		<description>The Electron Tape - BASIC, Sound and Graphics</description>
 		<year>1983</year>
@@ -7943,7 +7949,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		<description>The Last of the Free</description>
 		<year>1986</year>
 		<publisher>Audiogenic</publisher>
-		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
+		<info name="usage" value="*RUN" />
 		<!-- Re-release in 1989 by Atlantis is identical -->
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17187">
@@ -8037,7 +8043,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to load/start, not enough memory? -->
 	<software name="valley" supported="no">
 		<description>The Valley</description>
 		<year>198?</year>
@@ -8050,11 +8056,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Unsupported chunk type 0113 -->
-	<software name="woftef" supported="no">
+	<software name="woftef">
 		<description>The Way of the Exploding Fist</description>
 		<year>1985</year>
 		<publisher>Melbourne House</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14769">
 				<rom name="wayoftheexplodingfistv2_e.hq.uef" size="14769" crc="547dc00b" sha1="19910ae26eeda0f5e60df8ecbcc0c953bfbc2216"/>
@@ -8086,11 +8092,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
+	<!-- Software fails to load, drops back to prompt -->
 	<software name="tstruck" supported="no">
 		<description>Thunderstruck</description>
 		<year>1985</year>
 		<publisher>Audiogenic</publisher>
+		<info name="usage" value="*RUN" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16880">
 				<rom name="thunderstruck_e.uef" size="16880" crc="a67bc9b0" sha1="0da10a61100f94d6eb3c532432936ca415cb6f3a"/>
@@ -8098,12 +8105,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
+	<!-- Software fails to load, drops back to prompt -->
 	<software name="tstruck2" supported="no">
 		<description>Thunderstruck 2: Mind Master</description>
 		<year>1986</year>
 		<publisher>Audiogenic</publisher>
-		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
+		<info name="usage" value="*RUN" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19706">
 				<rom name="thunderstruck2_e.uef" size="19706" crc="481149a0" sha1="696aa1d5a5199b2dbdade7f01f885b7cf0d74e7c"/>
@@ -8173,7 +8180,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Software fails to load/start, out of memory? -->
 	<software name="triple8" supported="no">
 		<description>Triple Decker 8: Grebit, Mr Freeze &amp; Fruit Worm</description>
 		<year>198?</year>
@@ -8223,11 +8230,12 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
+	<!-- Software fails to load/start -->
 	<software name="kingdomv" supported="no">
 		<description>Twin Kingdom Valley</description>
 		<year>1983</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21339">
 				<rom name="twinkingdomvalley-modified_e.uef" size="21339" crc="8a5becdb" sha1="bff28a8f9e20b25d304ccfb06e425df7d6e4e988"/>
@@ -8235,7 +8243,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Graphics corruption during load, software does not load/start -->
+	<!-- Graphics corruption during load, software does not load/start, not enough memory? -->
 	<software name="ukpm" supported="no">
 		<description>U.K. PM</description>
 		<year>1984</year>
@@ -8453,8 +8461,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="west" supported="no">
+	<software name="west">
 		<description>West</description>
 		<year>198?</year>
 		<publisher>Talent</publisher>
@@ -8578,11 +8585,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
-	<software name="wongo" supported="no">
+	<software name="wongo">
 		<description>Wongo</description>
 		<year>1986</year>
 		<publisher>Icon</publisher>
+		<info name="usage" value="*RUN" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9502">
 				<rom name="wongo_e.uef" size="9502" crc="bf97bf88" sha1="d5e12e073797b015d082fb4d175a99fa60adf902"/>
@@ -8640,11 +8647,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
-	<software name="xorproc" supported="no">
+	<software name="xorproc">
 		<description>XOR: Procyon's Mazes</description>
 		<year>2007</year>
 		<publisher>Logotron</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20519">
 				<rom name="xor-procyon_e.uef" size="20519" crc="8ae6f38f" sha1="f281f701029f0786d9e13d5ddde7512510358294"/>
@@ -8664,8 +8671,7 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="yiear2" supported="no">
+	<software name="yiear2">
 		<description>Yie Ar Kung-Fu 2</description>
 		<year>198?</year>
 		<publisher>Imagine</publisher>
@@ -8763,11 +8769,11 @@ Model B-compatible cassette images are now listed exclusively in bbc_cass.xml, r
 		</part>
 	</software>
 
-	<!-- Invalid image, Z_DATA_ERROR -->
-	<software name="ziggy" supported="no">
+	<software name="ziggy">
 		<description>Ziggy</description>
 		<year>1987</year>
 		<publisher>Audiogenic</publisher>
+		<info name="usage" value="*TAPE, CHAIN&quot;&quot;" />
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18575">
 				<rom name="ziggy_e.uef" size="18575" crc="b501666a" sha1="7073d7d99157de12066b4c91029b7ea350e20706"/>

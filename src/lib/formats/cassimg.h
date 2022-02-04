@@ -146,7 +146,7 @@ public:
 		Options *opts);
 	error put_modulated_data(int channel, double time_index,
 		const void *data, size_t data_length, const Modulation &modulation,
-		double *time_displacement);
+		double *time_displacement, uint16_t phase = 0);
 	error put_modulated_filler(int channel, double time_index,
 		uint8_t filler, size_t filler_length, const Modulation &modulation,
 		double *time_displacement);
@@ -155,7 +155,10 @@ public:
 		double *time_displacement);
 	error put_modulated_data_bit(int channel, double time_index,
 		uint8_t data, const Modulation &modulation,
-		double *time_displacement);
+		double *time_displacement, uint16_t phase = 0);
+	error put_modulated_data_half_bit(int channel, double time_index,
+		uint8_t data, const Modulation &modulation,
+		double *time_displacement, uint16_t phase = 0);
 
 	/* debug calls */
 	void dump(const char *filename);

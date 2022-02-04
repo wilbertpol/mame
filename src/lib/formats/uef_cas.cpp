@@ -20,7 +20,9 @@ UEF files are chunk based and optionally compressed.
 #include <cstring>
 
 
+#define UEF_BASE_FREQUENCY  1200
 #define UEF_WAV_FREQUENCY   4800
+#define INITAL_PHASE        180
 #define WAVE_LOW    -32768
 #define WAVE_HIGH   32767
 #define WAVE_NULL   0
@@ -44,12 +46,20 @@ static const uint8_t GZ_HEADER[2] = { 0x1f, 0x8b };
 #define RESERVED    0xe0 // bits 5..7: reserved
 
 
+static const cassette_image::Modulation uef_cas_modulation =
+{
+	cassette_image::MODULATION_SINEWAVE,
+	1200.0 - 300, 1200.0, 1200.0 + 300,
+	2400.0 - 600, 2400.0, 2400.0 + 600
+};
+
+
 static const uint8_t* skip_gz_header(const uint8_t *p, int length)
 {
 	const uint8_t *max_p = p + length;
 	if (p + 10 >= max_p)
 		return nullptr;
-	// skip initial 1f 8b header
+	// ignore initial 1f 8b header
 	// get method and flags
 	uint8_t method = p[2];
 	uint8_t flags = p[3];
@@ -69,9 +79,10 @@ static const uint8_t* skip_gz_header(const uint8_t *p, int length)
 	if (p >= max_p)
 		return nullptr;
 	// Skip the original file name
-	if (( flags & ORIG_NAME) != 0) 
+	if ((flags & ORIG_NAME) != 0)
 	{
 		for ( ; *p && p < max_p; p++);
+		p++;
 	}
 	// Skip the .gz file comment
 	if ((flags & COMMENT) != 0)
@@ -111,39 +122,69 @@ static float get_uef_float(const uint8_t *bytes)
 }
 
 
-static void uef_cas_fill_bit(uint8_t loops, std::vector<int16_t> &samples, bool bit)
+static cassette_image::error uef_cas_fill_bit(uint8_t loops, cassette_image *cassette, double &time_index, bool bit, cassette_image::Modulation &modulation, uint16_t phase)
 {
-	for (uint8_t i = 0; i < loops; i++)
+	for (uint8_t i = 0; i < loops * (bit ? 2 : 1); i++)
 	{
-		if (bit)
-		{
-			samples.push_back(WAVE_LOW);
-			samples.push_back(WAVE_HIGH);
-			samples.push_back(WAVE_LOW);
-			samples.push_back(WAVE_HIGH);
-		}
-		else
-		{
-			samples.push_back(WAVE_LOW);
-			samples.push_back(WAVE_LOW);
-			samples.push_back(WAVE_HIGH);
-			samples.push_back(WAVE_HIGH);
-		}
+		double time_displacement;
+		cassette_image::error err = cassette->put_modulated_data_bit(0, time_index, bit, modulation, &time_displacement, phase);
+		if (err != cassette_image::error::SUCCESS) return err;
+		time_index += time_displacement;
 	}
+	return cassette_image::error::SUCCESS;
 }
 
 
-static cassette_image::error uef_cas_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
+static cassette_image::error uef_cas_fill_short_wave(cassette_image *cassette, double &time_index, cassette_image::Modulation &modulation, uint16_t phase)
+{
+	double time_displacement;
+	cassette_image::error err = cassette->put_modulated_data_bit(0, time_index, 1, modulation, &time_displacement, phase);
+	if (err != cassette_image::error::SUCCESS) return err;
+	time_index += time_displacement;
+	return cassette_image::error::SUCCESS;
+}
+
+
+static cassette_image::error uef_cas_fill_half_bit(cassette_image *cassette, double &time_index, bool bit, cassette_image::Modulation &modulation, uint16_t phase)
+{
+	double time_displacement;
+	cassette_image::error err = cassette->put_modulated_data_half_bit(0, time_index, bit, modulation, &time_displacement, phase);
+	if (err != cassette_image::error::SUCCESS) return err;
+	time_index += time_displacement;
+	return cassette_image::error::SUCCESS;
+}
+
+
+static void update_modulation(uint32_t base_frequency, cassette_image::Modulation &modulation)
+{
+	modulation.flags = cassette_image::MODULATION_SINEWAVE;
+	modulation.zero_frequency_canonical = base_frequency;
+	modulation.zero_frequency_low = modulation.zero_frequency_canonical * 0.75;
+	modulation.zero_frequency_high = modulation.zero_frequency_canonical * 1.25;
+	modulation.one_frequency_canonical = 2 * base_frequency;
+	modulation.one_frequency_low = modulation.one_frequency_canonical * 0.75;
+	modulation.one_frequency_high = modulation.one_frequency_canonical * 1.25;
+}
+
+
+static cassette_image::error uef_cas_fill_wave(cassette_image *cassette, std::vector<uint8_t> &bytes)
 {
 	std::vector<uint8_t> gzip_area;
 	int casdata_length = bytes.size();
 	uint8_t *casdata = &bytes[0];
+	uint32_t base_frequency = UEF_BASE_FREQUENCY;
+	uint16_t phase = INITAL_PHASE;
+	double time_index = 0.0;
+	cassette_image::error err;
+	cassette_image::Modulation modulation;
+
+	update_modulation(base_frequency, modulation);
 
 	if (bytes[0] == 0x1f && bytes[1] == 0x8b)
 	{
 		int gz_err;
 		z_stream d_stream;
-		int inflate_size = (casdata[casdata_length - 1] << 24) | (casdata[casdata_length - 2] << 16) | (casdata[casdata_length - 3] << 8) | casdata[casdata_length - 4];
+		unsigned long inflate_size = (casdata[casdata_length - 1] << 24) | (casdata[casdata_length - 2] << 16) | (casdata[casdata_length - 3] << 8) | casdata[casdata_length - 4];
 		const uint8_t *in_ptr = skip_gz_header(casdata, casdata_length);
 
 		if (in_ptr == nullptr)
@@ -178,8 +219,14 @@ static cassette_image::error uef_cas_fill_wave(std::vector<int16_t> &samples, st
 			LOG_FORMATS("inflateEnd error: %d\n", gz_err);
 			return cassette_image::error::INVALID_IMAGE;
 		}
+
 		casdata_length = inflate_size;
 		casdata = &gzip_area[0];
+	}
+
+	if (casdata_length < sizeof(UEF_HEADER) || memcmp(casdata, UEF_HEADER, sizeof(UEF_HEADER)))
+	{
+		return cassette_image::error::INVALID_IMAGE;
 	}
 
 	uint8_t loops = 1;
@@ -187,74 +234,207 @@ static cassette_image::error uef_cas_fill_wave(std::vector<int16_t> &samples, st
 	while (pos < casdata_length)
 	{
 		if (pos + 6 > casdata_length)
+		{
 			return cassette_image::error::INVALID_IMAGE;
+		}
 
 		int chunk_type = (casdata[pos + 1] << 8) | casdata[pos];
 		int chunk_length = (casdata[pos + 5] << 24) | (casdata[pos + 4] << 16) | (casdata[pos + 3] << 8) | casdata[pos + 2];
 		pos += 6;
 
 		if (pos + chunk_length > casdata_length)
+		{
 			return cassette_image::error::INVALID_IMAGE;
+		}
 
 		switch (chunk_type)
 		{
 		case 0x0000:    // empty
+		case 0x0001:    // game instructions/manual/url
+		case 0x0005:    // target machine
+		case 0x0009:    // short title
 			break;
 		case 0x0100:    // implicit start/stop bit data block
-		case 0x0104:    // used by atom dumps, looks like normal data
 			for (int j = 0; j < chunk_length; j++)
 			{
 				uint8_t byte = casdata[pos+j];
-				uef_cas_fill_bit(loops, samples, 0);
+				err = uef_cas_fill_bit(loops, cassette, time_index, 0, modulation, phase);
+				if (err != cassette_image::error::SUCCESS) return err;
 				for (int i = 0; i < 8; i++)
-					uef_cas_fill_bit(loops, samples, (byte >> i) & 1);
-				uef_cas_fill_bit(loops, samples, 1);
+				{
+					err = uef_cas_fill_bit(loops, cassette, time_index, (byte >> i) & 1, modulation, phase);
+					if (err != cassette_image::error::SUCCESS) return err;
+				}
+				err = uef_cas_fill_bit(loops, cassette, time_index, 1, modulation, phase);
+				if (err != cassette_image::error::SUCCESS) return err;
 			}
 			break;
 		case 0x0101:    // multiplexed data block
-		case 0x0103:
 			LOG_FORMATS("Unsupported chunk type: %04x\n", chunk_type);
-			printf("Unsupported chunk type: %04x\n", chunk_type);
 			return cassette_image::error::UNSUPPORTED;
 		case 0x0102:    // explicit tape data block
-			printf("TODO Check chunk_type 0x0102\n");
 			{
-				// Weird; subtracting casdata[pos] from length and also outputting that byte
-				int j = (chunk_length * 10) - casdata[pos];
-				uint32_t temp_pos = pos;
-				while (j)
+				int j = (chunk_length * 8) - casdata[pos];
+				uint32_t temp_pos = pos + 1;
+				uint8_t byte = 0;
+				for (int i = 0; i < j; i++)
 				{
-					uint8_t byte = casdata[temp_pos];
-					for (int i = 0; i < 8 && i < j; i++)
+					if ((i & 7) == 0)
+						byte = casdata[temp_pos++];
+					uint8_t bit = byte & 1;
+					byte >>= 1;
+					err = uef_cas_fill_bit(loops, cassette, time_index, bit, modulation, phase);
+					if (err != cassette_image::error::SUCCESS) return err;
+				}
+			}
+			break;
+		case 0x0104:    // defined tape format data block
+			{
+				uint8_t num_bits = casdata[pos];
+				uint8_t parity_type = casdata[pos + 1];
+				int8_t num_stop_bits = casdata[pos + 2];
+				bool extra_short_wave = num_stop_bits < 0;
+				num_stop_bits = abs(num_stop_bits);
+				for (int j = 3; j < chunk_length; j++)
+				{
+					uint8_t byte = casdata[pos+j];
+					err = uef_cas_fill_bit(loops, cassette, time_index, 0, modulation, phase);
+					if (err != cassette_image::error::SUCCESS) return err;
+					uint8_t parity = 0;
+					for (int i = 0; i < num_bits; i++)
 					{
-						uef_cas_fill_bit(loops, samples, (byte >> i) & 1);
-						j--;
+						uint8_t bit = (byte >> i) & 1;
+						err = uef_cas_fill_bit(loops, cassette, time_index, bit, modulation, phase);
+						if (err != cassette_image::error::SUCCESS) return err;
+						parity ^= bit;
 					}
-					temp_pos++;
+					if (parity_type == 'O')
+					{
+						err = uef_cas_fill_bit(loops, cassette, time_index, parity ^ 1, modulation, phase);
+						if (err != cassette_image::error::SUCCESS) return err;
+					}
+					else if (parity_type == 'E')
+					{
+						err = uef_cas_fill_bit(loops, cassette, time_index, parity, modulation, phase);
+						if (err != cassette_image::error::SUCCESS) return err;
+					}
+					for (int i = num_stop_bits; i > 0; i--)
+					{
+						err = uef_cas_fill_bit(loops, cassette, time_index, 1, modulation, phase);
+						if (err != cassette_image::error::SUCCESS) return err;
+					}
+					if (extra_short_wave)
+					{
+						err = uef_cas_fill_short_wave(cassette, time_index, modulation, phase);
+						if (err != cassette_image::error::SUCCESS) return err;
+					}
 				}
 			}
 			break;
 		case 0x0110:    // carrier tone (previously referred to as 'high tone')
-			for (int i = ((casdata[pos + 1] << 8) | casdata[pos]); i; i--)
+			for (int i = ((casdata[pos + 1] << 8) | casdata[pos]); i > 0; i--)
 			{
-				samples.push_back(WAVE_LOW);
-				samples.push_back(WAVE_HIGH);
+				err = uef_cas_fill_bit(loops, cassette, time_index, 1, modulation, phase);
+				if (err != cassette_image::error::SUCCESS) return err;
+			}
+			break;
+		case 0x0111:    // carrier tone with dummy byte
+			for (int i = ((casdata[pos + 1] << 8) | casdata[pos]); i > 0; i--)
+			{
+				err = uef_cas_fill_bit(loops, cassette, time_index, 1, modulation, phase);
+				if (err != cassette_image::error::SUCCESS) return err;
+			}
+			{
+				const uint8_t byte = 0xaa;
+				err = uef_cas_fill_bit(loops, cassette, time_index, 0, modulation, phase);
+				if (err != cassette_image::error::SUCCESS) return err;
+				for (int i = 0; i < 8; i++)
+				{
+					err = uef_cas_fill_bit(loops, cassette, time_index, (byte >> i) & 1, modulation, phase);
+					if (err != cassette_image::error::SUCCESS) return err;
+				}
+				err = uef_cas_fill_bit(loops, cassette, time_index, 1, modulation, phase);
+			}
+			if (err != cassette_image::error::SUCCESS) return err;
+			for (int i = ((casdata[pos + 3] << 8) | casdata[pos + 2]); i > 0; i--)
+			{
+				err = uef_cas_fill_bit(loops, cassette, time_index, 1, modulation, phase);
+				if (err != cassette_image::error::SUCCESS) return err;
 			}
 			break;
 		case 0x0112:    // integer gap
-			for (int i = ((casdata[pos + 1] << 8) | casdata[pos]); i; i--)
 			{
-				samples.push_back(WAVE_NULL);
-				samples.push_back(WAVE_NULL);
+				double gap = ((casdata[pos + 1] << 8) | casdata[pos]) / (base_frequency * 2);
+				err = cassette->put_sample(0, time_index, gap, 0);
+				if (err != cassette_image::error::SUCCESS) return err;
+				time_index += gap;
+			}
+			break;
+		case 0x0113:    // change of base frequency
+			{
+				base_frequency = get_uef_float(&casdata[pos]);
+				update_modulation(base_frequency, modulation);
+			}
+			break;
+			return cassette_image::error::UNSUPPORTED;
+		case 0x0114:    // security cycles
+			// Not fully working yet
+			// Software that uses this:
+			// bbc_cass:
+			// - androida, applepie
+			// electron_cass:
+			// - cascad50, chipbust
+			{
+				uint32_t number_of_cycles = (casdata[pos + 2] << 16) | (casdata[pos + 1] << 8) | casdata[pos];
+				bool first_high_pulse = casdata[pos + 3] == 'P';
+				bool last_low_pulse = casdata[pos + 4] == 'P';
+				uint8_t data = 0;
+				uint32_t security_index = pos + 5;
+				for (int i = 0; i < number_of_cycles; i++)
+				{
+					if ((i & 7) == 0)
+						data = casdata[security_index++];
+					uint8_t bit = data >> 7;
+					data <<= 1;
+
+					if (!i && first_high_pulse)
+					{
+						// Output high pulse, ie half cycle at phase 0
+						err = uef_cas_fill_half_bit(cassette, time_index, bit, modulation, (phase + 180) % 360);
+						if (err != cassette_image::error::SUCCESS) return err;
+					}
+					else if (i == number_of_cycles - 1 && last_low_pulse)
+					{
+						// Output low pulse, ie half cycle at phase 180
+						err = uef_cas_fill_half_bit(cassette, time_index, bit, modulation, phase);
+						if (err != cassette_image::error::SUCCESS) return err;
+					}
+					else
+					{
+						err = uef_cas_fill_bit(loops, cassette, time_index, bit, modulation, phase);
+						if (err != cassette_image::error::SUCCESS) return err;
+					}
+				}
+			}
+			break;
+		case 0x0115:    // phase change
+			LOG_FORMATS("Unsupported chunk type: %04x\n", chunk_type);
+			phase = (casdata[pos + 1] << 8) | casdata[pos];
+			if (phase != 0 && phase != 180)
+			{
+				LOG_FORMATS("Unsupported phase: %d\n", phase);
+				return cassette_image::error::UNSUPPORTED;
 			}
 			break;
 		case 0x0116:    // floating point gap
-			for (int i = (get_uef_float(&casdata[pos]) * UEF_WAV_FREQUENCY); i; i--)
 			{
-				samples.push_back(WAVE_NULL);
+				double gap = get_uef_float(&casdata[pos]);
+				err = cassette->put_sample(0, time_index, gap, 0);
+				if (err != cassette_image::error::SUCCESS) return err;
+				time_index += gap;
 			}
 			break;
-		case 0x0117:    // change baud rate
+		case 0x0117:    // data encoding format change
 			{
 				int baud_length = (casdata[pos + 1] << 8) | casdata[pos];
 				// These are the only supported numbers
@@ -266,14 +446,15 @@ static cassette_image::error uef_cas_fill_wave(std::vector<int16_t> &samples, st
 				else
 				{
 					LOG_FORMATS("Unsupported baud rate = %d\n",baud_length);
-					printf("Unsupported baud rate = %d\n",baud_length);
 					return cassette_image::error::UNSUPPORTED;
 				}
 			}
 			break;
+		case 0x0120:    // position marker
+		case 0x0130:    // tape set info
+		case 0x0131:    // start of tape side
 		default:
 			LOG_FORMATS("Unsupported chunk type: %04x\n", chunk_type);
-			printf("Unsupported chunk type: %04x\n", chunk_type);
 			return cassette_image::error::UNSUPPORTED;
 		}
 		pos += chunk_length;
@@ -282,7 +463,7 @@ static cassette_image::error uef_cas_fill_wave(std::vector<int16_t> &samples, st
 }
 
 
-static cassette_image::error uef_cassette_identify( cassette_image *cassette, cassette_image::Options *opts )
+static cassette_image::error uef_cassette_identify(cassette_image *cassette, cassette_image::Options *opts)
 {
 	uint8_t header[10];
 
@@ -291,27 +472,18 @@ static cassette_image::error uef_cassette_identify( cassette_image *cassette, ca
 	{
 		return cassette_image::error::INVALID_IMAGE;
 	}
-	opts->channels = 1;
-	opts->bits_per_sample = 16;
-	opts->sample_frequency = UEF_WAV_FREQUENCY;
-	return cassette_image::error::SUCCESS;
+	return cassette->modulation_identify(uef_cas_modulation, opts);
 }
 
 
-static cassette_image::error uef_cassette_load( cassette_image *cassette )
+static cassette_image::error uef_cassette_load(cassette_image *cassette)
 {
 	uint64_t file_size = cassette->image_size();
 	std::vector<uint8_t> bytes(file_size);
 	cassette->image_read(&bytes[0], 0, file_size);
 	std::vector<int16_t> samples;
 
-	cassette_image::error err = uef_cas_fill_wave(samples, bytes);
-	if (err != cassette_image::error::SUCCESS)
-		return err;
-
-	return cassette->put_samples(0, 0.0,
-			(double)samples.size() / UEF_WAV_FREQUENCY, samples.size(), 2,
-			&samples[0], cassette_image::WAVEFORM_16BIT);
+	return uef_cas_fill_wave(cassette, bytes);
 }
 
 
