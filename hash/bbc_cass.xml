@@ -42,12 +42,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- after game type selection game goes back to game type selection -->
-	<software name="180darts" supported="no">
+	<software name="180darts">
 		<description>180! Darts</description>
 		<year>1983</year>
 		<publisher>A&amp;F Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5900">
@@ -147,11 +147,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software does not start -->
-	<software name="3dmaze" supported="no">
+	<software name="3dmaze">
 		<description>3D Maze</description>
 		<year>1982</year>
 		<publisher>I.J.K.</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3926">
@@ -882,11 +883,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="airbrush" supported="no">
+	<software name="airbrush">
 		<description>Airbrush</description>
 		<year>1983</year>
 		<publisher>Soft Hits</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3980">
@@ -921,12 +923,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Error after loading software -->
-	<software name="apocalyp" supported="no">
+	<software name="apocalyp">
 		<description>Apocalypse (Red Shift)</description>
 		<year>1984</year>
 		<publisher>Red Shift</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24098">
@@ -935,12 +937,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Error after loading software -->
-	<software name="apollo" supported="no">
+	<software name="apollo">
 		<description>Apollo</description>
 		<year>1983</year>
 		<publisher>Software Invasion</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Keyboard"/>
@@ -956,12 +958,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="applepie" supported="no">
+	<software name="applepie">
 		<description>Apple Pie</description>
 		<year>1984</year>
 		<publisher>Visions</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7583">
@@ -970,12 +972,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Fruity game screen flashes -->
-	<software name="arcade4pk" supported="no">
+	<software name="arcade4pk">
 		<description>Arcade 4 Pack</description>
 		<year>1985</year>
 		<publisher>Potter Programs</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Side A"/>
@@ -1359,12 +1361,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Stops with "you pressed the escape button"-->
-	<software name="balloons" supported="no">
+	<software name="balloons">
 		<description>Balloons</description>
 		<year>1982</year>
 		<publisher>CJE Microcomputers</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4374">
@@ -1485,11 +1487,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software does not load/start -->
-	<software name="barrage" supported="no">
+	<software name="barrage">
 		<description>Barrage</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4148">
@@ -1538,12 +1541,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software does not start; not enough memory? -->
-	<software name="battlepl" supported="no">
+	<software name="battlepl">
 		<description>Battle Planet</description>
 		<year>1984</year>
 		<publisher>ISP</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6116">
@@ -1644,11 +1647,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="beebbeep" supported="no">
-		<description>Beep-Beeb</description>
+	<software name="beebbeep">
+		<description>Beeb-Beep</description>
 		<year>1982</year>
 		<publisher>I.J.K.</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3568">
@@ -1670,11 +1674,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="beebmunc" supported="no">
+	<software name="beebmunc">
 		<description>Beebmunch</description>
 		<year>1982</year>
 		<publisher>I.J.K.</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4490">
@@ -1889,12 +1894,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="blocker" supported="no">
+	<software name="blocker">
 		<description>Blocker</description>
 		<year>1984</year>
 		<publisher>Thor</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7695">
@@ -2033,13 +2038,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="bonecrunpias" cloneof="bonecrun" supported="no">
+	<software name="bonecrunpias" cloneof="bonecrun">
 		<description>Bone Cruncher (Play It Again Sam 7)</description>
 		<year>1989</year>
 		<publisher>Superior Software/Acornsoft</publisher>
 		<info name="author" value="Martyn Howard" />
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="39351">
@@ -2048,13 +2053,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="bonecrun" supported="no">
+	<software name="bonecrun">
 		<description>Bone Cruncher</description>
 		<year>1987</year>
 		<publisher>Superior Software</publisher>
 		<info name="author" value="Martyn Howard" />
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="39942">
@@ -2171,12 +2176,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start, bad mode error -->
-	<software name="brainaer" supported="no">
+	<software name="brainaer">
 		<description>Brain Aerobics</description>
 		<year>1985</year>
 		<publisher>Minic</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11800">
@@ -2528,12 +2533,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="castlassbr" cloneof="castlass" supported="no">
+	<software name="castlassbr" cloneof="castlass">
 		<description>Castle Assault (Blue Ribbon)</description>
 		<year>1985</year>
 		<publisher>Blue Ribbon</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7186">
@@ -2801,12 +2806,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="champion" supported="no">
+	<software name="champion">
 		<description>Champions!</description>
 		<year>1984</year>
 		<publisher>Peaksoft</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9762">
@@ -2961,12 +2966,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="chessmp" supported="no">
+	<software name="chessmp">
 		<description>Chess (Micro Power)</description>
 		<year>1982</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *LOAD" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6502">
@@ -3001,13 +3006,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="chieftan" supported="no">
+	<software name="chieftan">
 		<description>Chieftain</description>
 		<year>1983</year>
 		<publisher>Virgin Games</publisher>
 		<info name="release" value="VGA2006" />
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7422">
@@ -3393,7 +3398,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/stasrt -->
+	<!-- Software fails to load/start -->
 	<software name="complbbca" cloneof="complbbc" supported="no">
 		<description>The Complete BBC (alt)</description>
 		<year>1986</year>
@@ -3522,12 +3527,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="condred" supported="no">
+	<!-- Graphics corruption during instructions -->
+	<software name="condred" supported="partial">
 		<description>Condition Red</description>
 		<year>1987</year>
 		<publisher>Blue Ribbon</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11335">
@@ -3740,12 +3746,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="cosmicco" supported="no">
+	<software name="cosmicco">
 		<description>Cosmic Combat</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7100">
@@ -3754,12 +3760,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="cosmiccr" supported="no">
+	<software name="cosmiccr">
 		<description>Cosmic Cruiser</description>
 		<year>1984</year>
 		<publisher>Imagine</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11762">
@@ -3768,12 +3774,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="cosmicfi" supported="no">
+	<software name="cosmicfi">
 		<description>Cosmic Fighter</description>
 		<year>198?</year>
 		<publisher>Kansas</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4736">
@@ -3822,12 +3828,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="crsewin3" supported="no">
+	<software name="crsewin3">
 		<description>Course Winner v3</description>
 		<year>1985</year>
 		<publisher>Selec</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Side 1"/>
@@ -3843,12 +3849,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="cowboysh" supported="no">
+	<software name="cowboysh">
 		<description>Cowboy Shoot-Out</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4486">
@@ -4038,13 +4044,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="cruncher" supported="no">
+	<software name="cruncher">
 		<description>Cruncher</description>
 		<year>1983</year>
 		<publisher>Virgin Games</publisher>
 		<info name="release" value="VGA2009" />
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6919">
@@ -4152,12 +4158,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="cylnattb" supported="no">
+	<software name="cylnattb">
 		<description>Cylon Attack (Beebug)</description>
 		<year>1982</year>
 		<publisher>Beebug</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4905">
@@ -4213,12 +4219,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software immediately goes to game over screen -->
-	<software name="dallas" supported="no">
+	<software name="dallas">
 		<description>Dallas</description>
 		<year>1983</year>
 		<publisher>CCS</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8228">
@@ -4240,12 +4246,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="dangruxb" supported="no">
+	<software name="dangruxb">
 		<description>Danger UXB</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5048">
@@ -4419,12 +4425,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="delticfl" supported="no">
+	<software name="delticfl">
 		<description>Deltic Fleet Manager</description>
 		<year>1986</year>
 		<publisher>Dee-Kay</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10387">
@@ -4479,12 +4485,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="denisdri" supported="no">
+	<software name="denisdri">
 		<description>Denis Through the Drinking Glass</description>
 		<year>1984</year>
 		<publisher>ASS</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="18952">
@@ -4598,12 +4604,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="dictator" supported="no">
+	<software name="dictator">
 		<description>Dictator</description>
 		<year>1983</year>
 		<publisher>DK'Tronics</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10527">
@@ -4625,12 +4631,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="divone85" supported="no">
+	<software name="divone85">
 		<description>Division One 85</description>
 		<year>1984</year>
 		<publisher>Qualsoft</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Division One"/>
@@ -4750,12 +4756,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; error after wizard/warrior selection -->
-	<software name="dragques" supported="no">
+	<software name="dragques">
 		<description>Dragon Quest</description>
 		<year>1982</year>
 		<publisher>Bug Byte</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9987">
@@ -4764,12 +4770,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="dragonri" supported="no">
+	<software name="dragonri">
 		<description>Dragon Rider</description>
 		<year>1982</year>
 		<publisher>Salamander</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4602">
@@ -4791,12 +4797,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="drainman" supported="no">
+	<software name="drainman">
 		<description>Drain Mania</description>
 		<year>1985</year>
 		<publisher>Icon</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13626">
@@ -4831,12 +4837,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="draughtm" supported="no">
+	<software name="draughtm">
 		<description>Draughts (Micro Power)</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5059">
@@ -4880,12 +4886,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software errors out when you choose 'no printer connected' -->
-	<software name="draw" supported="no">
+	<software name="draw">
 		<description>Draw</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8305">
@@ -4934,12 +4940,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="drumkit" supported="no">
+	<software name="drumkit">
 		<description>Drum Kit</description>
 		<year>198?</year>
 		<publisher>Quicksilva</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8224">
@@ -4962,12 +4968,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Graphics corruption during load. Software fails to load/start -->
-	<software name="dungadv" supported="no">
+	<software name="dungadv">
 		<description>Dungeon Adventure</description>
 		<year>1982</year>
 		<publisher>Level 9 Computing</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="22300">
@@ -5176,12 +5182,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="emperor" supported="no">
+	<software name="emperor">
 		<description>Emperor</description>
 		<year>1983</year>
 		<publisher>Molimerx</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8805">
@@ -5190,12 +5196,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="empire" supported="no">
+	<software name="empire">
 		<description>Empire</description>
 		<year>1985</year>
 		<publisher>Shards Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7886">
@@ -5243,12 +5249,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="embalpha" supported="no">
+	<software name="embalpha">
 		<description>Escape from Moonbase Alpha</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6141">
@@ -5292,12 +5298,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start due to a bug in the code? -->
-	<software name="etype" supported="no">
+	<software name="etype">
 		<description>E-Type</description>
 		<year>1990</year>
 		<publisher>4th Dimension</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="25773">
@@ -5392,12 +5398,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="eyezolto" supported="no">
+	<software name="eyezolto">
 		<description>The Eye of Zolton</description>
 		<year>1983</year>
 		<publisher>Softek</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14263">
@@ -5545,12 +5551,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; syntax error -->
-	<software name="fantdiam" supported="no">
+	<software name="fantdiam">
 		<description>Fantasia Diamond</description>
 		<year>1984</year>
 		<publisher>Hewson Consultants</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14023">
@@ -5638,11 +5644,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="fighterp" supported="no">
+	<software name="fighterp">
 		<description>Fighter Pilot</description>
 		<year>1984</year>
 		<publisher>Kansas</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3964">
@@ -5756,12 +5763,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="fiveside" supported="no">
+	<software name="fiveside">
 		<description>Five-a-Side Socca</description>
 		<year>1983</year>
 		<publisher>I.J.K.</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4653">
@@ -5770,12 +5777,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="fivedoct" supported="no">
+	<software name="fivedoct">
 		<description>The Five Doctors</description>
 		<year>1984</year>
 		<publisher>DW Gore</publisher>
 		<!-- "The Five Doctors & The Twin Dilemma" by W Games (1984) is identical -->
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13324">
@@ -5817,11 +5825,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="fiveston" supported="no">
+	<software name="fiveston">
 		<description>Five Stones of Anadon</description>
 		<year>1983</year>
 		<publisher>Softek</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="15460">
@@ -6106,12 +6115,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="froggy" supported="no">
+	<software name="froggy">
 		<description>Froggy</description>
 		<year>198?</year>
 		<publisher>JSD Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5050">
@@ -6232,12 +6241,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="fss1" supported="no">
+	<software name="fss1">
 		<description>FSS1 - Super Spy Flint</description>
 		<year>1983</year>
 		<publisher>Potter Programs</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8271">
@@ -6259,12 +6268,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="fss3" supported="no">
+	<software name="fss3">
 		<description>FSS3 - Flint Strikes Back</description>
 		<year>1983</year>
 		<publisher>Potter Programs</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7821">
@@ -6353,12 +6362,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="galfireb" supported="no">
+	<software name="galfireb">
 		<description>Galactic Firebird</description>
 		<year>1983</year>
 		<publisher>Kansas</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6201">
@@ -6488,12 +6497,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="galilee" supported="no">
+	<software name="galilee">
 		<description>Galilee</description>
 		<year>1985</year>
 		<publisher>Shards Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19971">
@@ -6719,12 +6728,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="gobbler" supported="no">
+	<software name="gobbler">
 		<description>Gobbler</description>
 		<year>1983</year>
 		<publisher>MGB Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass1" interface="bbc_cass">
 			<feature name="part_id" value="Keyboard"/>
@@ -6768,12 +6777,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="goldgame" supported="no">
+	<software name="goldgame">
 		<description>Golden Games</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="64397">
@@ -6795,11 +6804,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="golfbb" supported="no">
+	<software name="golfbb">
 		<description>Golf (Bug Byte)</description>
 		<year>1982</year>
 		<publisher>Bug Byte</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4637">
@@ -6873,12 +6883,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Graphics corruption during load and gameplay -->
-	<software name="gpconstr" supported="no">
+	<software name="gpconstr">
 		<description>Grand Prix Construction Set</description>
 		<year>1987</year>
 		<publisher>Superior Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19661">
@@ -6986,12 +6996,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="gridiron" supported="no">
+	<software name="gridiron">
 		<description>Grid Iron</description>
 		<year>1988</year>
 		<publisher>Top Ten</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7803">
@@ -7000,12 +7010,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="gridironm" cloneof="gridiron" supported="no">
+	<software name="gridironm" cloneof="gridiron">
 		<description>Grid Iron (Authors Master Copy)</description>
 		<year>1988</year>
 		<publisher>Top Ten</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7795">
@@ -7014,12 +7024,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="gridirn2" supported="no">
+	<software name="gridirn2">
 		<description>Grid Iron 2</description>
 		<year>1991</year>
 		<publisher>Alternative</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11437">
@@ -7041,12 +7051,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; graphics corruption near the end of loading -->
-	<software name="guarddoo" supported="no">
+	<software name="guarddoo">
 		<description>Guardian of Doomsday</description>
 		<year>198?</year>
 		<publisher>Quest</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13632">
@@ -7081,12 +7091,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; graphics corruption during loading -->
-	<software name="gunsmokee" cloneof="gunsmoke" supported="no">
+	<software name="gunsmokee" cloneof="gunsmoke">
 		<description>Gunsmoke (Early)</description>
 		<year>1983</year>
 		<publisher>Software Invasion</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7745">
@@ -7108,12 +7118,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="guyinhatbr" cloneof="guyinhat" supported="no">
+	<software name="guyinhatbr" cloneof="guyinhat">
 		<description>Guy in the Hat (Blue Ribbon)</description>
 		<year>1985</year>
 		<publisher>Blue Ribbon</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4693">
@@ -7226,12 +7236,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- How to play/use? Drops back to prompt -->
-	<software name="harleq" supported="no">
+	<software name="harleq">
 		<description>Harlequin</description>
 		<year>1984</year>
 		<publisher>Kansas</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10106">
@@ -7331,12 +7341,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Does goes go into/passed the instructions -->
-	<software name="hexagram" supported="no">
+	<software name="hexagram">
 		<description>Hexagram of Trutania Valley</description>
 		<year>1986</year>
 		<publisher>Potter Programs</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10702">
@@ -7535,12 +7545,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="horrorca" supported="no">
+	<software name="horrorca">
 		<description>Horror Castle</description>
 		<year>1983</year>
 		<publisher>A&amp;F Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12293">
@@ -7614,12 +7624,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Unable to start game -->
-	<software name="humphrey" supported="no">
+	<software name="humphrey">
 		<description>Humphrey</description>
 		<year>198?</year>
 		<publisher>Mr Micro</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5059">
@@ -7681,12 +7691,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start -->
-	<software name="hyperdri" supported="no">
+	<software name="hyperdri">
 		<description>Hyperdrive</description>
 		<year>1983</year>
 		<publisher>I.J.K.</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3892">
@@ -7754,13 +7764,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="ido" supported="no">
+	<software name="ido">
 		<description>..I Do</description>
 		<year>1983</year>
 		<publisher>Acornsoft/Ivan Berg</publisher>
 		<info name="release" value="XBX07" />
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="17171">
@@ -7927,12 +7937,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="inherita" supported="no">
+	<software name="inherita">
 		<description>Inheritance</description>
 		<year>1983</year>
 		<publisher>Simon W. Hessel</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="13910">
@@ -7974,12 +7984,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="intergal" supported="no">
+	<software name="intergal">
 		<description>Intergalactic Trader</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8847">
@@ -8040,12 +8050,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="invadersa" supported="no">
+	<software name="invadersa">
 		<description>Invaders (Model A)</description>
 		<year>1982</year>
 		<publisher>I.J.K.</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="A,B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5509">
@@ -8054,12 +8064,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="invadersb" supported="no">
+	<software name="invadersb">
 		<description>Invaders (Model B)</description>
 		<year>1983</year>
 		<publisher>I.J.K.</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7294">
@@ -8272,12 +8282,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="joeblad2" supported="no">
+	<software name="joeblad2">
 		<description>Joe Blade II</description>
 		<year>1988</year>
 		<publisher>Players</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="16699">
@@ -8286,12 +8296,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="joeblade" supported="no">
+	<software name="joeblade">
 		<description>Joe Blade</description>
 		<year>1987</year>
 		<publisher>Players</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14704">
@@ -8340,12 +8350,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="jr" supported="no">
+	<software name="jr">
 		<description>J.R.</description>
 		<year>1982</year>
 		<publisher>Software For All</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4877">
@@ -8445,12 +8455,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="kayleth" supported="no">
+	<software name="kayleth">
 		<description>Kayleth</description>
 		<year>1986</year>
 		<publisher>U.S. Gold</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="20678">
@@ -8459,12 +8469,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="kensingt" supported="no">
+	<software name="kensingt">
 		<description>Kensington</description>
 		<year>1984</year>
 		<publisher>Leisure Genius</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7450">
@@ -8525,12 +8535,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="killa" supported="no">
+	<software name="killa">
 		<description>Killa the Upgrade</description>
 		<year>1983</year>
 		<publisher>Bit Twiddlers</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="2985">
@@ -8592,12 +8602,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Graphics corruption during loading and gameplay -->
 	<software name="kisspink" supported="no">
 		<description>Kissing the Pink: The Other Side of Heaven</description>
 		<year>19??</year>
 		<publisher>The Program Bureau</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21042">
@@ -8752,12 +8763,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="llacoshe" supported="no">
+	<software name="llacoshe">
 		<description>Labyrinths of Lacoshe</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14294">
@@ -8779,12 +8790,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="landfall" supported="no">
+	<software name="landfall">
 		<description>Landfall</description>
 		<year>1983</year>
 		<publisher>Virgin Games</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5993">
@@ -8793,12 +8804,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="landtezr" supported="no">
+	<software name="landtezr">
 		<description>Land of Tezrel</description>
 		<year>1984</year>
 		<publisher>Omen</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11507">
@@ -8900,12 +8911,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="leaguech" supported="no">
+	<software name="leaguech">
 		<description>League Challenge</description>
 		<year>1986</year>
 		<publisher>Atlantis</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8706">
@@ -8979,12 +8990,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="lickill" supported="no">
+	<software name="lickill">
 		<description>License to Kill</description>
 		<year>1989</year>
 		<publisher>Domark</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="24261">
@@ -9032,12 +9043,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="lcycles" supported="no">
+	<software name="lcycles">
 		<description>Light Cycles</description>
 		<year>1983</year>
 		<publisher>PAEAN Systems</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4888">
@@ -9111,12 +9122,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="logo2" supported="no">
+	<software name="logo2">
 		<description>Logo 2</description>
 		<year>1982</year>
 		<publisher>Computer Concepts</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="2940">
@@ -9256,12 +9267,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="llander" supported="no">
+	<software name="llander">
 		<description>Lunar Lander</description>
 		<year>1982</year>
 		<publisher>A&amp;F Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4951">
@@ -9309,12 +9320,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start, drops back to prompt -->
-	<software name="magiceel" supported="no">
+	<software name="magiceel">
 		<description>Games 4: Magic Eel</description>
 		<year>1982</year>
 		<publisher>Beebug</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="2233">
@@ -9454,12 +9465,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="mastcutl" supported="no">
+	<software name="mastcutl">
 		<description>Master Cutler</description>
 		<year>1984</year>
 		<publisher>Dee-Kay</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12315">
@@ -9468,12 +9479,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="masters" supported="no">
+	<software name="masters">
 		<description>Masters of the Universe</description>
 		<year>198?</year>
 		<publisher>Adventure Soft</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="19738">
@@ -9887,11 +9898,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="missconc" supported="no">
+	<software name="missconc">
 		<description>Missile Control (CJE)</description>
 		<year>1982</year>
 		<publisher>CJE Microcomputers</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3847">
@@ -10150,6 +10162,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Mr Ee!</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<!-- The software itself says to set PAGE to E00 -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -10508,12 +10521,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- White screen after starting the game -->
-	<software name="javastar" supported="no">
+	<software name="javastar">
 		<description>The Mystery of the Java Star</description>
 		<year>1985</year>
 		<publisher>Shards Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="35760">
@@ -10555,12 +10568,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="nemesis" supported="no">
+	<software name="nemesis">
 		<description>Nemesis</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6249">
@@ -10621,12 +10634,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software does not start; stuck on game selection screen -->
-	<software name="nightfli" supported="no">
+	<software name="nightfli">
 		<description>Nightflite</description>
 		<year>1983</year>
 		<publisher>Hewson Consultants</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="6031">
@@ -10675,13 +10688,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="nocabloc" supported="no">
+	<software name="nocabloc">
 		<description>Noc-A-Bloc</description>
 		<year>1983</year>
 		<publisher>Virgin Games</publisher>
 		<info name="release" value="VGA2010" />
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9701">
@@ -10847,13 +10860,13 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="owzat" supported="no">
+	<software name="owzat">
 		<description>Owzat</description>
 		<year>1983</year>
 		<publisher>Virgin Games</publisher>
 		<info name="release" value="VGA2005" />
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9035">
@@ -11150,12 +11163,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="pettigre" supported="no">
+	<software name="pettigre">
 		<description>Pettigrews Diary</description>
 		<year>1984</year>
 		<publisher>Shards Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="29596">
@@ -11204,12 +11217,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="phstone" supported="no">
+	<software name="phstone">
 		<description>The Philosopher's Stone</description>
 		<year>1986</year>
 		<publisher>Potter Programs</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10578">
@@ -11271,12 +11284,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="pinbarcd" supported="no">
+	<software name="pinbarcd">
 		<description>Pinball Arcade</description>
 		<year>1984</year>
 		<publisher>Kansas</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="8708">
@@ -11370,12 +11383,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="planes" supported="no">
+	<software name="planes">
 		<description>Planes</description>
 		<year>1982</year>
 		<publisher>A&amp;F Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5365">
@@ -11397,12 +11410,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="planetfa" supported="no">
+	<software name="planetfa">
 		<description>Planetfall</description>
 		<year>1983</year>
 		<publisher>ASP Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12414">
@@ -11466,13 +11479,14 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
+	<!-- Graphics corruption during gameplay -->
 	<software name="plankwal" supported="no">
 		<description>Plankwalk</description>
 		<year>1983</year>
 		<publisher>Virgin Games</publisher>
 		<info name="release" value="VGA2008" />
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5539">
@@ -11507,12 +11521,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="plunder" supported="no">
+	<software name="plunder">
 		<description>Plunder</description>
 		<year>1984</year>
 		<publisher>CCS</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9337">
@@ -11547,12 +11561,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="pokerdic" supported="no">
+	<software name="pokerdic">
 		<description>Poker Dice</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3728">
@@ -11621,12 +11635,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="ponyexpr" supported="no">
+	<software name="ponyexpr">
 		<description>Pony Express</description>
 		<year>1984</year>
 		<publisher>Holl-Soft</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="9030">
@@ -11700,12 +11714,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="pboatrac" supported="no">
+	<software name="pboatrac">
 		<description>Powerboat Race</description>
 		<year>1984</year>
 		<publisher>Futura</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="4547">
@@ -11820,12 +11834,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="proteans" supported="no">
+	<software name="proteans">
 		<description>Proteanse</description>
 		<year>1983</year>
 		<publisher>DK'Tronics</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="5697">
@@ -11860,12 +11874,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="psycast2" supported="no">
+	<software name="psycast2">
 		<description>Psycastria 2</description>
 		<year>1989</year>
 		<publisher>Audiogenic</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="21321">
@@ -12006,12 +12020,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; drops back to prompt -->
-	<software name="qpthing" supported="no">
+	<software name="qpthing">
 		<description>Questprobe: Human Torch and The Thing</description>
 		<year>1985</year>
 		<publisher>Adventure Soft</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12309">
@@ -12140,12 +12154,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Loading battles fails -->
-	<software name="redcoats" supported="no">
+	<software name="redcoats">
 		<description>Red Coats</description>
 		<year>1984</year>
 		<publisher>Lothlorien</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11322">
@@ -12364,12 +12378,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; not enough memory? -->
-	<software name="revzor" supported="no">
+	<software name="revzor">
 		<description>Revenge of Zor</description>
 		<year>1983</year>
 		<publisher>Kansas</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10002">
@@ -12378,12 +12392,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start; drops back to prompt -->
-	<software name="revsgomo" supported="no">
+	<software name="revsgomo">
 		<description>Reversi/Gomoku</description>
 		<year>1982</year>
 		<publisher>Pro Software</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="7407">
@@ -12753,11 +12767,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="roulette" supported="no">
+	<software name="roulette">
 		<description>Roulette</description>
 		<year>1982</year>
 		<publisher>Micro Power</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="3817">
@@ -12792,12 +12807,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="royalsct" supported="no">
+	<software name="royalsct">
 		<description>Royal Scot</description>
 		<year>1984</year>
 		<publisher>Dee-Kay</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="12898">
@@ -12897,12 +12912,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to start; not enough memory? -->
-	<software name="rtcpenza" supported="no">
+	<software name="rtcpenza">
 		<description>RTC Penzance</description>
 		<year>1985</year>
 		<publisher>Dee-Kay</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="11330">
@@ -13050,12 +13065,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load -->
-	<software name="santadel" supported="no">
+	<software name="santadel">
 		<description>Santas Delivery</description>
 		<year>198?</year>
 		<publisher>Tynesoft</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="14296">
@@ -13247,12 +13262,12 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		</part>
 	</software>
 
-	<!-- Software fails to load/start -->
-	<software name="ssam1br" cloneof="ssam1" supported="no">
+	<software name="ssam1br" cloneof="ssam1">
 		<description>Secret Sam 1 (Blue Ribbon)</description>
 		<year>1985</year>
 		<publisher>Blue Ribbon</publisher>
-		<info name="usage" value="Load with *TAPE, CHAIN&quot;&quot;" />
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
+		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
 			<dataarea name="cass" size="10820">
@@ -13383,6 +13398,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Shark</description>
 		<year>1988</year>
 		<publisher>Audiogenic</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -13422,6 +13438,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Shrinking Professor</description>
 		<year>1983</year>
 		<publisher>A&amp;F Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -13620,6 +13637,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>SLP High Noon</description>
 		<year>198?</year>
 		<publisher>Stack Light Pen</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -13633,6 +13651,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>SLP Mad Bomb</description>
 		<year>198?</year>
 		<publisher>Stack Light Pen</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -13646,6 +13665,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>SLP Nebulons</description>
 		<year>198?</year>
 		<publisher>Stack Light Pen</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -13860,6 +13880,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Soccer Boss</description>
 		<year>1989</year>
 		<publisher>Alternative</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -13899,6 +13920,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>South Devon Hydraulics</description>
 		<year>1986</year>
 		<publisher>Dee-Kay</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -13925,6 +13947,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Space Maze</description>
 		<year>1981</year>
 		<publisher>Micro Power</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -14179,6 +14202,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Space Station Alpha</description>
 		<year>1984</year>
 		<publisher>Icon</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -14206,6 +14230,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Special Operations</description>
 		<year>1984</year>
 		<publisher>Lothlorien</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -14419,6 +14444,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Sport Spectacular</description>
 		<year>1988</year>
 		<publisher>Alternative</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass1" interface="bbc_cass">
@@ -14492,6 +14518,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>The Staff of Law</description>
 		<year>1984</year>
 		<publisher>Potter Programs</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -14717,6 +14744,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Starship Discovery</description>
 		<year>1984</year>
 		<publisher>Alligata</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -15598,6 +15626,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Temple of Terror (The Gold Collection)</description>
 		<year>1987</year>
 		<publisher>Adventure Soft</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -15743,6 +15772,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>The Abominable Snowmen</description>
 		<year>198?</year>
 		<publisher>DW Gore</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -15808,6 +15838,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>The Boss</description>
 		<year>1985</year>
 		<publisher>Peaksoft</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -16045,6 +16076,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>The Perils of Percival Penguin</description>
 		<year>1984</year>
 		<publisher>Willow Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -16112,6 +16144,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Thames Local</description>
 		<year>1986</year>
 		<publisher>Dee-Kay</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -16151,6 +16184,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>The Valley</description>
 		<year>1983</year>
 		<publisher>ASP Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -16164,6 +16198,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>The Wizard</description>
 		<year>1983</year>
 		<publisher>Quicksilva</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -16281,6 +16316,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Tomb of Death</description>
 		<year>1984</year>
 		<publisher>Holl-Soft</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -16548,6 +16584,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Triple Decker 5: Star Fight, Skramble &amp; Karate Warrior</description>
 		<year>1988</year>
 		<publisher>Alternative</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass1" interface="bbc_cass">
@@ -16626,6 +16663,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Triple Decker 9: Break Free, Missile Jammer &amp; Code Breaker</description>
 		<year>1988</year>
 		<publisher>Alternative</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass1" interface="bbc_cass">
@@ -16816,6 +16854,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Unorthodox Engineers - The Pen and the Dark</description>
 		<year>1984</year>
 		<publisher>Mosaic</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -17111,6 +17150,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Warlord of Doom</description>
 		<year>1984</year>
 		<publisher>Visions</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, *RUN" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -17124,6 +17164,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Warp-1</description>
 		<year>1984</year>
 		<publisher>Icon</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -17502,6 +17543,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Wizards Challenge</description>
 		<year>1984</year>
 		<publisher>Micro Power</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -17619,6 +17661,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>World Cup Manager</description>
 		<year>1983</year>
 		<publisher>Cosma</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="A,B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -17684,6 +17727,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Xanadu Adventure</description>
 		<year>1982</year>
 		<publisher>Hopesoft</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -17710,6 +17754,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Xanagrams</description>
 		<year>1984</year>
 		<publisher>Postern</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -17903,6 +17948,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Zorakk the Conqueror</description>
 		<year>1984</year>
 		<publisher>Icon</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -17957,6 +18003,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Beeb Plot (Gemini)</description>
 		<year>1983</year>
 		<publisher>Gemini</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -18064,6 +18111,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro Budget</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="A,B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -18230,6 +18278,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Amazing Ollie</description>
 		<year>1983</year>
 		<publisher>Storm Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -18356,6 +18405,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Biology 'O' Level</description>
 		<year>1983</year>
 		<publisher>Calisto</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -18382,6 +18432,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>British Isles Geography Quiz</description>
 		<year>1984</year>
 		<publisher>Computer Market</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -18649,6 +18700,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Educational Special No.1</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -18868,6 +18920,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Junior Maths - Part 2</description>
 		<year>1986</year>
 		<publisher>Tynesoft</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -18881,6 +18934,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Laser Letters</description>
 		<year>1984</year>
 		<publisher>Shards Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -18948,6 +19002,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Maths Invaders</description>
 		<year>1984</year>
 		<publisher>Stell</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass" interface="bbc_cass">
@@ -19185,6 +19240,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Science 1</description>
 		<year>1984</year>
 		<publisher>Shards Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -19240,6 +19296,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Spanish Gold</description>
 		<year>1983</year>
 		<publisher>Chalksoft</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -19433,6 +19490,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Which Salt</description>
 		<year>1983</year>
 		<publisher>Micro Power</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -19527,6 +19585,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>World Geography</description>
 		<year>1982</year>
 		<publisher>Micro Power</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -19698,6 +19757,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Animator</description>
 		<year>1984</year>
 		<publisher>Screenplay</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass1" interface="bbc_cass">
@@ -19744,6 +19804,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>The Art Studio</description>
 		<year>1989</year>
 		<publisher>Impact</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M,ELK"/>
 		<part name="cass1" interface="bbc_cass">
@@ -20877,6 +20938,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Model B Computing No.2</description>
 		<year>1984</year>
 		<publisher>Argus Press Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -20890,6 +20952,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Model B Computing No.3</description>
 		<year>1984</year>
 		<publisher>Argus Press Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -20903,6 +20966,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Model B Computing No.4</description>
 		<year>1984</year>
 		<publisher>Argus Press Software</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21007,6 +21071,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.1, No.1: Deathwatch</description>
 		<year>1983</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21202,6 +21267,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.2, No.12: 'Copter Dogfight</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21241,6 +21307,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.2, No.3: Damraiders</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21267,6 +21334,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.2, No.5: Doom Run &amp; Backgammon</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21293,6 +21361,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.2, No.7: Villains</description>
 		<year>1984</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21332,6 +21401,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.3, No.10</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21345,6 +21415,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.3, No.11: Megaroids</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21358,6 +21429,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.3, No.1: Astro Mines</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21371,6 +21443,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.3, No.2: X-15</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21384,6 +21457,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.3, No.3: Stellar Rescue</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21436,6 +21510,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.3, No.7: Ball Lightning</description>
 		<year>1985</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
@@ -21488,6 +21563,7 @@ This list was compiled from the archive at http://www.stairwaytohell.com/.
 		<description>Micro User Vol.4, No.2</description>
 		<year>1986</year>
 		<publisher>Database Publications</publisher>
+		<!-- Unknown if PAGE=&E00 is part of official instructions -->
 		<info name="usage" value="Load with *TAPE, PAGE=&amp;E00, CHAIN&quot;&quot;" />
 		<sharedfeat name="compatibility" value="B,M"/>
 		<part name="cass" interface="bbc_cass">
