@@ -3647,6 +3647,8 @@ if (BUSES["COCO"]~=null) then
 		MAME_DIR .. "src/devices/bus/coco/coco_fdc.h",
 		MAME_DIR .. "src/devices/bus/coco/coco_gmc.cpp",
 		MAME_DIR .. "src/devices/bus/coco/coco_gmc.h",
+		MAME_DIR .. "src/devices/bus/coco/coco_ide.cpp",
+		MAME_DIR .. "src/devices/bus/coco/coco_ide.h",
 		MAME_DIR .. "src/devices/bus/coco/coco_max.cpp",
 		MAME_DIR .. "src/devices/bus/coco/coco_max.h",
 		MAME_DIR .. "src/devices/bus/coco/coco_midi.cpp",
