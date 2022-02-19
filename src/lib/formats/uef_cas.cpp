@@ -201,7 +201,7 @@ static cassette_image::error uef_cas_fill_wave(cassette_image *cassette, std::ve
 		d_stream.next_out = &gzip_area[0];
 		d_stream.avail_out = inflate_size;
 
-		gz_err =inflateInit2(&d_stream, -MAX_WBITS);
+		gz_err = inflateInit2(&d_stream, -MAX_WBITS);
 		if (gz_err != Z_OK)
 		{
 			LOG_FORMATS("inflateInit2 error: %d\n", gz_err);
@@ -450,7 +450,8 @@ static cassette_image::error uef_cas_fill_wave(cassette_image *cassette, std::ve
 				}
 			}
 			break;
-		case 0x0120:    // position marker
+		case 0x0120:    // position marker (purely informational)
+			break;
 		case 0x0130:    // tape set info
 		case 0x0131:    // start of tape side
 		default:
