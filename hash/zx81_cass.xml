@@ -10,9 +10,9 @@ This list was compiled from the archive at http://www.zx81stuff.org.uk/. Updated
 To load a cassette:
 - Enter command 'LOAD ""' (press J, shift + P, shift + P, ENTER)
 - Play the cassette
-- Eventually you get a blank screen with just 0/0, this is an
-  indication that the file was loaded succesfully, press ENTER
-- Enter command 'RUN' (press R)
+- Some software will start automatically others will display
+  a blank screen with just 0/0. When 0/0 is displayed enter
+  the 'RUN' command (press R) followed by ENTER.
 -->
 
 <softwarelist name="zx81_cass" description="Sinclair ZX81 cassettes">
@@ -21,6 +21,7 @@ To load a cassette:
 		<description>10 Games for 1K</description>
 		<year>1981</year>
 		<publisher>J.K.Greye Software</publisher>
+		<info name="usage" value="LOAD &quot;KLINGONS&quot; and RUN, or LOAD &quot;CRASH-LANDING&quot; and RUN, or LOAD &quot;SIMON&quot; and RUN, or LOAD &quot;ARTIST&quot; and RUN, or LOAD &quot;UFO&quot; and RUN, or LOAD &quot;CODE&quot; and RUN, or LOAD &quot;ASTEROIDS&quot; or LOAD &quot;BOMBER&quit; and RUN, or LOAD &quot;KALEIDESCOPE&quot;, or LOAD &quot;GUILLOTINE&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7636">
 				<rom name="10Games.tzx" size="7636" crc="141cddd1" sha1="3a776f7dbf4fd169572aad5b775b4ca27c61222a"/>
@@ -33,6 +34,7 @@ To load a cassette:
 		<year>198?</year>
 		<publisher>Artic</publisher>
 		<info name="author" value="Adam Waring" />
+		<info name="usage" value="LOAD &quot;1&quot; and RUN, or LOAD &quot;2&quot; and RUN, or LOAD &quot;3&quot; and RUN, or LOAD &quot;4&quot; and RUN, or LOAD &quot;5&quot; and RUN, or LOAD &quot;6&quot; and RUN, or LOAD &quot;7&quot; and RUN, or LOAD &quot;8&quot; and RUN, or LOAD &quot;9&quot; and RUN, or LOAD &quot;10&quot; and RUN, or LOAD &quot;11&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="8576">
 				<rom name="1KGames.tzx" size="8576" crc="2648f563" sha1="11562494bb40cef9bcea606b1bd2ad375f47ef75"/>
@@ -44,6 +46,7 @@ To load a cassette:
 		<description>1K Games (Sinclair)</description>
 		<year>198?</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;1&quot; and RUN, or LOAD &quot;2&quot; and RUN, or LOAD &quot;3&quot; and RUN, or LOAD &quot;4&quot; and RUN, or LOAD &quot;5&quot; and RUN, or LOAD &quot;6&quot; and RUN, or LOAD &quot;7&quot; and RUN, or LOAD &quot;8&quot; and RUN, or LOAD &quot;9&quot; and RUN, or LOAD &quot;10&quot; and RUN, or LOAD &quot;11&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="8576">
 				<rom name="1KGames.tzx" size="8576" crc="2648f563" sha1="11562494bb40cef9bcea606b1bd2ad375f47ef75"/>
@@ -55,6 +58,7 @@ To load a cassette:
 		<description>1k Wonders</description>
 		<year>198?</year>
 		<publisher>ICT</publisher>
+		<info name="usage" value="Side A: LOAD &quot;1DEMON&quot; and RUN, or LOAD &quot;1KSKIRUN&quot; and RUN, or LOAD &quot;1KOUTLAW&quot; and RUN, or LOAD &quot;4LUNAR&quot; and RUN, or LOAD &quot;5ROCKET&quot; and RUN, or LOAD &quot;6FROGGA&quot; and RUN, or LOAD &quot;7DEFENDA&quot; and RUN, or LOAD &quot;8RATZ&quot; and RUN, or LOAD &quot;9BOWLS&quot; and RUN. Side B: LOAD &quot;10THUNT&quot; and RUN, or LOAD &quot;11ARROW&quot; and RUN, or LOAD &quot;12ASTORM&quot; and RUN, or LOAD &quot;13DUCK&quot; and RUN, or LOAD &quot;14BATTLE&quot; and RUN, or LOAD &quot;15HANG&quot; and RUN, or LOAD &quot;16NUMBA&quot; and RUN, or LOAD &quot;17CATCH&quot; and RUN, or LOAD &quot;18POSTPAT&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="14657">
@@ -73,6 +77,7 @@ To load a cassette:
 		<description>1K ZX Chess (Sinclair)</description>
 		<year>198?</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="2223">
 				<rom name="1KZXChess.tzx" size="2223" crc="2fc225b9" sha1="055730a794e227e02d6fa780f1bb82a68c1b86bf"/>
@@ -84,6 +89,7 @@ To load a cassette:
 		<description>1K ZX Chess</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="1165">
 				<rom name="1KZXChess(Artic).A.ChessQueen.tzx" size="1165" crc="9c750652" sha1="ed848d9bd69311536da64c0414f7ae2ec9316622"/>
@@ -95,6 +101,7 @@ To load a cassette:
 		<description>2K Games Pack</description>
 		<year>1983</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;SNAIL&quot; and RUN, or LOAD &quot;ADVICE&quot; and RUN, or LOAD &quot;DICE&quot; and RUN, or LOAD &quot;31&quot; and RUN, or LOAD &quot;SKETCH&quot; and RUN, or LOAD &quot;REVERSE&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6977">
 				<rom name="2KGamesPack(IPS).tzx" size="6977" crc="c1893b03" sha1="b33fdc40eb4631617c2687795de02904c92255c3"/>
@@ -106,6 +113,7 @@ To load a cassette:
 		<description>3D Defender</description>
 		<year>1981</year>
 		<publisher>J.K.Greye Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12095">
 				<rom name="3DDefender.tzx" size="12095" crc="a9e69d1c" sha1="7c6b0a1fdef5c43aeed21f9d98f4e0c9837214cf"/>
@@ -117,6 +125,7 @@ To load a cassette:
 		<description>3D Defender (New Generation)</description>
 		<year>1982</year>
 		<publisher>New Generation Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12095">
 				<rom name="3DDefender(NGS).tzx" size="12095" crc="0df02e27" sha1="6aa9a12e6256bc2657326361c636571faf2cfb83"/>
@@ -128,6 +137,7 @@ To load a cassette:
 		<description>3D Grand Prix</description>
 		<year>1983</year>
 		<publisher>dK'tronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="13448">
@@ -146,6 +156,7 @@ To load a cassette:
 		<description>3D Monster Maze</description>
 		<year>1981</year>
 		<publisher>J.K.Greye Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10798">
 				<rom name="3DMonsterMaze.tzx" size="10798" crc="436d8b0e" sha1="c6c141057d870b114d8844bb7578040ad8c5b151"/>
@@ -157,6 +168,7 @@ To load a cassette:
 		<description>3D Monster Maze (New Generation)</description>
 		<year>1982</year>
 		<publisher>New Generation Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10798">
 				<rom name="3DMonsterMaze(NGS).tzx" size="10798" crc="38dbcc52" sha1="2b0e9cd691979154c2d75ac76f93be076aab3423"/>
@@ -168,6 +180,7 @@ To load a cassette:
 		<description>5-2K Family Pak</description>
 		<year>198?</year>
 		<publisher>Timeworks</publisher>
+		<info name="usage" value="LOAD &quot;TM&tquot;, or LOAD &quot;CB&quot;, or LOAD &quot;RR&quot;, or LOAD &quot;MM&quot;, or LOAD &quot;HH&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7846">
 				<rom name="52KFamilyPak.tzx" size="7846" crc="fa438ced" sha1="1d613e0ab6462ab52c757aa1b6b6262311eb6c8e"/>
@@ -179,6 +192,7 @@ To load a cassette:
 		<description>5 Programmes Pour Jouer</description>
 		<year>1984</year>
 		<publisher>Direco International</publisher>
+		<info name="usage" value="Side A: LOAD &quot;J&quot;j and RUN, or LOAD &quot;P&quot; and RUN, or LOAD &quot;C&quot; and RUN. Side B: LOAD &quot;K&quotl; and RUN, or LOAD &quot;G&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2483">
@@ -197,6 +211,7 @@ To load a cassette:
 		<description>5 Programmes Pour Reflechir</description>
 		<year>1984</year>
 		<publisher>Direco International</publisher>
+		<info name="usage" value="Side A: LOAD &quot;C&quot; and RUN, or LOAD &quot;R&quot; and RUN, or LOAD &quot;T&quot; and RUN. Side B: LOAD &quot;C&quot; and RUN, or LOAD &quot;D&dquot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2271">
@@ -215,6 +230,7 @@ To load a cassette:
 		<description>6 Games</description>
 		<year>198?</year>
 		<publisher>Felix Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;MONSTERS&quot; and RUN, LOAD &quot;SNAILRACE&quot; and RUN, LOAD &quot;GUNFIGHT&quot; and RUN. Side B: LOAD &quot;ROULETTE&quot; and RUN, LOAD &quot;BATTLESHIPS&quot; and RUN, LOAD &quot;BANDIT&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side 1"/>
 			<dataarea name="cass" size="17824">
@@ -233,6 +249,7 @@ To load a cassette:
 		<description>8 Programs by GM4IHJ</description>
 		<year>198?</year>
 		<publisher>Amsat-UK Software Service</publisher>
+		<info name="usage" value="LOAD &quot;A&quot; and RUN, or LOAD &quot;B&quot; and RUN, or LOAD &quot;C&quot; and RUN, or LOAD &quot;D&quot; and RUN, or LOAD &quot;E&quot; and RUN, or LOAD &quot;F&quot; and RUN, or LOAD &quot;G&quot; and RUN, or LOAD &quot;H&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="56578">
 				<rom name="8Programs.tzx" size="56578" crc="bb788390" sha1="e2185c5962d8c89bb020028a22e25470405bef0f"/>
@@ -244,6 +261,7 @@ To load a cassette:
 		<description>Admiral Graf Spee</description>
 		<year>198?</year>
 		<publisher>Temptation Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="17024">
 				<rom name="AdmiralGrafSpee.tzx" size="17024" crc="c583887e" sha1="741a2b608801fc12705535fa88f2d895af486e80"/>
@@ -255,6 +273,7 @@ To load a cassette:
 		<description>Advanced Budget Manager</description>
 		<year>1983</year>
 		<publisher>Softsync</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16291">
 				<rom name="AdvancedBudgetManager.tzx" size="16291" crc="72a0eeda" sha1="617af815c0545f0832cd9502ba51a0a5db5dcd1d"/>
@@ -266,6 +285,7 @@ To load a cassette:
 		<description>Advanced Mathematics</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13671">
 				<rom name="AdvancedMathematics.tzx" size="13671" crc="e6a14eaa" sha1="8caa2805da995945d9153828c921ad4ab96678a5"/>
@@ -277,6 +297,7 @@ To load a cassette:
 		<description>Adventure</description>
 		<year>1982</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16017">
 				<rom name="Adventure.tzx" size="16017" crc="35d4be2a" sha1="c5fb1e4aa356ec4a406a2da76495d9f9b368d058"/>
@@ -288,6 +309,7 @@ To load a cassette:
 		<description>Adventure C</description>
 		<year>1982</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14275">
 				<rom name="AdventureC.tzx" size="14275" crc="449ed54f" sha1="ebc2d62e91088447c40bd394aa825acbe2982210"/>
@@ -299,6 +321,7 @@ To load a cassette:
 		<description>Adventure One</description>
 		<year>1983</year>
 		<publisher>Abersoft</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15848">
 				<rom name="AdventureOne.tzx" size="15848" crc="b1cbaaa7" sha1="bad2e766140ee0159389ac513f37c0e8372ed5c8"/>
@@ -310,6 +333,7 @@ To load a cassette:
 		<description>Adventure Tape 1</description>
 		<year>1983</year>
 		<publisher>Phipps Associates</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="57316">
 				<rom name="AdventureTape1.tzx" size="57316" crc="f85217cb" sha1="851fd8d8c082c534766deb7c7d724ed0e9ae9410"/>
@@ -321,6 +345,7 @@ To load a cassette:
 		<description>Adventure Tape No.1</description>
 		<year>1982</year>
 		<publisher>Phipps Associates</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="57280">
 				<rom name="AdventureTapeNo1.tzx" size="57280" crc="48254758" sha1="bc8d49cbfa4156fcd10739b8ba17987a6708a2aa"/>
@@ -332,6 +357,7 @@ To load a cassette:
 		<description>Airline</description>
 		<year>1982</year>
 		<publisher>Cases Computer Simulations</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16072">
 				<rom name="Airline.tzx" size="16072" crc="844cbaac" sha1="56b18d5296da989927c05c0f33dc30d2a3b1ba4c"/>
@@ -343,6 +369,7 @@ To load a cassette:
 		<description>Algebra 1</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3926">
 				<rom name="Algebra1.tzx" size="3926" crc="11f6af7c" sha1="4cfec3ba12646b6b5cf05860401750fa149fbce9"/>
@@ -354,6 +381,7 @@ To load a cassette:
 		<description>Alien</description>
 		<year>1982</year>
 		<publisher>PSS</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11961">
 				<rom name="Alien.tzx" size="11961" crc="febc8fef" sha1="9545ca45d3440c9a34be3411bc7395f37af82777"/>
@@ -365,6 +393,7 @@ To load a cassette:
 		<description>Alien Attack</description>
 		<year>198?</year>
 		<publisher>Computer Rentals</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6429">
 				<rom name="AlienAttack.tzx" size="6429" crc="e6ce2fa6" sha1="f52df2571903d9aae931b359eabb67e2bbd6fc41"/>
@@ -376,6 +405,7 @@ To load a cassette:
 		<description>Alien-Dropout</description>
 		<year>1982</year>
 		<publisher>Silversoft</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3424">
 				<rom name="AlienDropout.tzx" size="3424" crc="fe0f33f4" sha1="c51813b542dd1432421ad7bb222a6f5cef4cd641"/>
@@ -387,6 +417,7 @@ To load a cassette:
 		<description>Alien Rain &amp; Outrider</description>
 		<year>1983</year>
 		<publisher>Computer Rentals</publisher>
+		<info name="usage" value="Side A: LOAD &quot;&quot;. Side B: LOAD &quot;&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Alien Rain"/>
 			<dataarea name="cass" size="5610">
@@ -405,6 +436,7 @@ To load a cassette:
 		<description>Alphaprobe</description>
 		<year>1982</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11252">
 				<rom name="Alphaprobe.tzx" size="11252" crc="7b7603f0" sha1="a71fdaec9225187ad0724bdaaab65b2860e994fb"/>
@@ -416,6 +448,7 @@ To load a cassette:
 		<description>Arcade Action</description>
 		<year>198?</year>
 		<publisher>Micromega</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4651">
 				<rom name="ArcadeAction.tzx" size="4651" crc="5cb215e3" sha1="04fc1ffa34592f093f1c0eae9d54b3ff31eb3e86"/>
@@ -427,6 +460,7 @@ To load a cassette:
 		<description>Arithmetic for the Under 8's</description>
 		<year>1982</year>
 		<publisher>Rose Cassettes</publisher>
+		<info name="usage" value="Side A: LOAD &quot;ADD&quot;, LOAD &quot;SUBTRACT&quot;. Side B: LOAD &quot;MULTIPLY&quot;, LOAD &quot;DIVIDE&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Add/Subtract"/>
 			<dataarea name="cass" size="19062">
@@ -445,6 +479,7 @@ To load a cassette:
 		<description>Around Europe in 80 Hours</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15451">
 				<rom name="AroundEuropeIn80Hours.tzx" size="15451" crc="860758c6" sha1="cb59d966fe38c858df9a002f2eaaae2cb0e1ba73"/>
@@ -456,6 +491,7 @@ To load a cassette:
 		<description>Asteroids</description>
 		<year>1982</year>
 		<publisher>Silversoft</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3776">
 				<rom name="Asteroids.tzx" size="3776" crc="939e50e5" sha1="85047ab187bfcd02195f00150419cee1bfc07a5f"/>
@@ -467,6 +503,7 @@ To load a cassette:
 		<description>Asteroids (Software Farm)</description>
 		<year>198?</year>
 		<publisher>Software Farm</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="8594">
 				<rom name="Asteroids(SF).tzx" size="8594" crc="8b6f8743" sha1="d56d7e03a545b99607174faec186c42e64618189"/>
@@ -478,6 +515,7 @@ To load a cassette:
 		<description>Autochef</description>
 		<year>1982</year>
 		<publisher>Cases Computer Simulations</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15648">
 				<rom name="Autochef.tzx" size="15648" crc="3869ae07" sha1="2b7416327bdb907108d287f8cd4eaa0fd291ecba"/>
@@ -489,6 +527,7 @@ To load a cassette:
 		<description>Avenger</description>
 		<year>1982</year>
 		<publisher>Abacus</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7368">
 				<rom name="Avenger.tzx" size="7368" crc="b545fdae" sha1="529b2a9eb67c50db12494cc0ff7272925e9d18b4"/>
@@ -500,6 +539,7 @@ To load a cassette:
 		<description>Backgammon and Dice</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;&quot;. Side B: LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Backgammon"/>
 			<dataarea name="cass" size="14994">
@@ -518,6 +558,7 @@ To load a cassette:
 		<description>Backgammon (Keith Archer)</description>
 		<year>1982</year>
 		<publisher>Keith Archer</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11861">
 				<rom name="Backgammon(KA).tzx" size="11861" crc="153ed883" sha1="81f25c1667c8eba6936eabfd080ccad3a3a34add"/>
@@ -529,6 +570,7 @@ To load a cassette:
 		<description>Backgammon and Dice (Psion)</description>
 		<year>1982</year>
 		<publisher>Psion</publisher>
+		<info name="usage" value="Side A: LOAD &quot;&quot;. Side B: LOAD &quot; &quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Backgammon"/>
 			<dataarea name="cass" size="15077">
@@ -547,6 +589,7 @@ To load a cassette:
 		<description>Backgammon (Timex)</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="17108">
 				<rom name="Backgammon(Timex).tzx" size="17108" crc="307aacd2" sha1="5a78754d849fe5284342089159af45588029c0a9"/>
@@ -558,6 +601,7 @@ To load a cassette:
 		<description>Bank Robber</description>
 		<year>1983</year>
 		<publisher>Romik Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6798">
 				<rom name="BankRobber.tzx" size="6798" crc="f9a7ab7d" sha1="40d0fcc8faaf73b0082d4f1937ef16626d289f66"/>
@@ -569,6 +613,7 @@ To load a cassette:
 		<description>Baron</description>
 		<year>198?</year>
 		<publisher>Temptation Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, stop tape, ENTER, resume tape" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16716">
 				<rom name="Baron.tzx" size="16716" crc="2813c7a1" sha1="fd944cedd638d3a5d6b70a8a4d50f2d41c16ea74"/>
@@ -580,6 +625,7 @@ To load a cassette:
 		<description>Basic BASIC</description>
 		<year>1983</year>
 		<publisher>2-Bit Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;SCR&quot; and RUN, LOAD &quot;IN&quot; and RUN, LOAD &quot;SUB&quot; and RUN. Side B: LOAD &quot;LOOP&quot; and RUN, LOAD &quot;MOVE&quot; and RUN, LOAD &quot;JUG&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Screen Display/Input/Subroutines"/>
 			<dataarea name="cass" size="2570">
@@ -598,6 +644,7 @@ To load a cassette:
 		<description>Basicode2</description>
 		<year>1984</year>
 		<publisher>BBC</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3570">
 				<rom name="Basicode2.A.tzx" size="3570" crc="db6f1818" sha1="9204245adf3f343e82c43d6ec70117c4dc491908"/>
@@ -609,6 +656,7 @@ To load a cassette:
 		<description>Bat Cage</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="1446">
 				<rom name="BatCage.tzx" size="1446" crc="650a94d8" sha1="8f6842f02e416e8b66c8d6172f2e852a5e14d2f8"/>
@@ -620,6 +668,7 @@ To load a cassette:
 		<description>Battleships</description>
 		<year>1982</year>
 		<publisher>JRS Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12962">
 				<rom name="Battleships.tzx" size="12962" crc="a1057bc5" sha1="0c36982f0243f39c028a21207a2218d40b1cb369"/>
@@ -631,6 +680,7 @@ To load a cassette:
 		<description>Bigflap Attack</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10053">
 				<rom name="BigflapAttack.A.tzx" size="10053" crc="02352386" sha1="dc23f585b4b9094f110d2b4b805bbafc518e009f"/>
@@ -642,6 +692,7 @@ To load a cassette:
 		<description>Biorhythms</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;&quot;. Side B: LOAD &quot;&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Instructions"/>
 			<dataarea name="cass" size="11560">
@@ -660,6 +711,7 @@ To load a cassette:
 		<description>Biorhythms 1 (Fun To Learn)</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="Side A: LOAD &quot;&quot;. Side B: LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Instructions"/>
 			<dataarea name="cass" size="11560">
@@ -674,10 +726,11 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="blkcrystl">
+	<software name="blkcrystl" supported="partial">
 		<description>Black Crystal</description>
 		<year>1982</year>
 		<publisher>Carnell</publisher>
+		<info name="usage" value="Side 1A: LOAD &quot;TEST&quot;, or LOAD &quot;MAP 1&quot;. Side 1B: LOAD &quot;MAP 2&quot;, or LOAD &quot;MAP 3&quot;. Side 2A: LOAD &quot;MAP 4&quot;, or LOAD &quot;MAP 4B&quot;. Side 2B: LOAD &quot;MAP 5&quot;, or LOAD &quot;MAP 6&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Test/Map 1"/>
 			<dataarea name="cass" size="17518">
@@ -708,6 +761,7 @@ To load a cassette:
 		<description>Black Crystal (Clam Shell)</description>
 		<year>1982</year>
 		<publisher>Carnell</publisher>
+		<info name="usage" value="Side 1A: LOAD &quot;TEST&quot;, or LOAD &quot;MAP 1&quot;. Side 1B: LOAD &quot;MAP 2&quot;, or LOAD &quot;MAP 3&quot;. Side 2A: LOAD &quot;MAP 4&quot;, or LOAD &quot;MAP 4B&quot;. Side 2B: LOAD &quot;MAP 5&quot;, or LOAD &quot;MAP 6&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Test"/>
 			<dataarea name="cass" size="1241">
@@ -762,6 +816,7 @@ To load a cassette:
 		<description>Black Crystal (Single Sided)</description>
 		<year>1982</year>
 		<publisher>Carnell</publisher>
+		<info name="usage" value="Side 1A: LOAD &quot;TEST&quot;, or LOAD &quot;MAP 1&quot; or LOAD &quot;MAP 2&quot;, or LOAD &quot;MAP 3&quot;. Side 2A: LOAD &quot;MAP 4&quot;, or LOAD &quot;MAP 4B&quot;, or LOAD &quot;MAP 5&quot;, or LOAD &quot;MAP 6&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Test/Map 1/Map 2/Map 3"/>
 			<dataarea name="cass" size="50136">
@@ -780,6 +835,7 @@ To load a cassette:
 		<description>Black Star</description>
 		<year>1983</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7047">
 				<rom name="BlackStar.tzx" size="7047" crc="f227253f" sha1="0abe2ca4064679c23da82773fab70bf05c245844"/>
@@ -791,6 +847,7 @@ To load a cassette:
 		<description>Bomber</description>
 		<year>1982</year>
 		<publisher>Fisher-Marriott</publisher>
+		<info name="usage" value="Side A: LOAD &quot;&quot;. Side B: LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Bomber"/>
 			<dataarea name="cass" size="8671">
@@ -809,6 +866,7 @@ To load a cassette:
 		<description>Bomber (MikroGen)</description>
 		<year>198?</year>
 		<publisher>Mikro-Gen</publisher>
+		<info name="usage" value="Side A: LOAD &quot;&quot;. Side B: LOAD &quot;&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Bomber"/>
 			<dataarea name="cass" size="2686">
@@ -827,6 +885,7 @@ To load a cassette:
 		<description>Bouncing Bert</description>
 		<year>1985</year>
 		<publisher>Software Farm</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15151">
 				<rom name="BouncingBert.tzx" size="15151" crc="c30caf71" sha1="ef3be8446d80452a155ed647a55c7d24aee58a6d"/>
@@ -838,6 +897,7 @@ To load a cassette:
 		<description>Breakout</description>
 		<year>1982</year>
 		<publisher>CDS Micro Systems</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3467">
 				<rom name="Breakout.tzx" size="3467" crc="322fafd6" sha1="1cb495c3b751e64e8b1fc38c68fabf0340365f39"/>
@@ -849,6 +909,7 @@ To load a cassette:
 		<description>Breakout (JKG)</description>
 		<year>1981</year>
 		<publisher>J.K.Greye Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="948">
 				<rom name="Breakout(JKG).tzx" size="948" crc="e3f0284a" sha1="c8138f8960aedf4d848c65b676d76bf717ec9154"/>
@@ -860,6 +921,7 @@ To load a cassette:
 		<description>Breakout (NGS)</description>
 		<year>1982</year>
 		<publisher>New Generation Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="948">
 				<rom name="Breakout(NGS).tzx" size="948" crc="227210c6" sha1="86b96863cffca1038110a78b99b4df5fbcc75daa"/>
@@ -871,6 +933,7 @@ To load a cassette:
 		<description>Breakout 3</description>
 		<year>1982</year>
 		<publisher>Axis</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5705">
 				<rom name="Breakout3.tzx" size="5705" crc="69b9a5bf" sha1="faf622eff6cca236e0623d7f23cf35bfef74d823"/>
@@ -882,6 +945,7 @@ To load a cassette:
 		<description>Breakout, Space Invaders and Music</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;B&quot; and GOTO 100, or LOAD &quot;V1&quot; and GOTO 100, or LOAD &quot;M1&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="2734">
 				<rom name="BreakoutSIAndMusic.tzx" size="2734" crc="d383db01" sha1="d5582e7a6a79bd6b8a2096ed968c91292b46483b"/>
@@ -893,6 +957,7 @@ To load a cassette:
 		<description>Brick Stop</description>
 		<year>1982</year>
 		<publisher>CDS Micro Systems</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3362">
 				<rom name="BrickStop.tzx" size="3362" crc="2e173afa" sha1="232822deb023be4037e9864a1ccd01e8c42a32bf"/>
@@ -904,6 +969,7 @@ To load a cassette:
 		<description>Bubble Bugs</description>
 		<year>1983</year>
 		<publisher>Romik Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6647">
 				<rom name="BubbleBugs.tzx" size="6647" crc="368c6f68" sha1="e52ddab32b1183910d1c74ae04999a8fb92dc158"/>
@@ -915,6 +981,7 @@ To load a cassette:
 		<description>The Budgeter</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7653">
 				<rom name="BudgeterThe.tzx" size="7653" crc="5ea30258" sha1="936a4bdf69507c24b8a634c94065548a3757fac9"/>
@@ -926,6 +993,7 @@ To load a cassette:
 		<description>Bumper 7</description>
 		<year>1981</year>
 		<publisher>Axis</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5179">
 				<rom name="Bumper7.tzx" size="5179" crc="3c31d394" sha1="2adc581baca7d49305c0ccd720f594c50618be5e"/>
@@ -937,6 +1005,7 @@ To load a cassette:
 		<description>Business &amp; Household 3</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;&quot;, RUN. Side B: LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Telephone/Note Pad"/>
 			<dataarea name="cass" size="8929">
@@ -955,6 +1024,7 @@ To load a cassette:
 		<description>Byter</description>
 		<year>1983</year>
 		<publisher>Protek</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5271">
 				<rom name="Byter.tzx" size="5271" crc="540854fe" sha1="ab1f4d1f13735e7ffe4e143c1ee159a2ca1a0617"/>
@@ -966,6 +1036,7 @@ To load a cassette:
 		<description>Can of Worms</description>
 		<year>198?</year>
 		<publisher>Automata Cartography</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7150">
 				<rom name="CanOfWorms.tzx" size="7150" crc="b2e6fa12" sha1="9bb651b39206913bbe74600997114fcbcd70747c"/>
@@ -977,6 +1048,7 @@ To load a cassette:
 		<description>The Carpooler</description>
 		<year>198?</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14507">
 				<rom name="CarpoolerThe.tzx" size="14507" crc="d8258cef" sha1="cafbb78bf77f88c0ffb29e6c2a92666899149c8e"/>
@@ -988,6 +1060,7 @@ To load a cassette:
 		<description>Cassette 1</description>
 		<year>1981</year>
 		<publisher>M.Orwin</publisher>
+		<info name="usage" value="Side A: LOAD &quot;REACT&quot; and RUN, or LOAD &quot;INVADERS&quot; and RUN, or LOAD &quot;PHANTOM ALIENS&quot; and RUN, or LOAD &quot;MAZE OF DEATH&quot; and RUN, or LOAD &quot;PLANET LANDER&quot; and RUN, or LOAD &quot;BUG SPLAT&quot; and RUN, or LOAD &quot;BOUNCING LETTERS&quot; and RUN, or LOAD &quot;I CHING&quot; and RUN, or LOAD &quot;CODE BREAK&quot; and RUN, or LOAD &quot;ROBOTS&quot; and RUN, or LOAD &quot;BASIC HANGMAN&quot; and RUN. Side B: LOAD &quot;INVADERS&quot; and RON, or LOAD &quot;MAZE OF DEATH&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="8920">
@@ -1012,6 +1085,7 @@ To load a cassette:
 		<description>Cassette 2</description>
 		<year>1981</year>
 		<publisher>M.Orwin</publisher>
+		<info name="usage" value="LOAD &quot;OTHELLO&quot;, or LOAD &quot;AWARI&quot;, or LOAD &quot;LASER BASES&quot;, or LOAD &quot;WORD MASTERMIND&quot;, or LOAD &quot;RECTANGLES&quot;, or LOAD &quot;CRASH&quot; or LOAD &quot;ROULETTE&quot;, or LOAD &quot;PONTOON&quot;, or LOAD &quot;PENNY SHOOT&quot;, or LOAD &quot;GUN COMMAND&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Othello"/>
 			<dataarea name="cass" size="10350">
@@ -1078,6 +1152,7 @@ To load a cassette:
 		<description>Cassette 3</description>
 		<year>1982</year>
 		<publisher>M.Orwin</publisher>
+		<info name="usage" value="LOAD &quot;TROJAN&quot;, or LOAD &quot;STARTREK&quot;, or LOAD &quot;PRINCESS&quot;, or LOAD &quot;BATTLE&quot;, or LOAD &quot;CUBE&quot;, or LOAD &quot;SECRET MESSAGES&quot;, or LOAD &quot;CRICKET&quot;, or LOAD &quot;KALABRIASZ&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="96710">
 				<rom name="Cassette3.tzx" size="96710" crc="f612e596" sha1="a3a02c88cd119f5acf87ef056a8b26dad0a79390"/>
@@ -1089,6 +1164,7 @@ To load a cassette:
 		<description>Cassette 4</description>
 		<year>1982</year>
 		<publisher>M.Orwin</publisher>
+		<info name="usage" value="LOAD &quot;GUN&quot;, or LOAD &quot;SCR&quot;, or LOAD &quot;SNA&quot;, or LOAD &quot;FUN&quot;, or LOAD &quot;INV&quot;, or LOAD &quot;LIFE&lquot;, or LOAD &quo3t;3DT&quot;, or LOAD &quot;GAL&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="53160">
 				<rom name="Cassette4.tzx" size="53160" crc="9c246427" sha1="5cdb627ac5b3498225d7d4d5fb90d80751187218"/>
@@ -1100,6 +1176,7 @@ To load a cassette:
 		<description>Cassette 5</description>
 		<year>1983</year>
 		<publisher>M.Orwin</publisher>
+		<info name="usage" value="Side A: LOAD &quot;PLA&quot;, or LOAD &quot;BRE&quot;, or LOAD &quot;SPA&quot;, or LOAD &quot;DRA&quot;. Side B: LOAD &quot;BYT&quot;, or LOAD &quot;DOD&quot;, or LOAD &quot;BLI&quot;, or LOAD &quot;MER&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="34618">
@@ -1118,6 +1195,7 @@ To load a cassette:
 		<description>Cassette 50</description>
 		<year>1983</year>
 		<publisher>Cascade</publisher>
+		<info name="usage" value="Some titles have the same name on tape which can make them a bit tricky to load. Side A: LOAD &quot;MAZ&quot; and RUN, or LOAD &quot;GAL&quot; and RUN, or LOAD &quot;SPA&quot; and RUN, or LOAD &quot;LUN&quot; and RUN, or LOAD &quot;PLA&quot; and RUN, or LOAD &quot;STA&quot; and RUN, or LOAD &quot;RAD&quot; and RUN, or LOAD &quot;ATT&quot; and RUN, or LOAD &quot;GAL&quot; and RUN, or LOAD &quot;PSI&quot; and RUN, or LOAD &quot;IVA&quot; and RUN, or LOAD &quot;NOU&quot; and RUN, or LOAD &quot;BOG&quot; and RUN, or LOAD &quot;PON&quot; and RUN, or LOAD &quot;SKI&quot; and RUN, or LOAD &quot;HAN&quot; and RUN, or LOAD &quot;OLD&quot; and RUN, or LOAD &quot;THI&quot; and RUN, or LOAD &quot;ORB&quot; and RUN, or LOAD &quot;MOT&quot; and RUN, or LOAD &quot;FOR&quot; and RUN, or LOAD &quot;NIM&quot; and RUN, or LOAD &quot;TUN&quot; and RUN. Side B: LOAD &quot;BAR&quot; and RUN, or LOAD &quot;CAN&quot; and RUN, or LOAD &quot;OVE&quot; and RUN, or LOAD &quot;SIT&quot; and RUN, or LOAD &quot;SMA&quot; and RUN, or LOAD &quot;SPA&quot; and RUN, or LOAD &quot;JET&quot; and RUN, or LOAD &quot;PHA&quot; and RUN, or LOAD &quot;INT&quot; and RUN, or LOAD &quot;INF&quot; and RUN, or LOAD &quot;GHO&quot; and RUN, or LOAD &quot;SUB&quot; and RUN, or LOAD &quot;ROC&quot; and RUN, or LOAD &quot;PLA&quot; and RUN, or LOAD &quot;BLA&quot; and RUN, or LOAD &quot;DYN&quot; and RUN, or LOAD &quot;DOY&quot; and RUN, or LOAD &quot;DER&quot; and RUN, or LOAD &quot;SPA&quot; and RUN, or LOAD &quot;UNI&quot; and RUN, or LOAD &quot;RAT&quot; and RUN, or LOAD &quot;TAN&quot; and RUN, or LOAD &quot;PAR&quot; and RUN, or LOAD &quot;JET&quot; and RUN, or LOAD &quot;HIG&quot; and RUN, or LOAD &quot;THE&quot; and RUN, or LOAD &quot;EXC&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="52088">
@@ -1136,6 +1214,7 @@ To load a cassette:
 		<description>Castle</description>
 		<year>1982</year>
 		<publisher>CDS Micro Systems</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14716">
 				<rom name="Castle.tzx" size="14716" crc="ba09cc38" sha1="688abd7300f76e35f69ae025a4411f2767514b94"/>
@@ -1147,6 +1226,7 @@ To load a cassette:
 		<description>Catacombs</description>
 		<year>1981</year>
 		<publisher>J.K.Greye Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12740">
 				<rom name="Catacombs.tzx" size="12740" crc="f8d6aee6" sha1="c872d07e278df997df9a66185852f580fd851151"/>
@@ -1158,6 +1238,7 @@ To load a cassette:
 		<description>Cave Crusade</description>
 		<year>198?</year>
 		<publisher>AWA Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6510">
 				<rom name="CaveCrusade.tzx" size="6510" crc="9dec44e3" sha1="bc4a46fdec5734a88afc005df4864feae26549e1"/>
@@ -1169,6 +1250,7 @@ To load a cassette:
 		<description>Centipede</description>
 		<year>1982</year>
 		<publisher>Llamasoft</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9940">
 				<rom name="Centipede.tzx" size="9940" crc="163cf493" sha1="dd75bbb4ec90c8d054e1c0a41164e02a8f3121e3"/>
@@ -1180,6 +1262,7 @@ To load a cassette:
 		<description>Centipede (dk)</description>
 		<year>1982</year>
 		<publisher>dK'tronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10008">
 				<rom name="Centipede(dktronics).tzx" size="10008" crc="f12c5ee1" sha1="c90d0ca1dd3e1679c9c0e4a359d6b84978c129f7"/>
@@ -1191,6 +1274,7 @@ To load a cassette:
 		<description>Centipede (Green Cover)</description>
 		<year>198?</year>
 		<publisher>dK'tronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9967">
 				<rom name="Centipede(Green).tzx" size="9967" crc="0ed972cd" sha1="1bf47ef2651d5d09a6971ce9eb931aa41ed846cb"/>
@@ -1202,6 +1286,7 @@ To load a cassette:
 		<description>Challenge</description>
 		<year>198?</year>
 		<publisher>Micromega</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4865">
 				<rom name="Challenge.tzx" size="4865" crc="8439c8b1" sha1="b3dd53df21a684570b3120a8a996fae738dfb15a"/>
@@ -1213,6 +1298,7 @@ To load a cassette:
 		<description>The Challenger 1</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4178">
 				<rom name="Challenger1The.tzx" size="4178" crc="a01b37e4" sha1="5b9809a27911e43d8fb882a60da3752fe202bc27"/>
@@ -1224,6 +1310,7 @@ To load a cassette:
 		<description>Champions!</description>
 		<year>198?</year>
 		<publisher>Peaksoft</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15086">
 				<rom name="Champions.tzx" size="15086" crc="7ae0415b" sha1="1847183ffcaf74bb7f709d09d1d5fea24c720e6a"/>
@@ -1235,6 +1322,7 @@ To load a cassette:
 		<description>The Checkbook Manager</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13713">
 				<rom name="CheckbookManagerThe.tzx" size="13713" crc="b32eaa12" sha1="d1b150fee25332715af8115604d8063e5a71b77d"/>
@@ -1246,6 +1334,7 @@ To load a cassette:
 		<description>Chess also Chess-Clock</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;CHESS&quot;. Side B: LOAD &quot;CHESS-CLOCK&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Chess"/>
 			<dataarea name="cass" size="8529">
@@ -1264,6 +1353,7 @@ To load a cassette:
 		<description>Chess (MikroGen)</description>
 		<year>1982</year>
 		<publisher>Mikro-Gen</publisher>
+		<info name="usage" value="Side A: LOAD &quot;CHESS&quot;. Side B: LOAD &quot;CHESS-CLOCK&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Chess"/>
 			<dataarea name="cass" size="8529">
@@ -1282,6 +1372,7 @@ To load a cassette:
 		<description>Chess (Psion)</description>
 		<year>1981</year>
 		<publisher>Psion</publisher>
+		<info name="usage" value="Side A: LOAD &quot;CHESS&quot;. Side B: LOAD &quot;CHESS-CLOCK&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Chess"/>
 			<dataarea name="cass" size="8529">
@@ -1300,6 +1391,7 @@ To load a cassette:
 		<description>Chess (Timex)</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;CHESS&quot;, or LOAD &quot;CHESS-CLOCK&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10227">
 				<rom name="Chess(Timex).tzx" size="10227" crc="8f6bfdc7" sha1="bd2a54d8ccb6bd918deaba02b0793cf0372c8f27"/>
@@ -1311,6 +1403,7 @@ To load a cassette:
 		<description>Chess (Typed)</description>
 		<year>1981</year>
 		<publisher>Mikro-Gen</publisher>
+		<info name="usage" value="Side A: LOAD &quot;CHESS&quot;. Side B: LOAD &quot;CHESS-CLOCK&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Chess"/>
 			<dataarea name="cass" size="8529">
@@ -1329,6 +1422,7 @@ To load a cassette:
 		<description>Chinese Astrology</description>
 		<year>1982</year>
 		<publisher>M.A.Smith</publisher>
+		<info name="usage" value="Side A: LOAD &quot;M&quot;. Side B: LOAD &quot;C&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Love, Sex &amp; Marriage"/>
 			<dataarea name="cass" size="8566">
@@ -1347,6 +1441,7 @@ To load a cassette:
 		<description>Chrs Demo</description>
 		<year>198?</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="LOAD &quot;CHRS&quot;, or LOAD &quot;CHRS&quot;, or LOAD &quot;L-CASE&quot;, or LOAD &quot;L-CASE&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5993">
 				<rom name="ChrsDemo.tzx" size="5993" crc="3e8d1da7" sha1="8509b1fc61dc20c1e9280526858b0e95bd6359b5"/>
@@ -1358,6 +1453,7 @@ To load a cassette:
 		<description>City of Xon</description>
 		<year>1982</year>
 		<publisher>Pleasantrees</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15729">
 				<rom name="CityOfXon.tzx" size="15729" crc="3b72af94" sha1="0d07fb55913b3495b0c26178c84d010cd5eeb03e"/>
@@ -1369,6 +1465,7 @@ To load a cassette:
 		<description>City Patrol</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9388">
 				<rom name="CityPatrol.tzx" size="9388" crc="1ea8841e" sha1="99d5ae89cfe7940e67d8ede6dbd860020b1ad9df"/>
@@ -1380,6 +1477,7 @@ To load a cassette:
 		<description>City Patrol and Sabotage</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="Side A: LOAD &quot;CP&quot;. Side B: LOAD &quot;S&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="City Patrol"/>
 			<dataarea name="cass" size="9391">
@@ -1398,6 +1496,7 @@ To load a cassette:
 		<description>Club Record Controller</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7075">
 				<rom name="ClubRecordController.tzx" size="7075" crc="c1bdaa09" sha1="246f887ed316a62311165af8ac7abee59c0cfce6"/>
@@ -1409,6 +1508,7 @@ To load a cassette:
 		<description>Club Records</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7744">
 				<rom name="ClubRecords.tzx" size="7744" crc="229bf155" sha1="d62dc88512d6dc336dad5637924e6056a19e12a7"/>
@@ -1420,6 +1520,7 @@ To load a cassette:
 		<description>Collectors Pack</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7665">
 				<rom name="CollectorsPack.tzx" size="7665" crc="4998a5d6" sha1="bb2b43893119eabf30754be20992bf32e05e6832"/>
@@ -1431,6 +1532,7 @@ To load a cassette:
 		<description>Collectors Recording System</description>
 		<year>198?</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7665">
 				<rom name="CollectorsRecordingSystem.tzx" size="7665" crc="1a89b64d" sha1="7fb6cf85c4a0e47a2ad78f5f4371deeebadcb923"/>
@@ -1442,6 +1544,7 @@ To load a cassette:
 		<description>Community Chest</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14270">
 				<rom name="CommunityChest.tzx" size="14270" crc="bf585c82" sha1="c95af3f37795adabe7f251643efff51cb7e2579f"/>
@@ -1453,6 +1556,7 @@ To load a cassette:
 		<description>Complete Sinclair ZX81/Timex TS1000 Basic Course</description>
 		<year>1981</year>
 		<publisher>Melbourne House</publisher>
+		<info name="usage" value="Cassette 1: LOAD &quot;BUBBLE&quot; and RUN, or LOAD &quot;NUMBERS&quot; and RUN, or LOAD &quot;BAR&quot; and RUN, or LOAD &quot;TELEPORT&quot; and RUN, or LOAD &quot;FIGHTER&quot; and RUN, or LOAD &quot;ACK-ACK&quot; and RUN, or LOAD &quot;ESCAPE&quot; and GOTO 1, or LOAD &quot;RENUMBERING&quot; and USR 16514, or LOAD &quot;MEMORY&quot; and USR 16514, or LOAD &quot;SCRAMBLE&quot; and RUN. Cassette 2: LOAD &quot;CHARACTER GENERATOR&quot; and RUN, or LOAD &quot;RUNNER&quot; and RUN, or LOAD &quot;CHEQUE&quot; and RUN, or LOAD &quot;GEOMETRY&quot; and GOTO 1, or LOAD &quot;BALLOON&quot; and RUN, or LOAD &quot;GALAXIAN&quot; and RUN, or LOAD &quot;SPACE&quot; and RUN, or LOAD &quot;GOMOKU&quot; and GOTO 1." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Cassette 1"/>
 			<dataarea name="cass" size="6837">
@@ -1471,6 +1575,7 @@ To load a cassette:
 		<description>Compte Bancaire</description>
 		<year>1984</year>
 		<publisher>No Man's Land</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Loader"/>
 			<dataarea name="cass" size="1377">
@@ -1489,6 +1594,7 @@ To load a cassette:
 		<description>Comp-u-Share</description>
 		<year>198?</year>
 		<publisher>Micromega</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="17652">
 				<rom name="CompuShare.tzx" size="17652" crc="f62ae771" sha1="043e56d73eeb16b8c286fd282d94cf5aa17427ff"/>
@@ -1500,6 +1606,7 @@ To load a cassette:
 		<description>ComputaCalc ZX</description>
 		<year>1981</year>
 		<publisher>Silicon Tricks</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9228">
 				<rom name="ComputaCalc.tzx" size="9228" crc="06066afc" sha1="496065dbc17d2461647bb76933ad9247f03cd1de"/>
@@ -1507,10 +1614,12 @@ To load a cassette:
 		</part>
 	</software>
 
+	<!-- Incomplete dump, there is speech on the tape after part1 and part2 -->
 	<software name="compcoach">
 		<description>The Computer Coach</description>
 		<year>1983</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;PART1&quot; and RUN, or LOAD &quot;PART2&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Part 1"/>
 			<dataarea name="cass" size="7858">
@@ -1525,10 +1634,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="concentr">
+	<!-- Side A concentration fails to load/start -->
+	<software name="concentr" supported="partial">
 		<description>Concentration</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="Side A: LOAD &quot;CONCENTRATION&quot;. Side B: LOAD &quot;NUMBER&quot;, or LOAD &quot;WORD&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="821">
@@ -1547,6 +1658,7 @@ To load a cassette:
 		<description>Constellation</description>
 		<year>198?</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12611">
 				<rom name="Constellation.tzx" size="12611" crc="a0146b49" sha1="fb8bbc99988812c5ef372a7358a36ceadb53ae73"/>
@@ -1558,6 +1670,7 @@ To load a cassette:
 		<description>Constellation (Gladstone)</description>
 		<year>198?</year>
 		<publisher>Gladstone Electronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15694">
 				<rom name="Constellation(GE).tzx" size="15694" crc="89092de9" sha1="69da2b7f7a1f311a73858f4787f05c31460e7172"/>
@@ -1569,6 +1682,7 @@ To load a cassette:
 		<description>Control Technology Tapes 1,2,3</description>
 		<year>198?</year>
 		<publisher>Control Technology</publisher>
+		<info name="usage" value="LOAD &quot;AERO&quot; and RUN, or LOAD &quot;INVADERS&quot; and RUN, or LOAD &quot;SELF PLAY INVADERS&quot; and RUN, or LOAD &quot;PHONE BOOK&quot;, or LOAD &quot;DATE 81&quot;, or LOAD &quot;ATLANTIS&quot;, or LOAD &quot;TRANSL8R&quot;, or LOAD &quot;COMPUTAPUNT&quot;, or LOAD &quot;SQUASH&quot; and RUN, or LOAD &quot;BREAKOUT&quot; and RUN, or LOAD &quot;INDY500&quot; and RUN, or LOAD &quot;INDY501&quot; and RUN, or LOAD &quot;MASTERMIND&quot; and RUN, or LOAD &quot;BATTLESHIPS&quot; and RUN, or LOAD &quot;DRAUGHTS&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="48433">
 				<rom name="ControlTechnology123.tzx" size="48433" crc="d9610ea9" sha1="8e630dbc2725862733cd138e69a7c8ca9eeed84f"/>
@@ -1580,6 +1694,7 @@ To load a cassette:
 		<description>Conversational German</description>
 		<year>1983</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15603">
 				<rom name="ConversationalGerman.tzx" size="15603" crc="810bdcc4" sha1="ddb421fe807557a6f4a2eb7ea78e15c249b15de1"/>
@@ -1591,6 +1706,7 @@ To load a cassette:
 		<description>Cosmic Guerilla</description>
 		<year>1983</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7561">
 				<rom name="CosmicGuerilla.tzx" size="7561" crc="001ef96d" sha1="ef8e79312d0dc7efec6bf2a9a6ca785b0e4a94a0"/>
@@ -1602,6 +1718,7 @@ To load a cassette:
 		<description>Counter Attack</description>
 		<year>198?</year>
 		<publisher>Woodside Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7219">
 				<rom name="CounterAttack.tzx" size="7219" crc="6b8852ca" sha1="286cd36a713f95ffcc5e847539a59de6c55f6c42"/>
@@ -1613,6 +1730,7 @@ To load a cassette:
 		<description>The Coupon Manager</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16135">
 				<rom name="CouponManagerThe.Alt2.tzx" size="16135" crc="de8ec693" sha1="35fc0916df11991c94336746c3f45ae22d43a715"/>
@@ -1629,6 +1747,7 @@ To load a cassette:
 		<description>Critical Path Analysis</description>
 		<year>1981</year>
 		<publisher>Hilderbay</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6275">
 				<rom name="CriticalPathAnalysis.tzx" size="6275" crc="28ee5886" sha1="3ee5a82dec70e4bd7eb1d514cdd4538cb433f24a"/>
@@ -1640,6 +1759,7 @@ To load a cassette:
 		<description>Critical Path Analysis (Timex)</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;PERT-CPM&quot;, or LOAD &quot;NETWORK&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6720">
 				<rom name="CriticalPathAnalysis(Timex).tzx" size="6720" crc="c1835895" sha1="469f80fbf8e3979b8534e28dabd9d7089e55425e"/>
@@ -1651,6 +1771,7 @@ To load a cassette:
 		<description>Croaka-Crawla</description>
 		<year>1983</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14896">
 				<rom name="CroakaCrawla.tzx" size="14896" crc="1e07d1c3" sha1="3489fd97ee769b1b59e0b74ccdeb667f135dbcbd"/>
@@ -1662,6 +1783,7 @@ To load a cassette:
 		<description>The Cube Game</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13714">
 				<rom name="CubeGameThe.tzx" size="13714" crc="c87bea16" sha1="dbf04e07ff5ed808df032c66191f79d0c96488a5"/>
@@ -1673,6 +1795,7 @@ To load a cassette:
 		<description>Dallas (French)</description>
 		<year>1983</year>
 		<publisher>Cases Computer Simulations</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16379">
 				<rom name="Dallas(French).tzx" size="16379" crc="4a65562e" sha1="499bee247f3bdc37eca67e95eee1624de11ec5d6"/>
@@ -1684,6 +1807,7 @@ To load a cassette:
 		<description>Damper/Glooper</description>
 		<year>1983</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="LOAD &quotDAMPER;&quot;, or LOAD &quot;GLOOPER&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Damper"/>
 			<dataarea name="cass" size="7893">
@@ -1702,6 +1826,7 @@ To load a cassette:
 		<description>The Damsel and the Beast</description>
 		<year>1981</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10464">
 				<rom name="DamselAndTheBeastThe.tzx" size="10464" crc="b34252c8" sha1="574392a27b8328ec82121e1c666e2c3411f34342"/>
@@ -1713,6 +1838,7 @@ To load a cassette:
 		<description>D Coder</description>
 		<year>198?</year>
 		<publisher>Cosma</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7680">
 				<rom name="DCoder.A.tzx" size="7680" crc="1684ba79" sha1="39f16bb21b52c566218f38aa07b1951e38c0f8bd"/>
@@ -1724,6 +1850,7 @@ To load a cassette:
 		<description>Dictator</description>
 		<year>1982</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16306">
 				<rom name="Dictator.tzx" size="16306" crc="b01e01a7" sha1="c14608ecc904b6ad8141d64bb4eed66c43b6316d"/>
@@ -1735,6 +1862,7 @@ To load a cassette:
 		<description>Dodgems and Connect 4</description>
 		<year>198?</year>
 		<publisher>CDS Micro Systems</publisher>
+		<info name="usage" value="LOAD &quot;DODGEMS&quot;, or LOAD &quot;CONNECT4&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Dodgems"/>
 			<dataarea name="cass" size="4556">
@@ -1753,6 +1881,7 @@ To load a cassette:
 		<description>Dodgems and Connect 4 (Brown Inlay)</description>
 		<year>1982</year>
 		<publisher>CDS Micro Systems</publisher>
+		<info name="usage" value="LOAD &quot;DODGEMS&quot;, or LOAD &quot;CONNECT4&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9488">
 				<rom name="DodgemsAndConnect4(Brown).tzx" size="9488" crc="39d4e107" sha1="de9f3293e482ac4f92b3278d262e45321450fe79"/>
@@ -1764,6 +1893,7 @@ To load a cassette:
 		<description>Dominoes</description>
 		<year>1983</year>
 		<publisher>Phipps Associates</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15375">
 				<rom name="Dominoes.tzx" size="15375" crc="4fc4e410" sha1="b780954c535ccd6f6a778999b7244de33bb3ad53"/>
@@ -1775,6 +1905,7 @@ To load a cassette:
 		<description>Do Not Pass Go</description>
 		<year>198?</year>
 		<publisher>Work Force</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13587">
 				<rom name="DoNotPassGo.tzx" size="13587" crc="a2dd0f0c" sha1="45ded58ce3255e5239722c956eef084bac20ad6d"/>
@@ -1786,6 +1917,7 @@ To load a cassette:
 		<description>Dragon Maze</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4970">
 				<rom name="DragonMaze.tzx" size="4970" crc="c2a29e0d" sha1="58e77f8d47f0a0061f0545e3d95485d9041d7025"/>
@@ -1797,6 +1929,7 @@ To load a cassette:
 		<description>Dr.Floyd</description>
 		<year>198?</year>
 		<publisher>Apropos Technology</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14294">
 				<rom name="DrFloyd.tzx" size="14294" crc="d5b0408f" sha1="6982c898304a0e319434984a019b96682d177661"/>
@@ -1808,6 +1941,7 @@ To load a cassette:
 		<description>Dungeons of Doom</description>
 		<year>1982</year>
 		<publisher>Temptation Software</publisher>
+		<info name="usage" value="LOAD &quot;DOD 1&quot;, or LOAD &quot;DOD&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15074">
 				<rom name="DungeonsOfDoom.tzx" size="15074" crc="d5034066" sha1="b2884c73af5da39e4c32d9a11206769e006f456f"/>
@@ -1819,6 +1953,7 @@ To load a cassette:
 		<description>E.E.1 - Filter Design</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12047">
 				<rom name="EE1FilterDesign.tzx" size="12047" crc="1159b6aa" sha1="d6714fe623f9e444c22cde90f56488a58fce0d33"/>
@@ -1830,6 +1965,7 @@ To load a cassette:
 		<description>Electric Cost Analyzer</description>
 		<year>1983</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15789">
 				<rom name="ElectricCostAnalyzer.tzx" size="15789" crc="d6745b7a" sha1="f5f5c2a8038df69484937ce4b853b4e83dfcf5f5"/>
@@ -1841,6 +1977,7 @@ To load a cassette:
 		<description>The Electronic Checkbook</description>
 		<year>1982</year>
 		<publisher>Timeworks</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16382">
 				<rom name="ElectronicCheckbookThe.tzx" size="16382" crc="bc3ed36d" sha1="3791720c3974c31c322b9d1e6a6281de6e6bcfcd"/>
@@ -1852,6 +1989,7 @@ To load a cassette:
 		<description>Electronics</description>
 		<year>198?</year>
 		<publisher>Spectre</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16121">
 				<rom name="Electronics.tzx" size="16121" crc="e777753a" sha1="d3a41d3aa66db93144eef927a1c37fc8bb9fab90"/>
@@ -1863,6 +2001,7 @@ To load a cassette:
 		<description>Encounter</description>
 		<year>1982</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="LOAD &quot;&quot; and RUN, and LOAD &quot;&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="17612">
 				<rom name="Encounter.tzx" size="17612" crc="af150f3f" sha1="ec8355c006d83dfc367a166ee6f33cb3530381ab"/>
@@ -1874,6 +2013,7 @@ To load a cassette:
 		<description>English Literature 1</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Novelists"/>
 			<dataarea name="cass" size="11359">
@@ -1892,6 +2032,7 @@ To load a cassette:
 		<description>English Literature 1 (WHSmith)</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="LOAD &quot;&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Novelists"/>
 			<dataarea name="cass" size="11359">
@@ -1910,6 +2051,7 @@ To load a cassette:
 		<description>English Literature 2</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;P&quot; and RUN. Side B: LOAD &quot;M&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Poets and Playwrights"/>
 			<dataarea name="cass" size="11815">
@@ -1928,6 +2070,7 @@ To load a cassette:
 		<description>English Literature 2 (WHSmith)</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="Side A: LOAD &quot;P&quot; and RUN. Side B: LOAD &quot;M&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Poets and Playwrights"/>
 			<dataarea name="cass" size="11815">
@@ -1946,6 +2089,7 @@ To load a cassette:
 		<description>Escape From Manhattan</description>
 		<year>1983</year>
 		<publisher>Computer Rentals</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16320">
 				<rom name="EscapeFromManhattan.tzx" size="16320" crc="2cacbb72" sha1="975c976e36b9dbd47fcf5312fae4ad5c2521d6d7"/>
@@ -1957,6 +2101,7 @@ To load a cassette:
 		<description>Escape From Shazzar</description>
 		<year>1983</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16376">
 				<rom name="EscapeFromShazzar.tzx" size="16376" crc="78075b95" sha1="992dfcece29b42c729bbca05422bf090dc7c275c"/>
@@ -1968,6 +2113,7 @@ To load a cassette:
 		<description>Espionage Island</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15734">
 				<rom name="EspionageIsland.tzx" size="15734" crc="2bf38dca" sha1="1afaa1c3773c78f8f92941d95de226a727cc8822"/>
@@ -1979,6 +2125,7 @@ To load a cassette:
 		<description>Espionage Island (Artic)</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15734">
 				<rom name="EspionageIsland(Artic).tzx" size="15734" crc="06a3887c" sha1="7b36f0bce5eccb9fc3dc4fb553516e5e7f5adabe"/>
@@ -1990,6 +2137,7 @@ To load a cassette:
 		<description>Execu-Soft</description>
 		<year>198?</year>
 		<publisher>Orbyte Software</publisher>
+		<info name="usage" value="Tape 1-6: LOAD &quot;&quot;. Tape 7: LOAD &quot;&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="General Ledger"/>
 			<dataarea name="cass" size="12120">
@@ -2038,6 +2186,7 @@ To load a cassette:
 		<description>Family Quiz</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;QUIZ 1&quot;, or LOAD &quot;QUIZ 2&quot;. Side B: LOAD &quot;QUIZ 3&quot;, or LOAD &quot;QUIZ 4&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="31731">
@@ -2056,6 +2205,7 @@ To load a cassette:
 		<description>Fantasy Games</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;SWAMP&quot;. Side B: LOAD &quot;ISLAND&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Perilous Swamp"/>
 			<dataarea name="cass" size="10713">
@@ -2074,6 +2224,7 @@ To load a cassette:
 		<description>Fantasy Games (Psion)</description>
 		<year>1981</year>
 		<publisher>Psion</publisher>
+		<info name="usage" value="Side A: LOAD &quot;SWAMP&quot; and RUN. Side B: LOAD &quot;ISLAND&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Perilous Swamp"/>
 			<dataarea name="cass" size="11669">
@@ -2092,6 +2243,7 @@ To load a cassette:
 		<description>Fastload</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="Side A: LOAD &quot;MONITOR&quot;, or LOAD &quot;TEST&quot;. Side B: LOAD &quot;P&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="10345">
@@ -2110,6 +2262,7 @@ To load a cassette:
 		<description>Fastload (Artic)</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="Side A: LOAD &quot;MONITOR&quot;, or LOAD &quot;P&quot; and RUN. Side B: LOAD &quot;BSL&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="15318">
@@ -2124,10 +2277,12 @@ To load a cassette:
 		</part>
 	</software>
 
+	<!-- FLSF gives message about invalid ramtop -->
 	<software name="fastls">
 		<description>Fast Load Save</description>
 		<year>1982</year>
 		<publisher>Musamy Software</publisher>
+		<info name="usage" value="LOAD &quot;TLA1&quot; and RUN, or LOAD &quot;TLA2&quot; and RUN, or LOAD &quot;TLA3&quot; and RUN, or LOAD &quot;FLSF&quot;, or LOAD &quot;FLSG&quot;, or use special fast load tool to load the last file (fast saved version)" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11000">
 				<rom name="FastLoadSave.tzx" size="11000" crc="939f03cb" sha1="616dfc2662d46f415277990bebf0b09e187ed36e"/>
@@ -2139,6 +2294,7 @@ To load a cassette:
 		<description>The Fast One (Green Inlay)</description>
 		<year>198?</year>
 		<publisher>Campbell Systems</publisher>
+		<info name="usage" value="LOAD &quot;TFO&quot;, or LOAD &quot;TFOX&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9837">
 				<rom name="FastOne(Green).tzx" size="9837" crc="3c57d2f2" sha1="c31f2892ea9145cdab6ef5f21cd126ab9d079036"/>
@@ -2150,6 +2306,7 @@ To load a cassette:
 		<description>The Fast One</description>
 		<year>198?</year>
 		<publisher>Campbell Systems</publisher>
+		<info name="usage" value="LOAD &quot;TFO&quot;, or LOAD &quot;TFOX&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="TFO"/>
 			<dataarea name="cass" size="4770">
@@ -2168,6 +2325,7 @@ To load a cassette:
 		<description>The First</description>
 		<year>198?</year>
 		<publisher>Mindseye</publisher>
+		<info name="usage" value="Side A: LOAD &quot;BYTE-MAN&quot;, or LOAD &quot;FIGHTER&quot;, or LOAD &quot;BOMBER&quot;. Side B: LOAD &quot;FIGHTER&quot;, or LOAD &quot;BYTE-MAN&quot;, or LOAD &quot;BOMBER&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="19748">
@@ -2186,6 +2344,7 @@ To load a cassette:
 		<description>Flight Simulation</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13855">
 				<rom name="FlightSimulation.tzx" size="13855" crc="945da3c1" sha1="de020d7531c0904a8a152193e7b3d5203e5c1017"/>
@@ -2197,6 +2356,7 @@ To load a cassette:
 		<description>The Flight Simulator</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13855">
 				<rom name="FlightSimulation.tzx" size="13855" crc="945da3c1" sha1="de020d7531c0904a8a152193e7b3d5203e5c1017"/>
@@ -2208,6 +2368,7 @@ To load a cassette:
 		<description>Flug-Simulation</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13855">
 				<rom name="FlightSimulation.tzx" size="13855" crc="945da3c1" sha1="de020d7531c0904a8a152193e7b3d5203e5c1017"/>
@@ -2219,6 +2380,7 @@ To load a cassette:
 		<description>Football</description>
 		<year>198?</year>
 		<publisher>Tyrant</publisher>
+		<info name="usage" value="LOAD &quot;&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15858">
 				<rom name="Football.tzx" size="15858" crc="8503533c" sha1="d75dfc7310f08160f7ff61f2e08f2ed4fa5aabb0"/>
@@ -2230,6 +2392,7 @@ To load a cassette:
 		<description>Football-League</description>
 		<year>1981</year>
 		<publisher>Video Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14343">
 				<rom name="FootballLeague.A.tzx" size="14343" crc="78694c75" sha1="4887f03b6e5725d1acb156a485ddc9c450607d88"/>
@@ -2241,6 +2404,7 @@ To load a cassette:
 		<description>Football Manager</description>
 		<year>1981</year>
 		<publisher>Addictive Games</publisher>
+		<info name="usage" value="LOAD &quot;&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14968">
 				<rom name="FootballManager.tzx" size="14968" crc="34e09721" sha1="56180074fe4bbc0f6c0189b88482affd537b5645"/>
@@ -2252,6 +2416,7 @@ To load a cassette:
 		<description>Football Pools Program</description>
 		<year>198?</year>
 		<publisher>Hartland Software</publisher>
+		<info name="usage" value="LOAD &quot;POOLS&quot; and RUN, or LOAD &quot;POOLS MK11&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="24422">
 				<rom name="FootballPools.tzx" size="24422" crc="2d0ed98b" sha1="a2ae0611ad434600777c2ba0df4cc48d8109d9f8"/>
@@ -2274,6 +2439,7 @@ To load a cassette:
 		<description>Fortress of Zorlac</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7442">
 				<rom name="FortressOfZorlac.tzx" size="7442" crc="30d3ba7d" sha1="13f8969e92932f3f6e4c6f177bbe34512780b96f"/>
@@ -2285,6 +2451,7 @@ To load a cassette:
 		<description>Forty Niner</description>
 		<year>198?</year>
 		<publisher>Software Farm</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14106">
 				<rom name="FortyNiner.tzx" size="14106" crc="1c4eff0a" sha1="e563342e858b8c38a384ebfd695c479feb01a4a5"/>
@@ -2296,6 +2463,7 @@ To load a cassette:
 		<description>Free Games Cassette (French)</description>
 		<year>1983</year>
 		<publisher>Direco International</publisher>
+		<info name="usage" value="Side A: LOAD &quot;CHASSE AU SOUS MARIN&quot; and RUN, or LOAD &quot;GOLF&quot; and RUN, or LOAD &quot;TIREUR D ELITE&quot; and RUN. Side B: LOAD &quot;ENVAHISSEURS&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2948">
@@ -2314,6 +2482,7 @@ To load a cassette:
 		<description>G.C.E. "O" Level French Revision</description>
 		<year>1982</year>
 		<publisher>Rose Cassettes</publisher>
+		<info name="usage" value="Side A: LOAD &quot;VERBS&quot;, or LOAD &quot;PRONOUNS&quot;, or LOAD &quot;ADJECTIVES&quot;. Side B: LOAD &quot;VOCAB 1&quot;, or LOAD &quot;VOCAB 2&quot; , or LOAD &quot;VOCAB 3&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="40286">
@@ -2332,6 +2501,7 @@ To load a cassette:
 		<description>Frogger</description>
 		<year>198?</year>
 		<publisher>DJL Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13723">
 				<rom name="Frogger.tzx" size="13723" crc="bd7df880" sha1="75499b16de8dfbabf668328109d0a36963bfd11b"/>
@@ -2343,6 +2513,7 @@ To load a cassette:
 		<description>Frogger (Sega)</description>
 		<year>1981</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10868">
 				<rom name="Frogger(Sega).tzx" size="10868" crc="95952886" sha1="08999372caf4a07b532e7360f1573c5262b56ed7"/>
@@ -2354,6 +2525,7 @@ To load a cassette:
 		<description>Froggy</description>
 		<year>1982</year>
 		<publisher>DJL Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10622">
 				<rom name="Froggy.tzx" size="10622" crc="e84f00da" sha1="c0d7d2db94e8fb84bb22428b0b6a5c5ccc11c52b"/>
@@ -2365,6 +2537,7 @@ To load a cassette:
 		<description>Frogs</description>
 		<year>198?</year>
 		<publisher>Mikro-Gen</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4453">
 				<rom name="Frogs.tzx" size="4453" crc="efd0f05e" sha1="899d5cdf74208e30d17c5d34f5733d207222daaa"/>
@@ -2376,6 +2549,7 @@ To load a cassette:
 		<description>FUNdamentals of Math</description>
 		<year>1983</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;ADD&quot;, or LOAD &quot;SUB&quot;, or LOAD &quot;MULT&quot;, or LOAD &quot;DIV&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="39312">
 				<rom name="FUNdamentalsOfMath.tzx" size="39312" crc="75ade9a1" sha1="0c1fd6d5034fa73e8d1d3dd525e088cd96971bd7"/>
@@ -2387,6 +2561,7 @@ To load a cassette:
 		<description>Fun Fair Adventure</description>
 		<year>1983</year>
 		<publisher>Fawkes Computing</publisher>
+		<info name="usage" value="LOAD &quot;&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15892">
 				<rom name="FunFairAdventure.tzx" size="15892" crc="477b0e8f" sha1="c828c69e2a899e1b15968dafeaeb19b6045b360b"/>
@@ -2398,6 +2573,7 @@ To load a cassette:
 		<description>Galactic Gunner</description>
 		<year>1983</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9014">
 				<rom name="GalacticGunner.tzx" size="9014" crc="1ee1c007" sha1="93f8f8b5fde8de8305d0946f25296da88e26d720"/>
@@ -2409,6 +2585,7 @@ To load a cassette:
 		<description>Galactic Patrol</description>
 		<year>1983</year>
 		<publisher>Computer Rentals</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6295">
 				<rom name="GalacticPatrol.tzx" size="6295" crc="25cb9c4e" sha1="ed32fc48477d367e241b4a7f311f7d0c7caa615a"/>
@@ -2420,6 +2597,7 @@ To load a cassette:
 		<description>Galactic Patrol (Omega)</description>
 		<year>1984</year>
 		<publisher>Omega</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6295">
 				<rom name="GalacticPatrol.tzx" size="6295" crc="25cb9c4e" sha1="ed32fc48477d367e241b4a7f311f7d0c7caa615a"/>
@@ -2431,6 +2609,7 @@ To load a cassette:
 		<description>Galactic Trooper</description>
 		<year>1983</year>
 		<publisher>Romik Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4517">
 				<rom name="GalacticTrooper.tzx" size="4517" crc="95146c5f" sha1="ee48ee10e53adbbbfe6d62c8b4fbadea8bc1eb16"/>
@@ -2442,6 +2621,7 @@ To load a cassette:
 		<description>Galaxians</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3788">
 				<rom name="Galaxians.tzx" size="3788" crc="1cb67cb3" sha1="8bec4c27d81da870a63ee5da3205855c27acb802"/>
@@ -2453,6 +2633,7 @@ To load a cassette:
 		<description>Galaxians &amp; Gloops</description>
 		<year>1983</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="Side A: LOAD &quot;G&quot; and RUN. Side B: LOAD &quot;G&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Galaxians"/>
 			<dataarea name="cass" size="4333">
@@ -2471,6 +2652,7 @@ To load a cassette:
 		<description>Galaxians/Sword of Peace</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="Side A: LOAD &quot;ZXGAL&quot;. Side B: LOAD &quot;SWORD&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Galaxians"/>
 			<dataarea name="cass" size="3788">
@@ -2485,10 +2667,12 @@ To load a cassette:
 		</part>
 	</software>
 
+	<!-- According to zx81stuff the original tape has 2 tracks on 1 side, why do we have 3 files? -->
 	<software name="galinvad">
 		<description>Galaxy Invaders</description>
 		<year>1981</year>
 		<publisher>Bridge Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;GALAXY INVADERS&quot; and RUN, or LOAD &quot;GALAXY INVADERS&quot; and RUN, or LOAD &quot;GALAXY INVADERS&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3246">
 				<rom name="GalaxyInvaders.A.1.GalaxyInvaders.tzx" size="3246" crc="bec54462" sha1="e28c2cbd1a619211a22be7be9c9cffd7284532c7"/>
@@ -2510,6 +2694,7 @@ To load a cassette:
 		<description>Galaxy Invaders (IPS)</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4224">
 				<rom name="GalaxyInvaders(IPS).tzx" size="4224" crc="6df4e24b" sha1="23fc85b7e2ecfacd664dc991acf7e56393a345a1"/>
@@ -2521,6 +2706,7 @@ To load a cassette:
 		<description>Galaxy Jailbreak</description>
 		<year>1983</year>
 		<publisher>Romik Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5661">
 				<rom name="GalaxyJailbreak.tzx" size="5661" crc="8f630ce4" sha1="351dce4ff4d8d3dcc68508b39bb910b21cecfb84"/>
@@ -2532,6 +2718,7 @@ To load a cassette:
 		<description>Galaxy Warrior/Star Trek</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11620">
 				<rom name="GalaxyWarriorAndStarTrek.tzx" size="11620" crc="1bcb3a5f" sha1="abfb5609bfa713c2f4841bc45ba11eb7363b6bf7"/>
@@ -2543,6 +2730,7 @@ To load a cassette:
 		<description>The Gambler</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;BLACKJACK&quot; and RUN, or LOAD &quot;SLOT&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="19202">
 				<rom name="GamblerThe.tzx" size="19202" crc="e05a3062" sha1="61da0728b3850a4235d13b1a71e7bb0e339fac63"/>
@@ -2554,6 +2742,7 @@ To load a cassette:
 		<description>Game Pac</description>
 		<year>1982</year>
 		<publisher>Tyrant</publisher>
+		<info name="usage" value="Side A: LOAD &quot;GREED&quot; and RUN, or LOAD &quot;TEASER&quot; and RUN. Side B: LOAD &quot;DICE&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="9391">
@@ -2572,6 +2761,7 @@ To load a cassette:
 		<description>Games 1</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;ORBIT&quot; and RUN, or LOAD &quot;SNIPER&quot; and RUN, or LOAD &quot;METEORS&quot; and RUN. Side B: LOAD &quot;LIFE&quot; and RUN, or LOAD &quot;WOLFPACK&quot; and RUN, or LOAD &quot;GOLF&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2716">
@@ -2590,6 +2780,7 @@ To load a cassette:
 		<description>Games 4</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;LUNAR LANDING&quot; and RUN, or LOAD &quot;TWENTYONE&quot; and RUN. Side B: LOAD &quot;COMBAT&quot; and RUN, or LOAD &quot;SUBSTRIKE&quot; and RUN, or LOAD &quot;CODEBREAKER&quot; and RUN, or LOAD &quot;MAYDAYm&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="10702">
@@ -2608,6 +2799,7 @@ To load a cassette:
 		<description>Games II</description>
 		<year>1982</year>
 		<publisher>JRS Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;CB&quot;, or LOAD &quot;3DB&quot;, or LOAD &quot;GB&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="City Bomb"/>
 			<dataarea name="cass" size="2811">
@@ -2632,6 +2824,7 @@ To load a cassette:
 		<description>Games Pack</description>
 		<year>1982</year>
 		<publisher>JRS Software</publisher>
+		<info name="usage" value="LOAD &quot;3DB&quot;, LOAD &quot;CB&quot;, LOAD &quot;WW&quot;, or LOAD &quot;SN&quot;, or LOAD &quot;ST&quot;, or LOAD &quot;BH&quot;, or LOAD &quot;SL&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="20187">
 				<rom name="GamesPack.tzx" size="20187" crc="4c92529e" sha1="eb8aec55c92fc530591e033c862ce3b95c40a149"/>
@@ -2643,6 +2836,7 @@ To load a cassette:
 		<description>Games Pack 1</description>
 		<year>198?</year>
 		<publisher>Database Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;T&quot; and RUN, or LOAD &quot;F&quot; and RUN, or LOAD &quot;H&quot; and RUN, or LOAD &quot;D&quot; and RUN, or LOAD &quot;K&quot; and RUN, or LOAD &quot;A&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="833">
 				<rom name="GamesPack1.A.1.T.tzx" size="833" crc="96169795" sha1="a0a103600601fe22190dea42b7cfe74c99cdd502"/>
@@ -2679,6 +2873,7 @@ To load a cassette:
 		<description>Games Pack 1 (JPS)</description>
 		<year>1982</year>
 		<publisher>John Prince Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;AI&quot;, or LOAD &quot;GP&quot;, or LOAD &quot;PENALTY&quot;, or LOAD &quot;GOLF&quot; or LOAD &quot;SWAT&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Astro Invaders"/>
 			<dataarea name="cass" size="3096">
@@ -2715,6 +2910,7 @@ To load a cassette:
 		<description>Games Pack 2</description>
 		<year>198?</year>
 		<publisher>Database Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;L&quot; and RUN, or LOAD &quot;C&quot; and RUN, or LOAD &quot;N&quot; and RUN, or LOAD &quot;M&quot; and RUN, or LOAD &quot;R&quot; and RUN, or LOAD &quot;E&quot; and RUN, or LOAD &quot;B&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="962">
 				<rom name="GamesPack2.A.1.L.tzx" size="962" crc="ddbf047a" sha1="926ab9964a4d0ccd07460ce4912edaf3a00e5552"/>
@@ -2756,6 +2952,7 @@ To load a cassette:
 		<description>Games Sampler</description>
 		<year>1982</year>
 		<publisher>2-Bit Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;FLY&quot;, or LOAD &quot;PAD&quot;. Side B: LOAD &quot;RUGS&quot;, or LOAD &quot;BIO&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2185">
@@ -2774,6 +2971,7 @@ To load a cassette:
 		<description>Gamestape 1</description>
 		<year>1983</year>
 		<publisher>Fawkes Computing</publisher>
+		<info name="usage" value="Side A: LOAD &quot;DI&quot;, or LOAD &quot;TJ&quot;. Side B: LOAD &quot;DT&quot;, or LOAD &quot;TOH&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="17533">
@@ -2792,6 +2990,7 @@ To load a cassette:
 		<description>Games Tape 2</description>
 		<year>1981</year>
 		<publisher>J.K.Greye Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;STARFIGHTER&quot;, or LOAD &quot;PYRAMID&quot;, or LOAD &quot;ARTIST&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Starfighter"/>
 			<dataarea name="cass" size="5982">
@@ -2816,6 +3015,7 @@ To load a cassette:
 		<description>Games Tape 2 (Typed)</description>
 		<year>1981</year>
 		<publisher>J.K.Greye Software</publisher>
+		<info name="usage" value="Side A: LOAD &quot;STARFIGHTER&quot;, or LOAD &quot;PYRAMID&quot;. Side B: LOAD &quot;ARTIST&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="10696">
@@ -2834,6 +3034,7 @@ To load a cassette:
 		<description>Gamestape #3</description>
 		<year>1984</year>
 		<publisher>ICT</publisher>
+		<info name="usage" value="Side A: LOAD &quot;FROG2&quot; and RUN, or LOAD &quot;SATTACK&quot; and RUN. Side B: LOAD &quot;JACKPOT&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="15916">
@@ -2852,6 +3053,7 @@ To load a cassette:
 		<description>The Gauntlet</description>
 		<year>1982</year>
 		<publisher>Colourmatic</publisher>
+		<info name="usage" value="LOAD &quot;GAUNTLET&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14643">
 				<rom name="GauntletThe.tzx" size="14643" crc="7de2e0a3" sha1="49e714e58e9725925b28f8e17d90c708961064b5"/>
@@ -2863,6 +3065,7 @@ To load a cassette:
 		<description>The Gauntlet (PSS)</description>
 		<year>1984</year>
 		<publisher>PSS</publisher>
+		<info name="usage" value="LOAD &quot;GAUNTLET&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14793">
 				<rom name="GauntletThe(PSS).tzx" size="14793" crc="076726dd" sha1="3756c65ac420104c97a01317cdf156c2f412a2df"/>
@@ -2874,6 +3077,7 @@ To load a cassette:
 		<description>General Statistics</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="LOAD &quot;GENERAL STATISTICS&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14466">
 				<rom name="GeneralStatistics.tzx" size="14466" crc="8889d5e3" sha1="a1f94c7ca3a27e24ebfaba575700cfccf8640356"/>
@@ -2885,6 +3089,7 @@ To load a cassette:
 		<description>Geographics UK</description>
 		<year>198?</year>
 		<publisher>Novus Software</publisher>
+		<info name="usage" value="LOAD &quot;GEOGRAPHICS UK&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16281">
 				<rom name="GeographicsUK.tzx" size="16281" crc="4af3cfc9" sha1="0d88e5bc5e71cc898a375156e40396b5b536d7a0"/>
@@ -2896,6 +3101,7 @@ To load a cassette:
 		<description>Geography 1</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;T&quot; and RUN. Side B: LOAD &quot;E&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Towns"/>
 			<dataarea name="cass" size="8019">
@@ -2914,6 +3120,7 @@ To load a cassette:
 		<description>Geography 1 (WHSmith)</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="Side A: LOAD &quot;T&quot; and RUN. Side B: LOAD &quot;E&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Towns"/>
 			<dataarea name="cass" size="8019">
@@ -2932,6 +3139,7 @@ To load a cassette:
 		<description>Geometry 1</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="Side A: LOAD &quot;AREA&quot;, or LOAD &quot;PARTS&quot;, or LOAD &quot;VECTOR&quot;, or LOAD &quot;DEGREES&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5483">
 				<rom name="Geometry1.tzx" size="5483" crc="80dad6c4" sha1="be9373f6519a369e7d2dba40a14319f4751b1b78"/>
@@ -2943,6 +3151,7 @@ To load a cassette:
 		<description>Ghost Hunt</description>
 		<year>1982</year>
 		<publisher>PSS</publisher>
+		<info name="usage" value="LOAD &quot;GHOST HUNT&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5538">
 				<rom name="GhostHunt.tzx" size="5538" crc="8e8d76f5" sha1="33ac921be892a02c115f7dfa73c54cafe178671b"/>
@@ -2954,6 +3163,8 @@ To load a cassette:
 		<description>Gobbleman</description>
 		<year>1982</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;GOBBLEMANN&quot;" />
+		<!-- Where does this ZXPackman come from? According to the infomation from zx81stuff only Gobbleman is on the tape. -->
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4250">
 				<rom name="Gobbleman.Alt.ZXPackman.tzx" size="4250" crc="5ce53aaf" sha1="76a4e3bbad70d42eb51b4a5aa322026340f2edda"/>
@@ -2970,6 +3181,7 @@ To load a cassette:
 		<description>Gobblers</description>
 		<year>198?</year>
 		<publisher>Software Farm</publisher>
+		<info name="usage" value="LOAD &quot;GOBBLERS&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7394">
 				<rom name="Gobblers.tzx" size="7394" crc="dafe76e1" sha1="681bd965a868d25b3ded5c9111c6f6a622a7df1e"/>
@@ -2981,6 +3193,7 @@ To load a cassette:
 		<description>Gold</description>
 		<year>1981</year>
 		<publisher>Hilderbay</publisher>
+		<info name="usage" value="LOAD &quot;GOLD&quot;, or LOAD &quot;PICK A WORD&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="23791">
 				<rom name="Gold.tzx" size="23791" crc="a280fcba" sha1="33c0acac2f430cc9884739426e287098d646bd92"/>
@@ -2992,6 +3205,7 @@ To load a cassette:
 		<description>Golf</description>
 		<year>1982</year>
 		<publisher>R &amp; R Software</publisher>
+		<info name="usage" value="LOAD &quot;GOLF&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9468">
 				<rom name="Golf.tzx" size="9468" crc="1b658fab" sha1="3177bea82297a86a2c5c541cde8426fff95cc052"/>
@@ -3003,6 +3217,7 @@ To load a cassette:
 		<description>Graphics Kit</description>
 		<year>1981</year>
 		<publisher>Softsync</publisher>
+		<info name="usage" value="LOAD &quot;GRTOOL&quot;, or LOAD &quot;DEMO&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6203">
 				<rom name="GraphicsKit.tzx" size="6203" crc="0e978f07" sha1="2e26b56a9895655424d29d23d2836c28b0a26226"/>
@@ -3014,6 +3229,7 @@ To load a cassette:
 		<description>Graphics Pac 1</description>
 		<year>1982</year>
 		<publisher>Apropos Technology</publisher>
+		<info name="usage" value="LOAD &quot;DOODLER&quot;, or LOAD &quot;SUPER&quot;, or LOAD &quot;RANDOM1&quot;, or LOAD &quot;RANDOM2&quot;, or LOAD &quot;FORMATTER&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Doodler"/>
 			<dataarea name="cass" size="1148">
@@ -3050,6 +3266,7 @@ To load a cassette:
 		<description>Graphics Toolkit</description>
 		<year>1982</year>
 		<publisher>JRS Software</publisher>
+		<info name="usage" value="LOAD &quot;GRTOOL&quot;, or LOAD &quot;GRDEMO&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Graphics Toolkit"/>
 			<dataarea name="cass" size="2950">
@@ -3068,6 +3285,7 @@ To load a cassette:
 		<description>Graphics Toolkit (Colour Inlay)</description>
 		<year>1982</year>
 		<publisher>JRS Software</publisher>
+		<info name="usage" value="LOAD &quot;GRTOOL&quot;, or LOAD &quot;GRDEMO&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Graphics Toolkit"/>
 			<dataarea name="cass" size="2950">
@@ -3086,6 +3304,7 @@ To load a cassette:
 		<description>Great Britain Ltd</description>
 		<year>198?</year>
 		<publisher>Simon W. Hessel</publisher>
+		<info name="usage" value="LOAD &quot;GBLTD&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15767">
 				<rom name="GreatBritainLtd.tzx" size="15767" crc="4b717923" sha1="bbde7b36f9f2cb65cd0ef2f112c52ce612a19433"/>
@@ -3097,6 +3316,7 @@ To load a cassette:
 		<description>Grimm's Fairy Trails</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;GFTRAILS&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9563">
 				<rom name="GrimmsFairyTrails.tzx" size="9563" crc="55fe8f96" sha1="cb65770be85add8b3aa5e01cecacc3b2b2835ecb"/>
@@ -3108,6 +3328,7 @@ To load a cassette:
 		<description>Guitar for Beginners</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;GUITAR&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11246">
 				<rom name="GuitarForBeginners.tzx" size="11246" crc="10734bfb" sha1="975deca435c26ed3e0604497454129186e139307"/>
@@ -3119,6 +3340,7 @@ To load a cassette:
 		<description>ZX-Gulp</description>
 		<year>1982</year>
 		<publisher>Campbell Systems</publisher>
+		<info name="usage" value="Side A: LOAD &quot;GULP&quot;. Side B: LOAD &quot;NOTE&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Gulp"/>
 			<dataarea name="cass" size="4678">
@@ -3133,10 +3355,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="gulpm">
+	<!-- Software fails to load. This is only the quickloader not the full software. -->
+	<software name="gulpm" supported="no">
 		<description>Gulp (Mindware)</description>
 		<year>1982</year>
 		<publisher>Mindware</publisher>
+		<info name="usage" value="LOAD &quot;GULP&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="1125">
 				<rom name="Gulp(Mindware).1.Gulp.tzx" size="1125" crc="c651f1e5" sha1="c91c14f5ec001c991ed3c67673fe38c8b7b9d02d"/>
@@ -3148,6 +3372,7 @@ To load a cassette:
 		<description>Gulp 2</description>
 		<year>1982</year>
 		<publisher>Campbell Systems</publisher>
+		<info name="usage" value="LOAD &quot;GULP2&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6342">
 				<rom name="Gulp2.tzx" size="6342" crc="b041f1bf" sha1="aa0fadd80146c2dab98dab49c88f52ba4852c861"/>
@@ -3159,6 +3384,7 @@ To load a cassette:
 		<description>Gulpman</description>
 		<year>1982</year>
 		<publisher>Micromega</publisher>
+		<info name="usage" value="LOAD &quot;GULPMAN&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6351">
 				<rom name="Gulpman.tzx" size="6351" crc="7baebe9a" sha1="d28c22863672b87a1f0f6b23f2262b0195b3e1fb"/>
@@ -3170,6 +3396,7 @@ To load a cassette:
 		<description>Hangman</description>
 		<year>1982</year>
 		<publisher>Softsync</publisher>
+		<info name="usage" value="Side A: LOAD &quot;ANIMALS&quot; and GOTO 50, or LOAD &quot;SCIENCE&quot; and GOTO 50, or LOAD &quot;STATES&quot; and GOTO 50, or LOAD &quot;COUNTRIES&quot; and GOTO 50, or LOAD &quot;FRUITS VEGETABLES&quot; and GOTO 50, or LOAD &quot;OPPONENT&quot;, or LOAD &quot;LIBRARY MASTER&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Animals"/>
 			<dataarea name="cass" size="7731">
@@ -3218,6 +3445,7 @@ To load a cassette:
 		<description>Haute Resolution</description>
 		<year>1984</year>
 		<publisher>Pluto</publisher>
+		<info name="usage" value="LOAD &quot;HI-RES&quot; and RUN, or lower ramtop? and LOAD &quot;SINE&quot;, or lower ramtop? and LOAD &quot;EXPO 3D&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6970">
 				<rom name="HauteResolution.tzx" size="6970" crc="f52d460f" sha1="91cd6738fcec38d4fc9d3e3ba08614634935918a"/>
@@ -3229,6 +3457,7 @@ To load a cassette:
 		<description>Heating System Analyzer</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;HEAT&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15718">
 				<rom name="HeatingSystemAnalyzer.tzx" size="15718" crc="ea836c43" sha1="9d5e5a4f1e26f6a5dba03028940310bb796da199"/>
@@ -3240,6 +3469,7 @@ To load a cassette:
 		<description>High Res</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;HRG&quot; and RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10985">
 				<rom name="HighRes.tzx" size="10985" crc="fa40dbc1" sha1="9b81b10a719af4c6c61a03ed003f1198f68bda1b"/>
@@ -3251,6 +3481,7 @@ To load a cassette:
 		<description>High Resolution</description>
 		<year>1983</year>
 		<publisher>Computer Rentals</publisher>
+		<info name="usage" value="LOAD &quot;HI-RES&quot;, or lower ramtop? and LOAD &quot;SINE&quot;, or lower ramtop? and LOAD &quot;EXPO 3D&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="High Resolution"/>
 			<dataarea name="cass" size="1851">
@@ -3275,6 +3506,7 @@ To load a cassette:
 		<description>High-Res Package</description>
 		<year>1983</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;HI-RES&quot;, or lower ramptop? and LOAD &quot;SINE&quot;, or lower ramtop? and LOAD &quot;EXPO 3D&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="High Resolution"/>
 			<dataarea name="cass" size="1851">
@@ -3299,6 +3531,7 @@ To load a cassette:
 		<description>History 1</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="Side A: LOAD &quot;E&quot; and RUN. Side B: LOAD &quot;M&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Events"/>
 			<dataarea name="cass" size="10763">
@@ -3317,6 +3550,7 @@ To load a cassette:
 		<description>History 1 (WHSmith)</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="Side A: LOAD &quot;E&quot; and RUN. Side B: LOAD &quot;M&quot; and RUN." />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Events"/>
 			<dataarea name="cass" size="10763">
@@ -3335,6 +3569,7 @@ To load a cassette:
 		<description>The Home Asset Manager</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;VALUE&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15112">
 				<rom name="HomeAssetManagerThe.tzx" size="15112" crc="fd728104" sha1="e19508787e6ede4ec4323df540dd7516b49b295d"/>
@@ -3346,6 +3581,7 @@ To load a cassette:
 		<description>The Home Improvement Planner</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;HOME&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15871">
 				<rom name="HomeImprovementPlannerThe.tzx" size="15871" crc="4e4df58c" sha1="45e98db0f02643a37ed71b86a85042a331b9aac1"/>
@@ -3357,6 +3593,7 @@ To load a cassette:
 		<description>Home Money Manager</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="Side A: LOAD &quot;FINANCE&quot;. Side B: LOAD &quot;FINANCE&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="5581">
@@ -3375,6 +3612,7 @@ To load a cassette:
 		<description>Hopper</description>
 		<year>1982</year>
 		<publisher>PSS</publisher>
+		<info name="usage" value="LOAD &quot;HOPPER&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11061">
 				<rom name="Hopper.tzx" size="11061" crc="f5601550" sha1="4102dbfe6c3cddb82877bb9b089f764420f0a249"/>
@@ -3386,6 +3624,7 @@ To load a cassette:
 		<description>Hopper (Truck)</description>
 		<year>1981</year>
 		<publisher>PSS</publisher>
+		<info name="usage" value="LOAD &quot;HOPPER&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11061">
 				<rom name="Hopper(Truck).tzx" size="11061" crc="57034213" sha1="5747373be057f05059c47d8acb42f2c9312eeb83"/>
@@ -3397,6 +3636,7 @@ To load a cassette:
 		<description>House of Death</description>
 		<year>198?</year>
 		<publisher>A.J.Rushton</publisher>
+		<info name="usage" value="LOAD &quot;HOUSE OF DEATH&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15289">
 				<rom name="HouseOfDeath.tzx" size="15289" crc="e78272e3" sha1="80ee47dd77a43c051c600a38def525950a110119"/>
@@ -3408,6 +3648,7 @@ To load a cassette:
 		<description>HRG 7.0</description>
 		<year>1983</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="LOAD &quot;HRG&quot;, or LOAD &quot;HRG&quot;, or LOAD &quot;RECAP&quot;, or LOAD &quot;DEMO&quot;, or LOAD &quot;PAGE&quot;." />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="19444">
 				<rom name="HRG70.tzx" size="19444" crc="75adee54" sha1="9f062ea8b3bd11a868a773dd4fed573a51225a1e"/>
@@ -3418,6 +3659,7 @@ To load a cassette:
 	<software name="incacurs">
 		<description>Adventure B: Inca Curse</description>
 		<year>1981</year>
+		<info name="usage" value="LOAD &quot;ADVENTB&quot;" />
 		<publisher>Sinclair Research</publisher>
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12205">
@@ -3430,6 +3672,7 @@ To load a cassette:
 		<description>Inca Curse (Artic)</description>
 		<year>1981</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;ADVENTB&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12205">
 				<rom name="IncaCurse(Artic).tzx" size="12205" crc="76d699e6" sha1="c3840c1539239437150d7e300b0bae412ad6a987"/>
@@ -3437,7 +3680,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="intcobalt">
+	<!-- Software fails to load/start -->
+	<software name="intcobalt" supported="no">
 		<description>Intercepteur Cobalt</description>
 		<year>1984</year>
 		<publisher>ERE Informatique</publisher>
@@ -3883,7 +4127,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="knightqu">
+	<!-- Software fails to load/start -->
+	<software name="knightqu" supported="no">
 		<description>The Knights Quest</description>
 		<year>1983</year>
 		<publisher>Phipps Associates</publisher>
@@ -4359,7 +4604,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="mazedeath">
+	<!-- Software fails to load/start -->
+	<software name="mazedeath" supported="no">
 		<description>Maze Death Race</description>
 		<year>1982</year>
 		<publisher>PSS</publisher>
@@ -4410,7 +4656,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="mcoder">
+	<!-- Software fails to load/start -->
+	<software name="mcoder" supported="no">
 		<description>MCoder</description>
 		<year>1982</year>
 		<publisher>PSS</publisher>
@@ -4604,7 +4851,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="mondesas">
+	<!-- Software fails to start? -->
+	<software name="mondesas" supported="no">
 		<description>Moniteur Desassembleur</description>
 		<year>1982</year>
 		<publisher>Direco International</publisher>
@@ -4659,7 +4907,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="multfile">
+	<!-- Software fails to load/start -->
+	<software name="multfile" supported="no">
 		<description>Multifile (Gladstone)</description>
 		<year>1981</year>
 		<publisher>Gladstone Electronics</publisher>
@@ -4670,7 +4919,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="multfilep">
+	<!-- Software fails to load/start -->
+	<software name="multfilep" supported="no">
 		<description>Multifile Plus (Gladstone)</description>
 		<year>198?</year>
 		<publisher>Gladstone Electronics</publisher>
@@ -4681,7 +4931,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="multgrap">
+	<!-- Software fails to load/start -->
+	<software name="multgrap" supported="no">
 		<description>MultiGraphics 2.3</description>
 		<year>1981</year>
 		<publisher>Bridge Software</publisher>
@@ -4885,7 +5136,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="oraclcave">
+	<!-- Software fails to load/start -->
+	<software name="oraclcave" supported="no">
 		<description>The Oracles Cave</description>
 		<year>1981</year>
 		<publisher>Doric Computer Systems</publisher>
@@ -5329,7 +5581,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="printprg">
+	<!-- Software fails to fail/start? -->
+	<software name="printprg" supported="no">
 		<description>Printer Programs</description>
 		<year>1984</year>
 		<publisher>Nick Godwin</publisher>
@@ -5855,6 +6108,7 @@ To load a cassette:
 		</part>
 	</software>
 
+	<!-- How does this work -->
 	<software name="scrnkit1">
 		<description>Screen Kit 1</description>
 		<year>198?</year>
@@ -5939,10 +6193,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="spaceint">
+	<!-- Game screen jumps from left to right -->
+	<software name="spaceint" supported="partial">
 		<description>Space Intruders</description>
 		<year>1981</year>
 		<publisher>Hewson Consultants</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4010">
 				<rom name="SpaceIntruders.tzx" size="4010" crc="88b1156f" sha1="8aaf24a56fe3cc999ce32ae795ce0bbd7983838f"/>
@@ -5954,6 +6210,7 @@ To load a cassette:
 		<description>Space Invaders</description>
 		<year>198?</year>
 		<publisher>Mikro-Gen</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="2896">
 				<rom name="SpaceInvaders.tzx" size="2896" crc="a345e8db" sha1="4536f0d2a465a71891803b23d29bc8c54c1b874f"/>
@@ -5961,7 +6218,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="spaceinvd">
+	<!-- Software fails to load/start -->
+	<software name="spaceinvd" supported="no">
 		<description>Space Invaders (dk)</description>
 		<year>1981</year>
 		<publisher>dK'tronics</publisher>
@@ -5976,6 +6234,7 @@ To load a cassette:
 		<description>Space Invaders 3K</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3074">
 				<rom name="SpaceInvaders3K.tzx" size="3074" crc="69729abd" sha1="00bea09a8d43cfd35cb2fb44eff623692811d2a9"/>
@@ -5987,6 +6246,7 @@ To load a cassette:
 		<description>Space Invaders and Planetoids</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Space Invaders"/>
 			<dataarea name="cass" size="3074">
@@ -6005,6 +6265,7 @@ To load a cassette:
 		<description>Space Invaders and Space Rescue</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Space Invaders"/>
 			<dataarea name="cass" size="3074">
@@ -6029,6 +6290,7 @@ To load a cassette:
 		<description>Space Man Apollo</description>
 		<year>1984</year>
 		<publisher>ICT</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15875">
 				<rom name="SpacemanApollo.tzx" size="15875" crc="0fc40716" sha1="68861a48e02a2d65b717012df38600d96986df97"/>
@@ -6040,6 +6302,7 @@ To load a cassette:
 		<description>Space Mission</description>
 		<year>1982</year>
 		<publisher>Gem Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13607">
 				<rom name="SpaceMission.tzx" size="13607" crc="0dacab8d" sha1="bd92c04a311a49e5846e35528d692ee5e6eb2bcf"/>
@@ -6051,6 +6314,7 @@ To load a cassette:
 		<description>Space Raiders also Bomber</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Space Raiders"/>
 			<dataarea name="cass" size="3003">
@@ -6069,6 +6333,7 @@ To load a cassette:
 		<description>Space Trek</description>
 		<year>198?</year>
 		<publisher>Micromega</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15619">
 				<rom name="SpaceTrek.tzx" size="15619" crc="081b0787" sha1="0e20ed7812a34ad507ec1c1dc23536641c4b9993"/>
@@ -6076,7 +6341,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="spctrekj">
+	<!-- Software fails to load -->
+	<software name="spctrekj" supported="no">
 		<description>Spacetrek (JRS)</description>
 		<year>198?</year>
 		<publisher>JRS Software</publisher>
@@ -6091,6 +6357,7 @@ To load a cassette:
 		<description>Spelling 1</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Series A1 to A15"/>
 			<dataarea name="cass" size="10860">
@@ -6109,6 +6376,7 @@ To load a cassette:
 		<description>Spelling 1 (WHSmith)</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Series A1 to A15"/>
 			<dataarea name="cass" size="10860">
@@ -6127,6 +6395,7 @@ To load a cassette:
 		<description>Spelling Bee</description>
 		<year>1983</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="48415">
 				<rom name="SpellingBee.tzx" size="48415" crc="a5987f22" sha1="d992d921483b59b85ae68bdfa6e44d1c9c5068cc"/>
@@ -6138,6 +6407,7 @@ To load a cassette:
 		<description>The Stamp Collector</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14675">
 				<rom name="StampCollectorThe.tzx" size="14675" crc="702011b4" sha1="e44f8118a5ef3c7ffc55a46d476cdb0f516179ce"/>
@@ -6149,6 +6419,7 @@ To load a cassette:
 		<description>Starquest</description>
 		<year>1982</year>
 		<publisher>Pixel Productions</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16209">
 				<rom name="Starquest.2.Starquest.tzx" size="16209" crc="85bfc2b5" sha1="f0d5783909ca9a5954ecd71854f4f9aaa57d6619"/>
@@ -6156,7 +6427,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="starqsti" cloneof="starqst">
+	<!-- Software fails to load/start -->
+	<software name="starqsti" cloneof="starqst" supported="no">
 		<description>Starquest (IPS)</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
@@ -6167,7 +6439,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="starqste">
+	<!-- Software fails to load/start -->
+	<software name="starqste" supported="no">
 		<description>Starquest and Encounter-IQ</description>
 		<year>1982</year>
 		<publisher>Quicksilva</publisher>
@@ -6201,6 +6474,7 @@ To load a cassette:
 		<description>Star Soccer</description>
 		<year>1982</year>
 		<publisher>Watson Software Services</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="12 League Teams"/>
 			<dataarea name="cass" size="12614">
@@ -6215,7 +6489,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="starter">
+	<!-- Software fails to load/start -->
+	<software name="starter" supported="no">
 		<description>The Starter</description>
 		<year>1981</year>
 		<publisher>Timex</publisher>
@@ -6230,6 +6505,7 @@ To load a cassette:
 		<description>Star Trek</description>
 		<year>1982</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10250">
 				<rom name="StarTrek.tzx" size="10250" crc="c8107516" sha1="3e0f7d137f9572f756ba9edc5c6835fa9367be81"/>
@@ -6241,6 +6517,7 @@ To load a cassette:
 		<description>Star Trek (Macronics)</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16091">
 				<rom name="StarTrek(Macronics).tzx" size="16091" crc="171e0b56" sha1="5a25a295fc011e37b8941634ad32746b9d626d48"/>
@@ -6252,6 +6529,7 @@ To load a cassette:
 		<description>Star Trek (Silversoft)</description>
 		<year>1981</year>
 		<publisher>Silversoft</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16391">
 				<rom name="StarTrek(Silversoft).tzx" size="16391" crc="840b93c9" sha1="f9248c2caa8fcd08372cd80c7e9335484ed026b2"/>
@@ -6263,6 +6541,7 @@ To load a cassette:
 		<description>Star Trek (Typed Inlay)</description>
 		<year>1981</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10250">
 				<rom name="StarTrek(Typed).tzx" size="10250" crc="4c595448" sha1="d6286120a5acc82d974f76e381f3382fe0c55be8"/>
@@ -6274,6 +6553,7 @@ To load a cassette:
 		<description>Star Trek and Mission of the Deep</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Star Trek"/>
 			<dataarea name="cass" size="14586">
@@ -6292,6 +6572,7 @@ To load a cassette:
 		<description>Star Trek and Nightmare Park</description>
 		<year>1981</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Star Trek"/>
 			<dataarea name="cass" size="15924">
@@ -6310,6 +6591,7 @@ To load a cassette:
 		<description>States And Capitals</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11538">
 				<rom name="StatesAndCapitals.tzx" size="11538" crc="c70fa5a4" sha1="99551d3bb7ad39b7f55be16973af29dc7425e9e3"/>
@@ -6321,6 +6603,7 @@ To load a cassette:
 		<description>Statistics</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4852">
 				<rom name="Statistics.tzx" size="4852" crc="22eb02c8" sha1="494389e8ad0a8c8adb4a7fa17c91464a78d555e2"/>
@@ -6332,6 +6615,7 @@ To load a cassette:
 		<description>Statistics (Zeta)</description>
 		<year>198?</year>
 		<publisher>Zeta Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13600">
 				<rom name="Statistics(Zeta).tzx" size="13600" crc="c0b4f14a" sha1="7f13b230064429ab366f0816b43d683085d0bf62"/>
@@ -6343,6 +6627,7 @@ To load a cassette:
 		<description>Stock Car</description>
 		<year>1984</year>
 		<publisher>Informatique Service</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="8450">
 				<rom name="StockCar.tzx" size="8450" crc="fedbbc78" sha1="3604d2ff3b9de27e45cb691131b98be09ba3c65b"/>
@@ -6354,6 +6639,7 @@ To load a cassette:
 		<description>Stock-Market</description>
 		<year>1981</year>
 		<publisher>Video Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11978">
 				<rom name="StockMarket.A.tzx" size="11978" crc="440cc0e5" sha1="849c2761901e9210f101500e5603d38b90e55a8c"/>
@@ -6365,6 +6651,7 @@ To load a cassette:
 		<description>Stock Market Game</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15812">
 				<rom name="StockMarketGame.A.tzx" size="15812" crc="f606c23d" sha1="df1e91afaa1e4e8e8e03d58b277ded78ff231d46"/>
@@ -6381,6 +6668,7 @@ To load a cassette:
 		<description>Stock Market Tech. Analysis 1</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16405">
 				<rom name="StockMarketTechAnalysis1.tzx" size="16405" crc="40a9b729" sha1="0d23879da55a4e5cbd7a8b482d010fdcb21e06f6"/>
@@ -6392,6 +6680,7 @@ To load a cassette:
 		<description>The Stock Option Analyzer</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5763">
 				<rom name="StockOptionAnalyzerThe.tzx" size="5763" crc="b829c9c3" sha1="7691ee6f0ac6a103168684ac3cde78ec128c5e68"/>
@@ -6403,6 +6692,7 @@ To load a cassette:
 		<description>Strategy Football</description>
 		<year>1983</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15469">
 				<rom name="StrategyFootball.tzx" size="15469" crc="432f9356" sha1="4add01b5f9e3ddf8f19a686ad91385d4dece1bbd"/>
@@ -6410,7 +6700,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="subspace">
+	<!-- Software fails to load/start -->
+	<software name="subspace" supported="no">
 		<description>Subspace Striker</description>
 		<year>1982</year>
 		<publisher>Quicksilva</publisher>
@@ -6440,7 +6731,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="subspacei" cloneof="subspace">
+	<!-- Software fails to load/start -->
+	<software name="subspacei" cloneof="subspace" supported="no">
 		<description>Subspace Striker (IPS)</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
@@ -6455,6 +6747,7 @@ To load a cassette:
 		<description>Super Chess</description>
 		<year>1982</year>
 		<publisher>CP Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16296">
 				<rom name="SuperChess.tzx" size="16296" crc="dad51d68" sha1="ce79c0b548bb98118e1725c82396887e01aea430"/>
@@ -6466,6 +6759,7 @@ To load a cassette:
 		<description>Super Chess (Softsync)</description>
 		<year>1982</year>
 		<publisher>Softsync</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16296">
 				<rom name="SuperChess(Softsync).tzx" size="16296" crc="bdb36226" sha1="5dda6654a11c6f0afa5dcb9d7f128667359a6954"/>
@@ -6477,6 +6771,7 @@ To load a cassette:
 		<description>Super Glooper also Frogs</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Super Glooper"/>
 			<dataarea name="cass" size="3429">
@@ -6495,6 +6790,7 @@ To load a cassette:
 		<description>Super Invaders</description>
 		<year>1982</year>
 		<publisher>Bridge Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12541">
 				<rom name="SuperInvaders.tzx" size="12541" crc="f662bd98" sha1="3d8c7a7f290d9c792ea7263957dcdaa14cd02c93"/>
@@ -6506,6 +6802,7 @@ To load a cassette:
 		<description>Super Invasion</description>
 		<year>1981</year>
 		<publisher>Softsync</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="1124">
 				<rom name="SuperInvasion.tzx" size="1124" crc="cc59f451" sha1="447855ab4bd695a574a93ff9fab09d65258438a5"/>
@@ -6517,6 +6814,7 @@ To load a cassette:
 		<description>Super Math</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="8299">
 				<rom name="SuperMath.tzx" size="8299" crc="21eb7b78" sha1="3f30feead9537bf39da7d83175a5a0cc3dcf0a72"/>
@@ -6528,6 +6826,7 @@ To load a cassette:
 		<description>Supermaze</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16394">
 				<rom name="Supermaze.tzx" size="16394" crc="6e93ce7f" sha1="f85d7522e9cd2bf3cbdc3c05493423d7afad482b"/>
@@ -6535,10 +6834,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="super9">
+	<!-- Software fails to load/start -->
+	<software name="super9" supported="no">
 		<description>Super Nine</description>
 		<year>1982</year>
 		<publisher>Romik Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6872">
 				<rom name="SuperNine.tzx" size="6872" crc="e8b39d87" sha1="5d3cb094e65d4bd9c412f4b6fc18afcc768e6f41"/>
@@ -6550,6 +6851,7 @@ To load a cassette:
 		<description>Super Programs 1</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Invasion from Jupiter"/>
 			<dataarea name="cass" size="896">
@@ -6592,6 +6894,7 @@ To load a cassette:
 		<description>Super Programs 1 (ICL)</description>
 		<year>1981</year>
 		<publisher>ICL</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2597">
@@ -6610,6 +6913,7 @@ To load a cassette:
 		<description>Super Programs 2</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2452">
@@ -6628,6 +6932,7 @@ To load a cassette:
 		<description>Super Programs 2 (ICL)</description>
 		<year>1981</year>
 		<publisher>ICL</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Rings Around Saturn"/>
 			<dataarea name="cass" size="1030">
@@ -6666,10 +6971,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="suprogs3">
+	<!-- Software fails to load/start -->
+	<software name="suprogs3" supported="no">
 		<description>Super Programs 3</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Train Race"/>
 			<dataarea name="cass" size="751">
@@ -6708,10 +7015,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="suprogs3i" cloneof="suprogs3">
+	<!-- Software fails to load/start -->
+	<software name="suprogs3i" cloneof="suprogs3" supported="no">
 		<description>Super Programs 3 (ICL)</description>
 		<year>1981</year>
 		<publisher>ICL</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2228">
@@ -6730,6 +7039,7 @@ To load a cassette:
 		<description>Super Programs 4</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="2487">
@@ -6748,6 +7058,7 @@ To load a cassette:
 		<description>Super Programs 4 (ICL)</description>
 		<year>1981</year>
 		<publisher>ICL</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Down Under"/>
 			<dataarea name="cass" size="981">
@@ -6790,6 +7101,7 @@ To load a cassette:
 		<description>Super Programs 5</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Martian Knockout"/>
 			<dataarea name="cass" size="3160">
@@ -6832,6 +7144,7 @@ To load a cassette:
 		<description>Super Programs 5 (ICL)</description>
 		<year>1981</year>
 		<publisher>ICL</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Martian Knockout"/>
 			<dataarea name="cass" size="3160">
@@ -6874,6 +7187,7 @@ To load a cassette:
 		<description>Super Programs 6</description>
 		<year>1981</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Galactic Invasion"/>
 			<dataarea name="cass" size="3160">
@@ -6916,6 +7230,7 @@ To load a cassette:
 		<description>Super Programs 6 (ICL)</description>
 		<year>1981</year>
 		<publisher>ICL</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Galactic Invasion"/>
 			<dataarea name="cass" size="3160">
@@ -6958,6 +7273,7 @@ To load a cassette:
 		<description>Super Programs 7</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Racetrack"/>
 			<dataarea name="cass" size="854">
@@ -7000,6 +7316,7 @@ To load a cassette:
 		<description>Super Programs 7 (ICL)</description>
 		<year>1982</year>
 		<publisher>ICL</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Racetrack"/>
 			<dataarea name="cass" size="854">
@@ -7042,6 +7359,7 @@ To load a cassette:
 		<description>Super Programs 8</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15192">
 				<rom name="SuperPrograms8.tzx" size="15192" crc="2aa20758" sha1="de665ebe1949e077934ed6f0961d525f274f3d6e"/>
@@ -7053,6 +7371,7 @@ To load a cassette:
 		<description>Super Programs 8 (ICL)</description>
 		<year>1982</year>
 		<publisher>ICL</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15192">
 				<rom name="SuperPrograms8(ICL).tzx" size="15192" crc="2532389a" sha1="a40650a76c57edc7a0431117fe9d9e5c4f47bb6b"/>
@@ -7064,6 +7383,7 @@ To load a cassette:
 		<description>Super Scramble</description>
 		<year>1982</year>
 		<publisher>Software Farm</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9312">
 				<rom name="SuperScramble.tzx" size="9312" crc="5f11c06c" sha1="aa22bb6ff4c10b8279f2c1e568db7b9ae5158ca6"/>
@@ -7075,6 +7395,7 @@ To load a cassette:
 		<description>Super Wumpus</description>
 		<year>1981</year>
 		<publisher>Silversoft</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16276">
 				<rom name="SuperWumpus.A.tzx" size="16276" crc="55734c5f" sha1="90f504b054627acbdfb3e87e410af9d80559ab3a"/>
@@ -7091,6 +7412,7 @@ To load a cassette:
 		<description>Tables Countdown</description>
 		<year>1981</year>
 		<publisher>AVC Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9197">
 				<rom name="TablesCountdown.tzx" size="9197" crc="59bd7de7" sha1="71d4f85478e2eb9016bab2fd0fac0107a7fccdea"/>
@@ -7102,6 +7424,7 @@ To load a cassette:
 		<description>Tai</description>
 		<year>1982</year>
 		<publisher>PSS</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14237">
 				<rom name="Tai.tzx" size="14237" crc="3a1351f8" sha1="fd0a3ceac8ce8540e13c7e6af6f547a2feff5d8a"/>
@@ -7113,6 +7436,7 @@ To load a cassette:
 		<description>Talkback</description>
 		<year>1983</year>
 		<publisher>M.W.F.Ringrose</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12740">
 				<rom name="Talkback.tzx" size="12740" crc="36724d18" sha1="6b32ff6dd4930ad62cadb59b3c4ecdb6eb4a2654"/>
@@ -7124,6 +7448,7 @@ To load a cassette:
 		<description>Tapebook 50 1K</description>
 		<year>198?</year>
 		<publisher>Control Technology</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="37005">
 				<rom name="TapeBook50.tzx" size="37005" crc="d882bccd" sha1="0d1b30d4d024147c9489d56e0519f9f60bf75cbd"/>
@@ -7135,6 +7460,7 @@ To load a cassette:
 		<description>Tarot</description>
 		<year>1983</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="29510">
 				<rom name="Tarot.tzx" size="29510" crc="5c63c324" sha1="81f1ab607044fd2b44c1163a0cb317dc1727d0a4"/>
@@ -7146,6 +7472,7 @@ To load a cassette:
 		<description>Tasword</description>
 		<year>1982</year>
 		<publisher>Tasman Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5569">
 				<rom name="Tasword.tzx" size="5569" crc="9b77040a" sha1="100be588ad785f012f513e8043c323348b5e44ed"/>
@@ -7157,6 +7484,7 @@ To load a cassette:
 		<description>Technical Literacy Series</description>
 		<year>1983</year>
 		<publisher>National Education Corporation</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="VU-CALC"/>
 			<dataarea name="cass" size="5515">
@@ -7175,6 +7503,7 @@ To load a cassette:
 		<description>Tempest</description>
 		<year>198?</year>
 		<publisher>Mikro-Gen</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3521">
 				<rom name="Tempest.tzx" size="3521" crc="5cca0ded" sha1="a4cfd1f82d0e4d255ae3b54a54f30a6cb96ce4f9"/>
@@ -7186,6 +7515,7 @@ To load a cassette:
 		<description>Ten 1K Games</description>
 		<year>1983</year>
 		<publisher>Computer Rentals</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7545">
 				<rom name="Ten1KGames.tzx" size="7545" crc="c724fd4a" sha1="589c68041f90a46fb8c18118c0889c6b8f91f0ca"/>
@@ -7197,6 +7527,7 @@ To load a cassette:
 		<description>Thro' The Wall also Scramble</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Thro' The Wall"/>
 			<dataarea name="cass" size="2430">
@@ -7215,6 +7546,7 @@ To load a cassette:
 		<description>Tomb of Dracula</description>
 		<year>198?</year>
 		<publisher>Moviedrome Video</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14743">
 				<rom name="TombOfDracula.tzx" size="14743" crc="ef2a3f64" sha1="e883c6e1992ddd67a82e66709211d024b563aa36"/>
@@ -7226,6 +7558,7 @@ To load a cassette:
 		<description>Tomb of Dracula (Felix)</description>
 		<year>1982</year>
 		<publisher>Felix Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14743">
 				<rom name="TombOfDracula.tzx" size="14743" crc="ef2a3f64" sha1="e883c6e1992ddd67a82e66709211d024b563aa36"/>
@@ -7233,10 +7566,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="toolkit">
+	<!-- Software fails to load/start -->
+	<software name="toolkit" supported="no">
 		<description>Toolkit</description>
 		<year>198?</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3820">
 				<rom name="Toolkit.tzx" size="3820" crc="c015038b" sha1="422fadbdf7cfc0da1e6fdfd101f1d613581ed884"/>
@@ -7244,10 +7579,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="toolkita" cloneof="toolkit">
+	<!-- Software fails to load/start -->
+	<software name="toolkita" cloneof="toolkit" supported="no">
 		<description>Toolkit (Artic)</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3802">
 				<rom name="Toolkit(Artic).tzx" size="3802" crc="4743b221" sha1="049169deb7c4c760d79dd66fdf49172d5a77d776"/>
@@ -7255,10 +7592,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="toolkitjrs">
+	<!-- Software fails to load/start -->
+	<software name="toolkitjrs" supported="no">
 		<description>Toolkit (JRS)</description>
 		<year>1982</year>
 		<publisher>JRS Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="2318">
 				<rom name="Toolkit(JRS).tzx" size="2318" crc="5c378f0f" sha1="2121e140989dc586810bec4e1399de1007924286"/>
@@ -7266,10 +7605,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="trace">
+	<!-- Software fails to load/start -->
+	<software name="trace" supported="no">
 		<description>Trace</description>
 		<year>1983</year>
 		<publisher>Texgate</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3474">
 				<rom name="Trace.tzx" size="3474" crc="b43432d2" sha1="68ea27c33ee7b25628862ebd51bf07b716aa0d57"/>
@@ -7281,6 +7622,7 @@ To load a cassette:
 		<description>Trader</description>
 		<year>1982</year>
 		<publisher>Quicksilva</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, stop/rewind tape, LOAD &quot;T1&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="49461">
 				<rom name="Trader.tzx" size="49461" crc="41c24497" sha1="37fd173296fb68815ca87544977b354c44a54d9e"/>
@@ -7292,6 +7634,7 @@ To load a cassette:
 		<description>Trader (Jewel)</description>
 		<year>1982</year>
 		<publisher>Pixel Productions</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, stop/rewind tape, LOAD &quot;T1&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="49639">
 				<rom name="Trader(Jewel).tzx" size="49639" crc="01e4ec2a" sha1="0082993bf62f04b69581990f052786daeea5620c"/>
@@ -7303,6 +7646,7 @@ To load a cassette:
 		<description>Traffic</description>
 		<year>1984</year>
 		<publisher>Loriciels</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7030">
 				<rom name="Traffic.tzx" size="7030" crc="be09c247" sha1="44626d460f9c918c4bc9e0611737b50215c73a3c"/>
@@ -7314,6 +7658,7 @@ To load a cassette:
 		<description>TS Destroyer and Space Raid</description>
 		<year>198?</year>
 		<publisher>Softsync</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="TS Destroyer"/>
 			<dataarea name="cass" size="2159">
@@ -7332,6 +7677,7 @@ To load a cassette:
 		<description>Tutor German</description>
 		<year>1983</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13869">
 				<rom name="TutorGerman.tzx" size="13869" crc="44ddecba" sha1="058f24ef7be7494a90cd9799cd68b07e78169b95"/>
@@ -7343,6 +7689,7 @@ To load a cassette:
 		<description>Tutor Spanish</description>
 		<year>1983</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15219">
 				<rom name="TutorSpanish.tzx" size="15219" crc="4d62869a" sha1="e12aabea86ff2542821bd04cdf6e2868f1d3f5d7"/>
@@ -7354,6 +7701,7 @@ To load a cassette:
 		<description>Tyrannosaure Rex</description>
 		<year>1982</year>
 		<publisher>Informatique Service</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="11728">
 				<rom name="TyrannosaureRex.tzx" size="11728" crc="5300e4d1" sha1="cb0caa82180a19407cd5e850ca88ca33e12b8efc"/>
@@ -7365,6 +7713,7 @@ To load a cassette:
 		<description>Tyrant of Athens</description>
 		<year>1982</year>
 		<publisher>Lothlorien</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13068">
 				<rom name="TyrantOfAthens.tzx" size="13068" crc="fc3fd4f8" sha1="882b644962f09d68bc813563478d773c3a07115b"/>
@@ -7376,6 +7725,7 @@ To load a cassette:
 		<description>UDG</description>
 		<year>1981</year>
 		<publisher>dK'tronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="8150">
 				<rom name="UDG.tzx" size="8150" crc="66a2453f" sha1="0fefc639d3c9a6c2ed2a5d994f94ee0691e0dca5"/>
@@ -7387,6 +7737,7 @@ To load a cassette:
 		<description>UFO</description>
 		<year>1983</year>
 		<publisher>Protek</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5380">
 				<rom name="UFO.tzx" size="5380" crc="6b8cbcec" sha1="f9bd4f690cb67fa718154cb9f07d63e8103a8c4f"/>
@@ -7398,6 +7749,7 @@ To load a cassette:
 		<description>UFO + 3D Maze</description>
 		<year>1982</year>
 		<publisher>Babtech</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="13279">
 				<rom name="UFOAnd3DMaze.tzx" size="13279" crc="cc63dfdf" sha1="07a8d839b7202b3846fd8f1f84025000fb222f58"/>
@@ -7409,6 +7761,7 @@ To load a cassette:
 		<description>Variance Analyzer</description>
 		<year>198?</year>
 		<publisher>Zeta Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="8407">
 				<rom name="VarianceAnalyzer.tzx" size="8407" crc="90a5774a" sha1="a429c8165b8be52791c99e5da26a84758a4c508b"/>
@@ -7420,6 +7773,7 @@ To load a cassette:
 		<description>Vector Mathematics</description>
 		<year>1982</year>
 		<publisher>W.H.Smith</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12101">
 				<rom name="VectorMathematics.tzx" size="12101" crc="c33b86ba" sha1="b82230bcc7f57f7b1f12720d82440031135be44b"/>
@@ -7431,6 +7785,7 @@ To load a cassette:
 		<description>Video-Ad</description>
 		<year>1981</year>
 		<publisher>Video Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15281">
 				<rom name="VideoAd.A.tzx" size="15281" crc="42136adc" sha1="c2409cd598ce050d622eb8850e21d74d709060eb"/>
@@ -7442,6 +7797,7 @@ To load a cassette:
 		<description>Video Graffiti</description>
 		<year>1982</year>
 		<publisher>AGF Hardware</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5263">
 				<rom name="VideoGraffiti.tzx" size="5263" crc="dd2ecb00" sha1="cf2e6cee862cc503be44bf2e6621a2e8d005c521"/>
@@ -7453,6 +7809,7 @@ To load a cassette:
 		<description>Video-Map</description>
 		<year>1981</year>
 		<publisher>Video Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15713">
 				<rom name="VideoMap.A.tzx" size="15713" crc="b76622dc" sha1="86d292def89f2cd01bdf677f50abdb18002507a6"/>
@@ -7464,6 +7821,7 @@ To load a cassette:
 		<description>Video-Plan</description>
 		<year>1981</year>
 		<publisher>Video Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15425">
 				<rom name="VideoPlan.A.tzx" size="15425" crc="849e21dc" sha1="fffa47475a0634fc9859212e5a309603d922d258"/>
@@ -7475,6 +7833,7 @@ To load a cassette:
 		<description>Video-View</description>
 		<year>1981</year>
 		<publisher>Video Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14095">
 				<rom name="VideoView.tzx" size="14095" crc="f5fdb04b" sha1="abadd8bd7a829c778d6fbf1d4f394025cd1b7c58"/>
@@ -7486,6 +7845,7 @@ To load a cassette:
 		<description>Viewtext (US)</description>
 		<year>1981</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12767">
 				<rom name="Viewtext(US).tzx" size="12767" crc="83f14397" sha1="eb0996ddb294a42c133b0c301958bdaa3b5f4a1a"/>
@@ -7497,6 +7857,7 @@ To load a cassette:
 		<description>Vizi/Z</description>
 		<year>198?</year>
 		<publisher>&lt;unknown&gt;</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side A"/>
 			<dataarea name="cass" size="7904">
@@ -7515,6 +7876,7 @@ To load a cassette:
 		<description>Volcanic Dungeon</description>
 		<year>1982</year>
 		<publisher>Carnell</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16482">
 				<rom name="VolcanicDungeon.tzx" size="16482" crc="c6f44894" sha1="6275899b3b7849a97ca8ea869d2bc5806522ae9a"/>
@@ -7526,6 +7888,7 @@ To load a cassette:
 		<description>VU-CALC</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5781">
 				<rom name="VU-CALC.tzx" size="5781" crc="221479df" sha1="50275ce9c48f4f3533899a00c5291bdade4a1efe"/>
@@ -7537,6 +7900,7 @@ To load a cassette:
 		<description>VU-CALC (Timex)</description>
 		<year>1982</year>
 		<publisher>Timex</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5779">
 				<rom name="VU-CALC(Timex).tzx" size="5779" crc="3db82474" sha1="d1533151dfecf9614c55551e0d6bbab85bce9c3c"/>
@@ -7548,6 +7912,7 @@ To load a cassette:
 		<description>VU-FILE</description>
 		<year>1982</year>
 		<publisher>Sinclair Research</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="VU-FILE"/>
 			<dataarea name="cass" size="6351">
@@ -7566,6 +7931,7 @@ To load a cassette:
 		<description>Walk The Plank</description>
 		<year>198?</year>
 		<publisher>Novus Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Side 1"/>
 			<dataarea name="cass" size="12533">
@@ -7584,6 +7950,7 @@ To load a cassette:
 		<description>Warlord</description>
 		<year>1982</year>
 		<publisher>Lothlorien</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="15879">
 				<rom name="Warlord.tzx" size="15879" crc="9bff8537" sha1="dee7757fc095d4de68efcd4147777e0cbbad8424"/>
@@ -7595,6 +7962,7 @@ To load a cassette:
 		<description>Whizz Quiz</description>
 		<year>1983</year>
 		<publisher>Computertutor</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16252">
 				<rom name="WhizzQuiz.tzx" size="16252" crc="831e3890" sha1="81b7fa7bc053ea09617edd5428ea8b9bc7d8e4d2"/>
@@ -7606,6 +7974,7 @@ To load a cassette:
 		<description>Winged Avenger</description>
 		<year>1982</year>
 		<publisher>Work Force</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4004">
 				<rom name="WingedAvenger.tzx" size="4004" crc="18536d36" sha1="b3ecbf77bb7d691bd1b973ede3774bf3a54a1494"/>
@@ -7617,6 +7986,7 @@ To load a cassette:
 		<description>Wordfix/Grafix</description>
 		<year>1982</year>
 		<publisher>Cosma</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Wordfix"/>
 			<dataarea name="cass" size="6476">
@@ -7635,6 +8005,7 @@ To load a cassette:
 		<description>Wordpack 1</description>
 		<year>1982</year>
 		<publisher>Wida</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Multiple Choice"/>
 			<dataarea name="cass" size="6742">
@@ -7653,6 +8024,7 @@ To load a cassette:
 		<description>Wordpack 2</description>
 		<year>1982</year>
 		<publisher>Wida</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Word Test"/>
 			<dataarea name="cass" size="6859">
@@ -7671,6 +8043,7 @@ To load a cassette:
 		<description>Wordpack 3</description>
 		<year>1982</year>
 		<publisher>Wida</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Jackpot"/>
 			<dataarea name="cass" size="10681">
@@ -7689,6 +8062,7 @@ To load a cassette:
 		<description>Wordpack 4</description>
 		<year>1982</year>
 		<publisher>Wida</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Crossword"/>
 			<dataarea name="cass" size="10506">
@@ -7707,6 +8081,7 @@ To load a cassette:
 		<description>Wordplay</description>
 		<year>198?</year>
 		<publisher>Apropos Technology</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Jargon"/>
 			<dataarea name="cass" size="5167">
@@ -7743,6 +8118,7 @@ To load a cassette:
 		<description>Wordplay 1</description>
 		<year>1983</year>
 		<publisher>Griffin Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Word Play 1"/>
 			<dataarea name="cass" size="12494">
@@ -7761,6 +8137,7 @@ To load a cassette:
 		<description>Word Processor</description>
 		<year>198?</year>
 		<publisher>Alan's Recordings</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12384">
 				<rom name="WordProcessor.A.tzx" size="12384" crc="c1f41d1c" sha1="4f2e76139efb5a07b443c5495636bcbb42489241"/>
@@ -7772,6 +8149,7 @@ To load a cassette:
 		<description>Word Test</description>
 		<year>1982</year>
 		<publisher>Mindware</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="1133">
 				<rom name="WordTest.1.WordTest.tzx" size="1133" crc="e12825a4" sha1="a17549ce398aa7c4955e6a691fd27dbce089db4a"/>
@@ -7783,6 +8161,7 @@ To load a cassette:
 		<description>World Cup Football</description>
 		<year>1982</year>
 		<publisher>M.A.Smith</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10657">
 				<rom name="WorldCupFootball.tzx" size="10657" crc="685d01ce" sha1="d081ccd8b759a2866bff5676a112481bb73d5f88"/>
@@ -7790,7 +8169,8 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="zxtricat">
+	<!-- Software fails to load/start -->
+	<software name="zxtricat" supported="no">
 		<description>Z-Xtricator</description>
 		<year>1984</year>
 		<publisher>Software Farm</publisher>
@@ -7812,6 +8192,7 @@ To load a cassette:
 		<description>Zac-Man</description>
 		<year>198?</year>
 		<publisher>Macronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7111">
 				<rom name="ZacMan.tzx" size="7111" crc="76fca436" sha1="e4271947dfab4c3eeb64a5927cda4d25445a0e53"/>
@@ -7823,6 +8204,7 @@ To load a cassette:
 		<description>Zaraks</description>
 		<year>1983</year>
 		<publisher>Computer Rentals</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3923">
 				<rom name="Zaraks.tzx" size="3923" crc="4466c390" sha1="d4d0575f849ed626a6d2b02cc3d64660980694c5"/>
@@ -7834,6 +8216,7 @@ To load a cassette:
 		<description>Zombies/Sword of Peace</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12404">
 				<rom name="ZombiesSwordOfPeace.tzx" size="12404" crc="45500520" sha1="519d3115b5ceb75b61dff442a927be851fb0ca96"/>
@@ -7845,6 +8228,7 @@ To load a cassette:
 		<description>Zuckman</description>
 		<year>1982</year>
 		<publisher>DJL Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10169">
 				<rom name="Zuckman.tzx" size="10169" crc="c80badf3" sha1="e212c3315d69861422dee61af487f6729568520a"/>
@@ -7856,6 +8240,7 @@ To load a cassette:
 		<description>Zuckman (Black Inlay)</description>
 		<year>1982</year>
 		<publisher>DJL Software</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="10169">
 				<rom name="Zuckman(Alt).tzx" size="10169" crc="886fa5b4" sha1="87f7870077134b24dfc9bab9e406762bd7ff6d04"/>
@@ -7867,6 +8252,7 @@ To load a cassette:
 		<description>The ZX81 Pocket Book</description>
 		<year>1982</year>
 		<publisher>Phipps Associates</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Introduction"/>
 			<dataarea name="cass" size="729">
@@ -8077,6 +8463,7 @@ To load a cassette:
 		<description>ZX Action Pack</description>
 		<year>1982</year>
 		<publisher>Axis</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="4677">
 				<rom name="ZXActionPack.tzx" size="4677" crc="f5f95245" sha1="a97dbf23ee4788951617cc26e8bbd2987d3a4cd6"/>
@@ -8088,6 +8475,7 @@ To load a cassette:
 		<description>ZXAS Assembler</description>
 		<year>1982</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5843">
 				<rom name="ZXAS.tzx" size="5843" crc="fa15514c" sha1="0422f7eca685e2ee3981c86e44624b8ff0ff8aca"/>
@@ -8099,6 +8487,7 @@ To load a cassette:
 		<description>ZXAS Assembler (Gladstone)</description>
 		<year>198?</year>
 		<publisher>Gladstone Electronics</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5843">
 				<rom name="ZXAS(GE).tzx" size="5843" crc="a448e4ba" sha1="e09abff8f1c771b7e1ace6b6612eb99dfa539654"/>
@@ -8110,6 +8499,7 @@ To load a cassette:
 		<description>ZX Assembler</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7564">
 				<rom name="ZXAssembler.tzx" size="7564" crc="99c7faec" sha1="7fe0c1c9dfbdff0e3f1c4274e09a19eb3ac88a59"/>
@@ -8121,6 +8511,7 @@ To load a cassette:
 		<description>ZX Assembler (IPS)</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7564">
 				<rom name="ZXAssembler.tzx" size="7564" crc="99c7faec" sha1="7fe0c1c9dfbdff0e3f1c4274e09a19eb3ac88a59"/>
@@ -8132,6 +8523,7 @@ To load a cassette:
 		<description>ZX Assembleur</description>
 		<year>1982</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9197">
 				<rom name="ZXAssembleur.tzx" size="9197" crc="aa532026" sha1="02a75242aabfbfa1d233b134df53727d5b8f597b"/>
@@ -8143,6 +8535,7 @@ To load a cassette:
 		<description>ZX Asteroids</description>
 		<year>1982</year>
 		<publisher>Electric Pencil Company</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6280">
 				<rom name="ZXAsteroids.tzx" size="6280" crc="c92d5c86" sha1="bc223f7b59f8ba07d7faf1da62f5a408034c568c"/>
@@ -8154,6 +8547,7 @@ To load a cassette:
 		<description>ZX Bug</description>
 		<year>1981</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5572">
 				<rom name="ZXBug.tzx" size="5572" crc="b77b6a0d" sha1="5f513d59c871aa94dd8d1c1919fea0e8d5aae806"/>
@@ -8165,6 +8559,7 @@ To load a cassette:
 		<description>ZX Bug (IPS)</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="5576">
 				<rom name="ZXBug(IPS).tzx" size="5576" crc="f8959e82" sha1="446c92783f64ea88a3faf3f0d5338223995d99a5"/>
@@ -8176,6 +8571,7 @@ To load a cassette:
 		<description>ZX Chess I</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14337">
 				<rom name="ZXChessI(Black).tzx" size="14337" crc="98f8fd30" sha1="b2ee8fb73779fc8b13b1bec533e59d762f6f871f"/>
@@ -8187,6 +8583,7 @@ To load a cassette:
 		<description>ZX Chess II</description>
 		<year>1981</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14422">
 				<rom name="ZXChessII.tzx" size="14422" crc="90f0224c" sha1="1e99cb497498e471f5f0aeb85c79d292208107b2"/>
@@ -8198,6 +8595,7 @@ To load a cassette:
 		<description>ZX Chess II (Improved)</description>
 		<year>1981</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14326">
 				<rom name="ZXChessII(Improved).tzx" size="14326" crc="60bbdc66" sha1="a4238332fe59d8e4e7048069cb6e26c0b357c16d"/>
@@ -8209,6 +8607,7 @@ To load a cassette:
 		<description>ZX Chess II (IPS)</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="14326">
 				<rom name="ZXChessII(IPS).tzx" size="14326" crc="e300ffc8" sha1="d06522009c0438e7e201611c1ec10e17650dbf39"/>
@@ -8220,6 +8619,7 @@ To load a cassette:
 		<description>ZX Compendium</description>
 		<year>1983</year>
 		<publisher>Carnell</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<feature name="part_id" value="Load Test"/>
 			<dataarea name="cass" size="1241">
@@ -8274,6 +8674,7 @@ To load a cassette:
 		<description>ZX Compiler</description>
 		<year>1982</year>
 		<publisher>Silversoft</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="7163">
 				<rom name="ZXCompiler.tzx" size="7163" crc="491041a6" sha1="09cecbec3370cfd1ff77e316c69661132f2e932f"/>
@@ -8285,6 +8686,7 @@ To load a cassette:
 		<description>ZXDB Disassembler/Debugger</description>
 		<year>1982</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="6081">
 				<rom name="ZXDB.tzx" size="6081" crc="f4bd2dc5" sha1="33604f3874337c4a579b9d1c6fb0d56887d2a128"/>
@@ -8296,6 +8698,7 @@ To load a cassette:
 		<description>ZX Forth</description>
 		<year>198?</year>
 		<publisher>Artic</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="20567">
 				<rom name="ZXForth.tzx" size="20567" crc="587d765f" sha1="63c6e3cd88655b30cef4afcdf4fcab959210047f"/>
@@ -8307,6 +8710,7 @@ To load a cassette:
 		<description>ZX Forth (IPS)</description>
 		<year>1982</year>
 		<publisher>International Publishing &amp; Software Inc.</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="12455">
 				<rom name="ZXForth(IPS).tzx" size="12455" crc="73e4bf92" sha1="5cd85e8a39cb6151c243b4d83dfaf88a4f23c3bc"/>
@@ -8318,6 +8722,7 @@ To load a cassette:
 		<description>ZX-MC</description>
 		<year>198?</year>
 		<publisher>Picturesque</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="3781">
 				<rom name="ZXMC.tzx" size="3781" crc="bad36aef" sha1="9edc5c21e1edd96e1a733908d9e7d39cec6df85e"/>
@@ -8329,6 +8734,7 @@ To load a cassette:
 		<description>ZXM Super Editor</description>
 		<year>1983</year>
 		<publisher>Timedata</publisher>
+		<info name="usage" value="LOAD &quot;&quot;, RUN" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="2693">
 				<rom name="ZXMSuperEditor.tzx" size="2693" crc="989424d1" sha1="9af273026fbd076097effee86e09a9f07d58f1fc"/>
@@ -8340,6 +8746,7 @@ To load a cassette:
 		<description>ZX Pro/File</description>
 		<year>1983</year>
 		<publisher>Thomas B. Woods</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="16291">
 				<rom name="ZXProFile.tzx" size="16291" crc="5d5146cf" sha1="214faff9ecc28e7d20e229554bfaae88a8b23b98"/>
@@ -8347,10 +8754,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="zxsidepr">
+	<!-- Drops back to prompt, how does it work? -->
+	<software name="zxsidepr" supported="partial">
 		<description>ZX-Sideprint</description>
 		<year>1982</year>
 		<publisher>Microsphere</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="2175">
 				<rom name="ZXSideprint.tzx" size="2175" crc="5f320b4a" sha1="6965f265cbfca8f6813f698be70ed0e709c59632"/>
@@ -8358,10 +8767,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="zxtk">
+	<!-- Drops back to prompt, how does it work? -->
+	<software name="zxtk" supported="partial">
 		<description>ZXTK</description>
 		<year>1982</year>
 		<publisher>Bug Byte</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="2837">
 				<rom name="ZXTK.tzx" size="2837" crc="4f4182c4" sha1="fd398501a5e72ef51c0fd817085e77300807fb57"/>
@@ -8369,10 +8780,12 @@ To load a cassette:
 		</part>
 	</software>
 
-	<software name="zxtri">
+	<!-- Drops back to prompt, how does it work? -->
+	<software name="zxtri" supported="partial">
 		<description>ZX Tri</description>
 		<year>1983</year>
 		<publisher>Direco International</publisher>
+		<info name="usage" value="LOAD &quot;&quot;" />
 		<part name="cass1" interface="zx81_cass">
 			<dataarea name="cass" size="9162">
 				<rom name="ZXTri.A.tzx" size="9162" crc="a93dbc8c" sha1="3a0485af6054243cc77d8304fc987c772f90b64a"/>
