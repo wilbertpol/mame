@@ -54,7 +54,7 @@ DEFINE_DEVICE_TYPE(TMS70C46, tms70c46_device, "tms70c46", "Texas Instruments TMS
 // internal memory maps
 void tms7000_device::tms7000_mem(address_map &map)
 {
-	map(0x0000, 0x007f).ram(); // 128 bytes internal RAM
+	map(0x0000, 0x007f).ram().share("rf"); // 128 bytes internal RAM
 	map(0x0080, 0x00ff).rw(FUNC(tms7000_device::tms7000_unmapped_rf_r), FUNC(tms7000_device::tms7000_unmapped_rf_w));
 	map(0x0100, 0x010b).rw(FUNC(tms7000_device::tms7000_pf_r), FUNC(tms7000_device::tms7000_pf_w));
 	map(0x0104, 0x0105).nopw(); // no port A write or ddr
@@ -62,7 +62,7 @@ void tms7000_device::tms7000_mem(address_map &map)
 
 void tms7000_device::tms7001_mem(address_map &map)
 {
-	map(0x0000, 0x007f).ram(); // 128 bytes internal RAM
+	map(0x0000, 0x007f).ram().share("rf"); // 128 bytes internal RAM
 	map(0x0080, 0x00ff).rw(FUNC(tms7000_device::tms7000_unmapped_rf_r), FUNC(tms7000_device::tms7000_unmapped_rf_w));
 	map(0x0100, 0x010b).rw(FUNC(tms7000_device::tms7000_pf_r), FUNC(tms7000_device::tms7000_pf_w));
 	map(0x0110, 0x0117).rw(FUNC(tms7000_device::tms7002_pf_r), FUNC(tms7000_device::tms7002_pf_w));
@@ -70,7 +70,7 @@ void tms7000_device::tms7001_mem(address_map &map)
 
 void tms7000_device::tms7002_mem(address_map &map)
 {
-	map(0x0000, 0x00ff).ram(); // 256 bytes internal RAM
+	map(0x0000, 0x00ff).ram().share("rf"); // 256 bytes internal RAM
 	map(0x0100, 0x010b).rw(FUNC(tms7000_device::tms7000_pf_r), FUNC(tms7000_device::tms7000_pf_w));
 	map(0x0110, 0x0117).rw(FUNC(tms7000_device::tms7002_pf_r), FUNC(tms7000_device::tms7002_pf_w));
 }
@@ -196,8 +196,8 @@ device_memory_interface::space_config_vector tms7000_device::memory_space_config
 void tms7000_device::device_start()
 {
 	// init/zerofill
-	m_program = &space(AS_PROGRAM);
-	m_cache = m_program->cache<0, 0, ENDIANNESS_BIG>();
+	space(AS_PROGRAM).cache(m_cache);
+	space(AS_PROGRAM).specific(m_program);
 
 	set_icountptr(m_icount);
 
@@ -250,13 +250,16 @@ void tms7000_device::device_start()
 	save_item(NAME(m_timer_capture_latch));
 
 	// register for debugger
-	state_add(TMS7000_PC, "PC", m_pc).formatstr("%02X");
-	state_add(TMS7000_SP, "S", m_sp).formatstr("%02X");
+	state_add(TMS7000_PC, "PC", m_pc).formatstr("%04X");
+	state_add(TMS7000_SP, "SP", m_sp).formatstr("%02X");
 	state_add(TMS7000_ST, "ST", m_sr).formatstr("%02X");
 
-	state_add(STATE_GENPC, "GENPC", m_pc).formatstr("%02X").noshow();
-	state_add(STATE_GENPCBASE, "CURPC", m_pc).formatstr("%02X").noshow();
-	state_add(STATE_GENSP, "GENSP", m_sp).formatstr("%02X").noshow();
+	uint8_t *rf = static_cast<uint8_t *>(memshare("rf")->ptr());
+	state_add(TMS7000_A, "A", rf[0]).formatstr("%02X");
+	state_add(TMS7000_B, "B", rf[1]).formatstr("%02X");
+
+	state_add(STATE_GENPC, "GENPC", m_pc).formatstr("%04X").noshow();
+	state_add(STATE_GENPCBASE, "CURPC", m_pc).formatstr("%04X").noshow();
 	state_add(STATE_GENFLAGS, "GENFLAGS", m_sr).formatstr("%8s").noshow();
 }
 
@@ -495,7 +498,7 @@ TIMER_CALLBACK_MEMBER(tms7000_device::simple_timer_cb)
 //  note: TMS7000 family is from $00 to $0b, TMS7002 family adds $10 to $17
 //-------------------------------------------------
 
-READ8_MEMBER(tms7000_device::tms7000_pf_r)
+uint8_t tms7000_device::tms7000_pf_r(offs_t offset)
 {
 	switch (offset)
 	{
@@ -536,7 +539,7 @@ READ8_MEMBER(tms7000_device::tms7000_pf_r)
 	return 0;
 }
 
-WRITE8_MEMBER(tms7000_device::tms7000_pf_w)
+void tms7000_device::tms7000_pf_w(offs_t offset, uint8_t data)
 {
 	switch (offset)
 	{
@@ -581,6 +584,7 @@ WRITE8_MEMBER(tms7000_device::tms7000_pf_w)
 					logerror("%s: CMOS low-power halt mode enabled\n", tag());
 			}
 			data &= ~0x20;
+			[[fallthrough]];
 		case 0x13:
 			// d0-d4: prescaler reload value
 			// d5: t2: cascade from t1
@@ -631,7 +635,7 @@ void tms7000_device::execute_run()
 	{
 		debugger_instruction_hook(m_pc);
 
-		m_op = m_cache->read_byte(m_pc++);
+		m_op = m_cache.read_byte(m_pc++);
 		execute_one(m_op);
 	} while (m_icount > 0);
 }
@@ -902,12 +906,12 @@ void tms70c46_device::device_reset()
 	tms7000_device::device_reset();
 }
 
-READ8_MEMBER(tms70c46_device::control_r)
+uint8_t tms70c46_device::control_r()
 {
 	return m_control;
 }
 
-WRITE8_MEMBER(tms70c46_device::control_w)
+void tms70c46_device::control_w(uint8_t data)
 {
 	// d5: enable external databus
 	if (~m_control & data & 0x20)
@@ -926,7 +930,7 @@ WRITE8_MEMBER(tms70c46_device::control_w)
 // right now pretend that nothing is connected
 // external pins are HD0-HD3(data), HSK(handshake), BAV(bus available)
 
-READ8_MEMBER(tms70c46_device::dockbus_status_r)
+uint8_t tms70c46_device::dockbus_status_r()
 {
 	// d0: slave _HSK
 	// d1: slave _BAV
@@ -935,18 +939,18 @@ READ8_MEMBER(tms70c46_device::dockbus_status_r)
 	return 0;
 }
 
-WRITE8_MEMBER(tms70c46_device::dockbus_status_w)
+void tms70c46_device::dockbus_status_w(uint8_t data)
 {
 	// d0: master _HSK (setting it low(write 1) also clears IRQ)
 	// d1: master _BAV
 	// other bits: unused?
 }
 
-READ8_MEMBER(tms70c46_device::dockbus_data_r)
+uint8_t tms70c46_device::dockbus_data_r()
 {
 	return 0xff;
 }
 
-WRITE8_MEMBER(tms70c46_device::dockbus_data_w)
+void tms70c46_device::dockbus_data_w(uint8_t data)
 {
 }

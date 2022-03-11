@@ -46,7 +46,7 @@ public:
 	{
 	}
 
-	virtual ~pcap_module() = default;
+	virtual ~pcap_module() { }
 
 	virtual int init(const osd_options &options) override;
 	virtual void exit() override;
@@ -250,7 +250,7 @@ netdev_pcap::~netdev_pcap()
 
 static CREATE_NETDEV(create_pcap)
 {
-	auto *dev = global_alloc(netdev_pcap(ifname, ifdev, rate));
+	auto *dev = new netdev_pcap(ifname, ifdev, rate);
 	return dynamic_cast<osd_netdev *>(dev);
 }
 

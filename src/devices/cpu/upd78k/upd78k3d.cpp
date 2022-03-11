@@ -5,7 +5,7 @@
 #include "upd78k3d.h"
 
 upd78k3_disassembler::upd78k3_disassembler(const char *const sfr_names[], const char *const sfrp_names[], const char *const psw_bits[], bool has_macw, bool has_macsw)
-	: upd78k_family_disassembler(sfr_names, sfrp_names)
+	: upd78k_family_disassembler(sfr_names, sfrp_names, 0xfe00)
 	, m_ix_bases(s_ix_bases)
 	, m_psw_bits(psw_bits)
 	, m_has_macw(has_macw)
@@ -13,8 +13,8 @@ upd78k3_disassembler::upd78k3_disassembler(const char *const sfr_names[], const 
 {
 }
 
-upd78k3_disassembler::upd78k3_disassembler(const char *const sfr_names[], const char *const sfrp_names[], const char *const ix_bases[])
-	: upd78k_family_disassembler(sfr_names, sfrp_names)
+upd78k3_disassembler::upd78k3_disassembler(const char *const sfr_names[], const char *const sfrp_names[], const char *const ix_bases[], u16 saddr_ram_base)
+	: upd78k_family_disassembler(sfr_names, sfrp_names, saddr_ram_base)
 	, m_ix_bases(ix_bases)
 	, m_psw_bits(s_psw_bits)
 	, m_has_macw(true)
@@ -234,7 +234,7 @@ offs_t upd78k3_disassembler::dasm_02xx(std::ostream &stream, u8 op1, u8 op2, off
 			util::stream_format(stream, "%c.%d,", BIT(op2, 3) ? 'A' : 'X', op2 & 0x07);
 		else
 			util::stream_format(stream, "%s,", m_psw_bits[op2 & 0x0f]);
-		format_jdisp8(stream, pc + 4, opcodes.r8(pc + 3));
+		format_jdisp8(stream, pc + 3, opcodes.r8(pc + 2));
 		return 3 | SUPPORTED;
 	}
 	else
@@ -476,10 +476,10 @@ offs_t upd78k3_disassembler::dasm_09xx(std::ostream &stream, u8 op2, offs_t pc, 
 	else if ((op2 & 0xfe) == 0xf0)
 	{
 		util::stream_format(stream, "%-8s", "MOV");
-		if (!BIT(op2, 4))
+		if (!BIT(op2, 0))
 			stream << "A,";
 		format_abs16(stream, opcodes.r16(pc + 2));
-		if (BIT(op2, 4))
+		if (BIT(op2, 0))
 			stream << ",A";
 		return 4 | SUPPORTED;
 	}
@@ -552,9 +552,9 @@ offs_t upd78k3_disassembler::dasm_16xx(std::ostream &stream, u8 op1, u8 op2)
 			stream << "A,";
 
 		stream << "[";
-		if (BIT(op1, 0) && BIT(op2, 6))
-			util::stream_format(stream, "%s+", m_ix_bases[4]);
-		if ((op2 & 0x60) == 0x60)
+		if (BIT(op1, 0) && (op2 & 0x60) == 0x40)
+			util::stream_format(stream, "%s+%s", m_ix_bases[4], BIT(op2, 4) ? "HL" : "DE");
+		else if ((op2 & 0x60) == 0x60)
 			stream << m_ix_bases[BIT(op2, 4) ? 3 : 4];
 		else
 		{
@@ -935,7 +935,7 @@ offs_t upd78k3_disassembler::disassemble(std::ostream &stream, offs_t pc, const 
 		}
 		else if (BIT(op, 1))
 		{
-			util::stream_format(stream, "%-8s%s,", "DBNZ", s_r_names[op & 0x07]);
+			util::stream_format(stream, "%-8s%c,", "DBNZ", BIT(op, 0) ? 'B' : 'C');
 			format_jdisp8(stream, pc + 2, opcodes.r8(pc + 1));
 			return 2 | SUPPORTED;
 		}

@@ -3,7 +3,6 @@
 /*
 
   American Microsystems, Inc.(AMI) S2000-family 4-bit MCU cores, introduced late 1970s
-  Overall functionality is similar to (and probably derived from) NEC uCOM-4.
 
   References:
   - AMI MOS Products Catalog 1979/1980
@@ -250,7 +249,9 @@ void amis2000_base_device::execute_run()
 		// remember previous opcode
 		m_prev_op = m_op;
 
-		debugger_instruction_hook(m_pc);
+		// fetch next opcode
+		if (!m_skip)
+			debugger_instruction_hook(m_pc);
 		m_op = m_program->read_byte(m_pc);
 		m_pc = (m_pc + 1) & 0x1fff;
 

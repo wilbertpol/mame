@@ -11,16 +11,16 @@
 
 #pragma once
 
-#include "video/mc6845.h"
 #include "imagedev/floppy.h"
-#include "machine/wd_fdc.h"
 #include "machine/6821pia.h"
 #include "machine/ram.h"
+#include "machine/wd_fdc.h"
+#include "video/mc6845.h"
+
 #include "emupal.h"
 
 /* Tags */
 
-#define MAINCPU_TAG "maincpu"
 #define DMACPU_TAG  "dmacpu"
 #define PIA_0_TAG   "pia_0"
 #define PIA_1_TAG   "pia_1"
@@ -31,56 +31,6 @@
 #define DGNBETA_CPU_SPEED_HZ        2000000 /* 2MHz */
 #define DGNBETA_FRAMES_PER_SECOND   50
 
-#define RamSize             256         /* 256K by default */
-#define RamPageSize         4096        /* ram pages are 4096 bytes */
-
-#define MaxTasks            16          /* Tasks 0..15 */
-#define MaxPage             16          /* 16 4K pages */
-#define NoPagingTask        MaxTasks    /* Task registers to use when paging disabled 16 */
-
-#define RAMPage             0           /* Page with RAM in at power on */
-#define VideoPage           6           /* Page where video ram mapped */
-#define IOPage              MaxPage-1   /* Page for I/O */
-#define ROMPage             MaxPage-2   /* Page for ROM */
-#define LastPage            MaxPage-1
-
-#define RAMPageValue        0x00        /* page with RAM at power on */
-#define VideoPageValue      0x1F        /* Default page for video ram */
-#define NoMemPageValue      0xC0        /* Page guaranteed not to have memory in */
-#define ROMPageValue        0xFE        /* Page with boot ROM */
-#define IOPageValue         0xFF        /* Page with I/O & Boot ROM */
-
-#define TextVidBasePage     0x18        /* Base page of text video ram */
-
-/***** Keyboard stuff *****/
-#define NoKeyrows           0x0a        /* Number of rows in keyboard */
-
-/* From Dragon Beta OS9 keyboard driver */
-#define KAny                0x04        /* Any key pressed mask PB2 */
-#define KOutClk             0x08        /* Output shift register clock */
-#define KInClk              0x10        /* Input shift register clock */
-#define KOutDat             KInClk      /* Also used for data into output shifter */
-#define KInDat              0x20        /* Keyboard data in from keyboard (serial stream) */
-
-/***** Video Modes *****/
-
-enum BETA_VID_MODES
-{
-	TEXT_40x25,             /* Text mode 40x25 */
-	TEXT_80x25,             /* Text mode 80x25 */
-	GRAPH_320x256x4,        /* Graphics 320x256x4 */
-	GRAPH_320x256x16,       /* Graphics 320x256x16 */
-	GRAPH_640x512x2         /* Graphics 640X512X2 */
-};
-
-#define iosize  (0xfEFF-0xfc00)
-
-struct PageReg
-{
-	int     value;          /* Value of the page register */
-	uint8_t *memory;        /* The memory it actually points to */
-};
-
 
 class dgn_beta_state : public driver_device
 {
@@ -88,7 +38,6 @@ public:
 	dgn_beta_state(const machine_config &mconfig, device_type type, const char *tag) :
 		driver_device(mconfig, type, tag),
 		m_mc6845(*this, "crtc"),
-		m_videoram(*this, "videoram"),
 		m_maincpu(*this, "maincpu"),
 		m_dmacpu(*this, DMACPU_TAG),
 		m_ram(*this, RAM_TAG),
@@ -100,34 +49,70 @@ public:
 		m_floppy1(*this, FDC_TAG ":1"),
 		m_floppy2(*this, FDC_TAG ":2"),
 		m_floppy3(*this, FDC_TAG ":3"),
-		m_palette(*this, "palette")
+		m_palette(*this, "palette"),
+		m_system_rom(*this, "maincpu")
 	{ }
 
 	void dgnbeta(machine_config &config);
 
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b0_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b1_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b2_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b3_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b4_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b5_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b6_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b7_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b8_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_b9_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_bA_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_bB_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_bC_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_bD_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_bE_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_bF_w);
-	DECLARE_WRITE8_MEMBER(dgnbeta_ram_bG_w);
+protected:
+	virtual void machine_start() override;
+	virtual void machine_reset() override;
 
 private:
-	DECLARE_FLOPPY_FORMATS(floppy_formats);
+	static constexpr unsigned RamSize           = 256;          // 256K by default
+	static constexpr unsigned RamPageSize       = 4096;         // ram pages are 4096 bytes
+
+	static constexpr unsigned MaxTasks          = 16;           // Tasks 0..15
+	static constexpr unsigned MaxPage           = 16;           // 16 4K pages
+	static constexpr unsigned NoPagingTask      = MaxTasks;     // Task registers to use when paging disabled 16
+
+	static constexpr unsigned RAMPage           = 0;            // Page with RAM in at power on
+	static constexpr unsigned VideoPage         = 6;            // Page where video ram mapped
+	static constexpr unsigned IOPage            = MaxPage-1;    // Page for I/O
+	static constexpr unsigned ROMPage           = MaxPage-2;    // Page for ROM
+	static constexpr unsigned LastPage          = MaxPage-1;
+
+	static constexpr uint8_t RAMPageValue       = 0x00;         // page with RAM at power on
+	static constexpr uint8_t VideoPageValue     = 0x1f;         // Default page for video ram
+	static constexpr uint8_t NoMemPageValue     = 0xc0;         // Page guaranteed not to have memory in
+	static constexpr uint8_t ROMPageValue       = 0xfe;         // Page with boot ROM
+	static constexpr uint8_t IOPageValue        = 0xff;         // Page with I/O & Boot ROM
+
+	static constexpr uint8_t TextVidBasePage    = 0x18;         // Base page of text video RAM
+
+	/***** Keyboard stuff *****/
+	static constexpr uint8_t NoKeyrows          = 0x0a;         // Number of rows in keyboard
+
+	/* From Dragon Beta OS9 keyboard driver */
+	static constexpr uint8_t KAny               = 0x04;         // Any key pressed mask PB2
+	static constexpr uint8_t KOutClk            = 0x08;         // Output shift register clock
+	static constexpr uint8_t KInClk             = 0x10;         // Input shift register clock
+	static constexpr uint8_t KOutDat            = KInClk;       // Also used for data into output shifter
+	static constexpr uint8_t KInDat             = 0x20;         // Keyboard data in from keyboard (serial stream)
+
+	/***** Video Modes *****/
+
+	enum BETA_VID_MODES
+	{
+		TEXT_40x25,             /* Text mode 40x25 */
+		TEXT_80x25,             /* Text mode 80x25 */
+		GRAPH_320x256x4,        /* Graphics 320x256x4 */
+		GRAPH_320x256x16,       /* Graphics 320x256x16 */
+		GRAPH_640x512x2         /* Graphics 640X512X2 */
+	};
+
+	static constexpr unsigned iosize = 0xfeff-0xfc00;
+
+	struct PageReg
+	{
+		int     value;          /* Value of the page register */
+		uint8_t *memory;        /* The memory it actually points to */
+	};
+
+	static void floppy_formats(format_registration &fr);
 
 	required_device<mc6845_device> m_mc6845;
-	required_shared_ptr<uint8_t> m_videoram;
 	required_device<cpu_device> m_maincpu;
 	required_device<cpu_device> m_dmacpu;
 	required_device<ram_device> m_ram;
@@ -141,7 +126,7 @@ private:
 	required_device<floppy_connector> m_floppy3;
 	required_device<palette_device> m_palette;
 
-	uint8_t *m_system_rom;
+	required_region_ptr<uint8_t> m_system_rom;
 	int m_LogDatWrites;
 	int m_Keyboard[NoKeyrows];
 	int m_RowShifter;
@@ -158,7 +143,7 @@ private:
 	int m_PIATaskReg;
 	int m_EnableMapRegs;
 	PageReg m_PageRegs[MaxTasks+1][MaxPage+1];
-	int m_beta_6845_RA;
+	int m_beta_6845_RA; // TODO: most of the variables from here on aren't used anywhere. Left-over or reminder of things to be implemented?
 	int m_beta_scr_x;
 	int m_beta_scr_y;
 	int m_beta_HSync;
@@ -191,42 +176,40 @@ private:
 	int m_ColourRAM[4];
 	int m_Field;
 	int m_DrawInterlace;
-	virtual void machine_start() override;
-	virtual void machine_reset() override;
 	void dgn_beta_palette(palette_device &palette) const;
 
-	DECLARE_READ8_MEMBER(d_pia0_pa_r);
-	DECLARE_WRITE8_MEMBER(d_pia0_pa_w);
-	DECLARE_READ8_MEMBER(d_pia0_pb_r);
-	DECLARE_WRITE8_MEMBER(d_pia0_pb_w);
+	uint8_t d_pia0_pa_r();
+	void d_pia0_pa_w(uint8_t data);
+	uint8_t d_pia0_pb_r();
+	void d_pia0_pb_w(uint8_t data);
 	DECLARE_WRITE_LINE_MEMBER(d_pia0_cb2_w);
 	DECLARE_WRITE_LINE_MEMBER(d_pia0_irq_a);
 	DECLARE_WRITE_LINE_MEMBER(d_pia0_irq_b);
-	DECLARE_READ8_MEMBER(d_pia1_pa_r);
-	DECLARE_WRITE8_MEMBER(d_pia1_pa_w);
-	DECLARE_READ8_MEMBER(d_pia1_pb_r);
-	DECLARE_WRITE8_MEMBER(d_pia1_pb_w);
+	uint8_t d_pia1_pa_r();
+	void d_pia1_pa_w(uint8_t data);
+	uint8_t d_pia1_pb_r();
+	void d_pia1_pb_w(uint8_t data);
 	DECLARE_WRITE_LINE_MEMBER(d_pia1_irq_a);
 	DECLARE_WRITE_LINE_MEMBER(d_pia1_irq_b);
-	DECLARE_READ8_MEMBER(d_pia2_pa_r);
-	DECLARE_WRITE8_MEMBER(d_pia2_pa_w);
-	DECLARE_READ8_MEMBER(d_pia2_pb_r);
-	DECLARE_WRITE8_MEMBER(d_pia2_pb_w);
+	uint8_t d_pia2_pa_r();
+	void d_pia2_pa_w(uint8_t data);
+	uint8_t d_pia2_pb_r();
+	void d_pia2_pb_w(uint8_t data);
 	DECLARE_WRITE_LINE_MEMBER(d_pia2_irq_a);
 	DECLARE_WRITE_LINE_MEMBER(d_pia2_irq_b);
 	DECLARE_WRITE_LINE_MEMBER(dgnbeta_fdc_intrq_w);
 	DECLARE_WRITE_LINE_MEMBER(dgnbeta_fdc_drq_w);
 	DECLARE_WRITE_LINE_MEMBER(dgnbeta_vsync_changed);
 	/* 74HC670 4x4bit colour ram */
-	DECLARE_WRITE8_MEMBER(dgnbeta_colour_ram_w);
+	void dgnbeta_colour_ram_w(offs_t offset, uint8_t data);
 	// Page IO at FE00
-	DECLARE_READ8_MEMBER(dgn_beta_page_r);
-	DECLARE_WRITE8_MEMBER(dgn_beta_page_w);
+	uint8_t dgn_beta_page_r(offs_t offset);
+	void dgn_beta_page_w(offs_t offset, uint8_t data);
 	MC6845_UPDATE_ROW(crtc_update_row);
 
 	/*  WD2797 FDC */
-	DECLARE_READ8_MEMBER(dgnbeta_wd2797_r);
-	DECLARE_WRITE8_MEMBER(dgnbeta_wd2797_w);
+	uint8_t dgnbeta_wd2797_r(offs_t offset);
+	void dgnbeta_wd2797_w(offs_t offset, uint8_t data);
 
 	void dgnbeta_vid_set_gctrl(int data);
 	void UpdateBanks(int first, int last);
@@ -238,14 +221,15 @@ private:
 	void cpu0_recalc_firq(int state);
 	void cpu1_recalc_firq(int state);
 	void ScanInKeyboard(void);
-	void dgn_beta_frame_interrupt (int data);
+	void dgn_beta_frame_interrupt(int data);
+	[[maybe_unused]] void dgn_beta_line_interrupt(int data);
 
 	offs_t dgnbeta_dasm_override(std::ostream &stream, offs_t pc, const util::disasm_interface::data_buffer &opcodes, const util::disasm_interface::data_buffer &params);
 
 	void dgnbeta_map(address_map &map);
 
-	void execute_beta_key_dump(int ref, const std::vector<std::string> &params);
-	void execute_beta_dat_log(int ref, const std::vector<std::string> &params);
+	void execute_beta_key_dump(const std::vector<std::string> &params);
+	void execute_beta_dat_log(const std::vector<std::string> &params);
 };
 
 #endif // MAME_INCLUDES_DGN_BETA_H

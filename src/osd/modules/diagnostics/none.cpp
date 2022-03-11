@@ -11,7 +11,9 @@
 class diagnostics_none : public diagnostics_module
 {
 public:
-	diagnostics_none() = default;
+	diagnostics_none()
+	{
+	}
 
 	int init_crash_diagnostics() override
 	{
@@ -33,12 +35,7 @@ public:
 
 // Determine if diagnostics_none should be used based on OSD
 #if defined(OSD_WINDOWS) || defined(SDLMAME_WIN32)
-#include <winapifamily.h>
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #define USE_DIAG_NONE 0 // Desktop Windows
-#else
-#define USE_DIAG_NONE 1 // Universal Windows
-#endif
 #else
 #define USE_DIAG_NONE 1 // SDL and others
 #endif

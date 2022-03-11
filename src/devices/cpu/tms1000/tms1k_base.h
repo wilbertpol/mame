@@ -20,7 +20,6 @@
 // pinout reference
 
 /*
-
             ____   ____                         ____   ____
      R8  1 |*   \_/    | 28 R7           R0  1 |*   \_/    | 28 Vss
      R9  2 |           | 27 R6           R1  2 |           | 27 OSC2
@@ -83,8 +82,11 @@ public:
 	auto write_pdc() { return m_write_pdc.bind(); }
 
 	// Use this if the output PLA is unknown:
-	// If the microinstructions (or other) PLA is unknown, try using one from another romset.
 	void set_output_pla(const u16 *output_pla) { m_output_pla_table = output_pla; }
+
+	// If the microinstructions PLA is unknown, try using one from another romset.
+	// If that's not possible, use this callback:
+	auto set_decode_micro() { return m_decode_micro.bind(); }
 
 	u8 debug_peek_o_index() { return m_o_index; } // get output PLA index, for debugging (don't use in emulation)
 
@@ -266,6 +268,7 @@ protected:
 	devcb_read8 m_read_ctl;
 	devcb_write8 m_write_ctl;
 	devcb_write_line m_write_pdc;
+	devcb_read32 m_decode_micro;
 
 	u32 m_o_mask;
 	u32 m_r_mask;

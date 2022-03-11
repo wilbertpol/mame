@@ -109,20 +109,19 @@ private:
 
 uint32_t roland_d10_state::screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect)
 {
-	uint8_t y,ra,gfx;
-	uint16_t sy=0,x;
-	const uint8_t *data = m_lcd->render();
+	uint16_t sy=0;
+	uint8_t const *const data = m_lcd->render();
 	bitmap.fill(0);
 
-	for (y = 0; y < 2; y++)
+	for (uint8_t y = 0; y < 2; y++)
 	{
-		for (ra = 0; ra < 9; ra++)
+		for (uint8_t ra = 0; ra < 9; ra++)
 		{
-			uint16_t *p = &bitmap.pix16(sy++);
+			uint16_t *p = &bitmap.pix(sy++);
 
-			for (x = 0; x < 16; x++)
+			for (uint16_t x = 0; x < 16; x++)
 			{
-				gfx = 0;
+				uint8_t gfx = 0;
 				if (ra < 8)
 					gfx = data[x*16 + y*640 + ra];
 
@@ -292,8 +291,8 @@ void roland_d10_state::d10(machine_config &config)
 // Shall become a proper memcard device someday
 	NVRAM( config, m_memcs, nvram_device::DEFAULT_ALL_0 );
 
-	MB63H149(config, "keyscan", 16.384_MHz_XTAL);
-	//keyscan.int_callback().set_inputline(m_maincpu, i8x9x_device::HSI0_LINE);
+	mb63h149_device &keyscan(MB63H149(config, "keyscan", 16.384_MHz_XTAL));
+	keyscan.int_callback().set_inputline(m_maincpu, i8x9x_device::HSI0_LINE);
 
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_LCD));
 	screen.set_refresh_hz(50);

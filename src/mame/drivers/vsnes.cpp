@@ -126,7 +126,7 @@ Changes:
         - Vs. Gumshoe (partially working)
         - Vs. Freedom Force (not working)
         - Vs. Stroke and Match Golf (Men set 2) (not working)
-        - Vs. BaseBall (Japan set 3) (not working)
+        - Vs. Baseball (Japan set 3) (not working)
   - Added coin counter
   - Added Extra Ram in vstetris
   - Added Demo Sound in vsmahjng
@@ -134,7 +134,7 @@ Changes:
   - Fixed protection in Vs. Super Xevious
   - Corrected or checked dip-switches in Castlevania, Duck Hunt, Excitebike,
     Gradius, Hogan's Alley, Ice Climber, R.B.I. Baseball, Slalom, Soccer,
-    Super Mario Bros., Top Gun, BaseBall, Tennis, Stroke and Match Golf
+    Super Mario Bros., Top Gun, Baseball, Tennis, Stroke and Match Golf
 
 ***************************************************************************/
 
@@ -143,27 +143,28 @@ Changes:
 
 #include "cpu/m6502/n2a03.h"
 #include "cpu/z80/z80.h"
-#include "rendlay.h"
 #include "screen.h"
 #include "speaker.h"
+
+#include "layout/generic.h"
 
 
 /******************************************************************************/
 
 
-WRITE8_MEMBER(vsnes_state::sprite_dma_0_w)
+void vsnes_state::sprite_dma_0_w(address_space &space, uint8_t data)
 {
 	int source = ( data & 7 );
 	m_ppu1->spriteram_dma( space, source );
 }
 
-WRITE8_MEMBER(vsnes_state::sprite_dma_1_w)
+void vsnes_state::sprite_dma_1_w(address_space &space, uint8_t data)
 {
 	int source = ( data & 7 );
 	m_ppu2->spriteram_dma( space, source );
 }
 
-WRITE8_MEMBER(vsnes_state::vsnes_coin_counter_w)
+void vsnes_state::vsnes_coin_counter_w(uint8_t data)
 {
 	machine().bookkeeping().coin_counter_w(0, data & 0x01 );
 	m_coin = data;
@@ -175,13 +176,13 @@ WRITE8_MEMBER(vsnes_state::vsnes_coin_counter_w)
 	}
 }
 
-READ8_MEMBER(vsnes_state::vsnes_coin_counter_r)
+uint8_t vsnes_state::vsnes_coin_counter_r()
 {
 	//only for platoon
 	return m_coin;
 }
 
-WRITE8_MEMBER(vsnes_state::vsnes_coin_counter_1_w)
+void vsnes_state::vsnes_coin_counter_1_w(uint8_t data)
 {
 	machine().bookkeeping().coin_counter_w(1, data & 0x01 );
 	if( data & 0xfe ) //vsbball service mode
@@ -197,58 +198,62 @@ WRITE8_MEMBER(vsnes_state::vsnes_coin_counter_1_w)
 
 void vsnes_state::vsnes_cpu1_map(address_map &map)
 {
-	map(0x0000, 0x07ff).mirror(0x1800).ram().share("work_ram");
+	map(0x0000, 0x07ff).mirror(0x1800).ram();
 	map(0x2000, 0x3fff).rw(m_ppu1, FUNC(ppu2c0x_device::read), FUNC(ppu2c0x_device::write));
 	map(0x4014, 0x4014).w(FUNC(vsnes_state::sprite_dma_0_w));
 	map(0x4016, 0x4016).rw(FUNC(vsnes_state::vsnes_in0_r), FUNC(vsnes_state::vsnes_in0_w));
 	map(0x4017, 0x4017).r(FUNC(vsnes_state::vsnes_in1_r)); /* IN1 - input port 2 / PSG second control register */
-	map(0x4020, 0x4020).rw(FUNC(vsnes_state::vsnes_coin_counter_r), FUNC(vsnes_state::vsnes_coin_counter_w));
-	map(0x6000, 0x7fff).bankrw("extra1");
+	map(0x4020, 0x4020).mirror(0x1fdf).rw(FUNC(vsnes_state::vsnes_coin_counter_r), FUNC(vsnes_state::vsnes_coin_counter_w));
+	map(0x6000, 0x67ff).mirror(0x1800).ram().share("nvram");
 	map(0x8000, 0xffff).rom();
 }
 
 void vsnes_state::vsnes_cpu2_map(address_map &map)
 {
-	map(0x0000, 0x07ff).mirror(0x1800).ram().share("work_ram_1");
+	map(0x0000, 0x07ff).mirror(0x1800).ram();
 	map(0x2000, 0x3fff).rw(m_ppu2, FUNC(ppu2c0x_device::read), FUNC(ppu2c0x_device::write));
 	map(0x4014, 0x4014).w(FUNC(vsnes_state::sprite_dma_1_w));
 	map(0x4016, 0x4016).rw(FUNC(vsnes_state::vsnes_in0_1_r), FUNC(vsnes_state::vsnes_in0_1_w));
 	map(0x4017, 0x4017).r(FUNC(vsnes_state::vsnes_in1_1_r));  /* IN1 - input port 2 / PSG second control register */
-	map(0x4020, 0x4020).w(FUNC(vsnes_state::vsnes_coin_counter_1_w));
-	map(0x6000, 0x7fff).bankrw("extra2");
+	map(0x4020, 0x4020).mirror(0x1fdf).w(FUNC(vsnes_state::vsnes_coin_counter_1_w));
+	map(0x6000, 0x67ff).mirror(0x1800).ram().share("nvram");
 	map(0x8000, 0xffff).rom();
 }
 
 
 
-READ8_MEMBER(vsnes_state::vsnes_bootleg_z80_address_r)
+uint8_t vsnes_state::vsnes_bootleg_z80_address_r(offs_t offset)
 {
 	// NMI routine uses the value read here as the low part of an offset from 0x2000 to store a value read at 0x4000
 	// before reading 0x6000 and returning
+	if (!(offset & 1))
+	{
+		m_subcpu->set_input_line(INPUT_LINE_NMI, CLEAR_LINE);
+		m_maincpu->set_input_line(INPUT_LINE_HALT, CLEAR_LINE);
+	}
 
-	// can't really see how to get sound this way tho, maybe the unused rom is acting as lookup table to convert
-	// PSG write offsets to addresses to offsets for use here?
-	//printf("Z80 read offs %x\n", m_bootleg_sound_offset);
-	m_subcpu->set_input_line(INPUT_LINE_NMI, CLEAR_LINE);
-	return m_bootleg_sound_offset;
+	return 0xf0 | m_bootleg_sound_offset;
 }
 
-WRITE8_MEMBER(vsnes_state::bootleg_sound_write)
+void vsnes_state::bootleg_sound_write(offs_t offset, uint8_t data)
 {
 	m_bootleg_sound_offset = offset & 0xf;
 	m_bootleg_sound_data = data;
 	m_subcpu->set_input_line(INPUT_LINE_NMI, ASSERT_LINE);
+	m_maincpu->set_input_line(INPUT_LINE_HALT, ASSERT_LINE);
 }
 
-READ8_MEMBER(vsnes_state::vsnes_bootleg_z80_data_r)
+uint8_t vsnes_state::vsnes_bootleg_z80_data_r()
 {
 	//printf("Z80 read data %02x\n", m_bootleg_sound_data);
+	m_bootleg_latched_scanline = m_ppu1->get_current_scanline();
 	m_subcpu->set_input_line(INPUT_LINE_IRQ0, CLEAR_LINE);
+
 	return m_bootleg_sound_data;
 }
 
 // A0 = SN #1 enable, A1 = SN #2 enable, A2 = SN write enables (both) on edge
-WRITE8_MEMBER(vsnes_state::vssmbbl_sn_w)
+void vsnes_state::vssmbbl_sn_w(offs_t offset, uint8_t data)
 {
 //  printf("sn_w: ofs %x\n", offset & 7);
 	if (!(offset & 4))
@@ -269,20 +274,14 @@ WRITE8_MEMBER(vsnes_state::vssmbbl_sn_w)
 // the bootleg still makes writes to the PSG addresses, it seems the Z80 should interpret them to play the sounds
 void vsnes_state::vsnes_cpu1_bootleg_map(address_map &map)
 {
-	map(0x0000, 0x07ff).mirror(0x1800).ram().share("work_ram");
+	map(0x0000, 0x07ff).mirror(0x0800).ram();
 	map(0x2000, 0x3fff).rw(m_ppu1, FUNC(ppu2c0x_device::read), FUNC(ppu2c0x_device::write));
-	map(0x4000, 0x4017).w(FUNC(vsnes_state::bootleg_sound_write));
-	map(0x4014, 0x4014).w(FUNC(vsnes_state::sprite_dma_0_w));
+	map(0x4000, 0x400f).w(FUNC(vsnes_state::bootleg_sound_write));
 	map(0x4016, 0x4016).rw(FUNC(vsnes_state::vsnes_in0_r), FUNC(vsnes_state::vsnes_in0_w));
 	map(0x4017, 0x4017).r(FUNC(vsnes_state::vsnes_in1_r)); /* IN1 - input port 2 / PSG second control register */
-	map(0x4020, 0x4020).rw(FUNC(vsnes_state::vsnes_coin_counter_r), FUNC(vsnes_state::vsnes_coin_counter_w));
-	map(0x6000, 0x7fff).bankrw("extra1");
+	map(0x4020, 0x4020).w(FUNC(vsnes_state::vsnes_coin_counter_w));
+	map(0x6000, 0x67ff).mirror(0x0800).ram();
 	map(0x8000, 0xffff).rom();
-}
-
-READ8_MEMBER( vsnes_state::vsnes_bootleg_z80_latch_r )
-{
-	return 0x00;
 }
 
 // from kevtris' schematics, 2 74LS139s do the Z80 address decoding.
@@ -301,7 +300,7 @@ READ8_MEMBER( vsnes_state::vsnes_bootleg_z80_latch_r )
 void vsnes_state::vsnes_bootleg_z80_map(address_map &map)
 {
 	map(0x0000, 0x1fff).rom().region("sub", 0);
-	map(0x2000, 0x23ff).ram();
+	map(0x2000, 0x27ff).ram();
 
 	map(0x4000, 0x5fff).r(FUNC(vsnes_state::vsnes_bootleg_z80_data_r)); // read in IRQ & NMI
 	map(0x6000, 0x7fff).rw(FUNC(vsnes_state::vsnes_bootleg_z80_address_r), FUNC(vsnes_state::vssmbbl_sn_w));
@@ -472,7 +471,7 @@ static INPUT_PORTS_START( vsnes_zapper )
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_UNUSED )
 	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_UNUSED )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
-	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_UNUSED )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_UNUSED )             // low 6 bits always read 0b010000
 	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_UNUSED )
 	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_UNUSED )            /* sprite hit */
 	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_BUTTON1 )           /* gun trigger */
@@ -497,11 +496,11 @@ static INPUT_PORTS_START( vsnes_zapper )
 	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_COIN2 ) PORT_IMPULSE(1)
 	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_UNKNOWN )
 
-	PORT_START("GUNX")  /* FAKE - Gun X pos */
-	PORT_BIT( 0xff, 0x80, IPT_LIGHTGUN_X ) PORT_CROSSHAIR(X, 1.0, 0.0, 0) PORT_SENSITIVITY(70) PORT_KEYDELTA(30)
+	PORT_START("GUNX")  // FAKE - Gun X pos
+	PORT_BIT( 0xff, 0x80, IPT_LIGHTGUN_X ) PORT_CROSSHAIR(X, 1.0, 0.0, 0) PORT_SENSITIVITY(70) PORT_KEYDELTA(30) PORT_MINMAX(0, 255)
 
-	PORT_START("GUNY")  /* FAKE - Gun Y pos */
-	PORT_BIT( 0xff, 0x80, IPT_LIGHTGUN_Y ) PORT_CROSSHAIR(Y, 1.0, 0.0, 0) PORT_SENSITIVITY(50) PORT_KEYDELTA(30)
+	PORT_START("GUNY")  // FAKE - Gun Y pos
+	PORT_BIT( 0xff, 0x80, IPT_LIGHTGUN_Y ) PORT_CROSSHAIR(Y, 1.0, 0.0, 0) PORT_SENSITIVITY(50) PORT_KEYDELTA(30) PORT_MINMAX(0, 239)
 INPUT_PORTS_END
 
 
@@ -750,11 +749,11 @@ static INPUT_PORTS_START( balonfgt )
 	PORT_DIPNAME( 0x10, 0x00, "Enemy Regeneration" )    PORT_DIPLOCATION("SW2:!5")
 	PORT_DIPSETTING(    0x00, DEF_STR( Low ) )
 	PORT_DIPSETTING(    0x10, DEF_STR( High ) )
-	PORT_DIPNAME( 0x60, 0x20, DEF_STR( Bonus_Life ) )   PORT_DIPLOCATION("SW2:!6,!7")
-	PORT_DIPSETTING(    0x60, "10,000 Pts" )
-	PORT_DIPSETTING(    0x20, "20,000 Pts" )
-	PORT_DIPSETTING(    0x40, "40,000 Pts" )
-	PORT_DIPSETTING(    0x00, DEF_STR( None ) )
+	PORT_DIPNAME( 0x60, 0x40, DEF_STR( Bonus_Life ) )   PORT_DIPLOCATION("SW2:!6,!7")
+	PORT_DIPSETTING(    0x00, "10,000 Pts" )
+	PORT_DIPSETTING(    0x40, "20,000 Pts" )
+	PORT_DIPSETTING(    0x20, "40,000 Pts" )
+	PORT_DIPSETTING(    0x60, DEF_STR( None ) )
 	PORT_DIPUNUSED_DIPLOC( 0x80, 0x00, "SW2:!8" )       /* Manual states this is Unused */
 INPUT_PORTS_END
 
@@ -796,7 +795,7 @@ INPUT_PORTS_END
 static INPUT_PORTS_START( vsbball )
 	PORT_INCLUDE( vsnes_dual )
 
-	PORT_START("DSW1")  /* bit 0 and 1 read from bit 3 and 4 on $4016, rest of the bits read on $4017 */
+	PORT_START("DSW0")  /* bit 0 and 1 read from bit 3 and 4 on $4016, rest of the bits read on $4017 */
 	PORT_DIPNAME( 0x03, 0x02, "Player Defense Strength" )   PORT_DIPLOCATION("SW1:!1,!2")
 	PORT_DIPSETTING(    0x00, "Weak" )
 	PORT_DIPSETTING(    0x02, DEF_STR( Normal ) )
@@ -818,7 +817,7 @@ static INPUT_PORTS_START( vsbball )
 	PORT_DIPSETTING(    0x40, DEF_STR( Medium ) )
 	PORT_DIPSETTING(    0xc0, "Strong" )
 
-	PORT_START("DSW0")  /* bit 0 and 1 read from bit 3 and 4 on $4016, rest of the bits read on $4017 */
+	PORT_START("DSW1")  /* bit 0 and 1 read from bit 3 and 4 on $4016, rest of the bits read on $4017 */
 	PORT_SERVICE( 0x01, IP_ACTIVE_HIGH )            PORT_DIPLOCATION("SW2:!1")
 	PORT_DIPNAME( 0x06, 0x00, DEF_STR( Coinage ) )      PORT_DIPLOCATION("SW2:!2,!3")
 	PORT_DIPSETTING(    0x02, DEF_STR( 2C_1C ) )
@@ -1735,11 +1734,11 @@ void vsnes_state::vsnes(machine_config &config)
 	MCFG_MACHINE_RESET_OVERRIDE(vsnes_state,vsnes)
 	MCFG_MACHINE_START_OVERRIDE(vsnes_state,vsnes)
 
+	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
+
 	/* video hardware */
 	screen_device &screen1(SCREEN(config, "screen1", SCREEN_TYPE_RASTER));
-	screen1.set_refresh_hz(60);
-	screen1.set_size(32*8, 262);
-	screen1.set_visarea(0*8, 32*8-1, 0*8, 30*8-1);
+	screen1.set_raw(N2A03_NTSC_XTAL / 4, 341, 0, VISIBLE_SCREEN_WIDTH, ppu2c0x_device::NTSC_SCANLINES_PER_FRAME, 0, VISIBLE_SCREEN_HEIGHT);
 	screen1.set_screen_update("ppu1", FUNC(ppu2c0x_device::screen_update));
 
 	PPU_2C04(config, m_ppu1);
@@ -1801,21 +1800,19 @@ void vsnes_state::vsdual(machine_config &config)
 	n2a03_device &subcpu(N2A03(config, m_subcpu, NTSC_APU_CLOCK));
 	subcpu.set_addrmap(AS_PROGRAM, &vsnes_state::vsnes_cpu2_map);
 
-	MCFG_MACHINE_RESET_OVERRIDE(vsnes_state,vsdual)
+	MCFG_MACHINE_RESET_OVERRIDE(vsnes_state,vsnes)
 	MCFG_MACHINE_START_OVERRIDE(vsnes_state,vsdual)
 
 	config.set_default_layout(layout_dualhsxs);
 
+	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
+
 	screen_device &screen1(SCREEN(config, "screen1", SCREEN_TYPE_RASTER));
-	screen1.set_refresh_hz(60);
-	screen1.set_size(32*8, 262);
-	screen1.set_visarea(0*8, 32*8-1, 0*8, 30*8-1);
+	screen1.set_raw(N2A03_NTSC_XTAL / 4, 341, 0, VISIBLE_SCREEN_WIDTH, ppu2c0x_device::NTSC_SCANLINES_PER_FRAME, 0, VISIBLE_SCREEN_HEIGHT);
 	screen1.set_screen_update("ppu1", FUNC(ppu2c0x_device::screen_update));
 
 	screen_device &screen2(SCREEN(config, "screen2", SCREEN_TYPE_RASTER));
-	screen2.set_refresh_hz(60);
-	screen2.set_size(32*8, 262);
-	screen2.set_visarea(0*8, 32*8-1, 0*8, 30*8-1);
+	screen2.set_raw(N2A03_NTSC_XTAL / 4, 341, 0, VISIBLE_SCREEN_WIDTH, ppu2c0x_device::NTSC_SCANLINES_PER_FRAME, 0, VISIBLE_SCREEN_HEIGHT);
 	screen2.set_screen_update("ppu2", FUNC(ppu2c0x_device::screen_update));
 
 	PPU_2C04(config, m_ppu1);
@@ -1846,36 +1843,32 @@ void vsnes_state::vsdual_pi(machine_config &config)
 void vsnes_state::vsnes_bootleg(machine_config &config)
 {
 	/* basic machine hardware */
-	M6502(config, m_maincpu, XTAL(16'000'000)/4); // 4mhz? seems too high but flickers badly otherwise, issue elsewhere?
+	M6502(config, m_maincpu, XTAL(16'000'000)/8);
 	m_maincpu->set_addrmap(AS_PROGRAM, &vsnes_state::vsnes_cpu1_bootleg_map);
 	/* some carts also trigger IRQs */
 	MCFG_MACHINE_RESET_OVERRIDE(vsnes_state,vsnes)
-	MCFG_MACHINE_START_OVERRIDE(vsnes_state,vsnes)
+	MCFG_MACHINE_START_OVERRIDE(vsnes_state,bootleg)
 
-	Z80(config, m_subcpu, XTAL(16'000'000)/4); /* ? MHz */ // Z8400APS-Z80CPU
+	Z80(config, m_subcpu, XTAL(16'000'000)/8); // Z8400APS-Z80CPU
 	m_subcpu->set_addrmap(AS_PROGRAM, &vsnes_state::vsnes_bootleg_z80_map);
-	m_subcpu->set_vblank_int("screen1", FUNC(vsnes_state::irq0_line_assert));
 
 	/* video hardware */
 	screen_device &screen1(SCREEN(config, "screen1", SCREEN_TYPE_RASTER));
-	screen1.set_refresh_hz(60);
-	screen1.set_size(32*8, 262);
+	screen1.set_refresh_hz(56.69);
+	screen1.set_size(32*8, 280);
 	screen1.set_visarea(0*8, 32*8-1, 0*8, 30*8-1);
 	screen1.set_screen_update("ppu1", FUNC(ppu2c0x_device::screen_update));
 
-	PPU_2C04(config, m_ppu1);
+	PPU_2C04C(config, m_ppu1);
 	m_ppu1->set_cpu_tag(m_maincpu);
 	m_ppu1->set_screen("screen1");
 	m_ppu1->int_callback().set_inputline(m_maincpu, INPUT_LINE_NMI);
-	m_ppu1->use_sprite_write_limitation_disable(); // bootleg seems to need this - code to set the sprite address is replaced with complete copy loops??
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 
-	// PCB has 2, code accesses 3? which 2 really exist?
-	SN76489(config, "sn1", XTAL(16'000'000)/4).add_route(ALL_OUTPUTS, "mono", 0.50);
+	SN76489(config, "sn1", XTAL(16'000'000)/8).add_route(ALL_OUTPUTS, "mono", 0.50); // one runs at 2 MHz, other runs at 4 MHz
 	SN76489(config, "sn2", XTAL(16'000'000)/4).add_route(ALL_OUTPUTS, "mono", 0.50);
-	SN76489(config, "sn3", XTAL(16'000'000)/4).add_route(ALL_OUTPUTS, "mono", 0.50);
 }
 
 /******************************************************************************/
@@ -1961,7 +1954,7 @@ ROM_START( suprmriobl )
 	ROM_REGION( 0x10000, "sub", 0 ) /* Z80 memory */
 	ROM_LOAD( "1.bin",  0x0000, 0x2000, CRC(9e3557f2) SHA1(11a0de2c0154f7ac120d9774cb5d1051e0156822) )
 
-	ROM_REGION( 0x10000, "unk", 0 ) /* first half is some sort of table */
+	ROM_REGION( 0x10000, "unk", 0 ) /* Table used by clone PPU for sprite flipping, etc. */
 	ROM_LOAD( "3.bin",  0x0000, 0x8000, CRC(67a467f9) SHA1(61cd1db7cd52faa31153b89f6b98c9b78bf4ca4f) )
 
 	ROM_REGION( 0x4000, "gfx1", 0 ) /* PPU memory */
@@ -1969,9 +1962,9 @@ ROM_START( suprmriobl )
 	ROM_LOAD( "5.bin",  0x2000, 0x2000, CRC(15506b86) SHA1(69ecf7a3cc8bf719c1581ec7c0d68798817d416f) )
 
 	/* this set has some extra files compared to "suprmriobl2", they probably exist on that pcb too though */
-	ROM_REGION( 0x200, "proms", 0 )
-	ROM_LOAD( "prom6301.1",  0x000, 0x100, CRC(a31dc330) SHA1(b652003f7e252bac3bdb19412839c2f03af7f8b8) )
-	ROM_LOAD( "prom6301.2",  0x100, 0x100, CRC(019c6141) SHA1(fdeda4dea6506807a3324fa941f0684208aa3b4b) )
+	ROM_REGION( 0x100, "ppu1:palette", 0 )
+	ROM_LOAD_NIB_HIGH( "prom6301.1",  0x000, 0x100, CRC(a31dc330) SHA1(b652003f7e252bac3bdb19412839c2f03af7f8b8) )
+	ROM_LOAD_NIB_LOW ( "prom6301.2",  0x000, 0x100, CRC(019c6141) SHA1(fdeda4dea6506807a3324fa941f0684208aa3b4b) )
 
 	ROM_REGION( 0x4000, "pals", 0 )
 	ROM_LOAD( "pal16l8.1",  0x000, 0x104, CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e) )
@@ -1982,7 +1975,8 @@ ROM_START( suprmriobl )
 	ROM_LOAD( "pal16r8.6",  0x000, 0x104, CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e) )
 	ROM_LOAD( "pal16r8a.7", 0x000, 0x104, CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e) )
 
-	PALETTE_2C04_0004("ppu1:palette")
+	ROM_REGION(0x0100, "epld", 0)
+	ROM_LOAD("ep1200.bin", 0x000, 0x100, NO_DUMP) // Not dumped
 ROM_END
 
 ROM_START( suprmriobl2 )
@@ -1992,48 +1986,28 @@ ROM_START( suprmriobl2 )
 	ROM_REGION( 0x10000, "sub", 0 ) /* Z80 memory */
 	ROM_LOAD( "1-2764.bin",  0x0000, 0x2000, CRC(95856e07) SHA1(c681cfdb656e687bc59080df56c9c38e13be4bb8) )
 
-	ROM_REGION( 0x10000, "unk", 0 ) /* first half is some sort of table */
+	ROM_REGION( 0x10000, "unk", 0 ) /* Table used by clone PPU for sprite flipping, etc. */
 	ROM_LOAD( "3-27256.bin",  0x0000, 0x8000, CRC(67a467f9) SHA1(61cd1db7cd52faa31153b89f6b98c9b78bf4ca4f) )
 
 	ROM_REGION( 0x4000, "gfx1", 0 ) /* PPU memory */
 	ROM_LOAD( "2-2764.bin",  0x0000, 0x2000, CRC(42418d40) SHA1(22ab61589742cfa4cc6856f7205d7b4b8310bc4d) )
 	ROM_LOAD( "5-2764.bin",  0x2000, 0x2000, CRC(15506b86) SHA1(69ecf7a3cc8bf719c1581ec7c0d68798817d416f) )
 
-	PALETTE_2C04_0004("ppu1:palette")
-ROM_END
+	ROM_REGION(0x100, "ppu1:palette", 0)
+	ROM_LOAD_NIB_HIGH( "prom6301.1", 0x000, 0x100, BAD_DUMP CRC(a31dc330) SHA1(b652003f7e252bac3bdb19412839c2f03af7f8b8) ) // Not from this PCB
+	ROM_LOAD_NIB_LOW ( "prom6301.2", 0x000, 0x100, BAD_DUMP CRC(019c6141) SHA1(fdeda4dea6506807a3324fa941f0684208aa3b4b) ) // Not from this PCB
 
-ROM_START( suprmriobl3 )
-	ROM_REGION( 0x10000, "maincpu", 0 ) // 6502 memory
-	ROM_LOAD( "sm_4.bin",  0x8000, 0x8000, CRC(663b1753) SHA1(b0d2057c4545f2d6534cafb16086826c8ba49f5a) )
+	ROM_REGION(0x4000, "pals", 0)
+	ROM_LOAD("pal16l8.1", 0x000, 0x104, BAD_DUMP CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e)) // Not from this PCB
+	ROM_LOAD("pal16r6a.2", 0x000, 0x104, NO_DUMP)
+	ROM_LOAD("pal16r8.3", 0x000, 0x104, BAD_DUMP CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e)) // Not from this PCB
+	ROM_LOAD("pal16l8.4", 0x000, 0x104, BAD_DUMP CRC(6f6de82d) SHA1(3d59b222d25457b2f89b559409721db37d6a81d8)) // Not from this PCB
+	ROM_LOAD("pal16r6.5", 0x000, 0x104, BAD_DUMP CRC(ceff7c7c) SHA1(52fd344c591478469369cd0862d1facfe23e12fb)) // Not from this PCB
+	ROM_LOAD("pal16r8.6", 0x000, 0x104, BAD_DUMP CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e)) // Not from this PCB
+	ROM_LOAD("pal16r8a.7", 0x000, 0x104, BAD_DUMP CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e)) // Not from this PCB
 
-	ROM_REGION( 0x10000, "sub", 0 ) // Z80 memory
-	ROM_LOAD( "sm_1.bin",  0x0000, 0x2000, CRC(7f6dda4a) SHA1(0e92a1255ce13ae1215b531f268cd4874e20d611) )
-
-	ROM_REGION( 0x10000, "unk", 0 ) // First half is some sort of table
-	ROM_LOAD( "sm_3.bin",  0x0000, 0x8000, CRC(67a467f9) SHA1(61cd1db7cd52faa31153b89f6b98c9b78bf4ca4f) )
-
-	ROM_REGION( 0x4000, "gfx1", 0 ) // PPU memory
-	ROM_LOAD( "sm_2.bin",  0x0000, 0x2000, CRC(a5f771d1) SHA1(b3f916700035d5556cca009ab83300fb662a868f) )
-	ROM_LOAD( "sm_5.bin",  0x2000, 0x2000, CRC(a08903ca) SHA1(7ecec519ac973168a84505ddede4f248b554fd85) )
-
-	/* this set has some extra files compared to "suprmriobl2", they probably exist on that pcb too though */
-	ROM_REGION( 0x200, "proms", 0 )
-	ROM_LOAD( "prom6301.1",  0x000, 0x100, BAD_DUMP CRC(a31dc330) SHA1(b652003f7e252bac3bdb19412839c2f03af7f8b8) ) // Not from this PCB
-	ROM_LOAD( "prom6301.2",  0x100, 0x100, BAD_DUMP CRC(019c6141) SHA1(fdeda4dea6506807a3324fa941f0684208aa3b4b) ) // Not from this PCB
-
-	ROM_REGION( 0x4000, "pals", 0 )
-	ROM_LOAD( "pal16l8.1",  0x000, 0x104, BAD_DUMP CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e) ) // Not from this PCB
-	ROM_LOAD( "pal16r6a.2", 0x000, 0x104, NO_DUMP )
-	ROM_LOAD( "pal16r8.3",  0x000, 0x104, BAD_DUMP CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e) ) // Not from this PCB
-	ROM_LOAD( "pal16l8.4",  0x000, 0x104, BAD_DUMP CRC(6f6de82d) SHA1(3d59b222d25457b2f89b559409721db37d6a81d8) ) // Not from this PCB
-	ROM_LOAD( "pal16r6.5",  0x000, 0x104, BAD_DUMP CRC(ceff7c7c) SHA1(52fd344c591478469369cd0862d1facfe23e12fb) ) // Not from this PCB
-	ROM_LOAD( "pal16r8.6",  0x000, 0x104, BAD_DUMP CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e) ) // Not from this PCB
-	ROM_LOAD( "pal16r8a.7", 0x000, 0x104, BAD_DUMP CRC(bd76fb53) SHA1(2d0634e8edb3289a103719466465e9777606086e) ) // Not from this PCB
-
-	ROM_REGION( 0x0100, "epld", 0 )
-	ROM_LOAD( "ep1200.bin",  0x000, 0x100, NO_DUMP ) // Not dumped
-
-	PALETTE_2C04_0004("ppu1:palette") // Not from this PCB
+	ROM_REGION(0x0100, "epld", 0)
+	ROM_LOAD("ep1200.bin", 0x000, 0x100, NO_DUMP) // Not dumped
 ROM_END
 
 ROM_START( skatekds )
@@ -2195,7 +2169,7 @@ ROM_START( cluclu )
 ROM_END
 
 
-ROM_START( excitebk ) /* EB4-3 = Excite Bike, Palette 3, revision 'E' */
+ROM_START( excitebk ) /* EB4-3 = Excitebike, Palette 3, revision 'E' */
 	ROM_REGION( 0x10000,"maincpu", 0 ) /* 6502 memory */
 	ROM_LOAD( "mds-eb4-3e.1d",  0x8000, 0x2000, CRC(f58a392e) SHA1(ca721e47e5dbe72d6f231d9b20b1ca33304c5370) )
 	ROM_LOAD( "mds-eb4-3e.1c",  0xa000, 0x2000, CRC(6ae01102) SHA1(f3f49644f7e2887e14655e8934c7c75d4b92968e) )
@@ -2209,7 +2183,7 @@ ROM_START( excitebk ) /* EB4-3 = Excite Bike, Palette 3, revision 'E' */
 	PALETTE_2C04_0003("ppu1:palette")
 ROM_END
 
-ROM_START( excitebko ) /* EB4-3 = Excite Bike, Palette 3, unknown revision */
+ROM_START( excitebko ) /* EB4-3 = Excitebike, Palette 3, unknown revision */
 	ROM_REGION( 0x10000,"maincpu", 0 ) /* 6502 memory */
 	ROM_LOAD( "mds-eb4-3.1d",  0x8000, 0x2000, CRC(7e54df1d) SHA1(38d878041976386e8608c73133040b18d0e4b9cd) ) /* Need to verify correct label */
 	ROM_LOAD( "mds-eb4-3.1c",  0xa000, 0x2000, CRC(89baae91) SHA1(6aebf13c415e3246edf7daa847533b7e3ae0425f) ) /* Need to verify correct label */
@@ -2223,7 +2197,7 @@ ROM_START( excitebko ) /* EB4-3 = Excite Bike, Palette 3, unknown revision */
 	PALETTE_2C04_0003("ppu1:palette")
 ROM_END
 
-ROM_START( excitebkj ) /* EB4-4 A = Excite Bike, Palette 4, rev A */
+ROM_START( excitebkj ) /* EB4-4 A = Excitebike, Palette 4, rev A */
 	ROM_REGION( 0x10000,"maincpu", 0 ) /* 6502 memory */
 	ROM_LOAD( "mds-eb4-4 a.6d",  0x8000, 0x2000, CRC(6aa87037) SHA1(f3313700955498800a3d59c523ba2a4e0cf443bc) )
 	ROM_LOAD( "mds-eb4-4 a.6c",  0xa000, 0x2000, CRC(bdb317db) SHA1(a8b3e8deb1e625d764aaffe86a513bc7ede51a46) )
@@ -2880,11 +2854,10 @@ GAME( 1986, rbibb,    0,         vsnes,         rbibb,    vsnes_state, init_rbib
 GAME( 1986, rbibba,   rbibb,     vsnes,         rbibb,    vsnes_state, init_rbibb,    ROT0, "Namco",                  "Vs. Atari R.B.I. Baseball (set 2)", 0 )
 GAME( 1986, suprmrio, 0,         vsnes,         suprmrio, vsnes_state, init_vsnormal, ROT0, "Nintendo",               "Vs. Super Mario Bros. (set SM4-4 E)", 0 )
 GAME( 1986, suprmrioa,suprmrio,  vsnes,         suprmrio, vsnes_state, init_vsnormal, ROT0, "Nintendo",               "Vs. Super Mario Bros. (set ?, harder)", 0 )
-GAME( 1986, suprmriobl,suprmrio, vsnes_bootleg, suprmrio, vsnes_state, init_vsnormal, ROT0, "bootleg",                "Vs. Super Mario Bros. (bootleg with Z80, set 1)", MACHINE_NOT_WORKING ) // timer starts at 200(!)
-GAME( 1986, suprmriobl2,suprmrio,vsnes_bootleg, suprmrio, vsnes_state, init_vsnormal, ROT0, "bootleg",                "Vs. Super Mario Bros. (bootleg with Z80, set 2)", MACHINE_NOT_WORKING ) // timer starts at 300
-GAME( 1986, suprmriobl3,suprmrio,vsnes_bootleg, suprmrio, vsnes_state, init_vsnormal, ROT0, "bootleg",                "Vs. Super Mario Bros. (bootleg with Z80, set 3)", MACHINE_NOT_WORKING ) // timer starts at 300
+GAME( 1986, suprmriobl,suprmrio, vsnes_bootleg, suprmrio, vsnes_state, init_bootleg,  ROT0, "bootleg",                "Vs. Super Mario Bros. (bootleg with Z80, set 1)", 0) // timer starts at 200(!)
+GAME( 1986, suprmriobl2,suprmrio,vsnes_bootleg, suprmrio, vsnes_state, init_bootleg,  ROT0, "bootleg",                "Vs. Super Mario Bros. (bootleg with Z80, set 2)", 0) // timer starts at 300
 GAME( 1988, skatekds, suprmrio,  vsnes,         suprmrio, vsnes_state, init_vsnormal, ROT0, "hack (Two-Bit Score)",   "Vs. Skate Kids. (Graphic hack of Super Mario Bros.)", 0 )
-GAME( 1985, vsskykid, 0,         vsnes,         vsskykid, vsnes_state, init_MMC3,     ROT0, "Namco",                  "Vs. Super SkyKid", 0 )
+GAME( 1985, vsskykid, 0,         vsnes,         vsskykid, vsnes_state, init_vs108,    ROT0, "Namco",                  "Vs. Super SkyKid", 0 )
 GAME( 1987, tkoboxng, 0,         vsnes,         tkoboxng, vsnes_state, init_tkoboxng, ROT0, "Namco / Data East USA",  "Vs. T.K.O. Boxing", 0 )
 GAME( 1984, smgolf,   0,         vsnes,         golf4s,   vsnes_state, init_vsnormal, ROT0, "Nintendo",               "Vs. Stroke & Match Golf (Men Version, set GF4-2 F)",       0 )
 GAME( 1984, smgolfb,  smgolf,    vsnes,         golf,     vsnes_state, init_vsnormal, ROT0, "Nintendo",               "Vs. Stroke & Match Golf (Men Version, set GF4-2 ?)",       0 )
@@ -2918,8 +2891,8 @@ GAME( 1984, vstennisb,vstennis,  vsdual_pi,     vstennis, vsnes_state, init_vsdu
 GAME( 1984, wrecking, 0,         vsdual_pi,     wrecking, vsnes_state, init_vsdual,   ROT0, "Nintendo",               "Vs. Wrecking Crew",                    0 )
 GAME( 1984, balonfgt, 0,         vsdual_pi,     balonfgt, vsnes_state, init_vsdual,   ROT0, "Nintendo",               "Vs. Balloon Fight (set BF4 A-3)",      0 )
 GAME( 1984, vsmahjng, 0,         vsdual,        vsmahjng, vsnes_state, init_vsdual,   ROT0, "Nintendo Co., Ltd.",     "Vs. Mahjong (Japan)",                  0 )
-GAME( 1984, vsbball,  0,         vsdual_pi,     vsbball,  vsnes_state, init_vsdual,   ROT0, "Nintendo of America",    "Vs. BaseBall (US, set BA E-1)",        0 )
-GAME( 1984, vsbballj, vsbball,   vsdual_pi,     vsbballj, vsnes_state, init_vsdual,   ROT0, "Nintendo Co., Ltd.",     "Vs. BaseBall (Japan, set BA A-3)",     0 )
-GAME( 1984, vsbballja,vsbball,   vsdual_pi,     vsbballj, vsnes_state, init_vsdual,   ROT0, "Nintendo Co., Ltd.",     "Vs. BaseBall (Japan, set BA A-2)",     0 )
-GAME( 1984, vsbballjb,vsbball,   vsdual_pi,     vsbballj, vsnes_state, init_vsdual,   ROT0, "Nintendo Co., Ltd.",     "Vs. BaseBall (Japan, set BA A-1)",     0 )
+GAME( 1984, vsbball,  0,         vsdual_pi,     vsbball,  vsnes_state, init_vsdual,   ROT0, "Nintendo of America",    "Vs. Baseball (US, set BA E-1)",        0 )
+GAME( 1984, vsbballj, vsbball,   vsdual_pi,     vsbballj, vsnes_state, init_vsdual,   ROT0, "Nintendo Co., Ltd.",     "Vs. Baseball (Japan, set BA A-3)",     0 )
+GAME( 1984, vsbballja,vsbball,   vsdual_pi,     vsbballj, vsnes_state, init_vsdual,   ROT0, "Nintendo Co., Ltd.",     "Vs. Baseball (Japan, set BA A-2)",     0 )
+GAME( 1984, vsbballjb,vsbball,   vsdual_pi,     vsbballj, vsnes_state, init_vsdual,   ROT0, "Nintendo Co., Ltd.",     "Vs. Baseball (Japan, set BA A-1)",     0 )
 GAME( 1984, iceclmrd, 0,         vsdual_pi,     iceclmrj, vsnes_state, init_vsdual,   ROT0, "Nintendo",               "Vs. Ice Climber Dual (set IC4-4 A-1)", 0 )

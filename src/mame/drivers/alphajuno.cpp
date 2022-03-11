@@ -9,8 +9,11 @@
 #include "emu.h"
 //#include "bus/midi/midi.h"
 #include "cpu/mcs51/mcs51.h"
+#include "machine/mb62h195.h"
 #include "machine/mb63h149.h"
 #include "machine/nvram.h"
+#include "machine/rescap.h"
+#include "machine/upd7001.h"
 #include "video/hd44780.h"
 #include "emupal.h"
 #include "screen.h"
@@ -55,7 +58,7 @@ void alphajuno_state::machine_reset()
 HD44780_PIXEL_UPDATE(alphajuno_state::lcd_pixel_update)
 {
 	if (x < 5 && y < 8 && line < 2 && pos < 8)
-		bitmap.pix16(y, (line * 8 + pos) * 6 + x) = state;
+		bitmap.pix(y, (line * 8 + pos) * 6 + x) = state;
 }
 
 
@@ -114,7 +117,16 @@ void alphajuno_state::ajuno1(machine_config &config)
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0); // TC5517APL + battery
 
+	mb62h195_device &io(MB62H195(config, "io"));
+	io.lc_callback().set(m_lcdc, FUNC(hd44780_device::write));
+	io.sout_callback().set("adc", FUNC(upd7001_device::si_w));
+	io.sck_callback().set("adc", FUNC(upd7001_device::sck_w));
+	io.sin_callback().set("adc", FUNC(upd7001_device::so_r));
+	io.adc_callback().set("adc", FUNC(upd7001_device::cs_w));
+
 	//MB87123(config, "dco", 12_MHz_XTAL);
+
+	UPD7001(config, "adc", RES_K(27), CAP_P(47));
 
 	// LCD: LM16155A or LM16155B
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_LCD));
@@ -130,7 +142,7 @@ void alphajuno_state::ajuno1(machine_config &config)
 	HD44780(config, m_lcdc, 0);
 	m_lcdc->set_lcd_size(2, 8);
 	m_lcdc->set_pixel_update_cb(FUNC(alphajuno_state::lcd_pixel_update));
-	m_lcdc->set_busy_factor(0.005);
+	m_lcdc->set_busy_factor(0.005f);
 }
 
 void alphajuno_state::ajuno2(machine_config &config)
@@ -150,6 +162,9 @@ void alphajuno_state::mks50(machine_config &config)
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0); // TC5564PL-20 + battery
 
+	mb62h195_device &io(MB62H195(config, "io"));
+	io.lc_callback().set(m_lcdc, FUNC(hd44780_device::write));
+
 	//MB87123(config, "dco", 12_MHz_XTAL);
 
 	// LCD Unit: DM011Z-1DL3
@@ -166,7 +181,7 @@ void alphajuno_state::mks50(machine_config &config)
 	HD44780(config, m_lcdc, 0);
 	m_lcdc->set_lcd_size(2, 8);
 	m_lcdc->set_pixel_update_cb(FUNC(alphajuno_state::lcd_pixel_update));
-	m_lcdc->set_busy_factor(0.05);
+	m_lcdc->set_busy_factor(0.05f);
 }
 
 // Original EPROM labels specify major and minor revisions with punch grids; "U" (update?) tag is separate.
@@ -187,6 +202,11 @@ ROM_START(ajuno2)
 	ROMX_LOAD("ju-2_2_4.ic24", 0x0000, 0x4000, CRC(bfedda17) SHA1(27eee472befdbc7d7ed0caaf359775d8ff3c836a), ROM_BIOS(2)) // M5M27C128
 ROM_END
 
+ROM_START(hs80)
+	ROM_REGION(0x4000, "program", 0)
+	ROM_LOAD("roland hs-80 v5.0 eprom -dom- - 27128", 0x0000, 0x4000, CRC(94e85807) SHA1(128eec37fb6dcac6ec73d3ca544c28dbf7dbf9b2))
+ROM_END
+
 ROM_START(mks50)
 	ROM_REGION(0x4000, "program", 0)
 	ROM_LOAD("mks-50_v1.02.ic7", 0x0000, 0x4000, CRC(a342f90e) SHA1(8eed986051abfdf55167c179dc7c7f0822a3ba0c))
@@ -195,4 +215,5 @@ ROM_END
 SYST(1985, ajuno1, 0, 0, ajuno1, ajuno1, alphajuno_state, empty_init, "Roland", "Alpha Juno-1 (JU-1) Programmable Polyphonic Synthesizer", MACHINE_IS_SKELETON)
 //SYST(1985, hs10, ajuno1, 0, ajuno1, ajuno1, alphajuno_state, empty_init, "Roland", "SynthPlus 10 (HS-10) Programmable Polyphonic Synthesizer", MACHINE_IS_SKELETON)
 SYST(1986, ajuno2, 0, 0, ajuno2, ajuno2, alphajuno_state, empty_init, "Roland", "Alpha Juno-2 (JU-2) Programmable Polyphonic Synthesizer", MACHINE_IS_SKELETON)
+SYST(1986, hs80, ajuno2, 0, ajuno2, ajuno2, alphajuno_state, empty_init, "Roland", "HS-80 Programmable Polyphonic Synthesizer", MACHINE_IS_SKELETON)
 SYST(1987, mks50, 0, 0, mks50, mks50, alphajuno_state, empty_init, "Roland", "MKS-50 Synthesizer Module", MACHINE_IS_SKELETON)

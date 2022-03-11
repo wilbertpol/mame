@@ -28,16 +28,16 @@ hpc3_device::hpc3_device(const machine_config &mconfig, const char *tag, device_
 	: device_t(mconfig, SGI_HPC3, tag, owner, clock)
 	, device_memory_interface(mconfig, *this)
 	, m_pio_space_config{
-		{"PIO channel 0", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 1", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 2", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 3", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 4", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 5", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 6", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 7", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 8", ENDIANNESS_LITTLE, 16, 8, -1},
-		{"PIO channel 9", ENDIANNESS_LITTLE, 16, 8, -1}}
+		{"pio0", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio1", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio2", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio3", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio4", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio5", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio6", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio7", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio8", ENDIANNESS_LITTLE, 16, 8, -1},
+		{"pio9", ENDIANNESS_LITTLE, 16, 8, -1}}
 	, m_gio64_space(*this, finder_base::DUMMY_TAG, -1)
 	, m_hal2(*this, finder_base::DUMMY_TAG)
 	, m_enet(*this, finder_base::DUMMY_TAG)
@@ -218,7 +218,7 @@ void hpc3_device::map(address_map &map)
 	map(0x00060000, 0x0007ffff).rw(FUNC(hpc3_device::bbram_r), FUNC(hpc3_device::bbram_w));
 }
 
-void hpc3_device::device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr)
+void hpc3_device::device_timer(emu_timer &timer, device_timer_id id, int param)
 {
 	switch (id)
 	{
@@ -288,7 +288,7 @@ void hpc3_device::do_pbus_dma(uint32_t channel)
 	}
 }
 
-READ32_MEMBER(hpc3_device::hd_enet_r)
+uint32_t hpc3_device::hd_enet_r(offs_t offset, uint32_t mem_mask)
 {
 	switch (offset)
 	{
@@ -421,7 +421,7 @@ READ32_MEMBER(hpc3_device::hd_enet_r)
 	}
 }
 
-WRITE32_MEMBER(hpc3_device::hd_enet_w)
+void hpc3_device::hd_enet_w(offs_t offset, uint32_t data, uint32_t mem_mask)
 {
 	switch (offset)
 	{
@@ -665,7 +665,7 @@ void hpc3_device::enet_intr_in_w(int state)
 }
 
 template<hpc3_device::fifo_type_t Type>
-READ32_MEMBER(hpc3_device::fifo_r)
+uint32_t hpc3_device::fifo_r(offs_t offset)
 {
 	uint32_t ret = 0;
 	if (Type == FIFO_PBUS)
@@ -683,7 +683,7 @@ READ32_MEMBER(hpc3_device::fifo_r)
 }
 
 template<hpc3_device::fifo_type_t Type>
-WRITE32_MEMBER(hpc3_device::fifo_w)
+void hpc3_device::fifo_w(offs_t offset, uint32_t data)
 {
 	logerror("Writing %08x to %d FIFO offset %08x (%08x)\n", data, Type, offset, offset >> 2);
 	if (Type == FIFO_PBUS)
@@ -698,19 +698,19 @@ WRITE32_MEMBER(hpc3_device::fifo_w)
 		m_enet_fifo[ENET_XMIT][offset >> 2] = data;
 }
 
-template READ32_MEMBER(hpc3_device::fifo_r<hpc3_device::FIFO_PBUS>);
-template READ32_MEMBER(hpc3_device::fifo_r<hpc3_device::FIFO_SCSI0>);
-template READ32_MEMBER(hpc3_device::fifo_r<hpc3_device::FIFO_SCSI1>);
-template READ32_MEMBER(hpc3_device::fifo_r<hpc3_device::FIFO_ENET_RECV>);
-template READ32_MEMBER(hpc3_device::fifo_r<hpc3_device::FIFO_ENET_XMIT>);
-template WRITE32_MEMBER(hpc3_device::fifo_w<hpc3_device::FIFO_PBUS>);
-template WRITE32_MEMBER(hpc3_device::fifo_w<hpc3_device::FIFO_SCSI0>);
-template WRITE32_MEMBER(hpc3_device::fifo_w<hpc3_device::FIFO_SCSI1>);
-template WRITE32_MEMBER(hpc3_device::fifo_w<hpc3_device::FIFO_ENET_RECV>);
-template WRITE32_MEMBER(hpc3_device::fifo_w<hpc3_device::FIFO_ENET_XMIT>);
+template uint32_t hpc3_device::fifo_r<hpc3_device::FIFO_PBUS>(offs_t offset);
+template uint32_t hpc3_device::fifo_r<hpc3_device::FIFO_SCSI0>(offs_t offset);
+template uint32_t hpc3_device::fifo_r<hpc3_device::FIFO_SCSI1>(offs_t offset);
+template uint32_t hpc3_device::fifo_r<hpc3_device::FIFO_ENET_RECV>(offs_t offset);
+template uint32_t hpc3_device::fifo_r<hpc3_device::FIFO_ENET_XMIT>(offs_t offset);
+template void hpc3_device::fifo_w<hpc3_device::FIFO_PBUS>(offs_t offset, uint32_t data);
+template void hpc3_device::fifo_w<hpc3_device::FIFO_SCSI0>(offs_t offset, uint32_t data);
+template void hpc3_device::fifo_w<hpc3_device::FIFO_SCSI1>(offs_t offset, uint32_t data);
+template void hpc3_device::fifo_w<hpc3_device::FIFO_ENET_RECV>(offs_t offset, uint32_t data);
+template void hpc3_device::fifo_w<hpc3_device::FIFO_ENET_XMIT>(offs_t offset, uint32_t data);
 
 template<uint32_t index>
-READ32_MEMBER(hpc3_device::hd_r)
+uint32_t hpc3_device::hd_r(offs_t offset, uint32_t mem_mask)
 {
 	if (ACCESSING_BITS_0_7 && !m_hd_rd_cb[index].isnull())
 	{
@@ -727,7 +727,7 @@ READ32_MEMBER(hpc3_device::hd_r)
 }
 
 template<uint32_t index>
-WRITE32_MEMBER(hpc3_device::hd_w)
+void hpc3_device::hd_w(offs_t offset, uint32_t data, uint32_t mem_mask)
 {
 	if (ACCESSING_BITS_0_7 && !m_hd_wr_cb[index].isnull())
 	{
@@ -741,10 +741,10 @@ WRITE32_MEMBER(hpc3_device::hd_w)
 	}
 }
 
-template READ32_MEMBER(hpc3_device::hd_r<0>);
-template READ32_MEMBER(hpc3_device::hd_r<1>);
-template WRITE32_MEMBER(hpc3_device::hd_w<0>);
-template WRITE32_MEMBER(hpc3_device::hd_w<1>);
+template uint32_t hpc3_device::hd_r<0>(offs_t offset, uint32_t mem_mask);
+template uint32_t hpc3_device::hd_r<1>(offs_t offset, uint32_t mem_mask);
+template void hpc3_device::hd_w<0>(offs_t offset, uint32_t data, uint32_t mem_mask);
+template void hpc3_device::hd_w<1>(offs_t offset, uint32_t data, uint32_t mem_mask);
 
 uint32_t hpc3_device::pio_data_r(offs_t offset)
 {
@@ -794,7 +794,7 @@ void hpc3_device::pio_data_w(offs_t offset, uint32_t data)
 	}
 }
 
-READ32_MEMBER(hpc3_device::pbusdma_r)
+uint32_t hpc3_device::pbusdma_r(offs_t offset, uint32_t mem_mask)
 {
 	uint32_t channel = offset / (0x2000/4);
 	pbus_dma_t &dma = m_pbus_dma[channel];
@@ -832,7 +832,7 @@ READ32_MEMBER(hpc3_device::pbusdma_r)
 	return ret;
 }
 
-WRITE32_MEMBER(hpc3_device::pbusdma_w)
+void hpc3_device::pbusdma_w(address_space &space, offs_t offset, uint32_t data, uint32_t mem_mask)
 {
 	uint32_t channel = offset / (0x2000/4);
 	pbus_dma_t &dma = m_pbus_dma[channel];
@@ -892,7 +892,7 @@ WRITE32_MEMBER(hpc3_device::pbusdma_w)
 	}
 }
 
-READ32_MEMBER(hpc3_device::dma_config_r)
+uint32_t hpc3_device::dma_config_r(offs_t offset, uint32_t mem_mask)
 {
 	const uint32_t channel = (offset >> 7) & 7;
 	const uint32_t data = m_pbus_dma[channel].m_config;
@@ -900,7 +900,7 @@ READ32_MEMBER(hpc3_device::dma_config_r)
 	return data;
 }
 
-WRITE32_MEMBER(hpc3_device::dma_config_w)
+void hpc3_device::dma_config_w(offs_t offset, uint32_t data, uint32_t mem_mask)
 {
 	const uint32_t channel = (offset >> 7) & 7;
 	COMBINE_DATA(&m_pbus_dma[channel].m_config);
@@ -919,7 +919,7 @@ WRITE32_MEMBER(hpc3_device::dma_config_w)
 	LOGMASKED(LOG_PBUS_DMA, "    %sUse Unsynchronized DREQ\n", BIT(data, 27) ? "" : "Do Not ");
 }
 
-READ32_MEMBER(hpc3_device::pio_config_r)
+uint32_t hpc3_device::pio_config_r(offs_t offset, uint32_t mem_mask)
 {
 	uint32_t channel = (offset >> 6) & 15;
 	if (channel >= 10)
@@ -932,7 +932,7 @@ READ32_MEMBER(hpc3_device::pio_config_r)
 	return data;
 }
 
-WRITE32_MEMBER(hpc3_device::pio_config_w)
+void hpc3_device::pio_config_w(offs_t offset, uint32_t data, uint32_t mem_mask)
 {
 	uint32_t channel = (offset >> 6) & 15;
 	if (channel >= 10)
@@ -1074,7 +1074,7 @@ WRITE_LINE_MEMBER(hpc3_device::scsi1_drq)
 	scsi_drq(state, 1);
 }
 
-READ32_MEMBER(hpc3_device::intstat_r)
+uint32_t hpc3_device::intstat_r()
 {
 	return m_intstat;
 }
@@ -1109,7 +1109,7 @@ void hpc3_device::eeprom_w(uint32_t data)
 	m_eeprom_clk_cb(BIT(data, 2));
 }
 
-void hpc3_device::enet_transmit(void *ptr, int param)
+void hpc3_device::enet_transmit(int param)
 {
 	// save the first transmit buffer descriptor pointer
 	// TODO: not sure how cpfbdp and ppfbdp work, perhaps round-robin?

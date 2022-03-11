@@ -55,7 +55,7 @@ private:
 	bool m_flipscreen_old;
 	emu_timer *m_blitter_timer;
 
-	void blitter_timer_callback(void *ptr, s32 param);
+	void blitter_timer_callback(s32 param);
 
 	void vramflip();
 	void gfxdraw();
@@ -75,7 +75,7 @@ private:
 	required_region_ptr<uint8_t> m_voice_rom;
 
 	uint8_t sndrom_r();
-	void romsel_w(address_space &space, uint8_t data);
+	void romsel_w(uint8_t data);
 	uint16_t blitter_src_addr_r();
 
 	void io_map(address_map &map);

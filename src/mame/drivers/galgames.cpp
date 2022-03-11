@@ -38,6 +38,7 @@ Notes:
 ***************************************************************************/
 
 #include "emu.h"
+
 #include "cpu/m68000/m68000.h"
 #include "cpu/pic16c5x/pic16c5x.h"
 #include "machine/eepromser.h"
@@ -45,9 +46,12 @@ Notes:
 #include "machine/watchdog.h"
 #include "sound/okim6295.h"
 #include "video/cesblit.h"
+
+#include "dirom.h"
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+
 
 /***************************************************************************
 
@@ -67,7 +71,7 @@ DECLARE_DEVICE_TYPE(GALGAMES_SLOT,          galgames_slot_device)
 
 // CART declaration
 
-class galgames_cart_device : public device_t, public device_rom_interface
+class galgames_cart_device : public device_t, public device_rom_interface<21, 1, 0, ENDIANNESS_BIG>
 {
 public:
 	// construction/destruction
@@ -313,7 +317,7 @@ galgames_cart_device::galgames_cart_device(
 		device_t *owner,
 		u32 clock):
 	device_t(mconfig, type, tag, owner, clock),
-	device_rom_interface(mconfig, *this, 21, ENDIANNESS_BIG, 16),
+	device_rom_interface(mconfig, *this),
 	m_cart(0),
 	m_slot(*this, "^slot"),
 	m_eeprom(*this, "eeprom"),

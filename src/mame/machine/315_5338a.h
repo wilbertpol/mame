@@ -55,8 +55,8 @@ public:
 	auto out_pf_callback() { return m_out_port_cb[5].bind(); }
 	auto out_pg_callback() { return m_out_port_cb[6].bind(); }
 
-	DECLARE_READ8_MEMBER(read);
-	DECLARE_WRITE8_MEMBER(write);
+	uint8_t read(offs_t offset);
+	void write(offs_t offset, uint8_t data);
 
 protected:
 	// device-level overrides
@@ -73,6 +73,7 @@ private:
 	uint8_t m_port_config;
 	uint8_t m_serial_output;
 	uint16_t m_address;
+	uint8_t m_cmd;
 };
 
 // device type definition

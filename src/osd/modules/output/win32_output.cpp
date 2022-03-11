@@ -69,7 +69,7 @@ public:
 		: osd_module(OSD_OUTPUT_PROVIDER, "windows"), output_module(), m_output_hwnd(nullptr), m_clientlist(nullptr)
 	{
 	}
-	virtual ~output_win32() = default;
+	virtual ~output_win32() { }
 
 	virtual int init(const osd_options &options) override;
 	virtual void exit() override;
@@ -162,7 +162,7 @@ void output_win32::exit()
 	{
 		registered_client *temp = m_clientlist;
 		m_clientlist = temp->next;
-		global_free(temp);
+		delete temp;
 	}
 
 	// broadcast a shutdown message
@@ -231,6 +231,7 @@ static LRESULT CALLBACK output_window_proc(HWND wnd, UINT message, WPARAM wparam
 				output.machine().pause();
 			else if (lparam == 0 && output.machine().paused())
 				output.machine().resume();
+			break;
 		case IM_MAME_SAVESTATE:
 			if (lparam == 0)
 				output.machine().schedule_load("auto");
@@ -266,7 +267,7 @@ LRESULT output_win32::register_client(HWND hwnd, LPARAM id)
 		}
 
 	// add us to the end
-	*client = global_alloc(registered_client);
+	*client = new registered_client;
 	(*client)->next = nullptr;
 	(*client)->id = id;
 	(*client)->hwnd = hwnd;
@@ -293,7 +294,7 @@ LRESULT output_win32::unregister_client(HWND hwnd, LPARAM id)
 		{
 			registered_client *temp = *client;
 			*client = (*client)->next;
-			global_free(temp);
+			delete temp;
 			found = true;
 			break;
 		}

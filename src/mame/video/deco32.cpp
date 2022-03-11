@@ -104,7 +104,6 @@ void deco32_state::allocate_rowscroll(int size1, int size2, int size3, int size4
 
 void captaven_state::video_start()
 {
-	m_deco_tilegen[1]->set_pf1_8bpp_mode(1);
 	deco32_state::allocate_spriteram(0);
 	deco32_state::allocate_rowscroll(0x4000/4, 0x2000/4, 0x4000/4, 0x2000/4);
 	deco32_state::video_start();
@@ -134,7 +133,6 @@ void nslasher_state::video_start()
 
 void dragngun_state::video_start()
 {
-	//m_deco_tilegen[0]->set_pf1_8bpp_mode(1); // despite being 8bpp this doesn't require the same shifting as captaven, why not?
 	m_screen->register_screen_bitmap(m_temp_render_bitmap);
 	deco32_state::allocate_rowscroll(0x4000/4, 0x2000/4, 0x4000/4, 0x2000/4);
 	deco32_state::allocate_buffered_palette();
@@ -178,6 +176,63 @@ u32 captaven_state::screen_update(screen_device &screen, bitmap_ind16 &bitmap, c
 	return 0;
 }
 
+u16 dragngun_state::read_spritetile(int lookupram_offset)
+{
+	if (lookupram_offset & 0x2000)
+		return m_sprite_spritetile[1][lookupram_offset&0x1fff];
+	else
+		return m_sprite_spritetile[0][lookupram_offset&0x1fff];
+}
+
+u16 dragngun_state::read_spriteformat(int spriteformatram_offset, u8 attr)
+{
+	if (spriteformatram_offset & 0x400)
+		return m_sprite_spriteformat[1][((spriteformatram_offset & 0x1ff)<<2) + attr];
+	else
+		return m_sprite_spriteformat[0][((spriteformatram_offset & 0x1ff)<<2) + attr];
+}
+
+u16 dragngun_state::read_spritetable(int offs, u8 attr, int whichlist)
+{
+	return m_spriteram->buffer()[(offs << 3) + attr];
+}
+
+u16 dragngun_state::read_spritelist(int offs, int whichlist)
+{
+	return m_sprite_indextable[offs];
+}
+
+u16 dragngun_state::read_cliptable(int offs, u8 attr)
+{
+	return m_sprite_cliptable[(offs << 2) + attr];
+}
+
+int dragngun_state::sprite_priority_callback(int priority)
+{
+	/* For some reason, this bit when used in Dragon Gun causes the sprites
+	   to flicker every other frame (fake transparency)
+
+	   This would usually be a priority bit, but the flicker can't be a
+	   post-process mixing effect filtering out those priorities, because then
+	   it would still cut holes in sprites where it was drawn, and it doesn't.
+
+	   Instead sprites with this priority must simple be disabled every other
+	   frame.  maybe there's a register in the sprite chip to control this on
+	   a per-priority level?
+	*/
+
+	if ((priority & 0x80) && (m_screen->frame_number() & 1)) // flicker
+		return -1;
+
+	priority = (priority & 0x60) >> 5;
+	if (priority == 0) priority = 7;
+	else if (priority == 1) priority = 7; // set to 1 to have the 'masking effect' with the dragon on the dragngun attract mode, but that breaks the player select where it needs to be 3, probably missing some bits..
+	else if (priority == 2) priority = 7;
+	else if (priority == 3) priority = 7;
+	return priority;
+}
+
+
 u32 dragngun_state::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect)
 {
 	screen.priority().fill(0, cliprect);
@@ -202,8 +257,7 @@ u32 dragngun_state::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, c
 	{
 		rectangle clip(cliprect.left(), cliprect.right(), 8, 247);
 
-		m_sprgenzoom->dragngun_draw_sprites(bitmap,clip,m_spriteram->buffer(), m_sprite_layout_ram[0], m_sprite_layout_ram[1], m_sprite_lookup_ram[0], m_sprite_lookup_ram[1], m_sprite_ctrl, screen.priority(), m_temp_render_bitmap);
-
+		m_sprgenzoom->draw_dg(screen, bitmap, clip, screen.priority(), m_temp_render_bitmap);
 	}
 
 	return 0;
@@ -263,11 +317,11 @@ void nslasher_state::mix_nslasher(screen_device &screen, bitmap_rgb32 &bitmap, c
 	/* Mix sprites into main bitmap, based on priority & alpha */
 	for (int y = cliprect.top(); y <= cliprect.bottom(); y++)
 	{
-		const u16* sprite0 = &sprite0_mix_bitmap.pix16(y);
-		const u16* sprite1 = &sprite1_mix_bitmap.pix16(y);
-		const u16* alphaTilemap = &m_tilemap_alpha_bitmap->pix16(y);
-		const u8* tilemapPri = &screen.priority().pix8(y);
-		u32* destLine = &bitmap.pix32(y);
+		const u16* sprite0 = &sprite0_mix_bitmap.pix(y);
+		const u16* sprite1 = &sprite1_mix_bitmap.pix(y);
+		const u16* alphaTilemap = &m_tilemap_alpha_bitmap->pix(y);
+		const u8* tilemapPri = &screen.priority().pix(y);
+		u32* destLine = &bitmap.pix(y);
 
 		for (int x = cliprect.left(); x <= cliprect.right(); x++)
 		{
@@ -423,7 +477,7 @@ u32 nslasher_state::screen_update_nslasher(screen_device &screen, bitmap_rgb32 &
 	/* Draw playfields & sprites */
 	if (m_pri & 2)
 	{
-		m_deco_tilegen[1]->tilemap_12_combine_draw(screen, bitmap, cliprect, 0, 1, 1);
+		m_deco_tilegen[1]->tilemap_12_combine_draw(screen, bitmap, cliprect, 0, 1);
 		m_deco_tilegen[0]->tilemap_2_draw(screen, bitmap, cliprect, 0, 4);
 	}
 	else
@@ -467,11 +521,11 @@ void nslasher_state::mix_tattass(screen_device &screen, bitmap_rgb32 &bitmap, co
 	/* Mix sprites into main bitmap, based on priority & alpha */
 	for (int y = cliprect.top(); y <= cliprect.bottom(); y++)
 	{
-		const u16* sprite0 = &sprite0_mix_bitmap.pix16(y);
-		const u16* sprite1 = &sprite1_mix_bitmap.pix16(y);
-		const u16* alphaTilemap = &m_tilemap_alpha_bitmap->pix16(y);
-		const u8* tilemapPri = &screen.priority().pix8(y);
-		u32* destLine = &bitmap.pix32(y);
+		const u16* sprite0 = &sprite0_mix_bitmap.pix(y);
+		const u16* sprite1 = &sprite1_mix_bitmap.pix(y);
+		const u16* alphaTilemap = &m_tilemap_alpha_bitmap->pix(y);
+		const u8* tilemapPri = &screen.priority().pix(y);
+		u32* destLine = &bitmap.pix(y);
 
 		for (int x = cliprect.left(); x <= cliprect.right(); x++)
 		{
@@ -625,7 +679,7 @@ u32 nslasher_state::screen_update_tattass(screen_device &screen, bitmap_rgb32 &b
 	/* Draw playfields & sprites */
 	if (m_pri & 2)
 	{
-		m_deco_tilegen[1]->tilemap_12_combine_draw(screen, bitmap, cliprect, 0, 1, 1);
+		m_deco_tilegen[1]->tilemap_12_combine_draw(screen, bitmap, cliprect, 0, 1);
 		m_deco_tilegen[0]->tilemap_2_draw(screen, bitmap, cliprect, 0, 4);
 	}
 	else

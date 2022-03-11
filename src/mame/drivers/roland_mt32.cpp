@@ -210,14 +210,14 @@ private:
 
 	uint32_t screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 
-	DECLARE_WRITE8_MEMBER(bank_w);
-	DECLARE_WRITE8_MEMBER(so_w);
-	DECLARE_WRITE16_MEMBER(midi_w);
+	void bank_w(uint8_t data);
+	void so_w(uint8_t data);
+	void midi_w(uint16_t data);
 
-	DECLARE_READ8_MEMBER(lcd_ctrl_r);
-	DECLARE_WRITE8_MEMBER(lcd_ctrl_w);
-	DECLARE_WRITE8_MEMBER(lcd_data_w);
-	DECLARE_READ16_MEMBER(port0_r);
+	uint8_t lcd_ctrl_r();
+	void lcd_ctrl_w(uint8_t data);
+	void lcd_data_w(uint8_t data);
+	uint16_t port0_r();
 
 	TIMER_DEVICE_CALLBACK_MEMBER(midi_timer_cb);
 	TIMER_DEVICE_CALLBACK_MEMBER(samples_timer_cb);
@@ -249,7 +249,7 @@ uint32_t mt32_state::screen_update(screen_device &screen, bitmap_ind16 &bitmap, 
 		for(int y=0; y<8; y++) {
 			uint8_t v = data[c*8+y];
 			for(int x=0; x<5; x++)
-				bitmap.pix16(y == 7 ? 8 : y, c*6+x) = v & (0x10 >> x) ? 1 : 0;
+				bitmap.pix(y == 7 ? 8 : y, c*6+x) = v & (0x10 >> x) ? 1 : 0;
 		}
 	return 0;
 }
@@ -270,7 +270,7 @@ void mt32_state::machine_reset()
 	port0 = 0;
 }
 
-WRITE8_MEMBER(mt32_state::lcd_ctrl_w)
+void mt32_state::lcd_ctrl_w(uint8_t data)
 {
 	lcd->control_w(data);
 	for(int i=0; i != lcd_data_buffer_pos; i++)
@@ -278,22 +278,22 @@ WRITE8_MEMBER(mt32_state::lcd_ctrl_w)
 	lcd_data_buffer_pos = 0;
 }
 
-READ8_MEMBER(mt32_state::lcd_ctrl_r)
+uint8_t mt32_state::lcd_ctrl_r()
 {
 	return lcd->control_r();
 }
 
-WRITE8_MEMBER(mt32_state::lcd_data_w)
+void mt32_state::lcd_data_w(uint8_t data)
 {
 	lcd_data_buffer[lcd_data_buffer_pos++] = data;
 }
 
-WRITE8_MEMBER(mt32_state::bank_w)
+void mt32_state::bank_w(uint8_t data)
 {
 	membank("bank")->set_entry(data);
 }
 
-WRITE16_MEMBER(mt32_state::midi_w)
+void mt32_state::midi_w(uint16_t data)
 {
 	logerror("midi_out %02x\n", data);
 	midi = data;
@@ -309,7 +309,7 @@ TIMER_DEVICE_CALLBACK_MEMBER(mt32_state::midi_timer_cb)
 		midi_timer->adjust(attotime::from_hz(1250));
 }
 
-READ16_MEMBER(mt32_state::port0_r)
+uint16_t mt32_state::port0_r()
 {
 	return port0;
 }
@@ -319,7 +319,7 @@ TIMER_DEVICE_CALLBACK_MEMBER(mt32_state::samples_timer_cb)
 	port0 ^= 0x10;
 }
 
-WRITE8_MEMBER(mt32_state::so_w)
+void mt32_state::so_w(uint8_t data)
 {
 	// bit 0   = led
 	// bit 1-2 = reverb program a13/a14
@@ -393,8 +393,8 @@ ROM_START( mt32 )
 	ROMX_LOAD(       "mt32_1.0.6.ic26.bin",          1,   0x8000, CRC(4d495d98) SHA1(bf4f15666bc46679579498386704893b630c1171), ROM_BIOS(2) | ROM_SKIP(1) )
 
 	ROM_SYSTEM_BIOS( 3, "107", "Firmware 1.0.7" )
-	ROMX_LOAD(       "mt32_1.0.7.ic27.bin",          0,   0x8000, CRC(67fd8968) SHA1(13f06b38f0d9e0fc050b6503ab777bb938603260), ROM_BIOS(3) | ROM_SKIP(1) )
-	ROMX_LOAD(       "mt32_1.0.7.ic26.bin",          1,   0x8000, CRC(60f45882) SHA1(c55e165487d71fa88bd8c5e9c083bc456c1a89aa), ROM_BIOS(3) | ROM_SKIP(1) )
+	ROMX_LOAD(       "mt32_1.0.7.ic27.bin",          0,   0x8000, CRC(67fd8968) SHA1(13f06b38f0d9e0fc050b6503ab777bb938603260), ROM_BIOS(3) | ROM_SKIP(1) ) // also exists as a Mask ROM "R15449122 // HN623258PH26" @IC27
+	ROMX_LOAD(       "mt32_1.0.7.ic26.bin",          1,   0x8000, CRC(60f45882) SHA1(c55e165487d71fa88bd8c5e9c083bc456c1a89aa), ROM_BIOS(3) | ROM_SKIP(1) ) // also exists as a Mask ROM "R15449123 // HN623258PH27" @IC26
 
 	ROM_SYSTEM_BIOS( 4, "br", "Blue Ridge enhanced firmware" )
 	ROMX_LOAD(       "blue_ridge__mt32b.bin",        1,   0x8000, CRC(5816476f) SHA1(e0934320d7cbb5edfaa29e0d01ae835ef620085b), ROM_BIOS(4) | ROM_SKIP(1) )
@@ -404,11 +404,18 @@ ROM_START( mt32 )
 	ROMX_LOAD(       "a__m-9.27c256.ic27.bin",       0,   0x8000, CRC(c078ab00) SHA1(381e4208c0211a9a24a3a1b06a36760a1940ea6b), ROM_BIOS(5) | ROM_SKIP(1) )
 	ROMX_LOAD(       "b__m-9.27c256.ic26.bin",       1,   0x8000, CRC(e9c439c4) SHA1(36fece02eddd84230a7cf32f931c94dd14adbf2c), ROM_BIOS(5) | ROM_SKIP(1) )
 
+	// Dumped from "new" board revision single 128K x 8 ROM
+	ROM_SYSTEM_BIOS( 6, "204", "Firmware 2.0.4" )
+	ROMX_LOAD(       "mt32_2.0.4.ic28",              0,   0x10000, CRC(59a49d5c) SHA1(2c16432b6c73dd2a3947cba950a0f4c19d6180eb), ROM_BIOS(6) )
+	ROM_IGNORE(0x10000)  // banking needs to be implemented
+
 // We need a bios-like selection for these too
 	ROM_REGION( 0x80000, "la32", 0 )
-	ROM_LOAD16_BYTE( "r15179844.ic21.bin",           0,  0x40000, CRC(dd9deac3) SHA1(3a1e19b0cd4036623fd1d1d11f5f25995585962b) )
-	ROM_LOAD16_BYTE( "r15179845.ic22.bin",           1,  0x40000, CRC(4ee6506c) SHA1(2cadb99d21a6a4a6f5b61b6218d16e9b43f61d01) )
+	// separate PCM Mask ROMs from the MT-32 1.x older PCB
+	ROM_LOAD(        "r15179844.ic21.bin",           0,  0x40000, CRC(dd9deac3) SHA1(3a1e19b0cd4036623fd1d1d11f5f25995585962b) )
+	ROM_LOAD(        "r15179845.ic22.bin",     0x40000,  0x40000, CRC(4ee6506c) SHA1(2cadb99d21a6a4a6f5b61b6218d16e9b43f61d01) )
 
+	// combined PCM Mask ROM from the MT-32 1.x newer PCB; same contents as the two ROMs above, concatenated.
 	ROM_LOAD(        "r15449121.ic37.bin",           0,  0x80000, CRC(573e31cc) SHA1(f6b1eebc4b2d200ec6d3d21d51325d5b48c60252) )
 
 
@@ -428,13 +435,15 @@ ROM_START( cm32l )
 
 	ROM_REGION( 0x100000, "la32", 0 )
 // We need a bios-like selection for these too
-	ROM_LOAD(        "r15179945.ic8.bin",            0,  0x80000, CRC(8e9ea06e) SHA1(3ad889fde5db5b6437cbc2eb6e305312fec3df93) )
-	ROM_LOAD(        "r15449121.ic9.bin",      0x80000,  0x80000, CRC(0d81f53c) SHA1(7cc7bf1d1f27b6fc5fbb75c5d6a9458703275b28) )
+	// separate PCM Mask ROMS from the LAPC-I and CM-32L
+	ROM_LOAD(        "r15449121.ic9.bin",            0,  0x80000, CRC(573e31cc) SHA1(f6b1eebc4b2d200ec6d3d21d51325d5b48c60252) ) // shared with MT-32 1.x newer pcb, RA-50 and others
+	ROM_LOAD(        "r15179945.ic8.bin",      0x80000,  0x80000, CRC(8e9ea06e) SHA1(3ad889fde5db5b6437cbc2eb6e305312fec3df93) ) // extended CM-32L specific sounds
 
+	// combined PCM Mask ROM; same contents as the two roms above, concatenated; this may match the contents of the LAPC-N rom "R15209324" but needs verification
 	ROM_LOAD(        "cm32l_pcm.rom",                0, 0x100000, CRC(04204baa) SHA1(f2a10225b0c191a10fbf068f1320c91b35c1c3f2) )
 
 	ROM_REGION( 0x8000, "boss", 0 )
-	ROM_LOAD(        "r15179917.ic19.bin",           0,   0x8000, CRC(236c87a6) SHA1(e1c03905c46e962d1deb15eeed92eb61b42bba4a) )
+	ROM_LOAD(        "r15179917.ic19.bin",           0,   0x8000, CRC(236c87a6) SHA1(e1c03905c46e962d1deb15eeed92eb61b42bba4a) ) // shared with RA-50 and others
 ROM_END
 
 CONS( 1987, mt32,  0, 0, mt32, mt32, mt32_state, empty_init, "Roland", "MT-32",  MACHINE_NOT_WORKING | MACHINE_NO_SOUND )

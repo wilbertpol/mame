@@ -62,16 +62,21 @@
 */
 
 #include "emu.h"
-#include "cpu/powerpc/ppc.h"
-#include "cpu/h8/h83006.h"
-#include "machine/eepromser.h"
-#include "machine/nvram.h"
-#include "machine/msm6242.h"
-#include "sound/ymz280b.h"
 #include "video/k057714.h"
+
+#include "cpu/h8/h83006.h"
+#include "cpu/powerpc/ppc.h"
+#include "machine/eepromser.h"
+#include "machine/msm6242.h"
+#include "machine/nvram.h"
+#include "sound/ymz280b.h"
+
 #include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
+
+
+namespace {
 
 class konendev_state : public driver_device
 {
@@ -97,19 +102,15 @@ public:
 	}
 
 private:
-	DECLARE_READ32_MEMBER(mcu2_r);
-	DECLARE_READ32_MEMBER(ifu2_r);
-	DECLARE_READ32_MEMBER(ctrl0_r);
-	DECLARE_READ32_MEMBER(ctrl1_r);
-	DECLARE_READ32_MEMBER(ctrl2_r);
-	DECLARE_READ32_MEMBER(ctrl3_r);
-	DECLARE_WRITE32_MEMBER(eeprom_w);
-	DECLARE_READ32_MEMBER(sound_data_r);
-	DECLARE_WRITE32_MEMBER(sound_data_w);
+	uint32_t mcu2_r(offs_t offset, uint32_t mem_mask = ~0);
+	uint32_t ifu2_r(offs_t offset, uint32_t mem_mask = ~0);
+	void eeprom_w(offs_t offset, uint32_t data, uint32_t mem_mask = ~0);
+	uint32_t sound_data_r();
+	void sound_data_w(uint32_t data);
 
-	DECLARE_READ16_MEMBER(ifu_unk_r);
-	DECLARE_READ16_MEMBER(ifu_dpram_r);
-	DECLARE_WRITE16_MEMBER(ifu_dpram_w);
+	uint16_t ifu_unk_r();
+	uint16_t ifu_dpram_r(offs_t offset);
+	void ifu_dpram_w(offs_t offset, uint16_t data, uint16_t mem_mask = ~0);
 
 	DECLARE_WRITE_LINE_MEMBER(gcu_interrupt);
 	INTERRUPT_GEN_MEMBER(vbl_interrupt);
@@ -137,7 +138,7 @@ uint32_t konendev_state::screen_update(screen_device &screen, bitmap_ind16 &bitm
 	return m_gcu->draw(screen, bitmap, cliprect);
 }
 
-READ32_MEMBER(konendev_state::mcu2_r)
+uint32_t konendev_state::mcu2_r(offs_t offset, uint32_t mem_mask)
 {
 	uint32_t r = 0;
 
@@ -165,7 +166,7 @@ READ32_MEMBER(konendev_state::mcu2_r)
 	return r;
 }
 
-READ32_MEMBER(konendev_state::ifu2_r)
+uint32_t konendev_state::ifu2_r(offs_t offset, uint32_t mem_mask)
 {
 	uint32_t r = 0;
 
@@ -177,27 +178,7 @@ READ32_MEMBER(konendev_state::ifu2_r)
 	return r;
 }
 
-READ32_MEMBER(konendev_state::ctrl0_r) // doors, switches
-{
-	return ioport("IN1")->read();
-}
-
-READ32_MEMBER(konendev_state::ctrl1_r) // hard meter access, hopper
-{
-	return ioport("IN2")->read();
-}
-
-READ32_MEMBER(konendev_state::ctrl2_r) // main door optic
-{
-	return ioport("IN3")->read();
-}
-
-READ32_MEMBER(konendev_state::ctrl3_r) // buttons
-{
-	return ioport("IN0")->read();
-}
-
-WRITE32_MEMBER(konendev_state::eeprom_w)
+void konendev_state::eeprom_w(offs_t offset, uint32_t data, uint32_t mem_mask)
 {
 	if (ACCESSING_BITS_0_7)
 	{
@@ -207,12 +188,12 @@ WRITE32_MEMBER(konendev_state::eeprom_w)
 	}
 }
 
-READ32_MEMBER(konendev_state::sound_data_r)
+uint32_t konendev_state::sound_data_r()
 {
 	return 0xffffffff;
 }
 
-WRITE32_MEMBER(konendev_state::sound_data_w)
+void konendev_state::sound_data_w(uint32_t data)
 {
 }
 
@@ -224,11 +205,11 @@ void konendev_state::konendev_map(address_map &map)
 	map(0x780c0000, 0x780c0003).rw(FUNC(konendev_state::sound_data_r), FUNC(konendev_state::sound_data_w));
 	map(0x78100000, 0x78100003).w(FUNC(konendev_state::eeprom_w));
 	map(0x78800000, 0x78800003).r(FUNC(konendev_state::ifu2_r));
-	map(0x78800004, 0x78800007).r(FUNC(konendev_state::ctrl0_r));
-	map(0x78a00000, 0x78a00003).r(FUNC(konendev_state::ctrl1_r));
-	map(0x78a00004, 0x78a00007).r(FUNC(konendev_state::ctrl2_r));
+	map(0x78800004, 0x78800007).portr("IN1"); // doors, switches
+	map(0x78a00000, 0x78a00003).portr("IN2"); // hard meter access, hopper
+	map(0x78a00004, 0x78a00007).portr("IN3"); // main door optic
 	map(0x78c00000, 0x78c003ff).ram().share("dpram");
-	map(0x78e00000, 0x78e00003).r(FUNC(konendev_state::ctrl3_r));
+	map(0x78e00000, 0x78e00003).portr("IN0"); // buttons
 	map(0x79000000, 0x79000003).w(m_gcu, FUNC(k057714_device::fifo_w));
 	map(0x79800000, 0x798000ff).rw(m_gcu, FUNC(k057714_device::read), FUNC(k057714_device::write));
 	map(0x7a000000, 0x7a01ffff).ram().share("nvram0");
@@ -237,17 +218,17 @@ void konendev_state::konendev_map(address_map &map)
 	map(0x7ff00000, 0x7fffffff).rom().region("program", 0);
 }
 
-READ16_MEMBER(konendev_state::ifu_unk_r)
+uint16_t konendev_state::ifu_unk_r()
 {
 	return 0xc3c3;  // H8 program crashes immediately if it doesn't see
 }
 
-READ16_MEMBER(konendev_state::ifu_dpram_r)
+uint16_t konendev_state::ifu_dpram_r(offs_t offset)
 {
 	return m_dpram_base[offset];
 }
 
-WRITE16_MEMBER(konendev_state::ifu_dpram_w)
+void konendev_state::ifu_dpram_w(offs_t offset, uint16_t data, uint16_t mem_mask)
 {
 	COMBINE_DATA(&m_dpram_base[offset]);
 }
@@ -418,14 +399,11 @@ void konendev_state::konendev(machine_config &config)
 	PALETTE(config, "palette", palette_device::RGB_555);
 
 	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
-	screen.set_refresh_hz(60);
-	screen.set_vblank_time(ATTOSECONDS_IN_USEC(2500)); // Not accurate
-	screen.set_size(640, 480);
-	screen.set_visarea(0, 639, 0, 479);
+	screen.set_raw(25.175_MHz_XTAL, 800, 0, 640, 525, 0, 480); // Based on Firebeat settings
 	screen.set_screen_update(FUNC(konendev_state::screen_update));
 	screen.set_palette("palette");
 
-	K057714(config, m_gcu, 0);
+	K057714(config, m_gcu, 0).set_screen("screen");
 	m_gcu->irq_callback().set(FUNC(konendev_state::gcu_interrupt));
 
 	RTC62423(config, m_rtc, XTAL(32'768));
@@ -704,6 +682,9 @@ void konendev_state::init_enchlamp()
 
 	rom[0] = 0x5782b930;                    // new checksum for program rom
 }
+
+} // anonymous namespace
+
 
 // BIOS
 GAME( 200?, konendev, 0,        konendev, konendev, konendev_state, init_enchlamp, ROT0,  "Konami", "Konami Endeavour BIOS", MACHINE_NOT_WORKING|MACHINE_IS_BIOS_ROOT )

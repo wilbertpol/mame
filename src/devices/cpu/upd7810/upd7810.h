@@ -49,14 +49,14 @@ public:
 	auto co1_func() { return m_co1_func.bind(); }
 	auto txd_func() { return m_txd_func.bind(); }
 	auto rxd_func() { return m_rxd_func.bind(); }
-	auto an0_func() { return m_an0_func.bind(); }
-	auto an1_func() { return m_an1_func.bind(); }
-	auto an2_func() { return m_an2_func.bind(); }
-	auto an3_func() { return m_an3_func.bind(); }
-	auto an4_func() { return m_an4_func.bind(); }
-	auto an5_func() { return m_an5_func.bind(); }
-	auto an6_func() { return m_an6_func.bind(); }
-	auto an7_func() { return m_an7_func.bind(); }
+	auto an0_func() { return m_an_func[0].bind(); }
+	auto an1_func() { return m_an_func[1].bind(); }
+	auto an2_func() { return m_an_func[2].bind(); }
+	auto an3_func() { return m_an_func[3].bind(); }
+	auto an4_func() { return m_an_func[4].bind(); }
+	auto an5_func() { return m_an_func[5].bind(); }
+	auto an6_func() { return m_an_func[6].bind(); }
+	auto an7_func() { return m_an_func[7].bind(); }
 
 	auto pa_in_cb() { return m_pa_in_cb.bind(); }
 	auto pb_in_cb() { return m_pb_in_cb.bind(); }
@@ -77,11 +77,11 @@ public:
 
 	auto pt_in_cb() { return m_pt_in_cb.bind(); }
 
-	DECLARE_WRITE8_MEMBER(pa_w);
-	DECLARE_WRITE8_MEMBER(pb_w);
-	DECLARE_WRITE8_MEMBER(pc_w);
-	DECLARE_WRITE8_MEMBER(pd_w);
-	DECLARE_WRITE8_MEMBER(pf_w);
+	void pa_w(uint8_t data, uint8_t mem_mask = ~0);
+	void pb_w(uint8_t data, uint8_t mem_mask = ~0);
+	void pc_w(uint8_t data, uint8_t mem_mask = ~0);
+	void pd_w(uint8_t data, uint8_t mem_mask = ~0);
+	void pf_w(uint8_t data, uint8_t mem_mask = ~0);
 
 protected:
 	void upd_internal_128_ram_map(address_map &map);
@@ -104,7 +104,7 @@ protected:
 	// IRR flags
 	enum
 	{
-		INTNMI  = 0x0001,
+		INTFNMI = 0x0001,
 		INTFT0  = 0x0002,
 		INTFT1  = 0x0004,
 		INTF1   = 0x0008,
@@ -169,14 +169,7 @@ protected:
 	devcb_write_line  m_co1_func;
 	devcb_write_line  m_txd_func;
 	devcb_read_line   m_rxd_func;
-	devcb_read8       m_an0_func;
-	devcb_read8       m_an1_func;
-	devcb_read8       m_an2_func;
-	devcb_read8       m_an3_func;
-	devcb_read8       m_an4_func;
-	devcb_read8       m_an5_func;
-	devcb_read8       m_an6_func;
-	devcb_read8       m_an7_func;
+	devcb_read8::array<8> m_an_func;
 
 	devcb_read8       m_pa_in_cb;
 	devcb_read8       m_pb_in_cb;
@@ -293,10 +286,7 @@ protected:
 	uint8_t   m_pc_pullups;
 	uint8_t   m_pd_pullups;
 	uint8_t   m_pf_pullups;
-	uint8_t   m_cr0;    /* analog digital conversion register 0 */
-	uint8_t   m_cr1;    /* analog digital conversion register 1 */
-	uint8_t   m_cr2;    /* analog digital conversion register 2 */
-	uint8_t   m_cr3;    /* analog digital conversion register 3 */
+	uint8_t   m_cr[4];  /* analog digital conversion registers */
 	uint8_t   m_txb;    /* transmitter buffer */
 	uint8_t   m_rxb;    /* receiver buffer */
 	uint8_t   m_txd;    /* port C control line states */
@@ -343,8 +333,8 @@ protected:
 	const struct opcode_s *m_op64;
 	const struct opcode_s *m_op70;
 	const struct opcode_s *m_op74;
-	address_space *m_program;
-	memory_access_cache<0, 0, ENDIANNESS_LITTLE> *m_cache;
+	memory_access<16, 0, 0, ENDIANNESS_LITTLE>::cache m_opcodes;
+	memory_access<16, 0, 0, ENDIANNESS_LITTLE>::specific m_program;
 	int m_icount;
 
 	uint8_t RP(offs_t port);
@@ -1368,6 +1358,17 @@ protected:
 };
 
 
+class upd78c10_device : public upd7810_device
+{
+public:
+	// construction/destruction
+	upd78c10_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+protected:
+	upd78c10_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock, address_map_constructor internal_map);
+};
+
+
 class upd7807_device : public upd7810_device
 {
 public:
@@ -1427,6 +1428,7 @@ public:
 
 
 DECLARE_DEVICE_TYPE(UPD7810,  upd7810_device)
+DECLARE_DEVICE_TYPE(UPD78C10, upd78c10_device)
 DECLARE_DEVICE_TYPE(UPD7807,  upd7807_device)
 DECLARE_DEVICE_TYPE(UPD7801,  upd7801_device)
 DECLARE_DEVICE_TYPE(UPD78C05, upd78c05_device)

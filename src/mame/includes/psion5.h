@@ -48,13 +48,13 @@ protected:
 	virtual void machine_start() override;
 	virtual void machine_reset() override;
 
-	virtual void device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr) override;
+	virtual void device_timer(emu_timer &timer, device_timer_id id, int param) override;
 
 private:
 	void palette_init(palette_device &palette);
 
-	DECLARE_READ32_MEMBER(periphs_r);
-	DECLARE_WRITE32_MEMBER(periphs_w);
+	uint32_t periphs_r(offs_t offset, uint32_t mem_mask = ~0);
+	void periphs_w(offs_t offset, uint32_t data, uint32_t mem_mask = ~0);
 
 	void update_timer(int timer);
 	void set_timer_ctrl(int timer, uint32_t value);

@@ -247,7 +247,7 @@ DC00      - Selection buttons #2, 9-16 (R)
 
 #include "cpu/z80/z80.h"
 #include "cpu/z80/z80lle.h"
-#include "softlist.h"
+#include "softlist_dev.h"
 #include "speaker.h"
 
 #include "sms1.lh"
@@ -1004,7 +1004,7 @@ void gamegear_state::gamegear(machine_config &config)
 	m_vdp->add_route(1, "rspeaker", 1.00);
 
 	/* cartridge */
-	GAMEGEAR_CART_SLOT(config, "slot", gg_cart, nullptr);
+	GAMEGEAR_CART_SLOT(config, "slot", gg_cart, nullptr).set_must_be_loaded(true);
 
 	SOFTWARE_LIST(config, "cart_list").set_original("gamegear");
 

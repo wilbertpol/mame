@@ -27,13 +27,9 @@ DEFINE_DEVICE_TYPE(UPD78213, upd78213_device, "upd78213", "NEC uPD78213")
 upd78k2_device::upd78k2_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, u32 clock, int iram_bits, address_map_constructor mem_map, address_map_constructor sfr_map)
 	: cpu_device(mconfig, type, tag, owner, clock)
 	, m_program_config("program", ENDIANNESS_LITTLE, 8, 20, 0, mem_map)
-	, m_iram_config("IRAM", ENDIANNESS_LITTLE, 16, iram_bits, 0, address_map_constructor(FUNC(upd78k2_device::iram_map), this))
-	, m_sfr_config("SFR", ENDIANNESS_LITTLE, 16, 8, 0, sfr_map)
+	, m_iram_config("iram", ENDIANNESS_LITTLE, 16, iram_bits, 0, address_map_constructor(FUNC(upd78k2_device::iram_map), this))
+	, m_sfr_config("sfr", ENDIANNESS_LITTLE, 16, 8, 0, sfr_map)
 	, m_iram_addrmask((offs_t(1) << iram_bits) - 1)
-	, m_program_space(nullptr)
-	, m_program_cache(nullptr)
-	, m_iram_cache(nullptr)
-	, m_sfr_space(nullptr)
 	, m_pc(0)
 	, m_ppc(0)
 	, m_psw(0)
@@ -86,10 +82,10 @@ inline u8 upd78k2_device::register_base() const noexcept
 void upd78k2_device::device_start()
 {
 	// get address spaces and access caches
-	m_program_space = &space(AS_PROGRAM);
-	m_program_cache = m_program_space->cache<0, 0, ENDIANNESS_LITTLE>();
-	m_iram_cache = space(AS_DATA).cache<1, 0, ENDIANNESS_LITTLE>();
-	m_sfr_space = &space(AS_IO);
+	space(AS_PROGRAM).specific(m_program_space);
+	space(AS_PROGRAM).cache(m_program_cache);
+	space(AS_DATA).cache(m_iram_cache);
+	space(AS_IO).specific(m_sfr_space);
 
 	set_icountptr(m_icount);
 
@@ -141,7 +137,7 @@ void upd78k2_device::device_reset()
 
 void upd78k2_device::execute_run()
 {
-	m_pc = m_program_cache->read_word(0);
+	m_pc = m_program_cache.read_word(0);
 	m_ppc = m_pc;
 	debugger_instruction_hook(m_pc);
 

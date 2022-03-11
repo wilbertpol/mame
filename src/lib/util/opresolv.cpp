@@ -8,14 +8,15 @@
 
 ****************************************************************************/
 
+#include "opresolv.h"
+
+#include "strformat.h"
+
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
-#include <cassert>
-
-#include "pool.h"
-#include "corestr.h"
-#include "opresolv.h"
 
 
 namespace util {
@@ -59,6 +60,15 @@ option_resolution::option_resolution(const option_guide &guide)
 			entry.set_enum_value_range(enum_value_begin, enum_value_end);
 		}
 	}
+}
+
+
+// -------------------------------------------------
+//  dtor
+// -------------------------------------------------
+
+option_resolution::~option_resolution()
+{
 }
 
 

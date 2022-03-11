@@ -20,13 +20,6 @@
   else on ZSNES Technical for probing the darker corners of the SNES
   with test programs so we have a chance at getting things accurate.
 
-  MESS Bugzilla bugs:
-  - 804 ADC sets carry too late (FIXED)
-  - 805 ADDW/SUBW set V wrongly (FIXED)
-  - 806 BRK should modify PSW (FIXED)
-  - 807 DAA/DAS problem (FIXED)
-
-
 */
 /* ======================================================================== */
 /* ================================= NOTES ================================ */
@@ -74,17 +67,7 @@ Address  Function Register  R/W  When Reset          Remarks
 /* ==================== ARCHITECTURE-DEPENDANT DEFINES ==================== */
 /* ======================================================================== */
 
-#undef int8
-
-/* Allow for architectures that don't have 8-bit sizes */
-#if UCHAR_MAX == 0xff
-#define int8 char
-#define MAKE_INT_8(A) (int8)((A)&0xff)
-#else
-#define int8   int
-static inline int MAKE_INT_8(int A) {return (A & 0x80) ? A | ~0xff : A & 0xff;}
-#endif /* UCHAR_MAX == 0xff */
-
+#define MAKE_INT_8(A) (int8_t)((A)&0xff)
 #define MAKE_UINT_8(A) ((A)&0xff)
 #define MAKE_UINT_16(A) ((A)&0xffff)
 
@@ -222,8 +205,13 @@ DEFINE_DEVICE_TYPE(SPC700, spc700_device, "spc700", "Sony SPC700")
 
 
 spc700_device::spc700_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-	: cpu_device(mconfig, SPC700, tag, owner, clock)
-	, m_program_config("program", ENDIANNESS_LITTLE, 8, 16, 0)
+	: spc700_device(mconfig, SPC700, tag, owner, clock)
+{
+}
+
+spc700_device::spc700_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock, address_map_constructor internal_map)
+	: cpu_device(mconfig, type, tag, owner, clock)
+	, m_program_config("program", ENDIANNESS_LITTLE, 8, 16, 0, internal_map)
 	, m_a(0)
 	, m_x(0)
 	, m_y(0)
@@ -1249,7 +1237,6 @@ void spc700_device::device_start()
 
 	state_add(STATE_GENPC, "GENPC", m_pc).formatstr("%04X").noshow();
 	state_add(STATE_GENPCBASE, "CURPC", m_ppc).formatstr("%04X").noshow();
-	state_add(STATE_GENSP, "GENSP", m_debugger_temp).mask(0x1ff).callexport().formatstr("%04X").noshow();
 	state_add(STATE_GENFLAGS, "GENFLAGS",  m_debugger_temp).formatstr("%8s").noshow();
 
 	set_icountptr(m_ICount);
@@ -1300,10 +1287,6 @@ void spc700_device::state_export(const device_state_entry &entry)
 					FLAG_I                    |
 					((!FLAG_Z) << 1)      |
 					((FLAG_C >> 8)&1));
-			break;
-
-		case STATE_GENSP:
-			m_debugger_temp = m_s + STACK_PAGE;
 			break;
 	}
 }

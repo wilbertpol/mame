@@ -77,7 +77,7 @@ void palette_client::dirty_state::resize(uint32_t colors)
 	// resize to the correct number of dwords and mark all entries dirty
 	uint32_t dirty_dwords = (colors + 31) / 32;
 	m_dirty.resize(dirty_dwords);
-	memset(&m_dirty[0], 0xff, dirty_dwords*4);
+	std::fill(m_dirty.begin(), m_dirty.end(), ~uint32_t(0));
 
 	// mark all entries dirty
 	m_dirty[dirty_dwords - 1] &= (1 << (colors % 32)) - 1;
@@ -108,7 +108,8 @@ void palette_client::dirty_state::mark_dirty(uint32_t index)
 void palette_client::dirty_state::reset()
 {
 	// erase relevant entries in the new live one
-	memset(&m_dirty[m_mindirty / 32], 0, ((m_maxdirty / 32) + 1 - (m_mindirty / 32)) * sizeof(uint32_t));
+	if (m_mindirty <= m_maxdirty)
+		std::fill(&m_dirty[m_mindirty / 32], &m_dirty[m_maxdirty / 32] + 1, 0);
 	m_mindirty = m_dirty.size() * 32 - 1;
 	m_maxdirty = 0;
 }
@@ -249,6 +250,15 @@ palette_t::palette_t(uint32_t numcolors, uint32_t numgroups)
 	m_adjusted_rgb15[numcolors * numgroups + 0] = rgb_t::black().as_rgb15();
 	m_adjusted_color[numcolors * numgroups + 1] = rgb_t::white();
 	m_adjusted_rgb15[numcolors * numgroups + 1] = rgb_t::white().as_rgb15();
+}
+
+
+//-------------------------------------------------
+//  palette_t - destructor
+//-------------------------------------------------
+
+palette_t::~palette_t()
+{
 }
 
 

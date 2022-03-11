@@ -79,7 +79,7 @@ private:
 	void z32_cb2_w(bool state);
 	u8 z32_pb_r();
 
-	template <unsigned D> DECLARE_WRITE16_MEMBER(update_ds);
+	template <unsigned D> void update_ds(offs_t offset, u16 data);
 
 	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(z24_load) { return load_cart(image, m_z24, "z24"); }
 	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(z25_load) { return load_cart(image, m_z25, "z25"); }
@@ -97,16 +97,16 @@ private:
 	void mem_map(address_map &map);
 
 	optional_device<palette_device> m_palette;
-	uint8_t m_riot_port_a;
-	uint8_t m_pb_save;
-	bool m_kb_en;
-	bool m_ca2;
-	bool m_cb2;
-	u8 m_printer_x;
-	u8 m_printer_y;
-	u8 m_printer_flag;
-	bool m_printer_level;
-	std::unique_ptr<uint16_t[]> m_printerRAM;
+	uint8_t m_riot_port_a = 0U;
+	uint8_t m_pb_save = 0U;
+	bool m_kb_en = 0;
+	bool m_ca2 = 0;
+	bool m_cb2 = 0;
+	u8 m_printer_x =0U;
+	u8 m_printer_y = 0U;
+	u8 m_printer_flag = 0U;
+	bool m_printer_level = 0;
+	std::unique_ptr<uint16_t[]> m_printerRAM {};
 
 	required_device<cpu_device> m_maincpu;
 	required_device<cassette_image_device> m_cassette1;

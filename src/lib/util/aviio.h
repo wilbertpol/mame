@@ -11,7 +11,6 @@
 #ifndef MAME_LIB_UTIL_AVIIO_H
 #define MAME_LIB_UTIL_AVIIO_H
 
-#include "osdcore.h"
 #include "bitmap.h"
 
 #include <cstdint>
@@ -111,7 +110,7 @@ public:
 
 	static error open(std::string const &filename, ptr &file);
 	static error create(std::string const &filename, movie_info const &info, ptr &file);
-	virtual ~avi_file() = default;
+	virtual ~avi_file();
 
 	virtual void printf_chunks() = 0;
 	static const char *error_string(error err);
@@ -128,7 +127,7 @@ public:
 	virtual error append_sound_samples(int channel, std::int16_t const *samples, std::uint32_t numsamples, std::uint32_t sampleskip) = 0;
 
 protected:
-	avi_file() = default;
+	avi_file();
 };
 
 #endif // MAME_LIB_UTIL_AVIIO_H

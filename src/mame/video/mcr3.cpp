@@ -7,7 +7,6 @@
 ***************************************************************************/
 
 #include "emu.h"
-#include "includes/mcr.h"
 #include "includes/mcr3.h"
 
 
@@ -18,7 +17,6 @@
  *
  *************************************/
 
-#ifdef UNUSED_FUNCTION
 TILE_GET_INFO_MEMBER(mcr3_state::get_bg_tile_info)
 {
 	int data = m_videoram[tile_index * 2] | (m_videoram[tile_index * 2 + 1] << 8);
@@ -26,7 +24,6 @@ TILE_GET_INFO_MEMBER(mcr3_state::get_bg_tile_info)
 	int color = (data >> 12) & 3;
 	tileinfo.set(0, code, color, TILE_FLIPYX((data >> 10) & 3));
 }
-#endif
 
 
 TILE_GET_INFO_MEMBER(mcr3_state::mcrmono_get_bg_tile_info)
@@ -119,28 +116,28 @@ VIDEO_START_MEMBER(mcr3_state,spyhunt)
  *
  *************************************/
 
-WRITE8_MEMBER(mcr3_state::mcr3_videoram_w)
+void mcr3_state::mcr3_videoram_w(offs_t offset, uint8_t data)
 {
 	m_videoram[offset] = data;
 	m_bg_tilemap->mark_tile_dirty(offset / 2);
 }
 
 
-WRITE8_MEMBER(mcr3_state::spyhunt_videoram_w)
+void mcr3_state::spyhunt_videoram_w(offs_t offset, uint8_t data)
 {
 	m_videoram[offset] = data;
 	m_bg_tilemap->mark_tile_dirty(offset);
 }
 
 
-WRITE8_MEMBER(mcr3_state::spyhunt_alpharam_w)
+void mcr3_state::spyhunt_alpharam_w(offs_t offset, uint8_t data)
 {
 	m_spyhunt_alpharam[offset] = data;
 	m_alpha_tilemap->mark_tile_dirty(offset);
 }
 
 
-WRITE8_MEMBER(mcr3_state::spyhunt_scroll_value_w)
+void mcr3_state::spyhunt_scroll_value_w(offs_t offset, uint8_t data)
 {
 	switch (offset)
 	{

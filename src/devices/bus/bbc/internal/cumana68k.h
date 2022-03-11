@@ -34,13 +34,13 @@ public:
 	// construction/destruction
 	bbc_cumana68k_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
 
-	DECLARE_WRITE8_MEMBER(pia_rtc_pb_w);
-	DECLARE_WRITE8_MEMBER(pia_sasi_pb_w);
+	void pia_rtc_pb_w(uint8_t data);
+	void pia_sasi_pb_w(uint8_t data);
 
-	DECLARE_READ8_MEMBER(mem6502_r);
-	DECLARE_WRITE8_MEMBER(mem6502_w);
+	uint8_t mem6502_r(offs_t offset);
+	void mem6502_w(offs_t offset, uint8_t data);
 
-	DECLARE_FLOPPY_FORMATS(floppy_formats);
+	static void floppy_formats(format_registration &fr);
 
 protected:
 	// device-level overrides
@@ -70,13 +70,8 @@ private:
 
 	void fsel_w(offs_t offset, uint8_t data);
 
-	uint8_t sasi_r();
-	void sasi_w(uint8_t data);
-
 	int m_masknmi;
 
-	uint8_t rtc_r();
-	void rtc_w(uint8_t data);
 	void mc146818_set(int as, int ds, int rw);
 	uint8_t m_mc146818_data;
 	int m_mc146818_as;

@@ -12,7 +12,7 @@
 //#include "bus/midi/midi.h"
 #include "cpu/upd7810/upd7810.h"
 #include "machine/nvram.h"
-#include "sound/ym2151.h"
+#include "sound/ymopm.h"
 #include "video/hd44780.h"
 #include "emupal.h"
 #include "screen.h"
@@ -72,13 +72,13 @@ void korg_ds8_state::machine_start()
 HD44780_PIXEL_UPDATE(korg_ds8_state::lcd_pixel_update)
 {
 	if (x < 5 && y < 8 && line < 2 && pos < 40)
-		bitmap.pix16(line * 8 + y, pos * 6 + x) = state;
+		bitmap.pix(line * 8 + y, pos * 6 + x) = state;
 }
 
 HD44780_PIXEL_UPDATE(korg_ds8_state::korg707_pixel_update)
 {
 	if (x < 5 && y < 8 && line < 2 && pos < 20)
-		bitmap.pix16(line * 8 + y, pos * 6 + x) = state;
+		bitmap.pix(line * 8 + y, pos * 6 + x) = state;
 }
 
 u8 korg_ds8_state::kbd_sw_r()
@@ -204,7 +204,7 @@ void korg_ds8_state::palette_init_ds8(palette_device &palette)
 
 void korg_ds8_state::ds8(machine_config &config)
 {
-	UPD7810(config, m_maincpu, 12_MHz_XTAL); // µPD78C10CW
+	UPD78C10(config, m_maincpu, 12_MHz_XTAL); // µPD78C10CW
 	m_maincpu->set_addrmap(AS_PROGRAM, &korg_ds8_state::mem_map);
 	m_maincpu->pa_in_cb().set(FUNC(korg_ds8_state::kbd_sw_r));
 	m_maincpu->pb_out_cb().set(FUNC(korg_ds8_state::scan_w));

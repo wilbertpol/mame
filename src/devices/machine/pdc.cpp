@@ -244,14 +244,6 @@ static void pdc_harddisks(device_slot_interface &device)
 }
 
 //-------------------------------------------------
-//  FLOPPY_FORMATS( floppy_formats )
-//-------------------------------------------------
-
-FLOPPY_FORMATS_MEMBER( pdc_device::floppy_formats )
-	FLOPPY_PC_FORMAT
-FLOPPY_FORMATS_END
-
-//-------------------------------------------------
 //  device_add_mconfig - add device configuration
 //-------------------------------------------------
 
@@ -269,7 +261,7 @@ void pdc_device::device_add_mconfig(machine_config &config)
 	m_fdc->drq_wr_callback().set(m_dma8237, FUNC(am9517a_device::dreq0_w)); //.invert();
 
 	// Floppy disk drive
-	FLOPPY_CONNECTOR(config, FDC_TAG":0", pdc_floppies, "35hd", pdc_device::floppy_formats);
+	FLOPPY_CONNECTOR(config, FDC_TAG":0", pdc_floppies, "35hd", floppy_image_device::default_pc_floppy_formats);
 
 	/* DMA Controller - Intel P8237A-5 */
 	/* Channel 0: uPD765a Floppy Disk Controller */
@@ -339,10 +331,6 @@ void pdc_device::device_start()
 	save_item(NAME(reg_p21));
 	save_item(NAME(reg_p38));
 	save_item(NAME(fdd_68k_dma_address));
-
-	/* Resolve callbacks */
-	m_m68k_r_cb.resolve_safe(0);
-	m_m68k_w_cb.resolve_safe();
 }
 
 //-------------------------------------------------

@@ -1,4 +1,4 @@
-// license:GPL-2.0+
+// license:BSD-3-Clause
 // copyright-holders:Dirk Best
 /***************************************************************************
 
@@ -362,8 +362,7 @@ std::string i8089_disassembler::do_disassemble()
 			else if (m_wb == 2)
 				return util::string_format("lcall %s, %05x", off, m_pc + (int16_t) i);
 		}
-		else
-			return invalid();
+		return invalid();
 
 	case 0x28: return inst_rm("addb", "add");
 	case 0x29: return inst_rm("orb", "or");

@@ -24,15 +24,13 @@
 #include "rolandpcm.h"
 
 
-constexpr int clamp16(int16_t val, int16_t min, int16_t max) { return std::min(max, std::max(min, val)); }
+DEFINE_DEVICE_TYPE(MB87419_MB87420, mb87419_mb87420_device, "mb87419_mb87420", "Roland MB87419/MB87420 PCM")
 
-
-DEFINE_DEVICE_TYPE(ROLANDPCM, rolandpcm_device, "rolandpcm", "Roland PCM")
-
-rolandpcm_device::rolandpcm_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-	: device_t(mconfig, ROLANDPCM, tag, owner, clock)
+mb87419_mb87420_device::mb87419_mb87420_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: device_t(mconfig, MB87419_MB87420, tag, owner, clock)
 	, device_sound_interface(mconfig, *this)
-	, device_rom_interface(mconfig, *this, 22)
+	, device_rom_interface(mconfig, *this)
+	, m_int_callback(*this)
 	, m_clock(0)
 	, m_rate(0)
 	, m_stream(nullptr)
@@ -41,31 +39,51 @@ rolandpcm_device::rolandpcm_device(const machine_config &mconfig, const char *ta
 }
 
 //-------------------------------------------------
+//  device_resolve_objects - resolve objects that
+//  may be needed for other devices to set
+//  initial conditions at start time
+//-------------------------------------------------
+
+void mb87419_mb87420_device::device_resolve_objects()
+{
+	m_int_callback.resolve_safe();
+}
+
+//-------------------------------------------------
 //  device_start - device-specific startup
 //-------------------------------------------------
 
-void rolandpcm_device::device_start()
+void mb87419_mb87420_device::device_start()
 {
-	m_clock = clock();
+	m_clock = clock() / 2;
 	m_rate = m_clock / 512; // usually 32 KHz
 
-	m_stream = machine().sound().stream_alloc(*this, 0, 2, m_rate);
+	m_stream = stream_alloc(0, 2, m_rate);
 
 	logerror("Roland PCM: Clock %u, Rate %u\n", m_clock, m_rate);
+}
+
+//-------------------------------------------------
+//  device_reset - device-specific reset
+//-------------------------------------------------
+
+void mb87419_mb87420_device::device_reset()
+{
+	m_int_callback(CLEAR_LINE);
 }
 
 //-------------------------------------------------
 //  rom_bank_updated - the rom bank has changed
 //-------------------------------------------------
 
-void rolandpcm_device::rom_bank_updated()
+void mb87419_mb87420_device::rom_bank_updated()
 {
 	// unused right now
 	m_stream->update();
 }
 
 
-u8 rolandpcm_device::read(offs_t offset)
+u8 mb87419_mb87420_device::read(offs_t offset)
 {
 	// Note: only offset 0x01 is verified, the rest is probably all wrong
 	if (offset != 0x01)
@@ -137,7 +155,7 @@ u8 rolandpcm_device::read(offs_t offset)
 	return 0x00;
 }
 
-void rolandpcm_device::write(offs_t offset, u8 data)
+void mb87419_mb87420_device::write(offs_t offset, u8 data)
 {
 	logerror("Reg %02X = %02X\n", offset, data);
 	if (offset < 0x10)
@@ -248,26 +266,26 @@ void rolandpcm_device::write(offs_t offset, u8 data)
 //  sound_stream_update - handle a stream update
 //-------------------------------------------------
 
-void rolandpcm_device::sound_stream_update(sound_stream &stream, stream_sample_t **inputs, stream_sample_t **outputs, int samples)
+void mb87419_mb87420_device::sound_stream_update(sound_stream &stream, std::vector<read_stream_view> const &inputs, std::vector<write_stream_view> &outputs)
 {
-	memset(outputs[0], 0, samples * sizeof(stream_sample_t));
-	memset(outputs[1], 0, samples * sizeof(stream_sample_t));
+	outputs[0].fill(0);
+	outputs[1].fill(0);
 
 	for (auto& chn : m_chns)
 	{
 		if (! chn.enable || chn.play_dir == 0)
 			continue;
 
-		for (int smpl = 0; smpl < samples; smpl ++)
+		for (int smpl = 0; smpl < outputs[0].samples(); smpl ++)
 		{
-			stream_sample_t smp_data;
+			s32 smp_data;
 			if (chn.play_dir > 0)
 				smp_data = sample_interpolate(chn.smpl_cur, chn.smpl_nxt, chn.addr & 0x3FFF);
 			else
 				smp_data = sample_interpolate(chn.smpl_nxt, chn.smpl_cur, chn.addr & 0x3FFF);
-			smp_data = (smp_data * chn.volume) >> 14;   // >>14 results in a good overall volume
-			outputs[0][smpl] += smp_data;
-			outputs[1][smpl] += smp_data;
+			smp_data = smp_data * chn.volume;
+			outputs[0].add_int(smpl, smp_data, 32768 << 14); // >>14 results in a good overall volume
+			outputs[1].add_int(smpl, smp_data, 32768 << 14);
 
 			uint32_t old_addr = chn.addr;
 			if (chn.play_dir > 0)
@@ -286,7 +304,7 @@ void rolandpcm_device::sound_stream_update(sound_stream &stream, stream_sample_t
 				chn.smpl_nxt += decode_sample((int8_t)read_byte(addr)); // This was verified to be independent from play_dir.
 
 				// until the decoding is fixed, we prevent overflow bugs (due to DC offsets when looping) this way
-				chn.smpl_nxt = clamp16(chn.smpl_nxt, -0x7FF, +0x7FF);
+				chn.smpl_nxt = std::clamp<int16_t>(chn.smpl_nxt, -0x7FF, +0x7FF);
 			}
 
 			bool reachedEnd = false;
@@ -340,7 +358,7 @@ void rolandpcm_device::sound_stream_update(sound_stream &stream, stream_sample_t
 	return;
 }
 
-int16_t rolandpcm_device::decode_sample(int8_t data)
+int16_t mb87419_mb87420_device::decode_sample(int8_t data)
 {
 	int16_t val;
 	int16_t sign;
@@ -368,7 +386,7 @@ int16_t rolandpcm_device::decode_sample(int8_t data)
 	return result * sign;
 }
 
-int16_t rolandpcm_device::sample_interpolate(int16_t smp1, int16_t smp2, uint16_t frac)
+int16_t mb87419_mb87420_device::sample_interpolate(int16_t smp1, int16_t smp2, uint16_t frac)
 {
 	int32_t smpfrac0 = (int32_t)smp1 * (0x4000 - frac);
 	int32_t smpfrac1 = (int32_t)smp2 * frac;

@@ -5,13 +5,15 @@
  * Sony NEWS R3000 systems.
  *
  * Sources:
+ *   - https://github.com/robohack/ucb-csrg-bsd/blob/master/sys/news3400/
  *
- * TODO
- *   - interrupts
- *   - scsi
- *   - dma
+ * TODO:
+ *   - lcd controller
+ *   - screen params
+ *   - floppy density/eject
+ *   - centronics port
  *   - sound
- *   - mouse
+ *   - other models, including slots/cards
  */
 
 #include "emu.h"
@@ -26,7 +28,9 @@
 #include "machine/z80scc.h"
 #include "machine/am79c90.h"
 #include "machine/upd765.h"
-#include "machine/news_kbd.h"
+#include "machine/dmac_0448.h"
+#include "machine/news_hid.h"
+#include "machine/cxd1185.h"
 
 // video
 #include "screen.h"
@@ -56,12 +60,14 @@ public:
 		: driver_device(mconfig, type, tag)
 		, m_cpu(*this, "cpu")
 		, m_ram(*this, "ram")
+		, m_dma(*this, "dma")
 		, m_rtc(*this, "rtc")
 		, m_scc(*this, "scc")
 		, m_net(*this, "net")
 		, m_fdc(*this, "fdc")
 		, m_lcd(*this, "lcd")
-		, m_kbd(*this, "kbd")
+		, m_hid(*this, "hid")
+		, m_scsi(*this, "scsi:7:cxd1185")
 		, m_serial(*this, "serial%u", 0U)
 		, m_scsibus(*this, "scsi")
 		, m_vram(*this, "vram")
@@ -88,21 +94,51 @@ public:
 protected:
 	u32 screen_update(screen_device &screen, bitmap_rgb32 &bitmap, rectangle const &cliprect);
 
-	void kbd_irq(int state);
-	void debug_w(u8 data);
+	void inten_w(offs_t offset, u16 data, u16 mem_mask);
+	u16 inten_r() { return m_inten; }
+	u16 intst_r() { return m_intst; }
+	void intclr_w(offs_t offset, u16 data, u16 mem_mask);
 
-	DECLARE_FLOPPY_FORMATS(floppy_formats);
+	enum irq_number : unsigned
+	{
+		EXT3  = 0,
+		EXT1  = 1,
+		SLOT3 = 2,
+		SLOT1 = 3,
+		DMA   = 4,
+		LANCE = 5,
+		SCC   = 6,
+		BEEP  = 7,
+		CBSY  = 8,
+		CFLT  = 9,
+		MOUSE = 10,
+		KBD   = 11,
+		TIMER = 12,
+		BERR  = 13,
+		ABORT = 14,
+		PERR  = 15,
+	};
+	template <irq_number Number> void irq_w(int state);
+	void int_check();
+
+	u32 bus_error();
+	void itimer_w(u8 data);
+	void itimer(s32 param);
+	u8 debug_r() { return m_debug; }
+	void debug_w(u8 data);
 
 	// devices
 	required_device<r3000a_device> m_cpu;
 	required_device<ram_device> m_ram;
+	required_device<dmac_0448_device> m_dma;
 	required_device<m48t02_device> m_rtc;
 	required_device<z80scc_device> m_scc;
 	required_device<am7990_device> m_net;
-	required_device<upd72065_device> m_fdc;
+	required_device<upd72067_device> m_fdc;
 
 	required_device<screen_device> m_lcd;
-	required_device<news_hle_kbd_device> m_kbd;
+	required_device<news_hid_hle_device> m_hid;
+	required_device<cxd1185_device> m_scsi;
 
 	required_device_array<rs232_port_device, 2> m_serial;
 	required_device<nscsi_bus_device> m_scsibus;
@@ -111,20 +147,41 @@ protected:
 	output_finder<4> m_led;
 
 	std::unique_ptr<u16[]> m_net_ram;
-	u8 m_kbd_status;
-};
 
-FLOPPY_FORMATS_MEMBER(news_r3k_state::floppy_formats)
-	FLOPPY_PC_FORMAT
-FLOPPY_FORMATS_END
+	emu_timer *m_itimer;
+
+	u16 m_inten;
+	u16 m_intst;
+	u8 m_debug;
+
+	bool m_int_state[4];
+	bool m_lcd_enable;
+	bool m_lcd_dim;
+};
 
 void news_r3k_state::machine_start()
 {
 	m_led.resolve();
 
 	m_net_ram = std::make_unique<u16[]>(8192);
+	save_pointer(NAME(m_net_ram), 8192);
 
-	m_kbd_status = 0;
+	save_item(NAME(m_inten));
+	save_item(NAME(m_intst));
+	save_item(NAME(m_debug));
+	save_item(NAME(m_int_state));
+	save_item(NAME(m_lcd_enable));
+	save_item(NAME(m_lcd_dim));
+
+	m_itimer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(news_r3k_state::itimer), this));
+
+	for (bool &int_state : m_int_state)
+		int_state = false;
+	m_lcd_enable = false;
+	m_lcd_dim = false;
+
+	m_inten = 0;
+	m_intst = 0;
 }
 
 void news_r3k_state::machine_reset()
@@ -135,47 +192,53 @@ void news_r3k_state::init_common()
 {
 	// map the configured ram
 	m_cpu->space(0).install_ram(0x00000000, m_ram->mask(), m_ram->pointer());
+
+	// HACK: hardwire the rate until fdc is better understood
+	m_fdc->set_rate(500000);
+
+	// HACK: signal floppy density?
+	m_scsi->port_w(0x02);
 }
 
 void news_r3k_state::cpu_map(address_map &map)
 {
-	// FIXME: silence a lot of unhandled graphics addresses
-	map(0x187702b0, 0x187702b3).nopw().umask32(0xffff);
-	map(0x187c0000, 0x187c0003).nopw(); // palette?
-	map(0x187e0000, 0x187e000f).nopw(); // lcdc?
-	map(0x18f702b0, 0x18f702b3).nopw().umask32(0xffff);
-	map(0x18fc0000, 0x18fc0003).nopw(); // palette?
-	map(0x18fe0000, 0x18fe0003).nopw(); // lcdc?
+	map.unmap_value_high();
 
-	map(0x08000000, 0x080fffff).ram().share("vram");
+	map(0x10000000, 0x101fffff).rom().region("krom", 0);
+	map(0x10000000, 0x10000003).lw32([this](u32 data) { m_lcd_enable = bool(data); }, "lcd_enable_w");
+	map(0x10100000, 0x10100003).lw32([this](u32 data) { m_lcd_dim = BIT(data, 0); }, "lcd_dim_w");
+	map(0x10200000, 0x1021ffff).ram().share("vram").mirror(0xa0000000);
+
+	map(0x18000000, 0x18ffffff).r(FUNC(news_r3k_state::bus_error));
 
 	map(0x1fc00000, 0x1fc1ffff).rom().region("eprom", 0);
+	//map(0x1fc40004, 0x1fc40007).w().umask32(0xff); ??
+	// 1fc40007 // power/reboot/PARK?
+	map(0x1fc80000, 0x1fc80001).rw(FUNC(news_r3k_state::inten_r), FUNC(news_r3k_state::inten_w));
+	map(0x1fc80002, 0x1fc80003).r(FUNC(news_r3k_state::intst_r));
+	map(0x1fc80004, 0x1fc80005).w(FUNC(news_r3k_state::intclr_w));
+	map(0x1fc80006, 0x1fc80006).w(FUNC(news_r3k_state::itimer_w));
+	// 1fcc0000 // cstrobe?
+	// 1fcc0002 // sccstatus0?
+	map(0x1fcc0003, 0x1fcc0003).rw(FUNC(news_r3k_state::debug_r), FUNC(news_r3k_state::debug_w));
+	// 1fcc0007 // sccvect?
 
-	//map(0x1fc40004, 0x1fc40004).w().umask32(0xff); ??
-	//map(0x1fc80000, 0x1fc80001); // pinten
-	//map(0x1fc80002, 0x1fc80003); // pintstat
-	//map(0x1fc80004, 0x1fc80005); // intclr
-	//map(0x1fc80006, 0x1fc80006); // itimer
-	map(0x1fcc0003, 0x1fcc0003).w(FUNC(news_r3k_state::debug_w));
+	map(0x1fd00000, 0x1fd00007).m(m_hid, FUNC(news_hid_hle_device::map));
+	map(0x1fd40000, 0x1fd40003).noprw(); // FIXME: ignore buzzer for now
 
-	map(0x1fd00000, 0x1fd00000).r(m_kbd, FUNC(news_hle_kbd_device::data_r));
-	map(0x1fd00001, 0x1fd00001).lr8([this]() { return m_kbd_status; }, "kbd_status_r");
-	map(0x1fd00002, 0x1fd00002).lw8([this](u8 data) { m_kbd->reset(); }, "kbd_reset_w");
-	map(0x1fd40000, 0x1fd40003).noprw().umask32(0xffff); // FIXME: ignore buzzer for now
-
-	//map(0x1fe00000, 0x1fe0000f); // dmac 0448
-	//map(0x1fe00100, 0x1fe00100); // scsi
-	map(0x1fe00200, 0x1fe00203).m(m_fdc, FUNC(upd72069_device::map)).umask32(0xffff);
+	map(0x1fe00000, 0x1fe0000f).m(m_dma, FUNC(dmac_0448_device::map));
+	map(0x1fe00100, 0x1fe0010f).m(m_scsi, FUNC(cxd1185_device::map));
+	map(0x1fe00200, 0x1fe00203).m(m_fdc, FUNC(upd72067_device::map));
+	map(0x1fe00300, 0x1fe00300).lr8([]() { return 0xff; }, "sound_r"); // HACK: disable sound
 	//map(0x1fe00300, 0x1fe00307); // sound
-
 	map(0x1fe40000, 0x1fe40003).portr("SW2");
-	map(0x1fe80000, 0x1fe800ff).rom().region("idrom", 0);
-
+	//map(0x1fe70000, 0x1fe9ffff).ram(); // ??
+	map(0x1fe80000, 0x1fe800ff).rom().region("idrom", 0).mirror(0x0003ff00);
 	map(0x1fec0000, 0x1fec0003).rw(m_scc, FUNC(z80scc_device::ab_dc_r), FUNC(z80scc_device::ab_dc_w));
 
 	map(0x1ff40000, 0x1ff407ff).rw(m_rtc, FUNC(m48t02_device::read), FUNC(m48t02_device::write));
+	map(0x1ff60000, 0x1ff6001b).lw8([this](offs_t offset, u8 data) { LOG("crtc offset %x 0x%02x\n", offset, data); }, "lfbm_crtc_w"); // TODO: HD64646FS
 	map(0x1ff80000, 0x1ff80003).rw(m_net, FUNC(am7990_device::regs_r), FUNC(am7990_device::regs_w));
-
 	map(0x1ffc0000, 0x1ffc3fff).lrw16(
 		[this](offs_t offset) { return m_net_ram[offset]; }, "net_ram_r",
 		[this](offs_t offset, u16 data, u16 mem_mask) { COMBINE_DATA(&m_net_ram[offset]); }, "net_ram_w");
@@ -213,40 +276,122 @@ INPUT_PORTS_END
 
 u32 news_r3k_state::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, rectangle const &cliprect)
 {
-	u32 *pixel_pointer = m_vram;
+	if (!m_lcd_enable)
+		return 0;
+
+	rgb_t const black = rgb_t::black();
+	rgb_t const white = m_lcd_dim ? rgb_t(191, 191, 191) : rgb_t::white();
+
+	u32 const *pixel_pointer = m_vram;
 
 	for (int y = screen.visible_area().min_y; y <= screen.visible_area().max_y; y++)
 	{
-		for (int x = screen.visible_area().min_x; x <= screen.visible_area().max_x; x += 4)
+		for (int x = screen.visible_area().min_x; x <= screen.visible_area().max_x; x += 32)
 		{
 			u32 const pixel_data = *pixel_pointer++;
 
-			bitmap.pix(y, x + 0) = u8(pixel_data >> 24) ? rgb_t::white() : rgb_t::black();
-			bitmap.pix(y, x + 1) = u8(pixel_data >> 16) ? rgb_t::white() : rgb_t::black();
-			bitmap.pix(y, x + 2) = u8(pixel_data >> 8) ? rgb_t::white() : rgb_t::black();
-			bitmap.pix(y, x + 3) = u8(pixel_data >> 0) ? rgb_t::white() : rgb_t::black();
+			for (unsigned i = 0; i < 32; i++)
+				bitmap.pix(y, x + i) = BIT(pixel_data, 31 - i) ? black : white;
 		}
 	}
 
 	return 0;
 }
 
-void news_r3k_state::kbd_irq(int state)
+void news_r3k_state::inten_w(offs_t offset, u16 data, u16 mem_mask)
 {
-	// TODO: relay irq to cpu
+	COMBINE_DATA(&m_inten);
+
+	int_check();
+}
+
+template <news_r3k_state::irq_number Number> void news_r3k_state::irq_w(int state)
+{
+	LOG("irq number %d state %d\n",  Number, state);
+
 	if (state)
-		m_kbd_status |= 2;
+		m_intst |= 1U << Number;
 	else
-		m_kbd_status &= ~2;
+		m_intst &= ~(1U << Number);
+
+	int_check();
+}
+
+void news_r3k_state::intclr_w(offs_t offset, u16 data, u16 mem_mask)
+{
+	m_intst &= ~(data & mem_mask);
+
+	int_check();
+}
+
+void news_r3k_state::int_check()
+{
+	// TODO: assume 44422222 11100000
+	static int const int_line[] = { INPUT_LINE_IRQ0, INPUT_LINE_IRQ1, INPUT_LINE_IRQ2, INPUT_LINE_IRQ4 };
+	static u16 const int_mask[] = { 0x001f, 0x00e0, 0x1f00, 0xe000 };
+
+	for (unsigned i = 0; i < std::size(m_int_state); i++)
+	{
+		bool const int_state = m_intst & m_inten & int_mask[i];
+
+		if (m_int_state[i] != int_state)
+		{
+			m_int_state[i] = int_state;
+			m_cpu->set_input_line(int_line[i], int_state);
+		}
+	}
+}
+
+u32 news_r3k_state::bus_error()
+{
+	if (!machine().side_effects_disabled())
+		irq_w<BERR>(ASSERT_LINE);
+
+	return 0;
+}
+
+void news_r3k_state::itimer_w(u8 data)
+{
+	LOG("itimer_w 0x%02x (%s)\n", data, machine().describe_context());
+
+	// TODO: assume 0xff stops the timer
+	u8 const ticks = data + 1;
+
+	m_itimer->adjust(attotime::from_ticks(ticks, 800), 0, attotime::from_ticks(ticks, 800));
+}
+
+void news_r3k_state::itimer(s32 param)
+{
+	irq_w<TIMER>(ASSERT_LINE);
 }
 
 void news_r3k_state::debug_w(u8 data)
 {
+	/*
+	 * The low four bits of this register control the diagnostic LEDs labelled 1-4
+	 * with bit 0 correspondig to LED #1, and a 0 value enabling the LED. A non-
+	 * exhaustive list of diagnostic codes produced by the PROM follows:
+	 *
+	 *  4321  Stage
+	 *  ...x  EPROM checksum
+	 *  ..x.  NVRAM test (byte)
+	 *  ..xx  NVRAM test (word)
+	 *  .x..  NVRAM test (dword)
+	 *  .x.x  read dip-switch SW2
+	 *  .xx.  write test 0x1fe70000-1fe9ffff?
+	 *  .xxx  address decode
+	 *  x...  NVRAM test (dword)
+	 *  x..x  RAM sizing
+	 *  x.x.  inventory/boot
+	 *
+	 */
 	LOG("debug_w 0x%02x (%s)\n", data, machine().describe_context());
 
 	for (unsigned i = 0; i < 4; i++)
 		if (BIT(data, i + 4))
 			m_led[i] = BIT(data, i);
+
+	m_debug = data;
 }
 
 static void news_scsi_devices(device_slot_interface &device)
@@ -261,15 +406,24 @@ void news_r3k_state::common(machine_config &config)
 	m_cpu->set_addrmap(AS_PROGRAM, &news_r3k_state::cpu_map);
 	m_cpu->set_fpu(mips1_device_base::MIPS_R3010Av4);
 
-	// 12 SIMM slots
-	// 30pin 4Mbyte SIMMs with parity?
+	// 3 banks of 4x30-pin SIMMs with parity, first bank is soldered
 	RAM(config, m_ram);
 	m_ram->set_default_size("16M");
+	// TODO: confirm each bank supports 4x1M or 4x4M
+	m_ram->set_extra_options("4M,8M,12M,20M,24M,32M,36M,48M");
+
+	DMAC_0448(config, m_dma, 0);
+	m_dma->set_bus(m_cpu, 0);
+	m_dma->out_int_cb().set(FUNC(news_r3k_state::irq_w<DMA>));
+	m_dma->dma_r_cb<1>().set(m_fdc, FUNC(upd72067_device::dma_r));
+	m_dma->dma_w_cb<1>().set(m_fdc, FUNC(upd72067_device::dma_w));
+	// TODO: channel 2 audio
+	// TODO: channel 3 video
 
 	M48T02(config, m_rtc);
 
 	SCC85C30(config, m_scc, 4.9152_MHz_XTAL);
-	//m_scc->out_int_callback().set(FUNC(rx3230_state::irq_w<INT_SCC>)).invert();
+	m_scc->out_int_callback().set(FUNC(news_r3k_state::irq_w<SCC>));
 
 	// scc channel A
 	RS232_PORT(config, m_serial[0], default_rs232_devices, nullptr);
@@ -288,37 +442,51 @@ void news_r3k_state::common(machine_config &config)
 	m_scc->out_txdb_callback().set(m_serial[1], FUNC(rs232_port_device::write_txd));
 
 	AM7990(config, m_net);
-	//m_net->intr_out().set(FUNC(news_r3k_state::irq_w<INT_NET>));
+	m_net->intr_out().set(FUNC(news_r3k_state::irq_w<LANCE>)).invert();
 	m_net->dma_in().set([this](offs_t offset) { return m_net_ram[offset >> 1]; });
 	m_net->dma_out().set([this](offs_t offset, u16 data, u16 mem_mask) { COMBINE_DATA(&m_net_ram[offset >> 1]); });
 
-	// μPD72067, clock?
-	UPD72069(config, m_fdc, 16_MHz_XTAL);
-	//m_fdc->intrq_wr_callback().set_inputline(m_cpu, INPUT_LINE_IRQ4);
-	//m_fdc->drq_wr_callback().set();
-	FLOPPY_CONNECTOR(config, "fdc:0", "35hd", FLOPPY_35_HD, true, floppy_formats).enable_sound(false);
+	UPD72067(config, m_fdc, 16_MHz_XTAL);
+	m_fdc->intrq_wr_callback().set(m_dma, FUNC(dmac_0448_device::irq<1>));
+	m_fdc->drq_wr_callback().set(m_dma, FUNC(dmac_0448_device::drq<1>));
+	FLOPPY_CONNECTOR(config, "fdc:0", "35hd", FLOPPY_35_HD, true, floppy_image_device::default_pc_floppy_formats).enable_sound(false);
 
 	// scsi bus and devices
 	NSCSI_BUS(config, m_scsibus);
+	// inquiry content for hard disk is "HITACHI DK312C          CS01"
 	NSCSI_CONNECTOR(config, "scsi:0", news_scsi_devices, "harddisk");
 	NSCSI_CONNECTOR(config, "scsi:1", news_scsi_devices, nullptr);
 	NSCSI_CONNECTOR(config, "scsi:2", news_scsi_devices, nullptr);
 	NSCSI_CONNECTOR(config, "scsi:3", news_scsi_devices, nullptr);
 	NSCSI_CONNECTOR(config, "scsi:4", news_scsi_devices, nullptr);
 	NSCSI_CONNECTOR(config, "scsi:5", news_scsi_devices, nullptr);
-	NSCSI_CONNECTOR(config, "scsi:6", news_scsi_devices, "cdrom");
+	NSCSI_CONNECTOR(config, "scsi:6", news_scsi_devices, nullptr);
 
-	/*
-	 * FIXME: the screen is supposed to be an 1120x780 monochrome (black/white)
-	 * LCD, with an HD64646FS LCD controller. The boot prom is happy if we just
-	 * ignore the LCDC and pretend the screen is 1024 pixels wide.
-	 */
+	// scsi host adapter
+	NSCSI_CONNECTOR(config, "scsi:7").option_set("cxd1185", CXD1185).clock(16_MHz_XTAL).machine_config(
+		[this](device_t *device)
+		{
+			cxd1185_device &adapter = downcast<cxd1185_device &>(*device);
+
+			adapter.irq_out_cb().set(m_dma, FUNC(dmac_0448_device::irq<0>));
+			adapter.drq_out_cb().set(m_dma, FUNC(dmac_0448_device::drq<0>));
+			adapter.port_out_cb().set(
+				[this](u8 data)
+				{
+					LOG("floppy %s\n", BIT(data, 0) ? "mount" : "eject");
+				});
+
+			subdevice<dmac_0448_device>(":dma")->dma_r_cb<0>().set(adapter, FUNC(cxd1185_device::dma_r));
+			subdevice<dmac_0448_device>(":dma")->dma_w_cb<0>().set(adapter, FUNC(cxd1185_device::dma_w));
+		});
+
 	SCREEN(config, m_lcd, SCREEN_TYPE_LCD);
-	m_lcd->set_raw(47923200, 1024, 0, 1023, 780, 0, 779);
+	m_lcd->set_raw(52416000, 1120, 0, 1120, 780, 0, 780);
 	m_lcd->set_screen_update(FUNC(news_r3k_state::screen_update));
 
-	NEWS_HLE_KBD(config, m_kbd);
-	m_kbd->irq_out().set(*this, FUNC(news_r3k_state::kbd_irq));
+	NEWS_HID_HLE(config, m_hid);
+	m_hid->irq_out<news_hid_hle_device::KEYBOARD>().set(FUNC(news_r3k_state::irq_w<KBD>));
+	m_hid->irq_out<news_hid_hle_device::MOUSE>().set(FUNC(news_r3k_state::irq_w<MOUSE>));
 }
 
 void news_r3k_state::nws3260(machine_config &config)
@@ -329,13 +497,18 @@ void news_r3k_state::nws3260(machine_config &config)
 ROM_START(nws3260)
 	ROM_REGION32_BE(0x20000, "eprom", 0)
 	ROM_SYSTEM_BIOS(0, "nws3260", "NWS-3260 v2.0A")
-	ROMX_LOAD("nws3260.bin", 0x00000, 0x20000, CRC(61222991) SHA1(076fab0ad0682cd7dacc7094e42efe8558cbaaa1), ROM_BIOS(0))
+	ROMX_LOAD("mpu-16__ver.2.0a__1990_sony.ic64", 0x00000, 0x20000, CRC(61222991) SHA1(076fab0ad0682cd7dacc7094e42efe8558cbaaa1), ROM_BIOS(0))
+
+	// 2 x MB834200A-20 (4Mb mask ROM)
+	ROM_REGION32_BE(0x200000, "krom", ROMREGION_ERASEFF)
+	ROM_LOAD64_WORD("051_aa.ic109", 0x00000, 0x80000, CRC(1411cbcb) SHA1(793394cd3919034f85bfb015d6d3c504f83b6626))
+	ROM_LOAD64_WORD("052_aa.ic110", 0x00004, 0x80000, CRC(df0f39da) SHA1(076881da022a3fe6731de0ead217285293c25dc7))
 
 	/*
 	 * This is probably a 4-bit device: only the low 4 bits in each location
 	 * are used, and are merged together into bytes when copied into RAM, with
 	 * the most-significant bits at the lower address. The sum of resulting
-	 * bytes must be zero.
+	 * big-endian 32-bit words must be zero.
 	 *
 	 * offset  purpose
 	 *  0x00   magic number (0x0f 0x0f)
@@ -344,8 +517,8 @@ ROM_START(nws3260)
 	 *  0x60   model number (null-terminated string)
 	 */
 	ROM_REGION32_BE(0x100, "idrom", 0)
-	ROM_LOAD("idrom.bin", 0x000, 0x100, CRC(b257474c) SHA1(25908483fe72edd0ff51f58c16f7dbb8e72822e7))
+	ROM_LOAD("idrom.bin", 0x000, 0x100, CRC(17a3d9c6) SHA1(d300e6908210f540951211802c38ad7f8037aa15) BAD_DUMP)
 ROM_END
 
 /*   YEAR  NAME     PARENT  COMPAT  MACHINE  INPUT    CLASS           INIT         COMPANY  FULLNAME    FLAGS */
-COMP(1991, nws3260, 0,      0,      nws3260, nws3260, news_r3k_state, init_common, "Sony",  "NWS-3260", MACHINE_IS_SKELETON)
+COMP(1991, nws3260, 0,      0,      nws3260, nws3260, news_r3k_state, init_common, "Sony",  "NWS-3260", MACHINE_NO_SOUND)

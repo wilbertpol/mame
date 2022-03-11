@@ -14,8 +14,13 @@
 
 *********************************************************************/
 
-#include "emu.h"
 #include "img_dsk.h"
+
+#include "coretmpl.h" // BIT
+#include "ioprocs.h"
+
+#include "osdcore.h" // osd_printf_*
+
 
 // Debugging
 #define VERBOSE 0
@@ -38,9 +43,12 @@ img_format::img_format()
 {
 }
 
-int img_format::identify(io_generic *io, uint32_t form_factor)
+int img_format::identify(util::random_read &io, uint32_t form_factor, const std::vector<uint32_t> &variants)
 {
-	uint64_t size = io_generic_size(io);
+	uint64_t size;
+	if (io.length(size)) {
+		return 0;
+	}
 
 	if (((form_factor == floppy_image::FF_8) || (form_factor == floppy_image::FF_UNKNOWN)) &&
 		size == IMG_IMAGE_SIZE) {
@@ -50,17 +58,18 @@ int img_format::identify(io_generic *io, uint32_t form_factor)
 	}
 }
 
-bool img_format::load(io_generic *io, uint32_t form_factor, floppy_image *image)
+bool img_format::load(util::random_read &io, uint32_t form_factor, const std::vector<uint32_t> &variants, floppy_image *image)
 {
-	uint64_t size = io_generic_size(io);
-	if (size != IMG_IMAGE_SIZE) {
+	uint64_t size;
+	if (io.length(size) || (size != IMG_IMAGE_SIZE)) {
 		return false;
 	}
 	image->set_variant(floppy_image::SSDD);
 
 	// Suck in the whole image
 	std::vector<uint8_t> image_data(size);
-	io_generic_read(io, (void *)image_data.data(), 0, size);
+	size_t actual;
+	io.read_at(0, image_data.data(), size, actual);
 
 	for (unsigned cyl = 0; cyl < TRACKS; cyl++) {
 		std::vector<uint32_t> track_data;
@@ -94,19 +103,18 @@ bool img_format::load(io_generic *io, uint32_t form_factor, floppy_image *image)
 	return true;
 }
 
-bool img_format::save(io_generic *io, floppy_image *image)
+bool img_format::save(util::random_read_write &io, const std::vector<uint32_t> &variants, floppy_image *image)
 {
 	for (int cyl = 0; cyl < TRACKS; cyl++) {
-		uint8_t bitstream[ 21000 ];
-		int bitstream_size;
-		generate_bitstream_from_track(cyl , 0 , CELL_SIZE , bitstream , bitstream_size , image , 0);
+		auto bitstream = generate_bitstream_from_track(cyl , 0 , CELL_SIZE , image , 0);
 		int pos = 0;
 		unsigned track_no , sector_no;
 		uint8_t sector_data[ SECTOR_SIZE ];
-		while (get_next_sector(bitstream , bitstream_size , pos , track_no , sector_no , sector_data)) {
+		while (get_next_sector(bitstream , pos , track_no , sector_no , sector_data)) {
 			if (track_no == cyl && sector_no >= 1 && sector_no <= SECTORS) {
 				unsigned offset_in_image = (cyl * SECTORS + sector_no - 1) * SECTOR_SIZE;
-				io_generic_write(io, sector_data, offset_in_image, SECTOR_SIZE);
+				size_t actual;
+				io.write_at(offset_in_image, sector_data, SECTOR_SIZE, actual);
 			}
 		}
 	}
@@ -115,7 +123,7 @@ bool img_format::save(io_generic *io, floppy_image *image)
 
 const char *img_format::name() const
 {
-	return "img";
+	return "mds2";
 }
 
 const char *img_format::description() const
@@ -159,7 +167,7 @@ void img_format::write_mmfm_bit(std::vector<uint32_t> &buffer , bool data_bit , 
 	bit_w(buffer , clock_bit , CELL_SIZE);
 	bit_w(buffer , data_bit , CELL_SIZE);
 
-	if (BIT(m_crc , 15) ^ data_bit) {
+	if (util::BIT(m_crc , 15) ^ data_bit) {
 		m_crc = (m_crc << 1) ^ CRC_POLY;
 	} else {
 		m_crc <<= 1;
@@ -169,7 +177,7 @@ void img_format::write_mmfm_bit(std::vector<uint32_t> &buffer , bool data_bit , 
 void img_format::write_mmfm_byte(std::vector<uint32_t> &buffer , uint8_t data , uint8_t clock)
 {
 	for (int i = 7; i >= 0; i--) {
-		write_mmfm_bit(buffer , BIT(data , i) , BIT(clock , i));
+		write_mmfm_bit(buffer , util::BIT(data , i) , util::BIT(clock , i));
 	}
 }
 
@@ -182,7 +190,7 @@ void img_format::write_crc(std::vector<uint32_t> &buffer , uint16_t crc)
 {
 	// Note that CRC is stored with MSB (x^15) first
 	for (unsigned i = 0; i < 16; i++) {
-		write_mmfm_bit(buffer , BIT(crc , 15 - i) , 0);
+		write_mmfm_bit(buffer , util::BIT(crc , 15 - i) , 0);
 	}
 }
 
@@ -258,7 +266,7 @@ void img_format::fill_with_gap4(std::vector<uint32_t> &buffer)
 	}
 }
 
-std::vector<uint8_t> img_format::get_next_id_n_block(const uint8_t *bitstream , int bitstream_size , int& pos , int& start_pos)
+std::vector<uint8_t> img_format::get_next_id_n_block(const std::vector<bool> &bitstream , int& pos , int& start_pos)
 {
 	std::vector<uint8_t> res;
 	uint8_t data_sr;
@@ -267,11 +275,11 @@ std::vector<uint8_t> img_format::get_next_id_n_block(const uint8_t *bitstream , 
 	// Look for either sync + ID AM or sync + DATA AM
 	do {
 		unsigned cnt_trans = 0;
-		while (pos < bitstream_size && cnt_trans < 34) {
-			bool bit = BIT(bitstream[ pos >> 3 ] , ~pos & 7);
+		while (pos < bitstream.size() && cnt_trans < 34) {
+			bool bit = bitstream[pos];
 			pos++;
 			if (cnt_trans < 32) {
-				if (!(BIT(cnt_trans , 0) ^ bit)) {
+				if (!(util::BIT(cnt_trans , 0) ^ bit)) {
 					cnt_trans++;
 				} else {
 					cnt_trans = 0;
@@ -290,7 +298,7 @@ std::vector<uint8_t> img_format::get_next_id_n_block(const uint8_t *bitstream , 
 			}
 		}
 
-		if (pos == bitstream_size) {
+		if (pos == bitstream.size()) {
 			// End of track reached
 			return res;
 		}
@@ -298,14 +306,14 @@ std::vector<uint8_t> img_format::get_next_id_n_block(const uint8_t *bitstream , 
 		// Get AM
 		data_sr = clock_sr = 0;
 		for (unsigned i = 0; i < 7; ++i) {
-			bool bit = BIT(bitstream[ pos >> 3 ] , ~pos & 7);
+			bool bit = bitstream[pos];
 			pos++;
 			clock_sr = (clock_sr << 1) | bit;
-			bit = BIT(bitstream[ pos >> 3 ] , ~pos & 7);
+			bit = bitstream[pos];
 			pos++;
 			data_sr = (data_sr << 1) | bit;
 		}
-		if (pos >= bitstream_size) {
+		if (pos >= bitstream.size()) {
 			return res;
 		}
 	} while (clock_sr != AM_CLOCK);
@@ -323,11 +331,11 @@ std::vector<uint8_t> img_format::get_next_id_n_block(const uint8_t *bitstream , 
 	}
 
 	pos++;
-	for (unsigned i = 0; i < to_dump && pos < bitstream_size; i++) {
+	for (unsigned i = 0; i < to_dump && pos < bitstream.size(); i++) {
 		data_sr = 0;
 		unsigned j;
-		for (j = 0; j < 8 && pos < bitstream_size; j++) {
-			bool bit = BIT(bitstream[ pos >> 3 ] , ~pos & 7);
+		for (j = 0; j < 8 && pos < bitstream.size(); j++) {
+			bool bit = bitstream[pos];
 			pos += 2;
 			data_sr = (data_sr << 1) | bit;
 		}
@@ -338,7 +346,7 @@ std::vector<uint8_t> img_format::get_next_id_n_block(const uint8_t *bitstream , 
 	return res;
 }
 
-bool img_format::get_next_sector(const uint8_t *bitstream , int bitstream_size , int& pos , unsigned& track , unsigned& sector , uint8_t *sector_data)
+bool img_format::get_next_sector(const std::vector<bool> &bitstream , int& pos , unsigned& track , unsigned& sector , uint8_t *sector_data)
 {
 	std::vector<uint8_t> block;
 	while (true) {
@@ -346,7 +354,7 @@ bool img_format::get_next_sector(const uint8_t *bitstream , int bitstream_size ,
 		int id_pos = 0;
 		while (true) {
 			if (block.size() == 0) {
-				block = get_next_id_n_block(bitstream , bitstream_size , pos , id_pos);
+				block = get_next_id_n_block(bitstream , pos , id_pos);
 				if (block.size() == 0) {
 					return false;
 				}
@@ -361,7 +369,7 @@ bool img_format::get_next_sector(const uint8_t *bitstream , int bitstream_size ,
 		}
 		// Then for DATA block
 		int data_pos = 0;
-		block = get_next_id_n_block(bitstream , bitstream_size , pos , data_pos);
+		block = get_next_id_n_block(bitstream , pos , data_pos);
 		if (block.size() == 0) {
 			return false;
 		}
