@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "emu.h"
 #include "machine/z80daisy.h"
 
 #define MCFG_Z80LLE_SET_IRQACK_CALLBACK(_devcb) \
