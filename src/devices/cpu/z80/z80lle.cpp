@@ -4100,11 +4100,10 @@ void z80lle_device::device_start()
 	m_opcode_read = false;
 	m_reset = true;
 
-	m_program = &space(AS_PROGRAM);
-	m_opcodes = has_space(AS_OPCODES) ? &space(AS_OPCODES) : m_program;
-	m_cache = m_program->cache<0, 0, ENDIANNESS_LITTLE>();
-	m_opcodes_cache = m_opcodes->cache<0, 0, ENDIANNESS_LITTLE>();
-	m_io = &space(AS_IO);
+	space(AS_PROGRAM).cache(m_args);
+	space(has_space(AS_OPCODES) ? AS_OPCODES : AS_PROGRAM).cache(m_opcodes);
+	space(AS_PROGRAM).specific(m_data);
+	space(AS_IO).specific(m_io);
 
 	m_hl_index[IX_OFFSET].w.l = m_hl_index[IY_OFFSET].w.l = 0xffff; // IX and IY are FFFF after a reset!
 	m_af.b.l = ZF;           // Zero flag is set
@@ -4113,7 +4112,6 @@ void z80lle_device::device_start()
 	state_add(STATE_GENPC,     "PC",        m_pc.w.l).callimport();
 	state_add(STATE_GENPCBASE, "CURPC",     m_prvpc.w.l).callimport().noshow();
 	state_add(Z80LLE_SP,       "SP",        m_sp.w.l);
-	state_add(STATE_GENSP,     "GENSP",     m_sp.w.l).noshow();
 	state_add(STATE_GENFLAGS,  "GENFLAGS",  m_af.b.l).noshow().formatstr("%8s");
 	state_add(Z80LLE_A,        "A",         m_af.b.h).noshow();
 	state_add(Z80LLE_B,        "B",         m_bc.b.h).noshow();
@@ -4223,7 +4221,7 @@ void z80lle_device::execute_run()
 						m_irq_vector <<= 8;
 					}
 					else
-						m_data_bus = m_opcodes_cache->read_byte(m_address_bus);
+						m_data_bus = m_opcodes.read_byte(m_address_bus);
 					m_ir = m_data_bus;
 					if (m_m1) {
 						clear_m1();
@@ -4236,13 +4234,13 @@ void z80lle_device::execute_run()
 						m_irq_vector <<= 8;
 					}
 					else
-						m_data_bus = m_program->read_byte(m_address_bus);
+						m_data_bus = m_data.read_byte(m_address_bus);
 				}
 				clear_mreq();
 				clear_rd();
 			}
 			if (m_wr) {
-				m_program->write_byte(m_address_bus, m_data_bus);
+				m_data.write_byte(m_address_bus, m_data_bus);
 				clear_mreq();
 				clear_wr();
 			}
@@ -4280,12 +4278,12 @@ void z80lle_device::execute_run()
 				clear_m1();
 			}
 			if (m_rd) {
-				m_data_bus = m_io->read_byte(m_address_bus);
+				m_data_bus = m_io.read_byte(m_address_bus);
 				clear_iorq();
 				clear_rd();
 			}
 			if (m_wr) {
-				m_io->write_byte(m_address_bus, m_data_bus);
+				m_io.write_byte(m_address_bus, m_data_bus);
 				clear_iorq();
 				clear_wr();
 			}
