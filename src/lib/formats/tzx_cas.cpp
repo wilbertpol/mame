@@ -619,12 +619,11 @@ static cassette_image::error tzx_cas_do_work(std::vector<int16_t> &samples, floa
 			break;
 
 		case TZX_CSW:  // CSW Recording
-			// having this missing is fatal
 			printf("Unsupported block type (0x15 - CSW Recording) encountered.\n");
 			data_size = bytes[pos] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24);
 			pos += 4 + data_size;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 
 		case TZX_GENERALIZED:  // Generalized Data Block
 			{
@@ -765,38 +764,38 @@ static cassette_image::error tzx_cas_do_work(std::vector<int16_t> &samples, floa
 			data_size = bytes[pos];
 			pos += 1 + data_size;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case TZX_GROUP_END:  // Group End
 			LOG_FORMATS("Unsupported block type (%02x) encountered.\n", block_type);
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case TZX_JUMP:  // Jump To Block
 			LOG_FORMATS("Unsupported block type (%02x) encountered.\n", block_type);
 			pos += 2;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case TZX_CALL_SEQUENCE:  // Call Sequence
 			LOG_FORMATS("Unsupported block type (%02x) encountered.\n", block_type);
 			data_size = bytes[pos] + (bytes[pos + 1] << 8);
 			pos += 2 + 2 * data_size;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case TZX_RETURN_SEQUENCE:  // Return From Sequence
 			LOG_FORMATS("Unsupported block type (%02x) encountered.\n", block_type);
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case TZX_SELECT:  // Select Block
 			LOG_FORMATS("Unsupported block type (%02x) encountered.\n", block_type);
 			data_size = bytes[pos] + (bytes[pos + 1] << 8);
 			pos += 2 + data_size;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case TZX_STOP_48K:  // Stop Tape if in 48K Mode
 			LOG_FORMATS("Unsupported block type (%02x) encountered.\n", block_type);
 			data_size = bytes[pos] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24);
 			pos += 4 + data_size;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case TZX_SET_LEVEL:  // Set signal level
 			LOG_FORMATS("Unsupported block type (%02x) encountered.\n", block_type);
 			data_size = bytes[pos] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24);
@@ -811,20 +810,20 @@ static cassette_image::error tzx_cas_do_work(std::vector<int16_t> &samples, floa
 			data_size = bytes[pos] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24);
 			pos += 4 + data_size;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case 0x17:  // C64 Turbo Tape Data Block, deprecated in TZX 1.20
 			LOG_FORMATS("Deprecated block type (%02x) encountered.\n", block_type);
 			LOG_FORMATS("Please look for an updated .tzx file.\n");
 			data_size = bytes[pos] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24);
 			pos += 4 + data_size;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case 0x34:  // Emulation Info, deprecated in TZX 1.20
 			LOG_FORMATS("Deprecated block type (%02x) encountered.\n", block_type);
 			LOG_FORMATS("Please look for an updated .tzx file.\n");
 			pos += 8;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 		case 0x40:  // Snapshot Block, deprecated in TZX 1.20
 			LOG_FORMATS("Deprecated block type (%02x) encountered.\n", block_type);
 			LOG_FORMATS("Please look for an updated .tzx file.\n");
@@ -832,7 +831,7 @@ static cassette_image::error tzx_cas_do_work(std::vector<int16_t> &samples, floa
 			data_size = bytes[pos] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16);
 			pos += 3 + data_size;
 			current_block++;
-			break;
+			return cassette_image::error::UNSUPPORTED;
 
 		default:
 			LOG_FORMATS("Unsupported block type (%02x) encountered.\n", block_type);
@@ -840,7 +839,6 @@ static cassette_image::error tzx_cas_do_work(std::vector<int16_t> &samples, floa
 			pos += 4 + data_size;
 			current_block++;
 			return cassette_image::error::UNSUPPORTED;
-			break;
 		}
 	}
 	// Adding 1 ms. pause to ensure that the last edge is properly finished at the end of tape
