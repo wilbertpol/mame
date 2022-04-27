@@ -53,6 +53,7 @@ public:
 	spectrum_state(const machine_config &mconfig, device_type type, const char *tag) :
 		driver_device(mconfig, type, tag),
 		m_video_ram(*this, "video_ram"),
+		m_scanline_timer(nullptr),
 		m_maincpu(*this, "maincpu"),
 		m_screen(*this, "screen"),
 		m_cassette(*this, "cassette"),

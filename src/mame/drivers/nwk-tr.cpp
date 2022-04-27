@@ -291,8 +291,8 @@ namespace {
 class nwktr_state : public driver_device
 {
 public:
-	nwktr_state(const machine_config &mconfig, device_type type, const char *tag)
-		: driver_device(mconfig, type, tag),
+	nwktr_state(const machine_config &mconfig, device_type type, const char *tag) :
+		driver_device(mconfig, type, tag),
 		m_work_ram(*this, "work_ram"),
 		m_maincpu(*this, "maincpu"),
 		m_audiocpu(*this, "audiocpu"),
@@ -508,6 +508,10 @@ void nwktr_state::machine_start()
 	m_maincpu->ppcdrc_add_fastram(0x00000000, 0x003fffff, false, m_work_ram);
 
 	m_sound_irq_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(nwktr_state::sound_irq), this));
+
+	m_exrgb = false;
+
+	save_item(NAME(m_exrgb));
 }
 
 void nwktr_state::ppc_map(address_map &map)
