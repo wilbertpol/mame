@@ -1212,7 +1212,6 @@ function linkProjects_mame_mess(_target, _subtarget)
 		"akai",
 		"alesis",
 		"altos",
-		"ami",
 		"amirix",
 		"amiga",
 		"ampro",
@@ -1764,11 +1763,6 @@ files {
 	MAME_DIR .. "src/mame/drivers/altos486.cpp",
 	MAME_DIR .. "src/mame/drivers/altos8600.cpp",
 	MAME_DIR .. "src/mame/machine/acs8600_ics.cpp",
-}
-
-createMESSProjects(_target, _subtarget, "ami")
-files {
-	MAME_DIR .. "src/mame/drivers/hh_amis2k.cpp",
 }
 
 createMESSProjects(_target, _subtarget, "amirix")
@@ -3373,6 +3367,7 @@ createMESSProjects(_target, _subtarget, "parker")
 files {
 	MAME_DIR .. "src/mame/drivers/talkingbb.cpp",
 	MAME_DIR .. "src/mame/drivers/talkingfb.cpp",
+	MAME_DIR .. "src/mame/drivers/wildfire.cpp",
 }
 
 createMESSProjects(_target, _subtarget, "pitronic")
