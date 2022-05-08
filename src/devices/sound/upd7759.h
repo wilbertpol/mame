@@ -142,8 +142,6 @@ protected:
 
 	void internal_md_w(int state);
 
-	void internal_md_w(int state);
-
 	devcb_write_line m_drqcallback;
 	emu_timer *m_timer;
 };
