@@ -712,7 +712,6 @@ WRITE_LINE_MEMBER(upd7759_device::md_w)
 		m_md = state;
 		return;
 	}
-
 	synchronize(TID_MD_WRITE, state);
 }
 
