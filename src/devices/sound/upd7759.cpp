@@ -367,6 +367,9 @@ static const int upd775x_state_table[16] = { -1, -1, 0, 0, 1, 2, 2, 3, -1, -1, 0
 
 void upd775x_device::update_adpcm(int data)
 {
+	m_sample += upd775x_step[m_adpcm_state][data];
+	m_adpcm_state += upd775x_state_table[data];
+
 	if (m_adpcm_state < 0)
 		m_adpcm_state = 0;
 	else if (m_adpcm_state > 15)
@@ -736,6 +739,7 @@ void upd7759_device::internal_md_w(int state)
 		}
 	}
 }
+
 
 void upd775x_device::port_w(u8 data)
 {
