@@ -27,7 +27,6 @@ TODO:
   of clickable buttons. This is currently good enough to make most
   games playable. Eventually this should behave like a real touchpad
   so also drawing apps can work.
-<<<<<<< HEAD
 - Cassette, playback is controlled by the computer. Games with cassette
   spin up the cassette for about 2 seconds
   - The tape sometimes seeks back and forth for 5-15 seconds for the right
@@ -46,13 +45,6 @@ TODO:
   FM instrument and printed "piano" on the screen! From this, pressing U/D
   on the pad cycled through the various instruments, and the PL/PR buttons
   lowered and raised the volume."
-=======
-- IRQ enable/disable register
-- Proper hooking up of uPD7759 and DRQ signals in slave mode.
-- Proper hooking up of uPD7759 START signal.
-- Cassette
-- Keyboard (there is probably an mcu inside it)
->>>>>>> b94ded99dbc (checkpoint)
 
 ===========================================================================
 
@@ -132,10 +124,7 @@ New JIS Keyboard Connector Pinout:
 #include "video/v9938.h"
 #include "bus/segaai/segaai_slot.h"
 #include "bus/segaai/segaai_exp.h"
-<<<<<<< HEAD
 #include "imagedev/cassette.h"
-=======
->>>>>>> b94ded99dbc (checkpoint)
 #include "machine/i8255.h"
 #include "machine/i8251.h"
 #include "speaker.h"
@@ -160,10 +149,7 @@ public:
 		, m_sound(*this, "sn76489a")
 		, m_v9938(*this, "v9938")
 		, m_upd7759(*this, "upd7759")
-<<<<<<< HEAD
 		, m_cassette(*this, "cassette")
-=======
->>>>>>> b94ded99dbc (checkpoint)
 		, m_port4(*this, "PORT4")
 		, m_port5(*this, "PORT5")
 		, m_port_tp(*this, "TP.%u", 0)
@@ -174,34 +160,21 @@ public:
 
 	DECLARE_WRITE_LINE_MEMBER(vdp_interrupt);
 	DECLARE_WRITE_LINE_MEMBER(upd7759_drq_w);
-<<<<<<< HEAD
-=======
-	DECLARE_WRITE_LINE_MEMBER(upd7759_busy_w);
->>>>>>> b94ded99dbc (checkpoint)
 	IRQ_CALLBACK_MEMBER(irq_callback);
 	u8 i8255_porta_r();
 	u8 i8255_portb_r();
 	u8 i8255_portc_r();
 	void i8255_portc_w(u8 data);
 	void upd7759_ctrl_w(offs_t offset, u8 data);
-<<<<<<< HEAD
 	void upd7759_data_w(offs_t offset, u8 data);
-=======
->>>>>>> b94ded99dbc (checkpoint)
 	void port1c_w(offs_t offset, u8 data);
 	void port1d_w(offs_t offset, u8 data);
 	void port1e_w(offs_t offset, u8 data);
 	u8 port1e_r(offs_t offset);
 
-<<<<<<< HEAD
 	u8 irq_enable_r(offs_t offset);
 	void irq_enable_w(offs_t offset, u8 data);
 	void irq_select_w(offs_t offset, u8 data);
-=======
-	// unknown device writes
-	u8 unk16_r(offs_t offset);
-	void unk17_w(offs_t offset, u8 data);
->>>>>>> b94ded99dbc (checkpoint)
 
 protected:
 	virtual void machine_start();
@@ -212,7 +185,6 @@ private:
 	static constexpr u8 VECTOR_I8251_RECEIVE = 0xfa;
 	static constexpr u8 VECTOR_UPD7759 = 0xfb;
 
-<<<<<<< HEAD
 	static constexpr u8 IRQ_V9938 = 0x01;
 	static constexpr u8 IRQ_UPD7759 = 0x08;
 
@@ -225,8 +197,6 @@ private:
 	static constexpr u8 UPD7759_MODE = 0x01;
 	static constexpr u8 UPD7759_BANK = 0x02;
 
-=======
->>>>>>> b94ded99dbc (checkpoint)
 	void mem_map(address_map &map);
 	void io_map(address_map &map);
 	void update_irq_state();
@@ -237,10 +207,7 @@ private:
 	required_device<sn76489a_device> m_sound;
 	required_device<v9938_device> m_v9938;
 	required_device<upd7759_device> m_upd7759;
-<<<<<<< HEAD
 	required_device<cassette_image_device> m_cassette;
-=======
->>>>>>> b94ded99dbc (checkpoint)
 	required_ioport m_port4;
 	required_ioport m_port5;
 	required_ioport_array<TOUCHPAD_ROWS> m_port_tp;
@@ -250,24 +217,12 @@ private:
 	u8 m_port_1c;
 	u8 m_port_1d;
 	u8 m_port_1e;
-<<<<<<< HEAD
 	int m_prev_v9938_irq;
 	int m_prev_upd7759_irq;
 	u8 m_touchpad_x;
 	u8 m_touchpad_y;
 	u8 m_irq_active;
 	u8 m_irq_enabled;
-=======
-	int m_v9938_irq;
-	int m_0xfb_irq;
-	int m_prev_v9938_irq;
-	int m_prev_0xfb_irq;
-	bool m_v9938_irq_triggered;
-	bool m_0xfb_irq_triggered;
-	u8 m_touchpad_x;
-	u8 m_touchpad_y;
-	u8 m_unk17[8];
->>>>>>> b94ded99dbc (checkpoint)
 	u32 m_vector;
 };
 
@@ -329,56 +284,20 @@ ECF0F: E6 17                out     17h,al
 ECF11: B0 FE                mov     al,0FEh		; 11111110
 ECF13: E6 0F                out     0Fh,al
 
-<<<<<<< HEAD
-=======
-ECF35: B0 08                mov     al,8h
-ECF37: E6 17                out     17h,al
-
-ED673: B0 07                mov     al,7h
-ED675: E6 17                out     17h,al
-ED677: B0 01                mov     al,1h
-+ out     0Bh,al?
-
-ED683: B0 06                mov     al,6h
-ED685: E6 17                out     17h,al
-ED687: B0 00                mov     al,0h
-+ out     0Bh,al?
-
-EDBC4: B0 0A                mov     al,0Ah
-EDBC6: E6 17                out     17h,al
-
-EDBD1: 24 01                and     al,1h
-EDBD3: 04 0A                add     al,0Ah
-EDBD5: E6 17                out     17h,al
-
-EE01E: B0 08                mov     al,8h           ; brk #31, iy == 01
-EE020: 83 FF 01             cmp     iy,1h
-EE023: 74 02                be      0EE027h
-EE025: B0 09                mov     al,9h           ; brk #31, iy == 00
-EE027: E6 17                out     17h,al
-
->>>>>>> b94ded99dbc (checkpoint)
 */
 
 void segaai_state::io_map(address_map &map)
 {
 	map(0x00, 0x03).rw(m_v9938, FUNC(v9938_device::read), FUNC(v9938_device::write));
 	map(0x04, 0x07).rw("tmp8255", FUNC(i8255_device::read), FUNC(i8255_device::write));
-<<<<<<< HEAD
 	// port 7, bit 7, engages tape?
-=======
->>>>>>> b94ded99dbc (checkpoint)
 
 	map(0x08, 0x08).rw("i8251", FUNC(i8251_device::data_r), FUNC(i8251_device::data_w));
 	map(0x09, 0x09).rw("i8251", FUNC(i8251_device::status_r), FUNC(i8251_device::control_w));
 
 	// 0x0a (w) - ??
 	// 0a: 00 written during boot
-<<<<<<< HEAD
 	map(0x0b, 0x0b).w(FUNC(segaai_state::upd7759_ctrl_w));
-=======
-	map(0x0b, 0x0b).w(FUNC(segaai_state::upd7759_ctrl_w));    // 315-5201
->>>>>>> b94ded99dbc (checkpoint)
 
 	map(0x0c, 0x0c).w(m_sound, FUNC(sn76489a_device::write));
 
@@ -392,34 +311,12 @@ void segaai_state::io_map(address_map &map)
 	// 0e <- 08
 	// 0f <- fe
 
-<<<<<<< HEAD
 	map(0x14, 0x14).mirror(0x01).w(FUNC(segaai_state::upd7759_data_w));
 
 	// IRQ Enable
 	map(0x16, 0x16).rw(FUNC(segaai_state::irq_enable_r), FUNC(segaai_state::irq_enable_w));
 	// IRQ Enable (per IRQ source selection) Why 2 registers for IRQ enable?
 	map(0x17, 0x17).w(FUNC(segaai_state::irq_select_w));
-=======
-	map(0x14, 0x14).mirror(0x01).w(m_upd7759, FUNC(upd7759_device::port_w));
-
-	// 0x16 (w) - ??
-	// during boot 81h is written
-	// @ED5B7, 2 more writes (in al, 16h + out 16, (al & f0 | 8), and out 16h, al & f7)
-	// in BRK 31h either (in 16h & 10h) or out 17h, (8h or 9h) is performed
-	map(0x16, 0x16).r(FUNC(segaai_state::unk16_r));
-	// 0x17 (w) - ??
-	map(0x17, 0x17).w(FUNC(segaai_state::unk17_w));
-	// values written during boot:
-	// 16 <- 81
-	// 17 <- 0a
-	// 17 <- 07
-	// loops checking upd7759 busy flag
-	// 0b <- 01
-	// 17 <- 06
-	// loops checking upd7759 busy flag
-	// 0b <- 00
-	// a lot of 17 <- 0a
->>>>>>> b94ded99dbc (checkpoint)
 
 	// Touchpad
 	map(0x1c, 0x1c).w(FUNC(segaai_state::port1c_w));
@@ -498,37 +395,11 @@ static INPUT_PORTS_START(ai_kbd)
 INPUT_PORTS_END
 
 
-<<<<<<< HEAD
-=======
-// Based on edge triggers, level triggers are created(?)
->>>>>>> b94ded99dbc (checkpoint)
 void segaai_state::update_irq_state()
 {
 	int state = CLEAR_LINE;
 
-<<<<<<< HEAD
 	if (m_irq_active & m_irq_enabled)
-=======
-	if (m_v9938_irq != CLEAR_LINE)
-	{
-		if (m_prev_v9938_irq == CLEAR_LINE)
-		{
-			m_v9938_irq_triggered = true;
-		}
-	}
-	m_prev_v9938_irq = m_v9938_irq;
-
-	if (m_0xfb_irq != CLEAR_LINE)
-	{
-		if (m_prev_0xfb_irq == CLEAR_LINE)
-		{
-			m_0xfb_irq_triggered = true;
-		}
-	}
-	m_prev_0xfb_irq = m_0xfb_irq;
-
-	if (m_v9938_irq_triggered || m_0xfb_irq_triggered)
->>>>>>> b94ded99dbc (checkpoint)
 	{
 		state = ASSERT_LINE;
 	}
@@ -537,7 +408,6 @@ void segaai_state::update_irq_state()
 }
 
 
-<<<<<<< HEAD
 // Based on edge triggers level triggers are created
 WRITE_LINE_MEMBER(segaai_state::vdp_interrupt)
 {
@@ -550,16 +420,10 @@ WRITE_LINE_MEMBER(segaai_state::vdp_interrupt)
 	}
 	m_prev_v9938_irq = state;
 
-=======
-WRITE_LINE_MEMBER(segaai_state::vdp_interrupt)
-{
-	m_v9938_irq = state;
->>>>>>> b94ded99dbc (checkpoint)
 	update_irq_state();
 }
 
 
-<<<<<<< HEAD
 // Based on edge triggers level triggers are created
 WRITE_LINE_MEMBER(segaai_state::upd7759_drq_w)
 {
@@ -573,16 +437,10 @@ WRITE_LINE_MEMBER(segaai_state::upd7759_drq_w)
 	}
 	m_prev_upd7759_irq = upd7759_irq;
 
-=======
-WRITE_LINE_MEMBER(segaai_state::upd7759_drq_w)
-{
-	m_0xfb_irq = state ? CLEAR_LINE : ASSERT_LINE;
->>>>>>> b94ded99dbc (checkpoint)
 	update_irq_state();
 }
 
 
-<<<<<<< HEAD
 IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
 {
 	if (m_irq_active & m_irq_enabled & IRQ_V9938)
@@ -606,37 +464,6 @@ IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
 
 	update_irq_state();
 	return m_vector;
-=======
-WRITE_LINE_MEMBER(segaai_state::upd7759_busy_w)
-{
-	if (!(m_upd7759_ctrl & 0x01))
-	{
-//		m_0xfb_irq = state ? CLEAR_LINE : ASSERT_LINE;
-//		update_irq_state();
-	}
-}
-
-
-IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
-{
-	int vector = 0;	// default??
-
-	if (m_v9938_irq_triggered)
-	{
-		vector = VECTOR_V9938;
-		m_v9938_irq_triggered = false;
-	}
-	else if (m_0xfb_irq_triggered)
-	{
-		vector = VECTOR_UPD7759;
-		m_0xfb_irq_triggered = false;
-	}
-
-	m_vector = vector;
-
-	update_irq_state();
-	return vector;
->>>>>>> b94ded99dbc (checkpoint)
 }
 
 
@@ -645,11 +472,7 @@ Mainboard 8255 port A
 
  76543210
  +-------- Microphone sensor (1 = sound enabled)
-<<<<<<< HEAD
   +------- -BUSY output from the uPD7759
-=======
-  +------- Unknown (usually 1) // -BUSY output from the uPD7759?
->>>>>>> b94ded99dbc (checkpoint)
    +------ PR trigger (active low)
     +----- PL trigger (active low)
      +---- Pad right (active low)
@@ -659,11 +482,7 @@ Mainboard 8255 port A
 */
 u8 segaai_state::i8255_porta_r()
 {
-<<<<<<< HEAD
 	u8 data = (m_upd7759->busy_r() ? UPD7759_BUSY : 0) | (m_port4->read() & ~UPD7759_BUSY);
-=======
-	u8 data = (m_upd7759->busy_r() ? 0x40 : 0) | (m_port4->read() & ~0x40);
->>>>>>> b94ded99dbc (checkpoint)
 
 	return data;
 }
@@ -673,11 +492,7 @@ u8 segaai_state::i8255_porta_r()
 Mainboard 8255 port B
 
  76543210
-<<<<<<< HEAD
  +-------- Tape input (right channel?), unknown if input is signal level or bit
-=======
- +-------- CN9 Pin 8 (1 - unit is powered??)
->>>>>>> b94ded99dbc (checkpoint)
   +------- Tape head engaged
    +------ Tape insertion sensor (0 - tape is inserted, 1 - no tape inserted)
     +----- Tape write enable sensor
@@ -694,7 +509,6 @@ u8 segaai_state::i8255_portb_r()
 	{
 		if (!get_touchpad_pressed())
 		{
-<<<<<<< HEAD
 			m_i8255_portb |= TOUCH_PAD_PRESSED;
 		}
 
@@ -712,33 +526,16 @@ u8 segaai_state::i8255_portb_r()
 	else
 	{
 		m_i8255_portb |= 0x20;
-=======
-			m_i8255_portb |= 0x02;
-		}
-
-		m_i8255_portb |= 0x04;
-	}
-	else
-	{
-		m_i8255_portb |= 0x02;
-		// Bit 2 reset to indicate that touchpad data is available
->>>>>>> b94ded99dbc (checkpoint)
 	}
 
 	// when checking whether the tape is running Popoland wants to see bit7 set and bit5 reset
 	// toggling this stops eigogam2 from booting normally into a game.
-<<<<<<< HEAD
 	// For tape reading eigogam2 routines at A11EA and A120C
 	// There is a whistle tone on the cassette before normal speech starts, the code there likely
 	// checks for this whistle tone.
 	//m_i8255_portb ^= 0x80;
 
 	return m_i8255_portb;
-=======
-//	m_i8255_portb ^= 0x80;
-
-	return (m_i8255_portb & 0xdf)/* | 0x80*/;
->>>>>>> b94ded99dbc (checkpoint)
 }
 
 
@@ -769,11 +566,7 @@ bool segaai_state::get_touchpad_pressed()
 				port >>= 1;
 			}
 
-<<<<<<< HEAD
 			if (bit >= 0 && bit < std::size(tp_x))
-=======
-			if (bit >= 0 && bit < ARRAY_LENGTH(tp_x))
->>>>>>> b94ded99dbc (checkpoint)
 			{
 				m_touchpad_x = tp_x[bit];
 				m_touchpad_y = tp_y[row];
@@ -807,7 +600,6 @@ u8 segaai_state::i8255_portc_r()
 }
 
 
-<<<<<<< HEAD
 /*
  pin 10-13 - PC0-PC3 -> RA41
  PC0-PC3 continue on underside of pcb
@@ -850,26 +642,17 @@ void segaai_state::upd7759_data_w(offs_t offset, u8 data)
 	if (!(m_upd7759_ctrl & UPD7759_MODE)) {
 		m_upd7759->start_w(CLEAR_LINE);
 	}
-=======
-void segaai_state::i8255_portc_w(u8 data)
-{
-	LOG("i8255 port c write: %02x\n", data);
->>>>>>> b94ded99dbc (checkpoint)
 }
 
 
 void segaai_state::upd7759_ctrl_w(offs_t offset, u8 data)
 {
 	LOG("I/O Port $0b write: $%02x\n", data);
-<<<<<<< HEAD
 	osd_printf_info("I/O Port $0b write: $%02x\n", data);
-=======
->>>>>>> b94ded99dbc (checkpoint)
 
 	m_upd7759_ctrl = data;
 
 	// bit0 is connected to /md line of the uPD7759
-<<<<<<< HEAD
 	m_upd7759->md_w((m_upd7759_ctrl & UPD7759_MODE) ? 0 : 1);
 
 	// bit1 selects which ROM should be used?
@@ -918,107 +701,6 @@ void segaai_state::irq_select_w(offs_t offset, u8 data)
 		m_irq_active &= m_irq_enabled;
 	}
 	update_irq_state();
-=======
-	m_upd7759->md_w((m_upd7759_ctrl & 0x01) ? 0 : 1);
-
-	// bit1 selects which ROM should be used?
-//	m_upd7759->set_bank_base((m_upd7759_ctrl & 2) ? 0x00000 : 0x20000);
-	// TODO check if this is correct
-	m_upd7759->set_rom_bank((m_upd7759_ctrl & 2) >> 1);
-}
-
-
-u8 segaai_state::unk16_r(offs_t offset)
-{
-	u8 data = (m_unk17[7] ? 0x80 : 0)
-	           | (m_unk17[6] ? 0x40 : 0)
-	           | (m_unk17[5] ? 0x20 : 0)
-	           | (m_unk17[4] ? 0x10 : 0)
-	           | (m_unk17[3] ? 0x08 : 0)
-	           | (m_unk17[2] ? 0x04 : 0)
-	           | (m_unk17[1] ? 0x02 : 0)
-	           | (m_unk17[0] ? 0x01 : 0)
-	;
-
-	return data;
-}
-
-/*
-
-Port 16 and 17 are closely related
-
-Some config can be written through port 17, and the current combined
-settings can be read through port 16. From the bios code no such relation
-is directly clear though.
-
-See these snippets from eigogam2:
-A9EC5: FA                        di
-A9EC6: E4 16                     in      al,16h
-A9EC8: A2 82 12                  mov     [1282h],al
-A9ECB: B0 00                     mov     al,0h
-A9ECD: E6 17                     out     17h,al
-A9ECF: B0 02                     mov     al,2h
-A9ED1: E6 17                     out     17h,al
-A9ED3: B0 04                     mov     al,4h
-A9ED5: E6 17                     out     17h,al
-A9ED7: B0 07                     mov     al,7h
-A9ED9: E6 17                     out     17h,al
-A9EDB: B0 0D                     mov     al,0Dh
-A9EDD: E6 17                     out     17h,al
-A9EDF: B0 0E                     mov     al,0Eh
-A9EE1: E6 17                     out     17h,al
-A9EE3: FB                        ei
-...
-A9F05: B0 06                     mov     al,6h
-A9F07: E6 17                     out     17h,al
-A9F09: B0 0D                     mov     al,0Dh
-A9F0B: E6 17                     out     17h,al
-A9F0D: A0 82 12                  mov     al,[1282h]
-A9F10: D0 C0                     rol     al,1
-A9F12: 24 01                     and     al,1h
-A9F14: 04 0E                     add     al,0Eh
-A9F16: E6 17                     out     17h,al
-A9F18: A0 82 12                  mov     al,[1282h]
-A9F1B: D0 C0                     rol     al,1
-A9F1D: D0 C0                     rol     al,1
-A9F1F: 24 01                     and     al,1h
-A9F21: 04 0C                     add     al,0Ch
-A9F23: E6 17                     out     17h,al
-A9F25: 8A 26 82 12               mov     ah,[1282h]
-A9F29: 32 DB                     xor     bl,bl
-A9F2B: B9 03 00                  mov     cw,3h
-A9F2E: 8A C4                     mov     al,ah
-A9F30: 24 01                     and     al,1h
-A9F32: 02 C3                     add     al,bl
-A9F34: E6 17                     out     17h,al
-A9F36: D0 EC                     shr     ah,1
-A9F38: 80 C3 02                  add     bl,2h
-A9F3B: E2 F1                     dbnz    0A9F2Eh
-*/
-// In gulliver 0000 1010 is written shortly after writing a byte to I/O port 14
-void segaai_state::unk17_w(offs_t offset, u8 data)
-{
-	LOG("I/O Port $17 write: $%02x\n", data);
-
-	int pin = (data >> 1) & 0x07;
-	u8 state = data & 1;
-	u8 old_state = m_unk17[pin];
-
-	m_unk17[pin] = state;
-
-	if (old_state != state)
-	{
-		switch (pin)
-		{
-			case 3:
-				// TODO: Unknown
-				break;
-			case 5:
-				// TODO: Unknown, seems to be related to tape
-				break;
-		}
-	}
->>>>>>> b94ded99dbc (checkpoint)
 }
 
 
@@ -1060,7 +742,6 @@ void segaai_state::machine_start()
 	m_port_1c = 0;
 	m_port_1d = 0;
 	m_port_1e = 0;
-<<<<<<< HEAD
 	m_prev_v9938_irq = CLEAR_LINE;
 	m_prev_upd7759_irq = CLEAR_LINE;
 	m_touchpad_x = 0;
@@ -1081,20 +762,6 @@ void segaai_state::machine_start()
 	save_item(NAME(m_irq_active));
 	save_item(NAME(m_irq_enabled));
 	save_item(NAME(m_vector));
-=======
-	m_v9938_irq = CLEAR_LINE;
-	m_0xfb_irq = CLEAR_LINE;
-	m_prev_v9938_irq = CLEAR_LINE;
-	m_prev_0xfb_irq = CLEAR_LINE;
-	m_v9938_irq_triggered = false;
-	m_0xfb_irq_triggered = false;
-	m_touchpad_x = 0;
-	m_touchpad_y = 0;
-	for (int i = 0; i < 8; i++)
-	{
-		m_unk17[i] = 0xff;
-	}
->>>>>>> b94ded99dbc (checkpoint)
 }
 
 
@@ -1130,11 +797,6 @@ void segaai_state::segaai(machine_config &config)
 	UPD7759(config, m_upd7759);
 	m_upd7759->add_route(ALL_OUTPUTS, "mono", 1.00);
 	m_upd7759->drq().set(FUNC(segaai_state::upd7759_drq_w));
-<<<<<<< HEAD
-=======
-	// TODO after upd7759 updates
-//	m_upd7759->busy().set(FUNC(segaai_state::upd7759_busy_w));
->>>>>>> b94ded99dbc (checkpoint)
 
 	// Card slot
 	SEGAAI_CARD_SLOT(config, "cardslot", segaai_card, nullptr);
@@ -1143,14 +805,11 @@ void segaai_state::segaai(machine_config &config)
 	// Expansion slot
 	SEGAAI_EXP_SLOT(config, "exp", segaai_exp, "soundbox");
 
-<<<<<<< HEAD
 	// Built-in cassette
 	CASSETTE(config, m_cassette);
 	m_cassette->set_default_state(CASSETTE_STOPPED | CASSETTE_SPEAKER_ENABLED | CASSETTE_MOTOR_ENABLED);
 //	m_cassette->add_route(ALL_OUTPUTS, "mono", 0.05);
 
-=======
->>>>>>> b94ded99dbc (checkpoint)
 	config.set_default_layout(layout_segaai);
 }
 

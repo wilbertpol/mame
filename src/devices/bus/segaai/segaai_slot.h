@@ -59,13 +59,8 @@ public:
 	virtual image_init_result call_load() override ;
 	virtual void call_unload() override {}
 	virtual const software_list_loader &get_software_list_loader() const override { return rom_software_list_loader::instance(); }
-<<<<<<< HEAD
 	virtual const char *image_type_name() const noexcept override { return "card"; }
 	virtual const char *image_brief_type_name() const noexcept override { return "card"; }
-=======
-	virtual const char *custom_instance_name() const noexcept override { return "card"; }
-	virtual const char *custom_brief_instance_name() const noexcept override { return "card"; }
->>>>>>> b94ded99dbc (checkpoint)
 
 	int get_type() { return m_type; }
 	static int get_cart_type(const u8 *ROM, u32 len);
@@ -74,19 +69,10 @@ public:
 	void set_intf(const char * interface) { m_interface = interface; }
 	void set_ext(const char * extensions) { m_extensions = extensions; }
 
-<<<<<<< HEAD
 	virtual bool is_readable()  const noexcept override { return 1; }
 	virtual bool is_writeable() const noexcept override { return 0; }
 	virtual bool is_creatable() const noexcept override { return 0; }
 	virtual bool is_reset_on_load() const noexcept override { return true; }
-=======
-	virtual iodevice_t image_type() const noexcept override { return IO_CARTSLOT; }
-	virtual bool is_readable()  const noexcept override { return 1; }
-	virtual bool is_writeable() const noexcept override { return 0; }
-	virtual bool is_creatable() const noexcept override { return 0; }
-	virtual bool must_be_loaded() const noexcept override { return m_must_be_loaded; }
-	virtual bool is_reset_on_load() const noexcept override { return 1; }
->>>>>>> b94ded99dbc (checkpoint)
 	virtual const char *image_interface() const noexcept override { return m_interface; }
 	virtual const char *file_extensions() const noexcept override { return m_extensions; }
 

@@ -48,11 +48,7 @@ void segaai_rom_128_device::write_cart(offs_t offset, u8 data)
 segaai_rom_256_device::segaai_rom_256_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock)
 	: segaai_rom_128_device(mconfig, SEGAAI_ROM_256, tag, owner, clock)
 {
-<<<<<<< HEAD
 	for (int i = 0; i < std::size(m_bank_reg); i++)
-=======
-	for (int i = 0; i < ARRAY_LENGTH(m_bank_reg); i++)
->>>>>>> b94ded99dbc (checkpoint)
 	{
 		m_bank_reg[i] = i;
 	}
@@ -67,11 +63,7 @@ void segaai_rom_256_device::device_start()
 
 void segaai_rom_256_device::device_reset()
 {
-<<<<<<< HEAD
 	for (int i = 0; i < std::size(m_bank_reg); i++)
-=======
-	for (int i = 0; i < ARRAY_LENGTH(m_bank_reg); i++)
->>>>>>> b94ded99dbc (checkpoint)
 	{
 		m_bank_reg[i] = i;
 	}
@@ -97,10 +89,7 @@ u8 segaai_rom_256_device::read_cart(offs_t offset)
 
 	}
 
-<<<<<<< HEAD
 	// Should actually return open bus
-=======
->>>>>>> b94ded99dbc (checkpoint)
 	return 0xff;
 }
 
@@ -110,17 +99,12 @@ void segaai_rom_256_device::write_cart(offs_t offset, u8 data)
 	switch (offset & 0xffff)
 	{
 		case 0xFFFC:
-<<<<<<< HEAD
 			// Unknown, upon start $00 is written and sometimes also $80 after that
 			m_bank_reg[0] = data;
 			break;
 		case 0xFFFD:
 			// Unknown, upon start $00 is written
 			m_bank_reg[1] = data;
-=======
-			break;
-		case 0xFFFD:
->>>>>>> b94ded99dbc (checkpoint)
 			break;
 		case 0xFFFE:
 			m_bank_reg[2] = data & 0x0f;
