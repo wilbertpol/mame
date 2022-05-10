@@ -627,28 +627,20 @@ void segaai_state::i8255_portc_w(u8 data)
 	// Writes to bits 6,5,4, unknown what they mean
 	// Bit 0 written by cosmictr
 	LOG("i8255 port c write: %02x\n", data);
-	osd_printf_info("i8255 port c write: %02x\n", data);
 }
 
 
 void segaai_state::upd7759_data_w(offs_t offset, u8 data)
 {
-	// Looking at the code the only way the start signal can be triggered is if it
-	// is tied to the RD signal when the uPD7759 is in standalone mode.
-	if (!(m_upd7759_ctrl & UPD7759_MODE)) {
-		m_upd7759->start_w(ASSERT_LINE);
-	}
+	m_upd7759->start_w(ASSERT_LINE);
 	m_upd7759->port_w(data);
-	if (!(m_upd7759_ctrl & UPD7759_MODE)) {
-		m_upd7759->start_w(CLEAR_LINE);
-	}
+	m_upd7759->start_w(CLEAR_LINE);
 }
 
 
 void segaai_state::upd7759_ctrl_w(offs_t offset, u8 data)
 {
 	LOG("I/O Port $0b write: $%02x\n", data);
-	osd_printf_info("I/O Port $0b write: $%02x\n", data);
 
 	m_upd7759_ctrl = data;
 
