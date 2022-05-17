@@ -304,7 +304,7 @@ namespace {
  *************************************/
 
 #define LOG_TIMEKEEPER      (0)
-#define LOG_SIO             (1)
+#define LOG_SIO             (0)
 
 /*************************************
  *
