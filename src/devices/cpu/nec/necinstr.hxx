@@ -54,6 +54,7 @@ OP( 0x0f, i_pre_nec  ) { uint32_t ModRM, tmp, tmp2;
 				Wreg(IY) += 2;
 				PutMemW(DS1, Wreg(IY), (GetMemW(DS1, Wreg(IY)) & ~((1 << (tmp2 - (16 - tmp))) - 1)) | (Wreg(AW) >> (16 - tmp)) & ((1 << (tmp2 - (16 - tmp))) - 1));
 			}
+			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
 			// When and how many extra cycles are taken is not documented:
 			// V20: 75-103 cycles
 			// V30: 75-103 cycles, odd addresses
@@ -65,7 +66,6 @@ OP( 0x0f, i_pre_nec  ) { uint32_t ModRM, tmp, tmp2;
 			} else {
 				CLKS(103, 87, 69);
 			}
-			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
 			break;
 		case 0x3b : // EXT reg,imm4
 			ModRM = fetch();
@@ -76,6 +76,8 @@ OP( 0x0f, i_pre_nec  ) { uint32_t ModRM, tmp, tmp2;
 				Wreg(IX) += 2;
 				Wreg(AW) |= GetMemW(DS0, Wreg(IX)) << (16 - tmp);
 			}
+			Wreg(AW) &= ((1 << tmp2) - 1);
+			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
 			// When and how many extra cycles are taken is not documented:
 			// V20: 25-52 cycles
 			// V30: 25-52 cycles, odd addresses
@@ -87,8 +89,6 @@ OP( 0x0f, i_pre_nec  ) { uint32_t ModRM, tmp, tmp2;
 			} else {
 				CLKS(52, 44, 62);
 			}
-			Wreg(AW) &= ((1 << tmp2) - 1);
-			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
 			break;
 		case 0xe0 : BRKXA(true); CLK(12); break;
 		case 0xf0 : BRKXA(false); CLK(12); break;
