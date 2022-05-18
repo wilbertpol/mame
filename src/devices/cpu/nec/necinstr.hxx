@@ -43,49 +43,94 @@ OP( 0x0f, i_pre_nec  ) { uint32_t ModRM, tmp, tmp2;
 		case 0x26 : CMP4S; CLKS(7,7,2); break;
 		case 0x28 : ModRM = fetch(); tmp = GetRMByte(ModRM); tmp <<= 4; tmp |= Breg(AL) & 0xf; Breg(AL) = (Breg(AL) & 0xf0) | ((tmp>>8)&0xf); tmp &= 0xff; PutbackRMByte(ModRM,tmp); CLKM(13,13,9,28,28,15); break;
 		case 0x2a : ModRM = fetch(); tmp = GetRMByte(ModRM); tmp2 = (Breg(AL) & 0xf)<<4; Breg(AL) = (Breg(AL) & 0xf0) | (tmp&0xf); tmp = tmp2 | (tmp>>4);   PutbackRMByte(ModRM,tmp); CLKM(17,17,13,32,32,19); break;
-		case 0x31 : ModRM = fetch(); ModRM=0; fatalerror("%06x: Unimplemented bitfield INS\n",PC()); break;
-		case 0x33 : ModRM = fetch(); ModRM=0; fatalerror("%06x: Unimplemented bitfield EXT\n",PC()); break;
-		case 0x39 : // INS reg,imm4
+		case 0x31 : // INS reg1,reg2
+			logerror("%06x: Untested bitfield INS reg1,reg2\n",PC());
 			ModRM = fetch();
 			tmp = GetRMByte(ModRM) & 0x0f;
-			tmp2 = fetch() + 1;
+			tmp2 = (RegByte(ModRM) & 0x0f) + 1;
 			PutMemW(DS1, Wreg(IY), (GetMemW(DS1, Wreg(IY)) & ~(((1 << tmp2) - 1) << tmp)) | ((Wreg(AW) & ((1 << tmp2) - 1)) << tmp));
 			if (tmp + tmp2 > 15) {
 				Wreg(IY) += 2;
 				PutMemW(DS1, Wreg(IY), (GetMemW(DS1, Wreg(IY)) & ~((1 << (tmp2 - (16 - tmp))) - 1)) | (Wreg(AW) >> (16 - tmp)) & ((1 << (tmp2 - (16 - tmp))) - 1));
-				if (Wreg(IY) & 1) {
-					CLKS(133, 133, 77);
-				} else {
-					CLKS(133, 117, 69);
-				}
+			}
+			// When and how many extra cycles are taken is not documented:
+			// V20: 35-113 cycles
+			// V30: 35-113 cycles, odd addresses
+			// V30: 31-117 cycles, even addresses
+			// V33: 39-77 cycles, odd addresses
+			// V33: 37-61 cycles, even addresses
+			if (Wreg(IY) & 1) {
+				CLKS(113, 113, 77);
 			} else {
-				if (Wreg(IY) & 1) {
-					CLKS(35, 35, 39);
-				} else {
-					CLKS(35, 31, 37);
-				}
+				CLKS(113, 117, 61);
+			}
+			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
+			break;
+		case 0x33 : // EXT reg1,reg2
+			logerror("%06x: Untested bitfield EXT reg1,reg2\n",PC());
+			ModRM = fetch();
+			tmp = GetRMByte(ModRM) & 0x0f;
+			tmp2 = (RegByte(ModRM) & 0x0f) + 1;
+			Wreg(AW) = GetMemW(DS0, Wreg(IX)) >> tmp;
+			if (tmp + tmp2 > 15) {
+				Wreg(IX) += 2;
+				Wreg(AW) |= GetMemW(DS0, Wreg(IX)) << (16 - tmp);
+			}
+			// When and how many extra cycles are taken is not documented:
+			// V20: 34-59 cycles
+			// V30: 34-59 cycles, odd addresses
+			// V30: 26-55 cycles, even addresses
+			// V33: 33-63 cycles, odd addresses
+			// V33: 29-61 cycles, even addresses
+			if (Wreg(IX) & 1) {
+				CLKS(59, 59, 63);
+			} else {
+				CLKS(59, 55, 62);
+			}
+			Wreg(AW) &= ((1 << tmp2) - 1);
+			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
+			break;
+		case 0x39 : // INS reg,imm4
+			ModRM = fetch();
+			tmp = GetRMByte(ModRM) & 0x0f;
+			tmp2 = (fetch() & 0x0f) + 1;
+			PutMemW(DS1, Wreg(IY), (GetMemW(DS1, Wreg(IY)) & ~(((1 << tmp2) - 1) << tmp)) | ((Wreg(AW) & ((1 << tmp2) - 1)) << tmp));
+			if (tmp + tmp2 > 15) {
+				Wreg(IY) += 2;
+				PutMemW(DS1, Wreg(IY), (GetMemW(DS1, Wreg(IY)) & ~((1 << (tmp2 - (16 - tmp))) - 1)) | (Wreg(AW) >> (16 - tmp)) & ((1 << (tmp2 - (16 - tmp))) - 1));
+			}
+			// When and how many extra cycles are taken is not documented:
+			// V20: 75-103 cycles
+			// V30: 75-103 cycles, odd addresses
+			// V30: 67-87 cycles, even addresses
+			// V33: 39-77 cycles, odd addresses
+			// V33: 37-69 cycles, even addresses
+			if (Wreg(IY) & 1) {
+				CLKS(103, 103, 77);
+			} else {
+				CLKS(103, 87, 69);
 			}
 			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
 			break;
 		case 0x3b : // EXT reg,imm4
 			ModRM = fetch();
 			tmp = GetRMByte(ModRM) & 0x0f;
-			tmp2 = fetch() + 1;
+			tmp2 = (fetch() & 0x0f) + 1;
 			Wreg(AW) = GetMemW(DS0, Wreg(IX)) >> tmp;
 			if (tmp + tmp2 > 15) {
 				Wreg(IX) += 2;
 				Wreg(AW) |= GetMemW(DS0, Wreg(IX)) << (16 - tmp);
-				if (Wreg(IX) & 1) {
-					CLKS(59, 59, 63);
-				} else {
-					CLKS(59, 55, 61);
-				}
+			}
+			// When and how many extra cycles are taken is not documented:
+			// V20: 25-52 cycles
+			// V30: 25-52 cycles, odd addresses
+			// V30: 21-44 cycles, even addresses
+			// V33: 33-63 cycles, odd addresses
+			// V33: 29-61 cycles, even addresses
+			if (Wreg(IX) & 1) {
+				CLKS(52, 52, 63);
 			} else {
-				if (Wreg(IX) & 1) {
-					CLKS(34, 34, 33);
-				} else {
-					CLKS(34, 27, 29);
-				}
+				CLKS(52, 44, 62);
 			}
 			Wreg(AW) &= ((1 << tmp2) - 1);
 			PutRMByte(ModRM, (tmp + tmp2) & 0x0f);
@@ -93,7 +138,7 @@ OP( 0x0f, i_pre_nec  ) { uint32_t ModRM, tmp, tmp2;
 		case 0xe0 : BRKXA(true); CLK(12); break;
 		case 0xf0 : BRKXA(false); CLK(12); break;
 		case 0xff : BRKEM; CLK(50); break;
-		default:    fatalerror("%06x: Unknown V20 instruction\n",PC()); break;
+		default:    logerror("%06x: Unknown V20 instruction\n",PC()); break;
 	}
 }
 
