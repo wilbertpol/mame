@@ -150,8 +150,8 @@ protected:
 		int stop_bit = 0;
 		int tape_running = 0;
 		uint8_t tape_byte = 0;
-		double last_tap_val = 0.0d;
-		int tal_val_length = 0;
+		double last_tap_val = 0.0;
+		int tap_val_length = 0;
 		int len0 = 0;
 		int len1 = 0;
 		int len2 = 0;

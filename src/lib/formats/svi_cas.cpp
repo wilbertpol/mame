@@ -24,13 +24,10 @@ static const uint8_t CasHeader[17] =
 ********************************************************************/
 static void svi_cas_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t> &bytes)
 {
-	int cas_pos, samples_pos, n, i;
-
-	cas_pos = 17;
-	samples_pos = 0;
+	int cas_pos = 17;
 
 	/* write CAS_INIT_SAMPLES of silence */
-	n = CAS_INIT_SAMPLES; while (n--) samples.push_back(0);
+	int n = CAS_INIT_SAMPLES; while (n--) samples.push_back(0);
 
 	while (cas_pos < bytes.size())
 	{
@@ -51,7 +48,7 @@ static void svi_cas_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t
 		n = 21; while (n--) samples.push_back(SMPHI);
 		n = 19; while (n--) samples.push_back(SMPLO);
 
-		for (i=0;i<7;i++)
+		for (int i = 0; i < 7; i++)
 		{
 			/* write a "1" */
 			n = 9; while (n--) samples.push_back(SMPHI);
@@ -63,7 +60,7 @@ static void svi_cas_fill_wave(std::vector<int16_t> &samples, std::vector<uint8_t
 			n = 21; while (n--) samples.push_back(SMPHI);
 			n = 19; while (n--) samples.push_back(SMPLO);
 
-			for (i = 0; i < 8; i++)
+			for (int i = 0; i < 8; i++)
 			{
 				int bit = (bytes[cas_pos] & (0x80 >> i));
 
