@@ -77,6 +77,7 @@
 ****************************************************************************
 
 Sega System 16B Hardware Overview
+Hardware info by Guru
 ---------------------------------
 
 The games on this system include...
@@ -170,7 +171,7 @@ Notes:
       CN1/2/3/4- Connectors to join ROM board to main board
       MB3771   - Fujitsu MB3771 Master Reset IC (DIP8)
       MB3733   - Fujitsu MB3733 Power Amp IC
-      CN5      - 30 pin dual row male connetor
+      CN5      - 30 pin dual row male connector
 
 
 ROM Boards
@@ -1302,7 +1303,7 @@ void segas16b_state::machine_reset()
 //  device_timer - handle device timers
 //-------------------------------------------------
 
-void segas16b_state::device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr)
+void segas16b_state::device_timer(emu_timer &timer, device_timer_id id, int param)
 {
 	switch (id)
 	{

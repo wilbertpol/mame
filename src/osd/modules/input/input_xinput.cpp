@@ -186,7 +186,7 @@ xinput_joystick_device * xinput_api_helper::create_xinput_device(running_machine
 	snprintf(device_name, sizeof(device_name), "XInput Player %u", index + 1);
 
 	// allocate the device object
-	auto &devinfo = module.devicelist()->create_device<xinput_joystick_device>(machine, device_name, device_name, module, shared_from_this());
+	auto &devinfo = module.devicelist().create_device<xinput_joystick_device>(machine, device_name, device_name, module, shared_from_this());
 
 	// Set the player ID
 	devinfo.xinput_state.player_index = index;
@@ -201,12 +201,12 @@ xinput_joystick_device * xinput_api_helper::create_xinput_device(running_machine
 //  xinput_joystick_device
 //============================================================
 
-xinput_joystick_device::xinput_joystick_device(running_machine &machine, std::string &&name, std::string &&id, input_module &module, std::shared_ptr<xinput_api_helper> helper)
-	: device_info(machine, std::string(name), std::string(id), DEVICE_CLASS_JOYSTICK, module),
-		gamepad({{0}}),
-		xinput_state({0}),
-		m_xinput_helper(helper),
-		m_configured(false)
+xinput_joystick_device::xinput_joystick_device(running_machine &machine, std::string &&name, std::string &&id, input_module &module, std::shared_ptr<xinput_api_helper> helper) :
+	device_info(machine, std::string(name), std::string(id), DEVICE_CLASS_JOYSTICK, module),
+	gamepad({ { 0 } }),
+	xinput_state({ 0 }),
+	m_xinput_helper(helper),
+	m_configured(false)
 {
 }
 

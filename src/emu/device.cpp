@@ -365,7 +365,7 @@ void device_t::reset()
 //  unscaled clock
 //-------------------------------------------------
 
-void device_t::set_unscaled_clock(u32 clock)
+void device_t::set_unscaled_clock(u32 clock, bool sync_on_new_clock_domain)
 {
 	// do nothing if no actual change
 	if (clock == m_unscaled_clock)
@@ -381,7 +381,7 @@ void device_t::set_unscaled_clock(u32 clock)
 
 	// if the device has already started, make sure it knows about the new clock
 	if (m_started)
-		notify_clock_changed();
+		notify_clock_changed(sync_on_new_clock_domain);
 }
 
 
@@ -464,9 +464,9 @@ u64 device_t::attotime_to_clocks(const attotime &duration) const noexcept
 //  callback
 //-------------------------------------------------
 
-emu_timer *device_t::timer_alloc(device_timer_id id, void *ptr)
+emu_timer *device_t::timer_alloc(device_timer_id id)
 {
-	return machine().scheduler().timer_alloc(*this, id, ptr);
+	return machine().scheduler().timer_alloc(*this, id);
 }
 
 
@@ -475,9 +475,9 @@ emu_timer *device_t::timer_alloc(device_timer_id id, void *ptr)
 //  call our device callback
 //-------------------------------------------------
 
-void device_t::timer_set(const attotime &duration, device_timer_id id, int param, void *ptr)
+void device_t::timer_set(const attotime &duration, device_timer_id id, int param)
 {
-	machine().scheduler().timer_set(duration, *this, id, param, ptr);
+	machine().scheduler().timer_set(duration, *this, id, param);
 }
 
 
@@ -609,7 +609,6 @@ void device_t::start()
 	}
 
 	// register our save states
-	save_item(NAME(m_clock));
 	save_item(NAME(m_unscaled_clock));
 	save_item(NAME(m_clock_scale));
 
@@ -688,6 +687,21 @@ void device_t::pre_save()
 
 void device_t::post_load()
 {
+	// recompute clock-related parameters if something changed
+	u32 const scaled_clock = m_unscaled_clock * m_clock_scale;
+	if (m_clock != scaled_clock)
+	{
+		m_clock = scaled_clock;
+		m_attoseconds_per_clock = (scaled_clock == 0) ? 0 : HZ_TO_ATTOSECONDS(scaled_clock);
+
+		// recalculate all derived clocks
+		for (device_t &child : subdevices())
+			child.calculate_derived_clock();
+
+		// make sure the device knows about the new clock
+		notify_clock_changed();
+	}
+
 	// notify the interface
 	for (device_interface &intf : interfaces())
 		intf.interface_post_load();
@@ -702,11 +716,11 @@ void device_t::post_load()
 //  that the clock has changed
 //-------------------------------------------------
 
-void device_t::notify_clock_changed()
+void device_t::notify_clock_changed(bool sync_on_new_clock_domain)
 {
 	// first notify interfaces
 	for (device_interface &intf : interfaces())
-		intf.interface_clock_changed();
+		intf.interface_clock_changed(sync_on_new_clock_domain);
 
 	// then notify the device
 	device_clock_changed();
@@ -872,7 +886,7 @@ void device_t::device_debug_setup()
 //  fires
 //-------------------------------------------------
 
-void device_t::device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr)
+void device_t::device_timer(emu_timer &timer, device_timer_id id, int param)
 {
 	// do nothing by default
 }
@@ -1188,7 +1202,7 @@ void device_interface::interface_post_load()
 //  implementation
 //-------------------------------------------------
 
-void device_interface::interface_clock_changed()
+void device_interface::interface_clock_changed(bool sync_on_new_clock_domain)
 {
 	// do nothing by default
 }

@@ -81,6 +81,8 @@ public:
 	void lpen_w(int state);
 	int hrtc_r();
 	int vrtc_r();
+	int lines_per_char() { return m_r; }
+	bool get_display_status();
 
 	uint32_t screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect);
 
@@ -89,7 +91,7 @@ protected:
 	virtual void device_start() override;
 	virtual void device_reset() override;
 	virtual void device_clock_changed() override;
-	virtual void device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr) override;
+	virtual void device_timer(emu_timer &timer, device_timer_id id, int param) override;
 
 private:
 	enum

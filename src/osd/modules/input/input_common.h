@@ -295,7 +295,8 @@ private:
 	std::vector<std::unique_ptr<device_info>> m_list;
 
 public:
-	size_t size() const { return m_list.size(); }
+	auto size() const { return m_list.size(); }
+	auto empty() const { return m_list.empty(); }
 	auto begin() { return m_list.begin(); }
 	auto end() { return m_list.end(); }
 
@@ -318,7 +319,8 @@ public:
 		m_list.erase(std::remove_if(std::begin(m_list), std::end(m_list), device_matches), m_list.end());
 	}
 
-	void for_each_device(std::function<void (device_info*)> action)
+	template <typename T>
+	void for_each_device(T &&action)
 	{
 		for (auto &device: m_list)
 			action(device.get());
@@ -445,7 +447,7 @@ protected:
 public:
 
 	const osd_options *   options() const { return m_options; }
-	input_device_list *   devicelist() { return &m_devicelist; }
+	input_device_list &   devicelist() { return m_devicelist; }
 	bool                  input_enabled() const { return m_input_enabled; }
 	bool                  input_paused() const { return m_input_paused; }
 	bool                  mouse_enabled() const { return m_mouse_enabled; }
@@ -502,7 +504,7 @@ public:
 
 	virtual void exit() override
 	{
-		devicelist()->free_all_devices();
+		devicelist().free_all_devices();
 	}
 
 protected:

@@ -74,6 +74,7 @@ public:
 	// reading and writing
 	virtual uint8_t read(offs_t offset) { return 0xff; }
 	virtual void write(offs_t offset, uint8_t data) { }
+	virtual void vpp_w(int state) { }
 	virtual uint8_t* get_cart_base() { return nullptr; }
 	virtual uint32_t get_cart_size() { return 0; }
 
@@ -117,12 +118,13 @@ public:
 	// reading and writing
 	uint8_t read(offs_t offset);
 	void write(offs_t offset, uint8_t data);
+	void vpp_w(int state);
 	uint8_t* get_cart_base();
 
 protected:
 	// device-level overrides
 	virtual void device_start() override;
-	virtual void device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr) override;
+	virtual void device_timer(emu_timer &timer, device_timer_id id, int param) override;
 
 private:
 	static constexpr device_timer_id TIMER_FLP_CLEAR = 0;

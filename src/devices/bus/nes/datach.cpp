@@ -243,7 +243,6 @@ void nes_datach_device::device_start()
 
 void nes_datach_device::pcb_reset()
 {
-	m_chr_source = m_vrom_chunks ? CHRROM : CHRRAM;
 	prg16_89ab(0);
 	prg16_cdef(m_prg_chunks - 1);
 	chr8(0, m_chr_source);
@@ -381,7 +380,7 @@ void nes_datach_device::device_add_mconfig(machine_config &config)
 //  device_timer - handler timer events
 //-------------------------------------------------
 
-void nes_datach_device::device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr)
+void nes_datach_device::device_timer(emu_timer &timer, device_timer_id id, int param)
 {
 	if (id == TIMER_IRQ)
 	{

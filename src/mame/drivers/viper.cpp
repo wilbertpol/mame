@@ -111,7 +111,7 @@
                             but this part of memory is never written to after its initial clearing on boot.
                             If 0xffff is placed at 0x157d4ee then the game will pass the RTC check.
                             The game will later complain about "Hardware Error: Security Key Error" if you try starting the game.
-        code1d,b            Can boot but crashes randomly and quickly so it's hard to do anything.
+        code1d,b,a          Can boot but crashes randomly and quickly so it's hard to do anything.
 
         mocapglf            Security code error
         sscopex,sogeki      Graphics very heavily glitched. Gun controller is not emulated.
@@ -509,15 +509,15 @@ private:
 	TIMER_CALLBACK_MEMBER(epic_global_timer_callback);
 	TIMER_CALLBACK_MEMBER(ds2430_timer_callback);
 
-	int m_cf_card_ide;
-	int m_unk_serial_bit_w;
-	uint16_t m_unk_serial_cmd;
-	uint16_t m_unk_serial_data;
-	uint16_t m_unk_serial_data_r;
-	uint8_t m_unk_serial_regs[0x80];
-	uint64_t m_e00008_data;
-	uint32_t m_sound_buffer_offset;
-	bool m_sound_irq_enabled;
+	int m_cf_card_ide = 0;
+	int m_unk_serial_bit_w = 0;
+	uint16_t m_unk_serial_cmd = 0U;
+	uint16_t m_unk_serial_data = 0U;
+	uint16_t m_unk_serial_data_r = 0U;
+	uint8_t m_unk_serial_regs[0x80]{};
+	uint64_t m_e00008_data = 0U;
+	uint32_t m_sound_buffer_offset = 0U;
+	bool m_sound_irq_enabled = false;
 
 	TIMER_DEVICE_CALLBACK_MEMBER(sound_timer_callback);
 
@@ -559,42 +559,42 @@ private:
 
 	struct MPC8240_IRQ
 	{
-		uint32_t vector;
-		int priority;
-		int destination;
-		int active;
-		int pending;
-		int mask;
+		uint32_t vector = 0U;
+		int priority = 0;
+		int destination = 0;
+		int active = 0;
+		int pending = 0;
+		int mask = 0;
 	};
 
 	struct MPC8240_GLOBAL_TIMER
 	{
-		uint32_t base_count;
-		int enable;
-		emu_timer *timer;
+		uint32_t base_count = 0U;
+		int enable = 0;
+		emu_timer *timer = nullptr;
 	};
 
 	struct MPC8240_EPIC
 	{
-		uint32_t iack;
-		uint32_t eicr;
-		uint32_t svr;
+		uint32_t iack = 0U;
+		uint32_t eicr = 0U;
+		uint32_t svr = 0U;
 
-		int active_irq;
+		int active_irq = 0;
 
-		MPC8240_IRQ irq[MPC8240_NUM_INTERRUPTS];
+		MPC8240_IRQ irq[MPC8240_NUM_INTERRUPTS]{};
 
-		uint8_t i2c_adr;
-		int i2c_freq_div, i2c_freq_sample_rate;
-		uint8_t i2c_cr;
-		uint8_t i2c_sr;
-		int i2c_state;
+		uint8_t i2c_adr = 0U;
+		int i2c_freq_div = 0, i2c_freq_sample_rate = 0;
+		uint8_t i2c_cr = 0U;
+		uint8_t i2c_sr = 0U;
+		int i2c_state = 0;
 
-		MPC8240_GLOBAL_TIMER global_timer[4];
+		MPC8240_GLOBAL_TIMER global_timer[4]{};
 
 	};
 
-	MPC8240_EPIC m_epic;
+	MPC8240_EPIC m_epic{};
 
 #if VIPER_DEBUG_EPIC_REGS
 	const char* epic_get_register_name(uint32_t reg);
@@ -615,14 +615,14 @@ private:
 		DS2430_STATE_READ_MEM_ADDRESS
 	};
 
-	uint8_t m_ds2430_data;
-	int m_ds2430_data_count;
-	int m_ds2430_reset;
-	int m_ds2430_state;
-	uint8_t m_ds2430_cmd;
-	uint8_t m_ds2430_addr;
-	uint8_t m_ds2430_unk_status;
-	emu_timer *m_ds2430_timer;
+	uint8_t m_ds2430_data = 0U;
+	int m_ds2430_data_count = 0;
+	int m_ds2430_reset = 0;
+	int m_ds2430_state = 0;
+	uint8_t m_ds2430_cmd = 0U;
+	uint8_t m_ds2430_addr = 0U;
+	uint8_t m_ds2430_unk_status = 0U;
+	emu_timer *m_ds2430_timer = nullptr;
 	int ds2430_insert_cmd_bit(int bit);
 
 	void DS2430_w(int bit);
@@ -2541,9 +2541,7 @@ INTERRUPT_GEN_MEMBER(viper_state::viper_vblank)
 
 WRITE_LINE_MEMBER(viper_state::voodoo_vblank)
 {
-	// FIXME: The driver seems to hang using the voodoo vblank signal
-	// Seems to only work if using negative vsync
-	if (!state)
+	if (state)
 	  mpc8240_interrupt(MPC8240_IRQ0);
 	//mpc8240_interrupt(MPC8240_IRQ3);
 }
@@ -2866,6 +2864,19 @@ ROM_START(code1db) //*
 
 	DISK_REGION( "ata:0:hdd:image" )
 	DISK_IMAGE( "922b02", 0, SHA1(4d288b5dcfab3678af662783e7083a358eee99ce) )
+ROM_END
+
+ROM_START(code1da) //*
+	VIPER_BIOS
+
+	ROM_REGION(0x28, "ds2430", ROMREGION_ERASE00)       /* game-specific DS2430 on PCB */
+	ROM_LOAD("ds2430_code1d.u3", 0x00, 0x28, BAD_DUMP CRC(fada04dd) SHA1(49bd4e87d48f0404a091a79354bbc09cde739f5c))
+
+	ROM_REGION(0x2000, "m48t58", ROMREGION_ERASE00)     /* M48T58 Timekeeper NVRAM */
+	ROM_LOAD("m48t58_uaa.u39", 0x00000, 0x2000, CRC(22ef677d) SHA1(10b1e68d409edeca5af70aff1146b7373eeb3864) )
+
+	DISK_REGION( "ata:0:hdd:image" )
+	DISK_IMAGE( "922uaa02", 0, SHA1(795d82d51a37f197c36366cb36a2dfa8797e5f9f) )
 ROM_END
 
 ROM_START(gticlub2) //*
@@ -3417,6 +3428,7 @@ GAME(2001, ppp2nda,   ppp2nd,    viper_ppp, ppp2nd,     viper_state, init_viperh
 GAME(2001, boxingm,   kviper,    viper,     boxingm,    viper_state, init_vipercf,  ROT0,  "Konami", "Boxing Mania: Ashita no Joe (ver JAA)", MACHINE_NOT_WORKING)
 GAME(2000, code1d,    kviper,    viper,     code1d,     viper_state, init_vipercf,  ROT0,  "Konami", "Code One Dispatch Ver 1.21 (ver UAD)", MACHINE_NOT_WORKING)
 GAME(2000, code1db,   code1d,    viper,     code1d,     viper_state, init_vipercf,  ROT0,  "Konami", "Code One Dispatch Ver 1.16 (ver UAB)", MACHINE_NOT_WORKING)
+GAME(2000, code1da,   code1d,    viper,     code1d,     viper_state, init_vipercf,  ROT0,  "Konami", "Code One Dispatch (ver UAA)", MACHINE_NOT_WORKING)
 GAME(2001, gticlub2,  kviper,    viper,     gticlub2,   viper_state, init_vipercf,  ROT0,  "Konami", "GTI Club: Corso Italiano (ver JAB)", MACHINE_NOT_WORKING)
 GAME(2001, gticlub2ea,gticlub2,  viper,     gticlub2ea, viper_state, init_vipercf,  ROT0,  "Konami", "GTI Club: Corso Italiano (ver EAA)", MACHINE_NOT_WORKING)
 GAME(2001, jpark3,    kviper,    viper,     jpark3,     viper_state, init_vipercf,  ROT0,  "Konami", "Jurassic Park 3 (ver EBC)", MACHINE_NOT_WORKING)

@@ -5,6 +5,10 @@
     Umi de Poker (c) 1997 World Station Co.,LTD
     Slot Poker Saiyuki (c) 1998 World Station Co.,LTD
 
+    Undumped games running on the same hardware:
+    * Baccara Star (World-One)
+    * Baccarat Special (World-One)
+
     Driver by Angelo Salese.
     Additional work by Roberto Fresca.
 
@@ -71,8 +75,8 @@ protected:
 	required_device<gfxdecode_device> m_gfxdecode;
 	required_device<palette_device> m_palette;
 
-	tilemap_t *m_tilemap[4];
-	int m_scrolly[4];
+	tilemap_t *m_tilemap[4]{};
+	int m_scrolly[4]{};
 };
 
 class saiyukip_state : public umipoker_state

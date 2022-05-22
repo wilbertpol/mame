@@ -2,7 +2,7 @@
 // copyright-holders:Nathan Woods
 /***************************************************************************
 
-	CoCo Raw Disk
+    CoCo Raw Disk
 
 ***************************************************************************/
 
@@ -28,6 +28,6 @@ private:
 };
 
 
-extern const floppy_format_type FLOPPY_COCO_RAWDSK_FORMAT;
+extern const coco_rawdsk_format FLOPPY_COCO_RAWDSK_FORMAT;
 
 #endif // MAME_FORMATS_COCO_RAWDSK_H

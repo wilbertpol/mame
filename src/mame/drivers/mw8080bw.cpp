@@ -218,9 +218,10 @@ void mw8080bw_state::main_map(address_map &map)
 void mw8080bw_state::mw8080bw_root(machine_config &config)
 {
 	/* basic machine hardware */
-	I8080(config, m_maincpu, MW8080BW_CPU_CLOCK);
-	m_maincpu->set_addrmap(AS_PROGRAM, &mw8080bw_state::main_map);
-	m_maincpu->set_irq_acknowledge_callback(FUNC(mw8080bw_state::interrupt_vector));
+	i8080_cpu_device &maincpu(I8080(config, m_maincpu, MW8080BW_CPU_CLOCK));
+	maincpu.set_addrmap(AS_PROGRAM, &mw8080bw_state::main_map);
+	maincpu.set_irq_acknowledge_callback(FUNC(mw8080bw_state::interrupt_vector));
+	maincpu.out_inte_func().set(FUNC(mw8080bw_state::int_enable_w));
 
 	MCFG_MACHINE_RESET_OVERRIDE(mw8080bw_state,mw8080bw)
 
@@ -2552,11 +2553,7 @@ static INPUT_PORTS_START( invaders )
 	PORT_DIPSETTING(    0x00, DEF_STR( On ) )
 
 	/* fake port for cabinet type */
-	PORT_START(INVADERS_CAB_TYPE_PORT_TAG)
-	PORT_CONFNAME( 0x01, 0x00, DEF_STR( Cabinet ) )
-	PORT_CONFSETTING(    0x00, DEF_STR( Upright ) )
-	PORT_CONFSETTING(    0x01, DEF_STR( Cocktail ) )
-	PORT_BIT( 0xfe, IP_ACTIVE_HIGH, IPT_UNUSED )
+	INVADERS_CAB_TYPE_PORT
 
 	/* fake ports for handling the various input ports based on cabinet type */
 	PORT_START(INVADERS_SW6_SW7_PORT_TAG)
@@ -2574,17 +2571,9 @@ static INPUT_PORTS_START( invaders )
 	PORT_DIPSETTING(    0x01, DEF_STR( On ) )
 	PORT_BIT( 0xfe, IP_ACTIVE_HIGH, IPT_UNUSED )
 
-	PORT_START(INVADERS_P1_CONTROL_PORT_TAG)
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_PLAYER(1)
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_2WAY PORT_PLAYER(1)
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_2WAY PORT_PLAYER(1)
-	PORT_BIT( 0xf8, IP_ACTIVE_HIGH, IPT_UNUSED )
+	INVADERS_CONTROL_PORT_P1
 
-	PORT_START(INVADERS_P2_CONTROL_PORT_TAG)
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_BUTTON1 ) PORT_PLAYER(2)
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICK_LEFT ) PORT_2WAY PORT_PLAYER(2)
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_JOYSTICK_RIGHT ) PORT_2WAY PORT_PLAYER(2)
-	PORT_BIT( 0xf8, IP_ACTIVE_HIGH, IPT_UNUSED )
+	INVADERS_CONTROL_PORT_P2
 INPUT_PORTS_END
 
 

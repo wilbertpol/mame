@@ -52,6 +52,9 @@ public:
 	}
 
 	auto irq_cb() { return m_irq_cb.bind(); }
+	auto ext_ctrl_0_cb() { return m_ext_ctrl_0_cb.bind(); }
+	auto ext_ctrl_1_cb() { return m_ext_ctrl_1_cb.bind(); }
+	auto ext_ctrl_2_cb() { return m_ext_ctrl_2_cb.bind(); }
 	void set_vblank_irq_level(int level) { m_vblank_irq_level = level; }
 	void set_blit_irq_level(int level) { m_blit_irq_level = level; }
 	void set_spriteram_buffered(bool buffer) { m_spriteram_buffered = buffer; }
@@ -75,7 +78,7 @@ protected:
 	virtual void device_add_mconfig(machine_config &config) override;
 	virtual void device_start() override;
 	virtual void device_reset() override;
-	virtual void device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr) override;
+	virtual void device_timer(emu_timer &timer, device_timer_id id, int param) override;
 
 	virtual void update_irq_state();
 
@@ -191,7 +194,6 @@ protected:
 	uint16_t scroll_r(offs_t offset);
 	void scroll_w(offs_t offset, uint16_t data, uint16_t mem_mask = ~0);
 
-
 	uint16_t gfxrom_r(offs_t offset);
 	void crtc_vert_w(offs_t offset, uint16_t data, uint16_t mem_mask = ~0);
 	void crtc_horz_w(offs_t offset, uint16_t data, uint16_t mem_mask = ~0);
@@ -222,6 +224,10 @@ protected:
 	bool m_inited_hack;
 	DECLARE_GFXDECODE_MEMBER(gfxinfo);
 	DECLARE_GFXDECODE_MEMBER(gfxinfo_ext);
+
+	devcb_write_line m_ext_ctrl_0_cb;
+	devcb_write_line m_ext_ctrl_1_cb;
+	devcb_write_line m_ext_ctrl_2_cb;
 };
 
 class imagetek_i4220_device : public imagetek_i4100_device
@@ -232,7 +238,7 @@ public:
 
 	// needed by Blazing Tornado / Grand Striker 2 for mixing with PSAC
 	// (it's unknown how the chip enables external sync)
-	u32 get_background_pen() { return m_palette->pen(m_background_color); };
+	u32 get_background_pen() { return m_palette->pen(m_background_color); }
 
 	void v2_map(address_map &map);
 };

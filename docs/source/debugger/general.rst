@@ -41,6 +41,8 @@ General Debugger Commands
     save a screen snapshot
 :ref:`debugger-command-source`
     read commands from file and executes them one by one
+:ref:`debugger-command-time`
+    prints the current machine time to the console
 :ref:`debugger-command-quit`
     exit the debugger and end the emulation session
 
@@ -78,8 +80,8 @@ do
 
 The **do** command simply evaluates the supplied expression.  This is
 often used to set or modify device state variable (e.g. CPU registers),
-or to write to memory.  See :ref:`debugger-expressions` for details
-about expression syntax.
+or to write to memory.  See :ref:`debugger-express` for details about
+expression syntax.
 
 Examples:
 

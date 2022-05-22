@@ -164,7 +164,7 @@ void device_execute_interface::spin_until_time(const attotime &duration)
 	suspend_until_trigger(TRIGGER_SUSPENDTIME + timetrig, true);
 
 	// then set a timer for it
-	m_scheduler->timer_set(duration, timer_expired_delegate(FUNC(device_execute_interface::timed_trigger_callback),this), TRIGGER_SUSPENDTIME + timetrig, this);
+	m_scheduler->timer_set(duration, timer_expired_delegate(FUNC(device_execute_interface::timed_trigger_callback),this), TRIGGER_SUSPENDTIME + timetrig);
 	timetrig = (timetrig + 1) % 256;
 }
 
@@ -475,7 +475,7 @@ void device_execute_interface::interface_post_reset()
 //  information for this device
 //-------------------------------------------------
 
-void device_execute_interface::interface_clock_changed()
+void device_execute_interface::interface_clock_changed(bool sync_on_new_clock_domain)
 {
 	// a clock of zero disables the device
 	if (device().clock() == 0)
@@ -491,6 +491,10 @@ void device_execute_interface::interface_clock_changed()
 	// recompute cps and spc
 	m_cycles_per_second = clocks_to_cycles(device().clock());
 	m_attoseconds_per_cycle = HZ_TO_ATTOSECONDS(m_cycles_per_second);
+
+	// resynchronize the localtime to the clock domain when asked to
+	if (sync_on_new_clock_domain)
+		m_localtime = attotime::from_ticks(m_localtime.as_ticks(device().clock())+1, device().clock());
 
 	// update the device's divisor
 	s64 attos = m_attoseconds_per_cycle;
@@ -682,7 +686,7 @@ if (TEMPLOG) printf("setline(%s,%d,%d,%d)\n", m_execute->device().tag(), m_linen
 	if (event_index >= std::size(m_queue))
 	{
 		m_qindex--;
-		empty_event_queue(nullptr,0);
+		empty_event_queue(0);
 		event_index = m_qindex++;
 		m_execute->device().logerror("Exceeded pending input line event queue on device '%s'!\n", m_execute->device().tag());
 	}
@@ -696,7 +700,7 @@ if (TEMPLOG) printf("setline(%s,%d,%d,%d)\n", m_execute->device().tag(), m_linen
 
 		// if this is the first one, set the timer
 		if (event_index == 0)
-			m_execute->scheduler().synchronize(timer_expired_delegate(FUNC(device_execute_interface::device_input::empty_event_queue),this), 0, this);
+			m_execute->scheduler().synchronize(timer_expired_delegate(FUNC(device_execute_interface::device_input::empty_event_queue),this));
 	}
 }
 

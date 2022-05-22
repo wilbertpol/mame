@@ -66,7 +66,7 @@ static u16 const regmask[] =
 
 dp83932c_device::dp83932c_device(machine_config const &mconfig, char const *tag, device_t *owner, u32 clock)
 	: device_t(mconfig, DP83932C, tag, owner, clock)
-	, device_network_interface(mconfig, *this, 10.0f)
+	, device_network_interface(mconfig, *this, 10)
 	, m_bus(*this, finder_base::DUMMY_TAG, 0)
 	, m_out_int(*this)
 	, m_int_state(false)
@@ -284,7 +284,7 @@ void dp83932c_device::reg_w(offs_t offset, u16 data)
 	}
 }
 
-void dp83932c_device::command(void *ptr, s32 param)
+void dp83932c_device::command(s32 param)
 {
 	if (param & CR_HTX)
 	{

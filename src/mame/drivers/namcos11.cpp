@@ -11,8 +11,14 @@
 
   Issues:
    - Random draw list corruption in soul edge v2 & dunkmania.
-   - soul edge, dunk mania & prime goal ex try to access joypads/memory cards. It is unknown what they would do if they found one.
-   - pocketrc locks up if you try to exit testmode (note: it is not related to unimplemented C76 internal watchdog timer or software reset)
+   - soul edge, dunk mania & prime goal ex try to access joypads/memory cards.
+     It is unknown what they would do if they found one.
+   - pocketrc locks up if you try to exit testmode (note: it is not related to
+     unimplemented C76 internal watchdog timer or software reset)
+     Update: now it always locks up in test mode, regression?
+   - pocketrc long samples and drum loops go out of sync, it sounds better when
+     the C352 is underclocked to match the one in namcos22. It's possibly a BTANB,
+     since current C352 frequency is the same as Tekken/Tekken 2 real PCB.
 
 Known Dumps
 -----------
@@ -1033,10 +1039,10 @@ static INPUT_PORTS_START( pocketrc )
 	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNUSED )
 
 	PORT_MODIFY( "ADC0" )
-	PORT_BIT( 0xff, 0x80, IPT_PADDLE ) PORT_MINMAX( 0x00, 0xff ) PORT_SENSITIVITY( 100 ) PORT_KEYDELTA( 10 ) PORT_CENTERDELTA( 15 ) PORT_REVERSE
+	PORT_BIT( 0xff, 0x80, IPT_PADDLE ) PORT_MINMAX( 0x38, 0xc8 ) PORT_SENSITIVITY( 100 ) PORT_KEYDELTA( 10 ) PORT_CENTERDELTA( 10 ) PORT_REVERSE
 
 	PORT_MODIFY( "ADC1" )
-	PORT_BIT( 0xff, 0x00, IPT_PEDAL ) PORT_MINMAX( 0x00, 0xff ) PORT_SENSITIVITY( 100 ) PORT_KEYDELTA( 15 ) PORT_REVERSE
+	PORT_BIT( 0xff, 0x00, IPT_PEDAL ) PORT_MINMAX( 0x00, 0x7f ) PORT_SENSITIVITY( 100 ) PORT_KEYDELTA( 10 ) PORT_REVERSE
 
 	PORT_MODIFY( "ADC2" )
 	PORT_BIT( 0xff, IP_ACTIVE_LOW, IPT_UNUSED )
@@ -1138,7 +1144,7 @@ ROM_START( dunkmnia )
 	ROM_LOAD( "dm1sprog.6d",  0x0000000, 0x040000, CRC(de1cbc78) SHA1(855ebece1841f50ae324d7d6b8b18ab6f657d28e) )
 
 	ROM_REGION( 0x1000000, "c352", 0 ) /* samples */
-	ROM_LOAD( "dm1wave.8k",   0x000000, 0x400000, CRC(4891d53e) SHA1(a1fee060e94d3219174b5974517f4fd3be32aaa5) )
+	ROM_LOAD( "dm1wave.8k",   0x000000, 0x400000, CRC(883d7455) SHA1(d2129d7c8b981128c3d0ce0c56fd0d5d58d5d2d9) )
 	ROM_RELOAD( 0x800000, 0x400000 )
 ROM_END
 
@@ -1163,7 +1169,8 @@ ROM_START( dunkmniajc )
 	ROM_LOAD( "dm1sprog.6d",  0x0000000, 0x040000, CRC(de1cbc78) SHA1(855ebece1841f50ae324d7d6b8b18ab6f657d28e) )
 
 	ROM_REGION( 0x1000000, "c352", 0 ) /* samples */
-	ROM_LOAD( "dm1wave.8k",   0x800000, 0x400000, CRC(4891d53e) SHA1(a1fee060e94d3219174b5974517f4fd3be32aaa5) )
+	ROM_LOAD( "dm1wave.8k",   0x000000, 0x400000, CRC(883d7455) SHA1(d2129d7c8b981128c3d0ce0c56fd0d5d58d5d2d9) )
+	ROM_RELOAD( 0x800000, 0x400000 )
 ROM_END
 
 ROM_START( myangel3 )
@@ -1398,7 +1405,8 @@ ROM_START( souledgeua )
 	ROM_LOAD( "so1sprog.6d",  0x0000000, 0x040000, CRC(f6f682b7) SHA1(a64e19be3f6e630b8c34f34b46b95aadfabd3f63) )
 
 	ROM_REGION( 0x1000000, "c352", 0 ) /* samples */
-	ROM_LOAD( "so1wave.8k",   0x800000, 0x400000, CRC(0e68836b) SHA1(c392b370a807803c7ab060105861253e1b407f49) )
+	ROM_LOAD( "so1wave.8k",   0x000000, 0x400000, CRC(0e68836b) SHA1(c392b370a807803c7ab060105861253e1b407f49) )
+	ROM_RELOAD( 0x800000, 0x400000 )
 ROM_END
 
 ROM_START( souledgea )

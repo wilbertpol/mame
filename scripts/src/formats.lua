@@ -135,6 +135,18 @@ end
 
 --------------------------------------------------
 --
+--@src/lib/formats/abc1600_dsk.h,FORMATS["ABC1600_DSK"] = true
+--------------------------------------------------
+
+if opt_tool(FORMATS, "ABC1600_DSK") then
+	files {
+		MAME_DIR.. "src/lib/formats/abc1600_dsk.cpp",
+		MAME_DIR.. "src/lib/formats/abc1600_dsk.h",
+	}
+end
+
+--------------------------------------------------
+--
 --@src/lib/formats/abcfd2_dsk.h,FORMATS["ABCFD2_DSK"] = true
 --------------------------------------------------
 
@@ -1859,6 +1871,18 @@ if opt_tool(FORMATS, "TIKI100_DSK") then
 	files {
 		MAME_DIR.. "src/lib/formats/tiki100_dsk.cpp",
 		MAME_DIR.. "src/lib/formats/tiki100_dsk.h",
+	}
+end
+
+--------------------------------------------------
+--
+--@src/lib/formats/tim011_dsk.h,FORMATS["TIM011_DSK"] = true
+--------------------------------------------------
+
+if opt_tool(FORMATS, "TIM011_DSK") then
+	files {
+		MAME_DIR.. "src/lib/formats/tim011_dsk.cpp",
+		MAME_DIR.. "src/lib/formats/tim011_dsk.h",
 	}
 end
 
