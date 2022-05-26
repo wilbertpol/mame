@@ -9,6 +9,7 @@
 #include "emu.h"
 #include "includes/electron.h"
 #include "screen.h"
+#include "netlist/devices/net_lib.h"
 
 
 void electron_state::waitforramsync()
@@ -106,6 +107,83 @@ TIMER_CALLBACK_MEMBER(electron_state::electron_tape_timer_handler)
 	}
 }
 
+NETLIST_START(electron_cass_input)
+	// No idea what all this means
+	NET_MODEL("LM324_5V OPAMP(TYPE=3 VLH=0.667 VLL=0.0667 FPF=5 UGF=500k SLEW=0.3M RI=1000k RO=50 DAB=0.00075)")
+
+	SOLVER(Solver, 4800)
+	PARAM(Solver.ACCURACY, 5e-4)
+	PARAM(Solver.DYNAMIC_TS, 1)
+	PARAM(Solver.DYNAMIC_LTE, 1e-2)
+	PARAM(Solver.DYNAMIC_MIN_TIMESTEP, 1e-4)
+
+	ANALOG_INPUT(V5, 5)
+	ANALOG_INPUT(VM5, -5)
+
+	ANALOG_INPUT(CASIN, 0)
+
+	RES(R8, RES_K(3.3))
+	RES(R9, RES_K(270))
+	RES(R10, RES_K(4.7))
+	RES(R11, RES_K(4.7))
+	RES(R15, RES_K(5.6))
+	RES(R18, RES_K(10))
+	RES(R20, RES_K(39))
+	RES(R25, RES_K(8.2))
+	RES(R27, RES_K(8.2))
+	RES(R35, RES_K(160))
+	RES(R36, RES_K(220))
+	RES(R43, RES_K(820))
+	RES(R44, RES_K(150))
+	RES(R64, RES_K(10))
+
+	DIODE(D6, "1N914")  // type unknown
+	DIODE(D7, "1N914")  // type unknown
+
+	CAP(C7, CAP_U(10))
+	CAP(C10, CAP_N(220))
+	CAP(C14, CAP_N(4.7)) // 4n7
+	CAP(C16, CAP_N(4.7)) // 4n7
+	CAP(C20, CAP_P(820))
+	CAP(C22, CAP_P(820))
+	CAP(C26, CAP_N(1.5)) // 1n5
+
+	OPAMP(IC13_A, "LM324_5V")  // pins 5,6,7
+	OPAMP(IC13_B, "LM324_5V")  // pins 8,9,10
+	OPAMP(IC13_C, "LM324_5V")  // pins 11,12,13,14
+
+	NET_C(V5, IC13_A.VCC, IC13_B.VCC, IC13_C.VCC)
+	NET_C(VM5, IC13_A.GND, IC13_B.GND, IC13_C.GND)
+
+	QBJT_SW(Q1, "BC237B")  // Actually BC239
+	QBJT_SW(Q2, "BC237B")  // Actually BC239
+
+	NET_C(CASIN, R64.1)
+	NET_C(V5, D7.K)
+	NET_C(VM5, D6.A)
+	NET_C(GND, C26.1, R43.1, R44.1, C14.1, R20.1, R15.1, R10.1, R8.1)
+	NET_C(R64.2, D6.K, D7.A, C26.2, C22.1)
+	NET_C(C22.2, C20.1, R35.1)
+	NET_C(C20.2, R44.2, IC13_A.PLUS)
+	NET_C(R36.2, R43.2, IC13_A.MINUS)
+	NET_C(R35.2, R36.1, R27.1, IC13_A.OUT)
+	NET_C(R27.2, C16.1, R25.1)
+	NET_C(R25.2, C14.2, IC13_B.PLUS)
+	NET_C(R20.2, IC13_B.MINUS, R18.2)
+	NET_C(C16.2, R18.1, C10.1, R15.2, IC13_B.OUT)
+	NET_C(C10.2, R11.1)
+	NET_C(R11.2, Q2.E, Q1.B, Q1.C, R9.1, IC13_C.MINUS)
+	NET_C(R10.2, IC13_C.PLUS)
+	NET_C(IC13_C.OUT, R8.2, C7.1, R9.2, Q1.E, Q2.B, Q2.C)
+
+	ALIAS(OUTPUT, C7.2)
+NETLIST_END()
+
+
+NETDEV_ANALOG_CALLBACK_MEMBER(electron_state::casin_cb)
+{
+	logerror("received %d\n", data);
+}
 
 void electron_state::cassette_bit_received(int bit)
 {

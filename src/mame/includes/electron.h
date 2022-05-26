@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include "machine/netlist.h"
+#include "netlist/nl_setup.h"
 #include "machine/ram.h"
 #include "machine/6522via.h"
 #include "machine/input_merger.h"
@@ -61,6 +63,7 @@ public:
 	static void plus3_default(device_t* device);
 
 	DECLARE_INPUT_CHANGED_MEMBER( trigger_reset );
+	NETDEV_ANALOG_CALLBACK_MEMBER(casin_cb);
 
 protected:
 	enum
@@ -197,6 +200,8 @@ private:
 	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(rom1_load) { return load_rom(image, m_romi[0]); }
 	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(rom2_load) { return load_rom(image, m_romi[1]); }
 };
+
+NETLIST_EXTERNAL(electron_cass_input);
 
 
 #endif // MAME_INCLUDES_ELECTRON_H
