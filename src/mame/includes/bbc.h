@@ -19,6 +19,7 @@
 #include "machine/6522via.h"
 #include "machine/6850acia.h"
 #include "machine/bbc_elk_casin.h"
+#include "machine/bbc_serproc.h"
 #include "machine/clock.h"
 #include "machine/mc6854.h"
 #include "machine/ram.h"
@@ -73,7 +74,6 @@ public:
 		, m_tms(*this, "tms5220")
 		, m_cassette(*this, "cassette")
 		, m_acia(*this, "acia6850")
-		, m_acia_clock(*this, "acia_clock")
 		, m_latch(*this, "latch")
 		, m_rs232(*this, "rs423")
 		, m_via6522_0(*this, "via6522_0")
@@ -102,7 +102,7 @@ public:
 		, m_bankdev(*this, "bankdev")
 		, m_bbcconfig(*this, "BBCCONFIG")
 		, m_motor_led(*this, "motor_led")
-		, m_casin(*this, "casin")
+		, m_serproc(*this, "serproc")
 	{ }
 
 	enum class monitor_type
@@ -184,6 +184,7 @@ public:
 	DECLARE_INPUT_CHANGED_MEMBER(trigger_reset);
 	DECLARE_WRITE_LINE_MEMBER(fdc_intrq_w);
 	DECLARE_WRITE_LINE_MEMBER(fdc_drq_w);
+	DECLARE_WRITE_LINE_MEMBER(casmo_w);
 
 	int get_analogue_input(int channel_number);
 	void upd7002_eoc(int data);
@@ -229,7 +230,6 @@ protected:
 	optional_device<tms5220_device> m_tms;
 	optional_device<cassette_image_device> m_cassette;
 	optional_device<acia6850_device> m_acia;
-	optional_device<clock_device> m_acia_clock;
 	required_device<ls259_device> m_latch;
 	optional_device<rs232_port_device> m_rs232;
 	required_device<via6522_device> m_via6522_0;
@@ -260,7 +260,7 @@ protected:
 	optional_ioport m_bbcconfig;
 
 	output_finder<> m_motor_led;
-	required_device<bbc_elk_casin_device> m_casin;
+	optional_device<bbc_serproc_device> m_serproc;
 
 	int m_romsel = 0;           // This is the latch that holds the sideways ROM bank to read
 	int m_paged_ram = 0;        // BBC B+ memory handling

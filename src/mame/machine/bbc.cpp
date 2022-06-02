@@ -991,6 +991,7 @@ void bbc_state::mc6850_receive_clock(int new_clock)
 	// Somehow the "serial processor" generates 16 clock signals towards
 	// the 6850. Exact details are unknown, faking it with the following
 	// loop.
+	// This matches the divider programmed in the 6850 for 1200 baud.
 	//
 	for (int i = 0; i < 16; i++ )
 	{
@@ -1045,31 +1046,7 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 	}
 	else
 	{
-		if (m_casin->input(m_cassette->input()))
-		{
-			if (m_casin->casin())
-			{
-				m_nr_high_tones++;
-				if (m_nr_high_tones > 100)
-				{
-					m_dcd_cass = 1;
-					update_acia_dcd();
-				}
-				mc6850_receive_clock(1);
-			}
-			else
-			{
-				m_nr_high_tones = 0;
-				m_dcd_cass = 0;
-				update_acia_dcd();
-				mc6850_receive_clock(0);
-			}
-		}
-		else if (m_casin->timeout())
-		{
-			m_dcd_cass = 0;
-			update_acia_dcd();
-		}
+		m_serproc->casin(m_cassette->input());
 	}
 }
 
@@ -1153,7 +1130,6 @@ void bbc_state::cassette_motor(bool motor_state)
 	{
 		m_cassette->change_state(CASSETTE_MOTOR_DISABLED, CASSETTE_MASK_MOTOR);
 		m_tape_timer->reset();
-		m_casin->reset();
 		m_cass_out_phase = 0;
 		m_cass_out_samples_to_go = 4;
 	}
@@ -1181,27 +1157,16 @@ void bbc_state::cassette_motor(bool motor_state)
 
 void bbc_state::serial_ula_w(uint8_t data)
 {
-	static const int serial_clocks[8] =
-	{
-		1,    // 000
-		16,   // 001
-		4,    // 010
-		128,  // 011
-		2,    // 100
-		64,   // 101
-		8,    // 110
-		256   // 111
-	};
-
-	m_serproc_data = data;
-	update_acia_rxd();
-	update_acia_dcd();
-	update_acia_cts();
-	if (m_cassette) cassette_motor(BIT(m_serproc_data, 7));
-
-	// Set transmit clock rate
-	m_acia_clock->set_clock_scale( (double) 1 / serial_clocks[ data & 0x07 ] );
+	m_serproc->write(data);
 }
+
+
+WRITE_LINE_MEMBER(bbc_state::casmo_w)
+{
+	if (m_cassette)
+		cassette_motor(state);
+}
+
 
 WRITE_LINE_MEMBER(bbc_state::write_acia_clock)
 {

@@ -198,7 +198,6 @@ if (MACHINES["AUTOCONFIG"]~=null) then
 	}
 end
 
-
 --------------------------------------------------
 --
 --@src/devices/machine/bbc_elk_casin.h,MACHINES["BBC_ELK_CASIN"] = true
@@ -208,6 +207,18 @@ if (MACHINES["BBC_ELK_CASIN"]~=null) then
     files {
         MAME_DIR .. "src/devices/machine/bbc_elk_casin.cpp",
         MAME_DIR .. "src/devices/machine/bbc_elk_casinc.h",
+    }
+end
+
+--------------------------------------------------
+--
+--@src/devices/machine/bbc_serproc.h,MACHINES["BBC_SERPROC"] = true
+--------------------------------------------------
+
+if (MACHINES["BBC_SERPROC"]~=null) then
+    files {
+        MAME_DIR .. "src/devices/machine/bbc_serproc.cpp",
+        MAME_DIR .. "src/devices/machine/bbc_serproc.h",
     }
 end
 
