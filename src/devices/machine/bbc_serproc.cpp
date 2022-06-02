@@ -31,9 +31,9 @@ bbc_serproc_device::bbc_serproc_device(const machine_config &mconfig, const char
 
 void bbc_serproc_device::device_add_mconfig(machine_config &config)
 {
-	CLOCK(config, m_tx_clock, DERIVED_CLOCK(1, 13));
+	CLOCK(config, m_tx_clock, DERIVED_CLOCK(1, 1));
 	m_tx_clock->signal_handler().set(FUNC(bbc_serproc_device::tx_clock_w));
-	CLOCK(config, m_rx_clock, DERIVED_CLOCK(1, 13));
+	CLOCK(config, m_rx_clock, DERIVED_CLOCK(1, 1));
 	m_rx_clock->signal_handler().set(FUNC(bbc_serproc_device::rx_clock_w));
 }
 
