@@ -101,7 +101,7 @@ void bbc_serproc_device::casin(double tap_val)
 		{
 			if (m_skip_edge)
 			{
-				m_skip_edge = false;;
+				m_skip_edge = false;
 			}
 			else
 			{
