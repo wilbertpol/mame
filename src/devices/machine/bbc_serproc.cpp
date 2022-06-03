@@ -80,9 +80,10 @@ void bbc_serproc_device::device_reset()
 
 void bbc_serproc_device::casin(double tap_val)
 {
+	// bbcb BP FB61 write to enable/disable/enable motor
 	// Do edge detection
 	logerror("casin: %f\n", tap_val);
-	machine().debugger().debug_break();
+//	machine().debugger().debug_break();
 	if ((m_last_tap_val <= 0 && tap_val > 0) || (tap_val < 0 && m_last_tap_val >= 0))
 	{
 		logerror("casin: edge detected\n", tap_val);
@@ -199,12 +200,12 @@ TIMER_CALLBACK_MEMBER(bbc_serproc_device::cass_dcd)
 	{
 		m_cass_dcd = 0;
 		update_dcd();
-		machine().debugger().debug_break();
+//		machine().debugger().debug_break();
 	}
 	else
 	{
 		logerror("Trigger DCD\n");
-		machine().debugger().debug_break();
+//		machine().debugger().debug_break();
 		m_cass_dcd = 1;
 		update_dcd();
 		// DCD goes low again after approx. 200usec
