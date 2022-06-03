@@ -5,6 +5,9 @@
  * BBC Micro Serial ULA
  * Ferranti 2C199E / VLSI VC2026 Serial
  * 
+ * Based on findings from https://stardot.org.uk/forums/viewtopic.php?f=3&t=22935
+ * or https://web.archive.org/web/20220301095659/https://stardot.org.uk/forums/viewtopic.php?f=3&t=22935&sid=a3c873c2d1d97807717b9a5abd5ef49d
+ * 
  ****************************************************************************/
 
 #include "emu.h"
@@ -84,6 +87,10 @@ void bbc_serproc_device::casin(double tap_val)
 	// Do edge detection
 	logerror("casin: %f\n", tap_val);
 //	machine().debugger().debug_break();
+	// incoming signal processing by filters and op-amps is done outside the chip
+	// this is just poor man's noise ignoring
+	if (tap_val > -0.2 && tap_val < 0.2)
+		tap_val = 0.0;
 	if ((m_last_tap_val <= 0 && tap_val > 0) || (tap_val < 0 && m_last_tap_val >= 0))
 	{
 		logerror("casin: edge detected\n", tap_val);
@@ -111,7 +118,7 @@ void bbc_serproc_device::casin(double tap_val)
 					m_cass_rxd = 1;
 					update_rxd();
 					// DCD goes high after approx. 200msec on the Ferranti ULA and 50msec on the VLSI ULA.
-					m_dcd_timer->adjust(clocks_to_attotime(256 * 1024));  // Not verified
+					m_dcd_timer->adjust(clocks_to_attotime(256 * 1024));  // Not verified, but 212msec close to 200msec
 				}
 			}
 		}
