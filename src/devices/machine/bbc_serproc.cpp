@@ -80,18 +80,47 @@ void bbc_serproc_device::device_reset()
 	m_skip_edge = false;
 }
 
+static int count_increasing = 0;
+static int count_decreasing = 0;
+static double last_raw_tap_val = 0.0;
 
 void bbc_serproc_device::casin(double tap_val)
 {
-	// bbcb BP FB61 write to enable/disable/enable motor
+	// bbcb:
+	// g FB61 - starting motor
+	// wpset fe09,1,r
 	// Do edge detection
 	logerror("casin: %f\n", tap_val);
 //	machine().debugger().debug_break();
 	// incoming signal processing by filters and op-amps is done outside the chip
-	// this is just poor man's noise ignoring
-	if (tap_val > -0.2 && tap_val < 0.2)
-		tap_val = 0.0;
-	if ((m_last_tap_val <= 0 && tap_val > 0) || (tap_val < 0 && m_last_tap_val >= 0))
+	// the cassette signals go through a high-pass filter, a low-pass filter, and a high gain amplifier
+	// basically creating digital input from the sine waves
+	if (tap_val > last_raw_tap_val) {
+		count_increasing++;
+	} else {
+		count_increasing = 0;
+	}
+	if (tap_val < last_raw_tap_val) {
+		count_decreasing++;
+	} else {
+		count_decreasing = 0;
+	}
+	last_raw_tap_val = tap_val;
+	if (count_decreasing > 4 && tap_val < 0) {
+		tap_val = -1.0;
+	} else if (count_increasing > 4 && tap_val > 0) {
+		tap_val = 1.0;
+	} else {
+		return;
+	}
+
+//	tap_val *= 40;
+//	if (tap_val > 0.2)
+//		tap_val = 1.0;
+//	else if (tap_val < -0.2)
+//		tap_val = -1.0;
+//	else return;
+	if (m_last_tap_val != tap_val)
 	{
 		logerror("casin: edge detected\n", tap_val);
 //		machine().debugger().debug_break();
