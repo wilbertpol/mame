@@ -95,23 +95,31 @@ void bbc_serproc_device::casin(double tap_val)
 	// incoming signal processing by filters and op-amps is done outside the chip
 	// the cassette signals go through a high-pass filter, a low-pass filter, and a high gain amplifier
 	// basically creating digital input from the sine waves
-	if (tap_val > last_raw_tap_val) {
-		count_increasing++;
+	// This does not work with our current csw implementation which already creates plain square waves
+	if (tap_val > -0.9 && tap_val < 0.9) {
+		if (tap_val > last_raw_tap_val) {
+			count_increasing++;
+		} else {
+			count_increasing = 0;
+		}
+		if (tap_val < last_raw_tap_val) {
+			count_decreasing++;
+		} else {
+			count_decreasing = 0;
+		}
+		last_raw_tap_val = tap_val;
+		if (count_decreasing > 4 && tap_val < 0) {
+			tap_val = -1.0;
+		} else if (count_increasing > 4 && tap_val > 0) {
+			tap_val = 1.0;
+		} else {
+			return;
+		}
 	} else {
-		count_increasing = 0;
-	}
-	if (tap_val < last_raw_tap_val) {
-		count_decreasing++;
-	} else {
-		count_decreasing = 0;
-	}
-	last_raw_tap_val = tap_val;
-	if (count_decreasing > 4 && tap_val < 0) {
-		tap_val = -1.0;
-	} else if (count_increasing > 4 && tap_val > 0) {
-		tap_val = 1.0;
-	} else {
-		return;
+		if (tap_val > 0.9)
+			tap_val = 1.0;
+		else if (tap_val < -0.9)
+			tap_val = -1.0;
 	}
 
 //	tap_val *= 40;
