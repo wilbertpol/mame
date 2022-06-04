@@ -42,7 +42,7 @@ public:
 	auto out_rxd_callback() { return m_out_rxd_cb.bind(); }
 	auto out_txc_callback() { return m_out_txc_cb.bind(); }
 
-	void casin(double tap_val);
+	void casin(int tap_val);
 	void write(uint8_t data);
 
 	DECLARE_WRITE_LINE_MEMBER(din_w);
@@ -79,7 +79,7 @@ private:
 	int m_din = 0;
 	int m_ctsi = 0;
 	int m_rxc = 0;
-	double m_last_tap_val = 0.0;
+	int m_last_tap_val = 0;
 	bool m_timeout = false;
 	bool m_skip_edge = false;
 
