@@ -1151,22 +1151,27 @@ void bbc_state::bbca(machine_config &config)
 	m_serproc->out_casmo_callback().set(FUNC(bbc_state::casmo_w));
 	m_serproc->out_cts_callback().set(m_acia, FUNC(acia6850_device::write_cts));
 	m_serproc->out_dcd_callback().set(m_acia, FUNC(acia6850_device::write_dcd));
+	m_serproc->out_dout_callback().set(m_rs232, FUNC(rs232_port_device::write_txd));
 	m_serproc->out_rxc_callback().set(m_acia, FUNC(acia6850_device::write_rxc));
 	m_serproc->out_rxd_callback().set(m_acia, FUNC(acia6850_device::write_rxd));
 	m_serproc->out_txc_callback().set(m_acia, FUNC(acia6850_device::write_txc));
+	m_serproc->out_rtso_callback().set(m_rs232, FUNC(rs232_port_device::write_rts));
+	// HACKs
+	m_serproc->out_txd_callback().set(FUNC(bbc_state::write_txd));
+	m_serproc->out_cass_out_enabled().set(FUNC(bbc_state::write_rts));
 
 	/* acia */
 	ACIA6850(config, m_acia, 0);
-	m_acia->txd_handler().set(FUNC(bbc_state::write_txd));
-	m_acia->rts_handler().set(FUNC(bbc_state::write_rts));
+	m_acia->txd_handler().set(m_serproc, FUNC(bbc_serproc_device::txd_w));
+	m_acia->rts_handler().set(m_serproc, FUNC(bbc_serproc_device::rtsi_w));
 	m_acia->irq_handler().set(m_irqs, FUNC(input_merger_device::in_w<0>));
 
 	RS232_PORT(config, m_rs232, default_rs232_devices, nullptr);
 	m_rs232->rxd_handler().set(m_serproc, FUNC(bbc_serproc_device::din_w));
 	m_rs232->cts_handler().set(m_serproc, FUNC(bbc_serproc_device::ctsi_w));
-	m_rs232->rxd_handler().set(FUNC(bbc_state::write_rxd));
+//	m_rs232->rxd_handler().set(FUNC(bbc_state::write_rxd));
 	m_rs232->dcd_handler().set(FUNC(bbc_state::write_dcd));
-	m_rs232->cts_handler().set(FUNC(bbc_state::write_cts));
+//	m_rs232->cts_handler().set(FUNC(bbc_state::write_cts));
 
 	/* system via */
 	MOS6522(config, m_via6522_0, 16_MHz_XTAL / 16);
@@ -1700,22 +1705,27 @@ void bbcm_state::bbcm(machine_config &config)
 	m_serproc->out_casmo_callback().set(FUNC(bbc_state::casmo_w));
 	m_serproc->out_cts_callback().set(m_acia, FUNC(acia6850_device::write_cts));
 	m_serproc->out_dcd_callback().set(m_acia, FUNC(acia6850_device::write_dcd));
+	m_serproc->out_dout_callback().set(m_rs232, FUNC(rs232_port_device::write_txd));
 	m_serproc->out_rxc_callback().set(m_acia, FUNC(acia6850_device::write_rxc));
 	m_serproc->out_rxd_callback().set(m_acia, FUNC(acia6850_device::write_rxd));
 	m_serproc->out_txc_callback().set(m_acia, FUNC(acia6850_device::write_txc));
+	m_serproc->out_rtso_callback().set(m_rs232, FUNC(rs232_port_device::write_rts));
+	// HACKs
+	m_serproc->out_txd_callback().set(FUNC(bbc_state::write_txd));
+	m_serproc->out_cass_out_enabled().set(FUNC(bbc_state::write_rts));
 
 	/* acia */
 	ACIA6850(config, m_acia, 0);
-	m_acia->txd_handler().set(FUNC(bbc_state::write_txd));
-	m_acia->rts_handler().set(FUNC(bbc_state::write_rts));
+	m_acia->txd_handler().set(m_serproc, FUNC(bbc_serproc_device::txd_w));
+	m_acia->rts_handler().set(m_serproc, FUNC(bbc_serproc_device::rtsi_w));
 	m_acia->irq_handler().set(m_irqs, FUNC(input_merger_device::in_w<0>));
 
 	RS232_PORT(config, m_rs232, default_rs232_devices, nullptr);
 	m_rs232->rxd_handler().set(m_serproc, FUNC(bbc_serproc_device::din_w));
 	m_rs232->cts_handler().set(m_serproc, FUNC(bbc_serproc_device::ctsi_w));
-	m_rs232->rxd_handler().set(FUNC(bbc_state::write_rxd));
+//	m_rs232->rxd_handler().set(FUNC(bbc_state::write_rxd));
 	m_rs232->dcd_handler().set(FUNC(bbc_state::write_dcd));
-	m_rs232->cts_handler().set(FUNC(bbc_state::write_cts));
+//	m_rs232->cts_handler().set(FUNC(bbc_state::write_cts));
 
 	/* adc */
 	UPD7002(config, m_upd7002, 16_MHz_XTAL / 16);

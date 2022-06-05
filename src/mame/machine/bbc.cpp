@@ -1046,17 +1046,19 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 	}
 	else
 	{
-static int count_increasing = 0;
-static int count_decreasing = 0;
-static double last_raw_tap_val = 0.0;
 		double tap_val = m_cassette->input();
 		logerror("casin: %f\n", tap_val);
 
-		// incoming signal processing by filters and op-amps is done outside the chip
-		// the cassette signals go through a high-pass filter, a low-pass filter, and a high gain amplifier
-		// basically creating digital input from the sine waves
-		// This does not work with our current csw implementation which already creates plain square waves
+		// Incoming signal processing by filters and op-amps
+		// The cassette signals go through a high-pass filter, a low-pass filter, and a high gain amplifier
+		// basically creating digital input from the sine waves.
+		//
+		// This does not work with our current csw implementation which already creates plain square waves, so
+		// check if we are already receiving some digital-ish signal.
 		if (tap_val > -0.9 && tap_val < 0.9) {
+			static int count_increasing = 0;
+			static int count_decreasing = 0;
+			static double last_raw_tap_val = 0.0;
 			if (tap_val > last_raw_tap_val) {
 				count_increasing++;
 			} else {
@@ -1068,13 +1070,25 @@ static double last_raw_tap_val = 0.0;
 				count_decreasing = 0;
 			}
 			last_raw_tap_val = tap_val;
-			if (count_decreasing > 4 && tap_val < 0) {
+			if (count_decreasing > 3 && tap_val < 0) {
 				tap_val = -1.0;
-			} else if (count_increasing > 4 && tap_val > 0) {
+			} else if (count_increasing > 3 && tap_val > 0) {
 				tap_val = 1.0;
 			} else {
 				return;
 			}
+/*
+			static double last_peak = 0.0;
+			if (tap_val > 0.2)
+				last_peak = tap_val;
+			else if (tap_val < -0.2)
+				last_peak = tap_val;
+
+			if (last_peak < 0 && tap_val >= 0)
+				tap_val = 1.0;
+			if (last_peak > 0 && tap_val <= 0)
+				tap_val = -1.0;
+*/
 		} else {
 			if (tap_val > 0.9)
 				tap_val = 1.0;
@@ -1131,28 +1145,13 @@ void bbc_state::update_acia_cts()
 
 WRITE_LINE_MEMBER(bbc_state::write_rts)
 {
-	if (BIT(m_serproc_data, 6))
-	{
-		m_rs232->write_rts(state);
-		m_cass_out_enabled = 0;
-	}
-	else
-	{
-		m_cass_out_enabled = state ? 0 : 1;
-	}
+	m_cass_out_enabled = state;
 }
 
 
 WRITE_LINE_MEMBER(bbc_state::write_txd)
 {
-	if (BIT(m_serproc_data, 6))
-	{
-		m_rs232->write_txd(state);
-	}
-	else
-	{
-		m_txd = state;
-	}
+	m_txd = state;
 }
 
 

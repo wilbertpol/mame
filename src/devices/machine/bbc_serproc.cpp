@@ -23,9 +23,13 @@ bbc_serproc_device::bbc_serproc_device(const machine_config &mconfig, const char
 	, m_out_casmo_cb(*this)
 	, m_out_cts_cb(*this)
 	, m_out_dcd_cb(*this)
+	, m_out_dout_cb(*this)
+	, m_out_rtso_cb(*this)
 	, m_out_rxc_cb(*this)
 	, m_out_rxd_cb(*this)
 	, m_out_txc_cb(*this)
+	, m_out_txd_cb(*this)
+	, m_out_cass_out_enabled(*this)
 	, m_rx_clock(*this, "rx_clock")
 	, m_tx_clock(*this, "tx_clock")
 {
@@ -50,9 +54,13 @@ void bbc_serproc_device::device_start()
 	m_out_casmo_cb.resolve_safe();
 	m_out_cts_cb.resolve_safe();
 	m_out_dcd_cb.resolve_safe();
+	m_out_dout_cb.resolve_safe();
+	m_out_rtso_cb.resolve_safe();
 	m_out_rxc_cb.resolve_safe();
 	m_out_rxd_cb.resolve_safe();
 	m_out_txc_cb.resolve_safe();
+	m_out_txd_cb.resolve_safe();
+	m_out_cass_out_enabled.resolve_safe();
 
 	save_item(NAME(m_control));
 	save_item(NAME(m_cass_rxc));
@@ -60,6 +68,9 @@ void bbc_serproc_device::device_start()
 	save_item(NAME(m_cass_dcd));
 	save_item(NAME(m_din));
 	save_item(NAME(m_ctsi));
+	save_item(NAME(m_rtsi));
+	save_item(NAME(m_rxc));
+	save_item(NAME(m_txd));
 	save_item(NAME(m_last_tap_val));
 	save_item(NAME(m_timeout));
 	save_item(NAME(m_skip_edge));
@@ -90,7 +101,7 @@ void bbc_serproc_device::casin(int tap_val)
 //	machine().debugger().debug_break();
 	if (m_last_tap_val != tap_val)
 	{
-		logerror("casin: edge detected\n", tap_val);
+		logerror("casin: edge detected, timeout = %s, skip_edge = %s\n", m_timeout ? "true" : "false", m_skip_edge ? "true" : "false");
 //		machine().debugger().debug_break();
 		if (m_timeout)
 		{
@@ -120,11 +131,12 @@ void bbc_serproc_device::casin(int tap_val)
 			}
 		}
 		cass_pulse_rxc();
-		m_timeout_timer->adjust(clocks_to_attotime(320));
+		// A longer timeout makes more software works perhaps the original tapes were getting bad??
+		m_timeout_timer->adjust(clocks_to_attotime(/*320*/410));
 	}
 	m_last_tap_val = tap_val;
 
-	// 4 pulse 1.625us low, 1.625us high = 3.25usec = 2 + 2 cycles = 4 cycles
+	// 4 pulse 1.625us low, 1.625us high = 3.25usec = 2 + 2 cycles = 4 cycles => 16 cycles
 	// 1790Hz reliably detected as high tone, 1780Hz not
 	// DCD
 	// high/low timeout = 320 cycles
@@ -152,6 +164,9 @@ void bbc_serproc_device::write(uint8_t data)
 
 	update_rxd();
 	update_dcd();
+	update_dout();
+	update_rxc();
+	update_rts();
 	update_cts();
 	m_out_casmo_cb(BIT(m_control, 7));
 
@@ -186,6 +201,22 @@ WRITE_LINE_MEMBER(bbc_serproc_device::rx_clock_w)
 WRITE_LINE_MEMBER(bbc_serproc_device::tx_clock_w)
 {
 	m_out_txc_cb(state);
+}
+
+
+WRITE_LINE_MEMBER(bbc_serproc_device::txd_w)
+{
+	m_txd = state;
+	update_dout();
+	// HACK
+	m_out_txd_cb(state);
+}
+
+
+WRITE_LINE_MEMBER(bbc_serproc_device::rtsi_w)
+{
+	m_rtsi = state;
+	// TODO
 }
 
 
@@ -243,7 +274,23 @@ void bbc_serproc_device::update_dcd()
 {
 	m_out_dcd = BIT(m_control, 6) ? 0 : m_cass_dcd;
 	logerror("DCD = %d, RXC = %d, RXD = %d\n", m_out_dcd, m_out_rxc, m_out_rxd);
-	m_out_dcd_cb(BIT(m_control, 6) ? 0 : m_cass_dcd);
+	m_out_dcd_cb(m_out_dcd);
+}
+
+
+void bbc_serproc_device::update_dout()
+{
+	m_out_dout_cb(BIT(m_control, 6) ? m_txd : 0);
+}
+
+
+void bbc_serproc_device::update_rts()
+{
+	// TODO trigger cass out enabled in driver to signal that we are going to write?
+	int cass_out_enabled = 0;
+	m_out_cass_out_enabled(cass_out_enabled);
+
+	m_out_rtso_cb(BIT(m_control, 6) ? m_rtsi : 1);
 }
 
 

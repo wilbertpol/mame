@@ -38,15 +38,22 @@ public:
 	auto out_casmo_callback() { return m_out_casmo_cb.bind(); }
 	auto out_cts_callback() { return m_out_cts_cb.bind(); }
 	auto out_dcd_callback() { return m_out_dcd_cb.bind(); }
+	auto out_dout_callback() { return m_out_dout_cb.bind(); }
+	auto out_rtso_callback() { return m_out_rtso_cb.bind(); }
 	auto out_rxc_callback() { return m_out_rxc_cb.bind(); }
 	auto out_rxd_callback() { return m_out_rxd_cb.bind(); }
 	auto out_txc_callback() { return m_out_txc_cb.bind(); }
+	// Temporary hack for the current driver, the raw txd output is not output on a separate pin
+	auto out_txd_callback() { return m_out_txd_cb.bind(); }
+	auto out_cass_out_enabled() { return m_out_cass_out_enabled.bind(); }
 
 	void casin(int tap_val);
 	void write(uint8_t data);
 
 	DECLARE_WRITE_LINE_MEMBER(din_w);
 	DECLARE_WRITE_LINE_MEMBER(ctsi_w);
+	DECLARE_WRITE_LINE_MEMBER(rtsi_w);
+	DECLARE_WRITE_LINE_MEMBER(txd_w);
 
 	DECLARE_WRITE_LINE_MEMBER(tx_clock_w);
 	DECLARE_WRITE_LINE_MEMBER(rx_clock_w);
@@ -62,9 +69,14 @@ private:
 	devcb_write_line m_out_casmo_cb;
 	devcb_write_line m_out_cts_cb;
 	devcb_write_line m_out_dcd_cb;
+	devcb_write_line m_out_dout_cb;
+	devcb_write_line m_out_rtso_cb;
 	devcb_write_line m_out_rxc_cb;
 	devcb_write_line m_out_rxd_cb;
 	devcb_write_line m_out_txc_cb;
+
+	devcb_write_line m_out_txd_cb;
+	devcb_write_line m_out_cass_out_enabled;
 
 	required_device<clock_device> m_rx_clock;
 	required_device<clock_device> m_tx_clock;
@@ -78,7 +90,9 @@ private:
 	int m_cass_dcd = 0;
 	int m_din = 0;
 	int m_ctsi = 0;
+	int m_rtsi = 0;
 	int m_rxc = 0;
+	int m_txd = 0;
 	int m_last_tap_val = 0;
 	bool m_timeout = false;
 	bool m_skip_edge = false;
@@ -89,8 +103,10 @@ private:
 
 	void update_cts();
 	void update_dcd();
+	void update_dout();
 	void update_rxc();
 	void update_rxd();
+	void update_rts();
 	void cass_pulse_rxc();
 	TIMER_CALLBACK_MEMBER(timeout);
 	TIMER_CALLBACK_MEMBER(cass_dcd);
