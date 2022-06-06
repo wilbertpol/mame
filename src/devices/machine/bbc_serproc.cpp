@@ -8,6 +8,26 @@
  * Based on findings from https://stardot.org.uk/forums/viewtopic.php?f=3&t=22935
  * or https://web.archive.org/web/20220301095659/https://stardot.org.uk/forums/viewtopic.php?f=3&t=22935&sid=a3c873c2d1d97807717b9a5abd5ef49d
  * 
+ * Details from the thread above:
+ * - RXC is toggled in bursts of 4, triggered by an edge change or detection of a long cycle/half bit.
+ * - Each burst is 4 pulses of 1.625us low, 1.625us high. Using a 16Mhz/13 clock
+ *   that would be 4 * (2 + 2) = 16 clock cycles.
+ * - The RXC clock bursts start about 25us after an edge detection.
+ * - The DCD pulse lasts about 200us.
+ * - On the Ferranti ULA DCD is pulsed after about 200ms of high tone
+ * - On the VLSI ULA DCD is pulsed after about 90ms of high tone
+ * These timings are based on digital input after applying filters and amplification on
+ * the incoming cassette input.
+ * 
+ * 	// 4 pulse 1.625us low, 1.625us high = 3.25us = 2 + 2 cycles = 4 cycles => 16 cycles
+	// 1790Hz reliably detected as high tone (343 cycles), 1780Hz not (345 cycles)
+	// DCD
+	// high/low timeout = 320 cycles
+	// 200us DCD
+
+	// 2400Hz, edge every 208usec => 256 cycles
+	// 1200Hz, edge every 418usec => 512 cycles
+
  ****************************************************************************/
 
 #include "emu.h"
@@ -126,22 +146,27 @@ void bbc_serproc_device::casin(int tap_val)
 					m_cass_rxd = 1;
 					update_rxd();
 					// DCD goes high after approx. 200msec on the Ferranti ULA and 50msec on the VLSI ULA.
+					// 256 * 1024 on Ferranti => 212 msec
+					// 64 * 1024 on VLSI => 53 msec
 					m_dcd_timer->adjust(clocks_to_attotime(256 * 1024));  // Not verified, but 212msec close to 200msec
 				}
 			}
 		}
 		cass_pulse_rxc();
-		// A longer timeout makes more software works perhaps the original tapes were getting bad??
-		m_timeout_timer->adjust(clocks_to_attotime(/*320*/410));
+		// A longer timeout makes more directly dumped software work.
+		// Perhaps the original tapes were getting bad, but then they should also not work on the real unit?? (unknown if they do)
+		m_timeout_timer->adjust(clocks_to_attotime(344/*320*//*410*/));
 	}
 	m_last_tap_val = tap_val;
 
 	// 4 pulse 1.625us low, 1.625us high = 3.25usec = 2 + 2 cycles = 4 cycles => 16 cycles
-	// 1790Hz reliably detected as high tone, 1780Hz not
+	// 1790Hz reliably detected as high tone (343 cycles), 1780Hz not (345 cycles)
 	// DCD
 	// high/low timeout = 320 cycles
 	// 200us DCD
 
+	// 2400Hz, edge every 208usec => 256 cycles
+	// 1200Hz, edge every 418usec => 512 cycles
 }
 
 
