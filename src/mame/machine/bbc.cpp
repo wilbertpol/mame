@@ -1047,15 +1047,55 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 	else
 	{
 		double tap_val = m_cassette->input();
-		logerror("casin: %f\n", tap_val);
+//		logerror("casin: %f\n", tap_val);
 
 		// Incoming signal processing by filters and op-amps
 		// The cassette signals go through a high-pass filter, a low-pass filter, and a high gain amplifier
-		// basically creating digital input from the sine waves.
+		// to create a digital input for the serproc ula.
+		//
+		// From https://stardot.org.uk/forums/viewtopic.php?f=3&t=22935&sid=7431154c1ce0ff41e1a9942a34e7b92b&start=60 :
+		// For high tone (2400Hz) there is almost no phase shift; the zero crossing of the cassette waveform
+		// and the casin signal coincide.
+		// For low tone (1200Hz) there is phase shift; the zero crossing of the casin signal almost coincide
+		// with the peak of the cassette waveform.
+		//
 		//
 		// This does not work with our current csw implementation which already creates plain square waves, so
 		// check if we are already receiving some digital-ish signal.
 		if (tap_val > -0.9 && tap_val < 0.9) {
+			// version 3 - attempt at phase shift
+			static double last_peak = 0.0;
+			static double last_raw_tap_val = 0.0;
+			static int casin = 0;
+			static int samples_since_edge = 0;
+			static bool seen_peak = false;
+
+			// check if we're on a peak
+			samples_since_edge++;
+			if (tap_val > 0.2 || tap_val < -0.2)
+			{
+				seen_peak = true;
+				if (tap_val > 0 && tap_val > last_peak)
+					last_peak = tap_val;
+				if (tap_val < 0 && tap_val < last_peak)
+					last_peak = tap_val;
+				// Long cycle, phase shift
+				if (samples_since_edge > 10)
+					casin = (tap_val > 0) ? 1 : 0;
+			}
+			if ((tap_val <= 0 && last_raw_tap_val > 0) || (tap_val >= 0 && last_raw_tap_val < 0))
+			{
+				// Short cycle
+				casin = (last_peak > 0) ? 1 : 0;
+				samples_since_edge = 0;
+				last_peak = 0.0;
+				seen_peak = false;
+			}
+			last_raw_tap_val = tap_val;
+			logerror("tap_val: %f, casin: %d, samples_since_edge: %d, seen_peak: %s, last_peak = %f\n", tap_val, casin, samples_since_edge, seen_peak ? "true" : "false", last_peak);
+			m_serproc->casin(casin);
+/*
+			// version 2 - no phase shift
 			static int count_increasing = 0;
 			static int count_decreasing = 0;
 			static double last_raw_tap_val = 0.0;
@@ -1077,7 +1117,9 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 			} else {
 				return;
 			}
+*/
 /*
+			// version 1
 			static double last_peak = 0.0;
 			if (tap_val > 0.2)
 				last_peak = tap_val;
@@ -1094,6 +1136,7 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 				tap_val = 1.0;
 			else if (tap_val < -0.9)
 				tap_val = -1.0;
+			m_serproc->casin(tap_val > 0 ? 1 : 0);
 		}
 
 	//	tap_val *= 40;
@@ -1103,7 +1146,7 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 	//		tap_val = -1.0;
 	//	else return;
 
-		m_serproc->casin(tap_val > 0 ? 1 : 0);
+//		m_serproc->casin(tap_val > 0 ? 1 : 0);
 	}
 }
 
