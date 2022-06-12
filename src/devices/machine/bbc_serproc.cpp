@@ -19,15 +19,6 @@
  * These timings are based on digital input after applying filters and amplification on
  * the incoming cassette input.
  * 
- * 	// 4 pulse 1.625us low, 1.625us high = 3.25us = 2 + 2 cycles = 4 cycles => 16 cycles
-	// 1790Hz reliably detected as high tone (343 cycles), 1780Hz not (345 cycles)
-	// DCD
-	// high/low timeout = 320 cycles
-	// 200us DCD
-
-	// 2400Hz, edge every 208usec => 256 cycles
-	// 1200Hz, edge every 418usec => 512 cycles
-
  ****************************************************************************/
 
 #include "emu.h"
@@ -114,15 +105,9 @@ void bbc_serproc_device::device_reset()
 
 void bbc_serproc_device::casin(int tap_val)
 {
-	// bbcb:
-	// g FB61 - starting motor
-	// wpset fe09,1,r
-	// Do edge detection
-//	machine().debugger().debug_break();
+	// Detect edges
 	if (m_last_tap_val != tap_val)
 	{
-		logerror("casin: edge detected, timeout = %s, skip_edge = %s\n", m_timeout ? "true" : "false", m_skip_edge ? "true" : "false");
-//		machine().debugger().debug_break();
 		if (m_timeout)
 		{
 			if (m_cass_rxd != 0)
@@ -146,33 +131,22 @@ void bbc_serproc_device::casin(int tap_val)
 					m_cass_rxd = 1;
 					update_rxd();
 					// DCD goes high after approx. 200msec on the Ferranti ULA and 50msec on the VLSI ULA.
-					// 256 * 1024 on Ferranti => 212 msec
-					// 64 * 1024 on VLSI => 53 msec
-					m_dcd_timer->adjust(clocks_to_attotime(256 * 1024));  // Not verified, but 212msec close to 200msec
+					// 256 * 1024 on Ferranti ULA => 212 msec (not verified)
+					// 64 * 1024 on VLSI ULA => 53 msec (not verified)
+					m_dcd_timer->adjust(clocks_to_attotime(256 * 1024));
 				}
 			}
 		}
 		cass_pulse_rxc();
-		// A longer timeout makes more directly dumped software work.
-		// Perhaps the original tapes were getting bad, but then they should also not work on the real unit?? (unknown if they do)
-		m_timeout_timer->adjust(clocks_to_attotime(344/*320*//*410*/));
+		// 1790Hz reliably detected as high tone (343 cycles), 1780Hz not (345 cycles)
+		m_timeout_timer->adjust(clocks_to_attotime(344));
 	}
 	m_last_tap_val = tap_val;
-
-	// 4 pulse 1.625us low, 1.625us high = 3.25usec = 2 + 2 cycles = 4 cycles => 16 cycles
-	// 1790Hz reliably detected as high tone (343 cycles), 1780Hz not (345 cycles)
-	// DCD
-	// high/low timeout = 320 cycles
-	// 200us DCD
-
-	// 2400Hz, edge every 208usec => 256 cycles
-	// 1200Hz, edge every 418usec => 512 cycles
 }
 
 
 void bbc_serproc_device::write(uint8_t data)
 {
-	logerror("write %02x\n", data);
 	m_control = data;
 
 	static const int serial_clock_dividers[8] =
@@ -260,12 +234,9 @@ TIMER_CALLBACK_MEMBER(bbc_serproc_device::cass_dcd)
 	{
 		m_cass_dcd = 0;
 		update_dcd();
-//		machine().debugger().debug_break();
 	}
 	else
 	{
-		logerror("Trigger DCD\n");
-//		machine().debugger().debug_break();
 		m_cass_dcd = 1;
 		update_dcd();
 		// DCD goes low again after approx. 200usec
@@ -298,7 +269,6 @@ void bbc_serproc_device::update_cts()
 void bbc_serproc_device::update_dcd()
 {
 	m_out_dcd = BIT(m_control, 6) ? 0 : m_cass_dcd;
-	logerror("DCD = %d, RXC = %d, RXD = %d\n", m_out_dcd, m_out_rxc, m_out_rxd);
 	m_out_dcd_cb(m_out_dcd);
 }
 
@@ -322,7 +292,6 @@ void bbc_serproc_device::update_rts()
 void bbc_serproc_device::update_rxc()
 {
 	m_out_rxc = BIT(m_control, 6) ? m_rxc : m_cass_rxc;
-	logerror("DCD = %d, RXC = %d, RXD = %d\n", m_out_dcd, m_out_rxc, m_out_rxd);
 	m_out_rxc_cb(BIT(m_control, 6) ? m_rxc : m_cass_rxc);
 }
 
@@ -330,7 +299,6 @@ void bbc_serproc_device::update_rxc()
 void bbc_serproc_device::update_rxd()
 {
 	m_out_rxd = BIT(m_control, 6) ? m_din : m_cass_rxd;
-	logerror("DCD = %d, RXC = %d, RXD = %d\n", m_out_dcd, m_out_rxc, m_out_rxd);
 	m_out_rxd_cb(BIT(m_control, 6) ? m_din : m_cass_rxd);
 }
 

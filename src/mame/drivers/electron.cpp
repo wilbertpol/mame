@@ -271,6 +271,9 @@ void electron_state::electron(machine_config &config)
 	m_cassette->set_interface("bbc_cass");
 
 	BBC_ELK_CASIN(config, m_casin);
+	m_casin->set_sampling_frequency(CASSETTE_SAMPLING_FREQUENCY);
+	m_casin->set_hpf(150'000, 150'000, 220'000, 820'000, 820.0/1'000'000'000'000, 820.0/1'000'000'000'000);
+	m_casin->set_lpf(8'200, 8'200, 10'000, 39'000, 4.7/1'000'000'000, 4.7/1'000'000'000);
 
 	/* expansion port */
 	ELECTRON_EXPANSION_SLOT(config, m_exp, 16_MHz_XTAL, electron_expansion_devices, "plus3");

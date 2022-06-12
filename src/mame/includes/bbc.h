@@ -211,6 +211,8 @@ public:
 	void init_cfa();
 
 protected:
+	static constexpr int CASSETTE_SAMPLING_FREQUENCY = 48'000;
+
 	virtual void machine_start() override;
 	virtual void machine_reset() override;
 

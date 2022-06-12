@@ -65,6 +65,7 @@ public:
 	DECLARE_INPUT_CHANGED_MEMBER( trigger_reset );
 
 protected:
+	static constexpr int CASSETTE_SAMPLING_FREQUENCY = 48'000;
 	enum
 	{
 		TIMER_TAPE_HANDLER,

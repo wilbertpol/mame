@@ -18,7 +18,7 @@
 
 #define LOG_SETUP    (1U << 1)
 
-#define VERBOSE (LOG_GENERAL | LOG_SETUP)
+//#define VERBOSE (LOG_GENERAL | LOG_SETUP)
 //#define LOG_OUTPUT_STREAM std::cout
 
 #include "logmacro.h"

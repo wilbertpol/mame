@@ -55,7 +55,7 @@ void electron_state::electron_tape_start()
 	m_ula.high_tone_set = 0;
 	m_ula.bit_count = 0;
 	m_ula.tape_running = 1;
-	m_tape_timer->adjust(attotime::zero, 0, attotime::from_hz(bbc_elk_casin_device::SAMPLING_FREQUENCY));
+	m_tape_timer->adjust(attotime::zero, 0, attotime::from_hz(CASSETTE_SAMPLING_FREQUENCY));
 }
 
 void electron_state::electron_tape_stop()
