@@ -1147,6 +1147,8 @@ void bbc_state::bbca(machine_config &config)
 	m_cassette->set_default_state(CASSETTE_PLAY | CASSETTE_MOTOR_DISABLED);
 	m_cassette->set_interface("bbc_cass");
 
+	BBC_ELK_CASIN(config, m_casin);
+
 	BBC_SERPROC(config, m_serproc, 16_MHz_XTAL / 13);
 	m_serproc->out_casmo_callback().set(FUNC(bbc_state::casmo_w));
 	m_serproc->out_cts_callback().set(m_acia, FUNC(acia6850_device::write_cts));
@@ -1701,6 +1703,8 @@ void bbcm_state::bbcm(machine_config &config)
 	m_cassette->set_default_state(CASSETTE_PLAY | CASSETTE_MOTOR_DISABLED);
 	m_cassette->set_interface("bbc_cass");
 
+	BBC_ELK_CASIN(config, m_casin);
+
 	BBC_SERPROC(config, m_serproc, 16_MHz_XTAL / 13);
 	m_serproc->out_casmo_callback().set(FUNC(bbc_state::casmo_w));
 	m_serproc->out_cts_callback().set(m_acia, FUNC(acia6850_device::write_cts));
@@ -1874,6 +1878,7 @@ void bbcm_state::bbcmet(machine_config &config)
 	/* acia */
 	config.device_remove("acia6850");
 	config.device_remove("rs423");
+	config.device_remove("casin");
 	config.device_remove("serproc");
 
 	/* devices */

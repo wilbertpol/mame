@@ -102,6 +102,7 @@ public:
 		, m_bankdev(*this, "bankdev")
 		, m_bbcconfig(*this, "BBCCONFIG")
 		, m_motor_led(*this, "motor_led")
+		, m_casin(*this, "casin")
 		, m_serproc(*this, "serproc")
 	{ }
 
@@ -260,6 +261,7 @@ protected:
 	optional_ioport m_bbcconfig;
 
 	output_finder<> m_motor_led;
+	optional_device<bbc_elk_casin_device> m_casin;
 	optional_device<bbc_serproc_device> m_serproc;
 
 	int m_romsel = 0;           // This is the latch that holds the sideways ROM bank to read
