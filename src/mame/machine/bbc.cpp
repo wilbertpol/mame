@@ -1050,8 +1050,17 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 //		logerror("casin: %f\n", tap_val);
 
 		// Incoming signal processing by filters and op-amps
-		// The cassette signals go through a high-pass filter, a low-pass filter, and a high gain amplifier
-		// to create a digital input for the serproc ula.
+		// The cassette signal goes through some filters to produce a digital input for
+		// the serproc ula:
+		// - a second order high-pass filter (-3db point at 1294Hz, 1.27 gain),
+		//   R1 = 150k, R2 = 150k, Ra = 220k, Rb = 820k, C1 = 820p , C2 = 820p 
+		//   Gain = 1 + Ra/Rb = 1 + 220k / 820k = 1.27
+		//   fc = 1 / (2 * pi * sqrt(R1 * R2 * C1 * C2)) = 1294Hz
+		// - a second order low-pass filter (-3db point at 4129Hz, 1.26 gain),
+		//   R1 = 8k2, R2 = 8k2, Ra = 10k, Rb = 39k, C1 = 4n7, C2 = 4n7
+		//   Gain = 1 + Ra/Rb = 1 + (10k / 39k) = 1.256
+		//   fc = 1 / (2 * pi * sqrt(R1 * R2 * C1 * C2)) = 4129Hz
+		// - and a high gain amplifier
 		//
 		// From https://stardot.org.uk/forums/viewtopic.php?f=3&t=22935&sid=7431154c1ce0ff41e1a9942a34e7b92b&start=60 :
 		// For high tone (2400Hz) there is almost no phase shift; the zero crossing of the cassette waveform
@@ -1062,6 +1071,53 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 		//
 		// This does not work with our current csw implementation which already creates plain square waves, so
 		// check if we are already receiving some digital-ish signal.
+
+		// TODO second order high pass filter
+		// pi must be defined somewhere as constant?
+		static const double hpf_fc = 1 / (2 * 3.14156 * sqrt((double)150'000 * 150'000 * 0.00000000082 * 0.00000000082));
+		static const double hpf_theta = (2 * 3.14156 * hpf_fc) / 48'000;
+		static const double hpf_d = 1 / 0.707;
+		static const double hpf_beta = 0.5 * ((1 - ((hpf_d / 2) * sin(hpf_theta))) / (1 + ((hpf_d / 2 ) * sin(hpf_theta))));
+		static const double hpf_gamma = (0.5 + hpf_beta) * cos(hpf_theta);
+		static const double hpf_a0 = (0.5 + hpf_beta + hpf_gamma) / 2.0;
+		static const double hpf_a1 = -(0.5 + hpf_beta + hpf_gamma);
+		static const double hpf_a2 = hpf_a0;
+		static const double hpf_b1 = -2 * hpf_gamma;
+		static const double hpf_b2 = 2 * hpf_beta;
+		static double hpf_xn1 = 0.0;
+		static double hpf_xn2 = 0.0;
+		static double hpf_yn1 = 0.0;
+		static double hpf_yn2 = 0.0;
+		double hpf_yn = (hpf_a0 * tap_val) + (hpf_a1 * hpf_xn1 + (hpf_a2 * hpf_xn2)) - (hpf_b1 * hpf_yn1) - (hpf_b2 * hpf_yn2);
+		hpf_xn2 = hpf_xn1;
+		hpf_xn1 = tap_val;
+		hpf_yn2 = hpf_yn1;
+		hpf_yn1 = hpf_yn;
+		// TODO second order low pass filter
+		//   R1 = 8k2, R2 = 8k2, Ra = 10k, Rb = 39k, C1 = 4n7, C2 = 4n7
+		//   Gain = 1 + Ra/Rb = 1 + (10k / 39k) = 1.256
+		//   fc = 1 / (2 * pi * sqrt(R1 * R2 * C1 * C2)) = 4129Hz
+		static const double lpf_fc = 1 / (2 * 3.14156 * sqrt((double)8'200 * 8'200 * 0.0000000047 * 0.0000000047));
+		static const double lpf_theta = (2 * 3.14156 * lpf_fc) / 48'000;
+		static const double lpf_d = 1 / 0.707;
+		static const double lpf_beta = 0.5 * ((1 - ((lpf_d / 2) * sin(lpf_theta))) / (1 + ((lpf_d / 2 ) * sin(lpf_theta))));
+		static const double lpf_gamma = (0.5 + lpf_beta) * cos(lpf_theta);
+		static const double lpf_a0 = (0.5 + lpf_beta - lpf_gamma) / 2.0;
+		static const double lpf_a1 = 0.5 + lpf_beta - lpf_gamma;
+		static const double lpf_a2 = lpf_a0;
+		static const double lpf_b1 = -2 * lpf_gamma;
+		static const double lpf_b2 = 2 * lpf_beta;
+		static double lpf_xn1 = 0.0;
+		static double lpf_xn2 = 0.0;
+		static double lpf_yn1 = 0.0;
+		static double lpf_yn2 = 0.0;
+		double lpf_yn = (lpf_a0 * hpf_yn) + (lpf_a1 * lpf_xn1 + (lpf_a2 * lpf_xn2)) - (lpf_b1 * lpf_yn1) - (lpf_b2 * lpf_yn2);
+		lpf_xn2 = lpf_xn1;
+		lpf_xn1 = hpf_yn;
+		lpf_yn2 = lpf_yn1;
+		lpf_yn1 = lpf_yn;
+		// TODO high gain amplifier
+		
 		if (tap_val > -0.9 && tap_val < 0.9) {
 			// version 3 - attempt at phase shift
 			static double last_peak = 0.0;
@@ -1092,7 +1148,7 @@ TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 				seen_peak = false;
 			}
 			last_raw_tap_val = tap_val;
-			logerror("tap_val: %f, casin: %d, samples_since_edge: %d, seen_peak: %s, last_peak = %f\n", tap_val, casin, samples_since_edge, seen_peak ? "true" : "false", last_peak);
+			logerror("tap_val: %f, hpf_yn = %f, lpf_yn = %f, casin: %d, samples_since_edge: %d, seen_peak: %s, last_peak = %f\n", tap_val, hpf_yn, lpf_yn, casin, samples_since_edge, seen_peak ? "true" : "false", last_peak);
 			m_serproc->casin(casin);
 /*
 			// version 2 - no phase shift
