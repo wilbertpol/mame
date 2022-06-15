@@ -5,8 +5,7 @@
  * Common transformation of the analog cassette input to the digital CASIN input
  * for the SERPROC ULA (BBC) or the main system ULA (electron).
  *
- * The analog cassette signal goes through some filters to produce a digital input for
- * the serproc ula:
+ * The analog cassette signal goes through some filters to produce a digital input:
  * - a second order high-pass filter,
  * - a second order low-pass filter,
  * - and a high gain amplifier (to create a square wave)
@@ -35,33 +34,9 @@ bbc_elk_casin_device::bbc_elk_casin_device(const machine_config &mconfig, const 
 void bbc_elk_casin_device::device_start()
 {
 	assert(sampling_frequency > 0);
-	assert(hpf_r1 > 0.0 && hpf_r2 > 0.0 && hpf_c1 > 0.0 && hpf_c2 > 0.0);
-	assert(lpf_r1 > 0.0 && lpf_r2 > 0.0 && lpf_c1 > 0.0 && lpf_c2 > 0.0);
 
-	double pi = acos(-1.0);
-	double hpf_fc = 1 / (2 * pi * sqrt(hpf_r1 * hpf_r2 * hpf_c1 * hpf_c2));
-	logerror("HPF cut-off frequency: %f\n", hpf_fc);
-	double hpf_theta = (2 * pi * hpf_fc) / sampling_frequency;
-	double hpf_d = 1 / 0.707;
-	double hpf_beta = 0.5 * ((1 - ((hpf_d / 2) * sin(hpf_theta))) / (1 + ((hpf_d / 2 ) * sin(hpf_theta))));
-	double hpf_gamma = (0.5 + hpf_beta) * cos(hpf_theta);
-	hpf_a0 = (0.5 + hpf_beta + hpf_gamma) / 2.0;
-	hpf_a1 = -(0.5 + hpf_beta + hpf_gamma);
-	hpf_a2 = hpf_a0;
-	hpf_b1 = -2 * hpf_gamma;
-	hpf_b2 = 2 * hpf_beta;
-
-	double lpf_fc = 1 / (2 * pi * sqrt(lpf_r1 * lpf_r2 * lpf_c1 * lpf_c2));
-	logerror("LPF cut-off frequency: %f\n", lpf_fc);
-	double lpf_theta = (2 * pi * lpf_fc) / sampling_frequency;
-	double lpf_d = 1 / 0.707;
-	double lpf_beta = 0.5 * ((1 - ((lpf_d / 2) * sin(lpf_theta))) / (1 + ((lpf_d / 2 ) * sin(lpf_theta))));
-	double lpf_gamma = (0.5 + lpf_beta) * cos(lpf_theta);
-	lpf_a0 = (0.5 + lpf_beta - lpf_gamma) / 2.0;
-	lpf_a1 = 0.5 + lpf_beta - lpf_gamma;
-	lpf_a2 = lpf_a0;
-	lpf_b1 = -2 * lpf_gamma;
-	lpf_b2 = 2 * lpf_beta;
+	setup_hpf();
+	setup_lpf();
 
 	save_item(NAME(m_hpf_x));
 	save_item(NAME(m_hpf_y));
@@ -72,6 +47,83 @@ void bbc_elk_casin_device::device_start()
 	save_item(NAME(m_len));
 	save_item(NAME(m_casin));
 	save_item(NAME(m_timeout));
+}
+
+
+void bbc_elk_casin_device::setup_hpf()
+{
+	// Configuration of the filters
+	/*
+	 * Parameters for the second order high pass filter
+	 *
+	 *          +-----------R1--------+
+	 *          |             |\      |
+	 * o---C1---+---C2---+----|+\     |
+	 *                   |    |  \----+-------o
+	 * |                 |    |  /    |
+	 * |                 |  +-|-/     |       |
+	 * in                R2 | |/      |       |
+	 * |                 |  +-----RA--+      out
+	 * |                 |  |                 |
+	 * |                 |  RB                |
+	 *                   |  |
+	 * o-----------------+--+-----------------o
+	 *
+	*/
+	const double r1 = 150'000;
+	const double r2 = 150'000;
+//	const double ra = 220'000;
+//	const double rb = 820'000;
+	const double c1 = 820.0/1'000'000'000'000;
+	const double c2 = 820.0/1'000'000'000'000;
+
+	const double theta = 1 / (sampling_frequency * sqrt(r1 * r2 * c1 * c2));
+	const double d = 1 / 0.707;
+	const double beta = 0.5 * ((1 - ((d / 2) * sin(theta))) / (1 + ((d / 2 ) * sin(theta))));
+	const double gamma = (0.5 + beta) * cos(theta);
+	hpf_a0 = (0.5 + beta + gamma) / 2.0;
+	hpf_a1 = -(0.5 + beta + gamma);
+	hpf_a2 = hpf_a0;
+	hpf_b1 = -2 * gamma;
+	hpf_b2 = 2 * beta;
+}
+
+
+void bbc_elk_casin_device::setup_lpf()
+{
+	/*
+	 * Parameters for the second order low pass filter
+	 *
+	 *          +-----------C1--------+
+	 *          |             |\      |
+	 * o---R1---+---R2---+----|+\     |
+	 *                   |    |  \----+-------o
+	 * |                 |    |  /    |
+	 * |                 |  +-|-/     |       |
+	 * in                C2 | |/      |       |
+	 * |                 |  +-----RA--+      out
+	 * |                 |  |                 |
+	 * |                 |  RB                |
+	 *                   |  |
+	 * o-----------------+--+-----------------o
+	 *
+	*/
+	const double r1 = 8'200;
+	const double r2 = 8'200;
+//	const double ra = 10'000;
+//	const double rb = 39'000;
+	const double c1 = 4.7/1'000'000'000;
+	const double c2 = 4.7/1'000'000'000;
+
+	const double theta = 1 / ( sampling_frequency * sqrt(r1 * r2 * c1 * c2));
+	const double d = 1 / 0.707;
+	const double beta = 0.5 * ((1 - ((d / 2) * sin(theta))) / (1 + ((d / 2 ) * sin(theta))));
+	const double gamma = (0.5 + beta) * cos(theta);
+	lpf_a0 = (0.5 + beta - gamma) / 2.0;
+	lpf_a1 = 0.5 + beta - gamma;
+	lpf_a2 = lpf_a0;
+	lpf_b1 = -2 * gamma;
+	lpf_b2 = 2 * beta;
 }
 
 
@@ -110,7 +162,7 @@ int bbc_elk_casin_device::cassette_input(double tap_val)
 	m_lpf_y[0] = lpf_yn;
 
 	// The high gain amplifier creates a square wave from the output of the two filters.
-	return lpf_yn < -0.0 ? 1 : 0;
+	return lpf_yn < 0.0 ? 1 : 0;
 }
 
 

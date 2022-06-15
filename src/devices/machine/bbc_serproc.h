@@ -33,7 +33,11 @@
 class bbc_serproc_device : public device_t
 {
 public:
+	typedef device_delegate<void (double casout)> casout_delegate;
+
 	bbc_serproc_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+	template <typename... T> void set_casout_cb(T &&... args) { m_casout_cb.set(std::forward<T>(args)...); }
 
 	auto out_casmo_callback() { return m_out_casmo_cb.bind(); }
 	auto out_cts_callback() { return m_out_cts_cb.bind(); }
@@ -43,9 +47,6 @@ public:
 	auto out_rxc_callback() { return m_out_rxc_cb.bind(); }
 	auto out_rxd_callback() { return m_out_rxd_cb.bind(); }
 	auto out_txc_callback() { return m_out_txc_cb.bind(); }
-	// Temporary hack for the current driver, the raw txd output is not output on a separate pin
-	auto out_txd_callback() { return m_out_txd_cb.bind(); }
-	auto out_cass_out_enabled() { return m_out_cass_out_enabled.bind(); }
 
 	void casin(int tap_val);
 	void write(uint8_t data);
@@ -75,14 +76,14 @@ private:
 	devcb_write_line m_out_rxd_cb;
 	devcb_write_line m_out_txc_cb;
 
-	devcb_write_line m_out_txd_cb;
-	devcb_write_line m_out_cass_out_enabled;
+	casout_delegate m_casout_cb;
 
 	required_device<clock_device> m_rx_clock;
 	required_device<clock_device> m_tx_clock;
 
 	emu_timer *m_timeout_timer;
 	emu_timer *m_dcd_timer;
+	emu_timer *m_write_timer;
 
 	uint8_t m_control = 0;
 	int m_cass_rxc = 1;
@@ -101,6 +102,10 @@ private:
 	int m_out_rxc = 0;
 	int m_out_rxd = 0;
 
+	int m_out_state = 0;
+	bool m_write_enable = false;
+	int m_write_txd = 0;
+
 	void update_cts();
 	void update_dcd();
 	void update_dout();
@@ -110,6 +115,7 @@ private:
 	void cass_pulse_rxc();
 	TIMER_CALLBACK_MEMBER(timeout);
 	TIMER_CALLBACK_MEMBER(cass_dcd);
+	TIMER_CALLBACK_MEMBER(cass_out);
 };
 
 

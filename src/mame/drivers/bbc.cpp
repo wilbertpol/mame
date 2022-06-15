@@ -135,7 +135,7 @@ void bbc_state::bbca_mem(address_map &map)
 	map(0xfe00, 0xfe00).mirror(0x06).rw(m_hd6845, FUNC(hd6845s_device::status_r), FUNC(hd6845s_device::address_w));   //    fe00-fe07  6845 CRTC      Video controller
 	map(0xfe01, 0xfe01).mirror(0x06).rw(m_hd6845, FUNC(hd6845s_device::register_r), FUNC(hd6845s_device::register_w));
 	map(0xfe08, 0xfe0f).rw(m_acia, FUNC(acia6850_device::read), FUNC(acia6850_device::write));                        //    fe08-fe0f  6850 ACIA      Serial controller
-	map(0xfe10, 0xfe17).w(FUNC(bbc_state::serial_ula_w));                                                             //    fe10-fe17  Serial ULA     Serial system chip
+	map(0xfe10, 0xfe17).w(m_serproc, FUNC(bbc_serproc_device::write));                                                //    fe10-fe17  Serial ULA     Serial system chip
 	map(0xfe20, 0xfe2f).w(FUNC(bbc_state::video_ula_w));                                                              // W: fe20-fe2f  Video ULA      Video system chip
 	map(0xfe30, 0xfe3f).w(FUNC(bbc_state::bbc_romsel_w));                                                             // W: fe30-fe3f  74LS161        Paged ROM selector
 	map(0xfe40, 0xfe5f).m(m_via6522_0, FUNC(via6522_device::map));                                                    //    fe40-fe5f  6522 VIA       SYSTEM VIA
@@ -152,7 +152,7 @@ void bbc_state::bbc_base(address_map &map)
 	map(0xfe00, 0xfe00).mirror(0x06).rw(m_hd6845, FUNC(hd6845s_device::status_r), FUNC(hd6845s_device::address_w));   //    fe00-fe07  6845 CRTC      Video controller
 	map(0xfe01, 0xfe01).mirror(0x06).rw(m_hd6845, FUNC(hd6845s_device::register_r), FUNC(hd6845s_device::register_w));
 	map(0xfe08, 0xfe0f).rw(m_acia, FUNC(acia6850_device::read), FUNC(acia6850_device::write));                        //    fe08-fe0f  6850 ACIA      Serial controller
-	map(0xfe10, 0xfe17).w(FUNC(bbc_state::serial_ula_w));                                                             //    fe10-fe17  Serial ULA     Serial system chip
+	map(0xfe10, 0xfe17).w(m_serproc, FUNC(bbc_serproc_device::write));                                                //    fe10-fe17  Serial ULA     Serial system chip
 	map(0xfe18, 0xfe1f).portr("STATID");                                                                              //    fe18-fe1f  INTOFF/STATID  ECONET Interrupt Off / ID No.
 	map(0xfe20, 0xfe2f).w(FUNC(bbc_state::video_ula_w));                                                              // W: fe20-fe2f  Video ULA      Video system chip
 	map(0xfe40, 0xfe5f).m(m_via6522_0, FUNC(via6522_device::map));                                                    //    fe40-fe5f  6522 VIA       SYSTEM VIA
@@ -229,7 +229,7 @@ void bbcm_state::bbcm_bankdev(address_map &map)
 	map(0x0200, 0x0200).mirror(0x406).rw(m_hd6845, FUNC(hd6845s_device::status_r), FUNC(hd6845s_device::address_w));                  //    fe00-fe07  6845 CRTC      Video controller
 	map(0x0201, 0x0201).mirror(0x406).rw(m_hd6845, FUNC(hd6845s_device::register_r), FUNC(hd6845s_device::register_w));
 	map(0x0208, 0x020f).mirror(0x400).rw(m_acia, FUNC(acia6850_device::read), FUNC(acia6850_device::write));                          //    fe08-fe0f  6850 ACIA      Serial controller
-	map(0x0210, 0x0217).mirror(0x400).w(FUNC(bbc_state::serial_ula_w));                                                               //    fe10-fe17  Serial ULA     Serial system chip
+	map(0x0210, 0x0217).mirror(0x400).w(m_serproc, FUNC(bbc_serproc_device::write));                                                  //    fe10-fe17  Serial ULA     Serial system chip
 	map(0x0218, 0x021f).mirror(0x400).rw(m_upd7002, FUNC(upd7002_device::read), FUNC(upd7002_device::write));                         //    fe18-fe1f  uPD7002        Analogue to digital converter
 	map(0x0220, 0x0223).mirror(0x400).w(FUNC(bbc_state::video_ula_w));                                                                //    fe20-fe23  Video ULA      Video system chip
 	map(0x0224, 0x0227).mirror(0x400).w(FUNC(bbc_state::bbcm_drive_control_w));                                                       //    fe24-fe27  FDC Latch      1770 Control latch
@@ -259,7 +259,7 @@ void bbcm_state::bbcmet_bankdev(address_map &map)
 	map(0x0200, 0x0200).mirror(0x406).rw(m_hd6845, FUNC(hd6845s_device::status_r), FUNC(hd6845s_device::address_w));                  //    fe00-fe07  6845 CRTC      Video controller
 	map(0x0201, 0x0201).mirror(0x406).rw(m_hd6845, FUNC(hd6845s_device::register_r), FUNC(hd6845s_device::register_w));
 	map(0x0208, 0x020f).mirror(0x400).r(FUNC(bbc_state::bbc_fe_r));                                                                   //    fe08-fe0f  6850 ACIA      Serial controller
-	map(0x0210, 0x0217).mirror(0x400).w(FUNC(bbc_state::serial_ula_w));                                                               //    fe10-fe17  Serial ULA     Serial system chip
+	map(0x0210, 0x0217).mirror(0x400).r(FUNC(bbc_state::bbc_fe_r));                                                                   //    fe10-fe17  Serial ULA     Serial system chip
 	map(0x0218, 0x021f).mirror(0x400).r(FUNC(bbc_state::bbc_fe_r));                                                                   //    fe18-fe1f  uPD7002        Analogue to digital converter
 	map(0x0220, 0x0223).mirror(0x400).w(FUNC(bbc_state::video_ula_w));                                                                //    fe20-fe23  Video ULA      Video system chip
 	map(0x0224, 0x0227).mirror(0x400).r(FUNC(bbc_state::bbc_fe_r));                                                                   //    fe24-fe27  FDC Latch      1770 Control latch
@@ -300,7 +300,7 @@ void bbcm_state::bbcmc_bankdev(address_map &map)
 	map(0x0200, 0x0200).mirror(0x406).rw(m_hd6845, FUNC(hd6845s_device::status_r), FUNC(hd6845s_device::address_w));                  //    fe00-fe07  6845 CRTC      Video controller
 	map(0x0201, 0x0201).mirror(0x406).rw(m_hd6845, FUNC(hd6845s_device::register_r), FUNC(hd6845s_device::register_w));
 	map(0x0208, 0x020f).mirror(0x400).rw(m_acia, FUNC(acia6850_device::read), FUNC(acia6850_device::write));                          //    fe08-fe0f  6850 ACIA      Serial controller
-	map(0x0210, 0x0217).mirror(0x400).w(FUNC(bbc_state::serial_ula_w));                                                               //    fe10-fe17  Serial ULA     Serial system chip
+	map(0x0210, 0x0217).mirror(0x400).w(m_serproc, FUNC(bbc_serproc_device::write));                                                  //    fe10-fe17  Serial ULA     Serial system chip
 	map(0x0220, 0x0223).mirror(0x400).w(FUNC(bbc_state::video_ula_w));                                                                //    fe20-fe23  Video ULA      Video system chip
 	map(0x0224, 0x0227).mirror(0x400).w(FUNC(bbc_state::bbcm_drive_control_w));                                                       //    fe24-fe27  FDC Latch      1772 Control latch
 	map(0x0228, 0x022f).mirror(0x400).rw(m_wd_fdc, FUNC(wd1772_device::read), FUNC(wd1772_device::write));                            //    fe28-fe2f  1772 FDC       Floppy disc controller
@@ -1149,8 +1149,6 @@ void bbc_state::bbca(machine_config &config)
 
 	BBC_ELK_CASIN(config, m_casin);
 	m_casin->set_sampling_frequency(CASSETTE_SAMPLING_FREQUENCY);
-	m_casin->set_hpf(150'000, 150'000, 220'000, 820'000, 820.0/1'000'000'000'000, 820.0/1'000'000'000'000);
-	m_casin->set_lpf(8'200, 8'200, 10'000, 39'000, 4.7/1'000'000'000, 4.7/1'000'000'000);
 
 	BBC_SERPROC(config, m_serproc, 16_MHz_XTAL / 13);
 	m_serproc->out_casmo_callback().set(FUNC(bbc_state::casmo_w));
@@ -1161,9 +1159,7 @@ void bbc_state::bbca(machine_config &config)
 	m_serproc->out_rxd_callback().set(m_acia, FUNC(acia6850_device::write_rxd));
 	m_serproc->out_txc_callback().set(m_acia, FUNC(acia6850_device::write_txc));
 	m_serproc->out_rtso_callback().set(m_rs232, FUNC(rs232_port_device::write_rts));
-	// HACKs
-	m_serproc->out_txd_callback().set(FUNC(bbc_state::write_txd));
-	m_serproc->out_cass_out_enabled().set(FUNC(bbc_state::write_rts));
+	m_serproc->set_casout_cb(FUNC(bbc_state::casout));
 
 	/* acia */
 	ACIA6850(config, m_acia, 0);
@@ -1174,9 +1170,6 @@ void bbc_state::bbca(machine_config &config)
 	RS232_PORT(config, m_rs232, default_rs232_devices, nullptr);
 	m_rs232->rxd_handler().set(m_serproc, FUNC(bbc_serproc_device::din_w));
 	m_rs232->cts_handler().set(m_serproc, FUNC(bbc_serproc_device::ctsi_w));
-//	m_rs232->rxd_handler().set(FUNC(bbc_state::write_rxd));
-	m_rs232->dcd_handler().set(FUNC(bbc_state::write_dcd));
-//	m_rs232->cts_handler().set(FUNC(bbc_state::write_cts));
 
 	/* system via */
 	MOS6522(config, m_via6522_0, 16_MHz_XTAL / 16);
@@ -1708,8 +1701,6 @@ void bbcm_state::bbcm(machine_config &config)
 
 	BBC_ELK_CASIN(config, m_casin);
 	m_casin->set_sampling_frequency(CASSETTE_SAMPLING_FREQUENCY);
-	m_casin->set_hpf(150'000, 150'000, 220'000, 820'000, 820/1'000'000'000'000, 820/1'000'000'000'000);
-	m_casin->set_lpf(8'200, 8'200, 10'000, 39'000, 4.7/1'000'000'000, 4.7/1'000'000'000);
 
 	BBC_SERPROC(config, m_serproc, 16_MHz_XTAL / 13);
 	m_serproc->out_casmo_callback().set(FUNC(bbc_state::casmo_w));
@@ -1720,9 +1711,7 @@ void bbcm_state::bbcm(machine_config &config)
 	m_serproc->out_rxd_callback().set(m_acia, FUNC(acia6850_device::write_rxd));
 	m_serproc->out_txc_callback().set(m_acia, FUNC(acia6850_device::write_txc));
 	m_serproc->out_rtso_callback().set(m_rs232, FUNC(rs232_port_device::write_rts));
-	// HACKs
-	m_serproc->out_txd_callback().set(FUNC(bbc_state::write_txd));
-	m_serproc->out_cass_out_enabled().set(FUNC(bbc_state::write_rts));
+	m_serproc->set_casout_cb(FUNC(bbc_state::casout));
 
 	/* acia */
 	ACIA6850(config, m_acia, 0);
@@ -1733,9 +1722,6 @@ void bbcm_state::bbcm(machine_config &config)
 	RS232_PORT(config, m_rs232, default_rs232_devices, nullptr);
 	m_rs232->rxd_handler().set(m_serproc, FUNC(bbc_serproc_device::din_w));
 	m_rs232->cts_handler().set(m_serproc, FUNC(bbc_serproc_device::ctsi_w));
-//	m_rs232->rxd_handler().set(FUNC(bbc_state::write_rxd));
-	m_rs232->dcd_handler().set(FUNC(bbc_state::write_dcd));
-//	m_rs232->cts_handler().set(FUNC(bbc_state::write_cts));
 
 	/* adc */
 	UPD7002(config, m_upd7002, 16_MHz_XTAL / 16);

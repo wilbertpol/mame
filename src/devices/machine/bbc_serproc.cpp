@@ -39,8 +39,7 @@ bbc_serproc_device::bbc_serproc_device(const machine_config &mconfig, const char
 	, m_out_rxc_cb(*this)
 	, m_out_rxd_cb(*this)
 	, m_out_txc_cb(*this)
-	, m_out_txd_cb(*this)
-	, m_out_cass_out_enabled(*this)
+	, m_casout_cb(*this)
 	, m_rx_clock(*this, "rx_clock")
 	, m_tx_clock(*this, "tx_clock")
 {
@@ -58,8 +57,11 @@ void bbc_serproc_device::device_add_mconfig(machine_config &config)
 
 void bbc_serproc_device::device_start()
 {
-	m_timeout_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_serproc_device::timeout),this));
-	m_dcd_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_serproc_device::cass_dcd),this));
+	m_timeout_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_serproc_device::timeout), this));
+	m_dcd_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_serproc_device::cass_dcd), this));
+	m_write_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_serproc_device::cass_out), this));
+	m_write_timer->adjust(clocks_to_attotime(64), 0, clocks_to_attotime(64));
+	m_write_timer->enable(false);
 
 	// resolve callbacks
 	m_out_casmo_cb.resolve_safe();
@@ -70,8 +72,7 @@ void bbc_serproc_device::device_start()
 	m_out_rxc_cb.resolve_safe();
 	m_out_rxd_cb.resolve_safe();
 	m_out_txc_cb.resolve_safe();
-	m_out_txd_cb.resolve_safe();
-	m_out_cass_out_enabled.resolve_safe();
+	m_casout_cb.resolve();
 
 	save_item(NAME(m_control));
 	save_item(NAME(m_cass_rxc));
@@ -145,6 +146,23 @@ void bbc_serproc_device::casin(int tap_val)
 }
 
 
+/*
+   Serial processor control
+   x--- ---- - Motor OFF(0)/ON(1)
+   -x-- ---- - Cassette(0)/RS243 input(1)
+   --xx x--- - Receive baud rate generator control
+   ---- -xxx - Transmit baud rate generator control
+               These possible settings apply to both the receive
+               and transmit baud generator control bits:
+               000 - 16MHz / 13 /   1 - 19200 baud
+               001 - 16MHz / 13 /  16 -  1200 baud
+               010 - 16MHz / 13 /   4 -  4800 baud
+               011 - 16MHz / 13 / 128 -   150 baud
+               100 - 16MHz / 13 /   2 -  9600 baud
+               101 - 16MHz / 13 /  64 -   300 baud
+               110 - 16MHz / 13 /   8 -  2400 baud
+               110 - 16MHz / 13 / 256 -    75 baud
+*/
 void bbc_serproc_device::write(uint8_t data)
 {
 	m_control = data;
@@ -192,8 +210,8 @@ WRITE_LINE_MEMBER(bbc_serproc_device::ctsi_w)
 
 WRITE_LINE_MEMBER(bbc_serproc_device::rx_clock_w)
 {
-//	m_rxc = state;
-//	update_rxc();
+	m_rxc = state;
+	update_rxc();
 }
 
 
@@ -207,21 +225,18 @@ WRITE_LINE_MEMBER(bbc_serproc_device::txd_w)
 {
 	m_txd = state;
 	update_dout();
-	// HACK
-	m_out_txd_cb(state);
 }
 
 
 WRITE_LINE_MEMBER(bbc_serproc_device::rtsi_w)
 {
 	m_rtsi = state;
-	// TODO
+	update_rts();
 }
 
 
 TIMER_CALLBACK_MEMBER(bbc_serproc_device::timeout)
 {
-	logerror("timeout\n");
 	m_timeout = true;
 	m_skip_edge = true;
 	cass_pulse_rxc();
@@ -245,6 +260,30 @@ TIMER_CALLBACK_MEMBER(bbc_serproc_device::cass_dcd)
 }
 
 
+TIMER_CALLBACK_MEMBER(bbc_serproc_device::cass_out)
+{
+	static double out_wave[2][16] = {
+//		{-1.0, -1.0, -0.5, -0.5, +0.5, +0.5, +1.0, +1.0, +1.0, +1.0, +0.5, +0.5, -0.5, -0.5, -1.0, -1.0},
+//		{-1.0, -0.5, +0.5, +1.0, +1.0, +0.5, -0.5, -1.0, -1.0, -0.5, +0.5, +1.0, +1.0, +0.5, -0.5, -1.0}
+		{-0.5, -0.5, -0.25, -0.25, +0.25, +0.25, +0.5, +0.5, +0.5, +0.5, +0.25, +0.25, -0.25, -0.25, -0.5, -0.5},
+		{-0.5, -0.25, +0.25, +0.5, +0.5, +0.25, -0.25, -0.5, -0.5, -0.25, +0.25, +0.5, +0.5, +0.25, -0.25, -0.5}
+	};
+	if (m_out_state == 0)
+	{
+		// Sample new data
+		m_write_enable = !BIT(m_control, 6) && m_rtsi;
+		m_write_txd = m_txd;
+		logerror("rtsi = %d, write_txd = %d\n", m_rtsi, m_write_txd);
+	}
+	if (m_write_enable) {
+		double out = out_wave[m_write_txd][m_out_state];
+		logerror("want to write %f\n", out);
+		m_casout_cb(out);
+	}
+	m_out_state = (m_out_state + 1) & 15;
+}
+
+
 void bbc_serproc_device::cass_pulse_rxc()
 {
 	// do 4 rxc pulses, TODO: perform on a timer?
@@ -261,7 +300,6 @@ void bbc_serproc_device::cass_pulse_rxc()
 
 void bbc_serproc_device::update_cts()
 {
-	// TODO output cts when writing to tape
 	m_out_cts_cb(BIT(m_control, 6) ? m_ctsi : 0);
 }
 
@@ -281,24 +319,28 @@ void bbc_serproc_device::update_dout()
 
 void bbc_serproc_device::update_rts()
 {
-	// TODO trigger cass out enabled in driver to signal that we are going to write?
-	int cass_out_enabled = 0;
-	m_out_cass_out_enabled(cass_out_enabled);
-
 	m_out_rtso_cb(BIT(m_control, 6) ? m_rtsi : 1);
+	if (!BIT(m_control, 6) && !m_rtsi)
+	{
+		m_write_timer->enable(true);
+	}
+	else
+	{
+		m_write_timer->enable(false);
+	}
 }
 
 
 void bbc_serproc_device::update_rxc()
 {
 	m_out_rxc = BIT(m_control, 6) ? m_rxc : m_cass_rxc;
-	m_out_rxc_cb(BIT(m_control, 6) ? m_rxc : m_cass_rxc);
+	m_out_rxc_cb(m_out_rxc);
 }
 
 
 void bbc_serproc_device::update_rxd()
 {
 	m_out_rxd = BIT(m_control, 6) ? m_din : m_cass_rxd;
-	m_out_rxd_cb(BIT(m_control, 6) ? m_din : m_cass_rxd);
+	m_out_rxd_cb(m_out_rxd);
 }
 

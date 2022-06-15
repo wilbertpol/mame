@@ -16,60 +16,6 @@ public:
 		sampling_frequency = frequency;
 	}
 
-	/*
-	 * Parameters for the second order high pass filter
-	 *
-	 *          +-----------R1--------+
-	 *          |             |\      |
-	 * o---C1---+---C2---+----|+\     |
-	 *                   |    |  \----+-------o
-	 * |                 |    |  /    |
-	 * |                 |  +-|-/     |       |
-	 * in                R2 | |/      |       |
-	 * |                 |  +-----RA--+      out
-	 * |                 |  |                 |
-	 * |                 |  RB                |
-	 *                   |  |
-	 * o-----------------+--+-----------------o
-	 *
-	*/
-	void set_hpf(double r1, double r2, double ra, double rb, double c1, double c2)
-	{
-		hpf_r1 = r1;
-		hpf_r2 = r2;
-		hpf_ra = ra;
-		hpf_rb = rb;
-		hpf_c1 = c1;
-		hpf_c2 = c2;
-	}
-
-	/*
-	 * Parameters for the second order low pass filter
-	 *
-	 *          +-----------C1--------+
-	 *          |             |\      |
-	 * o---R1---+---R2---+----|+\     |
-	 *                   |    |  \----+-------o
-	 * |                 |    |  /    |
-	 * |                 |  +-|-/     |       |
-	 * in                C2 | |/      |       |
-	 * |                 |  +-----RA--+      out
-	 * |                 |  |                 |
-	 * |                 |  RB                |
-	 *                   |  |
-	 * o-----------------+--+-----------------o
-	 *
-	*/
-	void set_lpf(double r1, double r2, double ra, double rb, double c1, double c2)
-	{
-		lpf_r1 = r1;
-		lpf_r2 = r2;
-		lpf_ra = ra;
-		lpf_rb = rb;
-		lpf_c1 = c1;
-		lpf_c2 = c2;
-	}
-
 	// tap_val must be between -1.0 and +1.0, result is 0 or 1.
 	int cassette_input(double tap_val);
 
@@ -79,8 +25,6 @@ public:
 	bool timeout() { return m_timeout; }
 	void reset();
 
-//	static constexpr int SAMPLING_FREQUENCY = 48'000;
-
 protected:
 	virtual void device_start() override;
 	virtual void device_reset() override;
@@ -88,21 +32,6 @@ protected:
 private:
 
 	int sampling_frequency = 0;
-
-	// Configuration of the filters
-	double hpf_r1 = 0.0;
-	double hpf_r2 = 0.0;
-	double hpf_ra = 0.0;
-	double hpf_rb = 0.0;
-	double hpf_c1 = 0.0;
-	double hpf_c2 = 0.0;
-
-	double lpf_r1 = 0.0;
-	double lpf_r2 = 0.0;
-	double lpf_ra = 0.0;
-	double lpf_rb = 0.0;
-	double lpf_c1 = 0.0;
-	double lpf_c2 = 0.0;
 
 	// Things that are only calculated on start.
 	double hpf_a0 = 0.0;
@@ -128,6 +57,9 @@ private:
 	int m_len[4]{};
 	int m_casin = 0;
 	bool m_timeout = false;
+
+	void setup_hpf();
+	void setup_lpf();
 };
 
 

@@ -146,7 +146,6 @@ public:
 	void bbcmc_paged_w(offs_t offset, uint8_t data);
 	void bbcbp_drive_control_w(uint8_t data);
 	void bbcm_drive_control_w(uint8_t data);
-	void serial_ula_w(uint8_t data);
 	void video_ula_w(offs_t offset, uint8_t data);
 	uint8_t bbc_fe_r() { return 0xfe; }
 
@@ -155,7 +154,6 @@ public:
 	INTERRUPT_GEN_MEMBER(bbcb_keyscan);
 	TIMER_CALLBACK_MEMBER(tape_timer_cb);
 	TIMER_CALLBACK_MEMBER(reset_timer_cb);
-	DECLARE_WRITE_LINE_MEMBER(write_acia_clock);
 	DECLARE_WRITE_LINE_MEMBER(adlc_irq_w);
 	DECLARE_WRITE_LINE_MEMBER(bus_nmi_w);
 	DECLARE_WRITE_LINE_MEMBER(snd_enable_w);
@@ -173,19 +171,11 @@ public:
 	DECLARE_INPUT_CHANGED_MEMBER(reset_palette);
 	void update_palette(monitor_type monitor_type);
 
-	void update_acia_rxd();
-	void update_acia_dcd();
-	void update_acia_cts();
-	DECLARE_WRITE_LINE_MEMBER(write_rts);
-	DECLARE_WRITE_LINE_MEMBER(write_txd);
-	DECLARE_WRITE_LINE_MEMBER(write_rxd);
-	DECLARE_WRITE_LINE_MEMBER(write_dcd);
-	DECLARE_WRITE_LINE_MEMBER(write_cts);
-
 	DECLARE_INPUT_CHANGED_MEMBER(trigger_reset);
 	DECLARE_WRITE_LINE_MEMBER(fdc_intrq_w);
 	DECLARE_WRITE_LINE_MEMBER(fdc_drq_w);
 	DECLARE_WRITE_LINE_MEMBER(casmo_w);
+	void casout(double casout);
 
 	int get_analogue_input(int channel_number);
 	void upd7002_eoc(int data);
@@ -315,18 +305,7 @@ protected:
 	  BBC 2C199 Serial Interface Cassette
 	****************************************/
 
-	uint8_t m_serproc_data = 0;
-	int m_rxd_serial = 0;
-	int m_dcd_serial = 0;
-	int m_cts_serial = 0;
-	int m_dcd_cass = 0;
-	int m_rxd_cass = 0;
-	int m_cass_out_enabled = 0;
-	int m_txd = 0;
-	uint32_t m_nr_high_tones = 0;
-	int m_cass_out_samples_to_go = 0;
-	int m_cass_out_bit = 0;
-	int m_cass_out_phase = 0;
+	bool m_motor_state = false;
 	emu_timer *m_tape_timer = nullptr;
 
 
@@ -374,7 +353,6 @@ protected:
 	uint8_t bus_video_data();
 	int bbc_keyboard(int data);
 
-	void mc6850_receive_clock(int new_clock);
 	void cassette_motor(bool state);
 	void update_nmi();
 	uint16_t calculate_video_address(uint16_t ma, uint8_t ra);
