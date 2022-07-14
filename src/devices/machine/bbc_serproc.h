@@ -50,6 +50,7 @@ public:
 
 	void casin(int tap_val);
 	void write(uint8_t data);
+	uint8_t read();
 
 	DECLARE_WRITE_LINE_MEMBER(din_w);
 	DECLARE_WRITE_LINE_MEMBER(ctsi_w);
@@ -83,7 +84,6 @@ private:
 
 	emu_timer *m_timeout_timer;
 	emu_timer *m_dcd_timer;
-	emu_timer *m_write_timer;
 
 	uint8_t m_control = 0;
 	int m_cass_rxc = 1;
@@ -101,6 +101,7 @@ private:
 	int m_out_dcd = 0;
 	int m_out_rxc = 0;
 	int m_out_rxd = 0;
+	int m_txc = 0;
 
 	int m_out_state = 0;
 	bool m_write_enable = false;

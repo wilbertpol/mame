@@ -59,9 +59,6 @@ void bbc_serproc_device::device_start()
 {
 	m_timeout_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_serproc_device::timeout), this));
 	m_dcd_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_serproc_device::cass_dcd), this));
-	m_write_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_serproc_device::cass_out), this));
-	m_write_timer->adjust(clocks_to_attotime(64), 0, clocks_to_attotime(64));
-	m_write_timer->enable(false);
 
 	// resolve callbacks
 	m_out_casmo_cb.resolve_safe();
@@ -82,6 +79,7 @@ void bbc_serproc_device::device_start()
 	save_item(NAME(m_ctsi));
 	save_item(NAME(m_rtsi));
 	save_item(NAME(m_rxc));
+	save_item(NAME(m_txc));
 	save_item(NAME(m_txd));
 	save_item(NAME(m_last_tap_val));
 	save_item(NAME(m_timeout));
@@ -194,6 +192,16 @@ void bbc_serproc_device::write(uint8_t data)
 }
 
 
+// The serial ULA only has a chip select and cannot distinguish between read and write.
+// Reading from it will actually perform a write with the high byte of the addresss, so 0xfe.
+uint8_t bbc_serproc_device::read()
+{
+	if (!machine().side_effects_disabled())
+		write(0xfe);
+	return 0;
+}
+
+
 WRITE_LINE_MEMBER(bbc_serproc_device::din_w)
 {
 	m_din = state;
@@ -218,6 +226,30 @@ WRITE_LINE_MEMBER(bbc_serproc_device::rx_clock_w)
 WRITE_LINE_MEMBER(bbc_serproc_device::tx_clock_w)
 {
 	m_out_txc_cb(state);
+	if (BIT(m_control, 7) && !m_txc && state)
+	{
+		logerror("txc = %d\n", state);
+		static double out_wave[2][16] = {
+//			{-0.5, -0.5, -0.25, -0.25, +0.25, +0.25, +0.5, +0.5, +0.5, +0.5, +0.25, +0.25, -0.25, -0.25, -0.5, -0.5},
+//			{-0.5, -0.25, +0.25, +0.5, +0.5, +0.25, -0.25, -0.5, -0.5, -0.25, +0.25, +0.5, +0.5, +0.25, -0.25, -0.5}
+			{+0.25, +0.25, +0.5, +0.5, +0.5, +0.5, +0.25, +0.25, -0.25, -0.25, -0.5, -0.5, -0.5, -0.5, -0.25, -0.25},
+			{+0.25, +0.5, +0.5, +0.25, -0.25, -0.5, -0.5, -0.25, +0.25, +0.5, +0.5, +0.25, -0.25, -0.5, -0.5, -0.25}
+		};
+		if (m_out_state == 0)
+		{
+			// Sample new data
+			m_write_enable = !BIT(m_control, 6) && !m_rtsi;
+			m_write_txd = m_txd;
+			logerror("rtsi = %d, write_txd = %d\n", m_rtsi, m_write_txd);
+		}
+		if (m_write_enable) {
+			double out = out_wave[m_write_txd][m_out_state];
+			logerror("want to write %f, m_out_state %d\n", out, m_out_state);
+			m_casout_cb(out);
+		}
+		m_out_state = (m_out_state + 1) % 16;
+	}
+	m_txc = state;
 }
 
 
@@ -260,30 +292,6 @@ TIMER_CALLBACK_MEMBER(bbc_serproc_device::cass_dcd)
 }
 
 
-TIMER_CALLBACK_MEMBER(bbc_serproc_device::cass_out)
-{
-	static double out_wave[2][16] = {
-//		{-1.0, -1.0, -0.5, -0.5, +0.5, +0.5, +1.0, +1.0, +1.0, +1.0, +0.5, +0.5, -0.5, -0.5, -1.0, -1.0},
-//		{-1.0, -0.5, +0.5, +1.0, +1.0, +0.5, -0.5, -1.0, -1.0, -0.5, +0.5, +1.0, +1.0, +0.5, -0.5, -1.0}
-		{-0.5, -0.5, -0.25, -0.25, +0.25, +0.25, +0.5, +0.5, +0.5, +0.5, +0.25, +0.25, -0.25, -0.25, -0.5, -0.5},
-		{-0.5, -0.25, +0.25, +0.5, +0.5, +0.25, -0.25, -0.5, -0.5, -0.25, +0.25, +0.5, +0.5, +0.25, -0.25, -0.5}
-	};
-	if (m_out_state == 0)
-	{
-		// Sample new data
-		m_write_enable = !BIT(m_control, 6) && m_rtsi;
-		m_write_txd = m_txd;
-		logerror("rtsi = %d, write_txd = %d\n", m_rtsi, m_write_txd);
-	}
-	if (m_write_enable) {
-		double out = out_wave[m_write_txd][m_out_state];
-		logerror("want to write %f\n", out);
-		m_casout_cb(out);
-	}
-	m_out_state = (m_out_state + 1) & 15;
-}
-
-
 void bbc_serproc_device::cass_pulse_rxc()
 {
 	// do 4 rxc pulses, TODO: perform on a timer?
@@ -320,14 +328,6 @@ void bbc_serproc_device::update_dout()
 void bbc_serproc_device::update_rts()
 {
 	m_out_rtso_cb(BIT(m_control, 6) ? m_rtsi : 1);
-	if (!BIT(m_control, 6) && !m_rtsi)
-	{
-		m_write_timer->enable(true);
-	}
-	else
-	{
-		m_write_timer->enable(false);
-	}
 }
 
 

@@ -982,132 +982,29 @@ void bbc_state::upd7002_eoc(int data)
 ****************************************/
 
 
-void bbc_state::mc6850_receive_clock(int new_clock)
-{
-	m_rxd_cass = new_clock;
-	update_acia_rxd();
-
-	//
-	// Somehow the "serial processor" generates 16 clock signals towards
-	// the 6850. Exact details are unknown, faking it with the following
-	// loop.
-	// This matches the divider programmed in the 6850 for 1200 baud.
-	//
-	for (int i = 0; i < 16; i++ )
-	{
-		m_acia->write_rxc(1);
-		m_acia->write_rxc(0);
-	}
-}
-
 TIMER_CALLBACK_MEMBER(bbc_state::tape_timer_cb)
 {
-	if ( m_cass_out_enabled )
-	{
-		// 0 = 18-18 18-17-1
-		// 1 = 9-9-9-9 9-9-9-8-1
-
-		switch ( m_cass_out_samples_to_go )
-		{
-			case 0:
-				if ( m_cass_out_phase == 0 )
-				{
-					// get bit value
-					m_cass_out_bit = m_txd;
-					if ( m_cass_out_bit )
-					{
-						m_cass_out_phase = 3;
-						m_cass_out_samples_to_go = 9;
-					}
-					else
-					{
-						m_cass_out_phase = 1;
-						m_cass_out_samples_to_go = 18;
-					}
-					m_cassette->output( +1.0 );
-				}
-				else
-				{
-					// switch phase
-					m_cass_out_phase--;
-					m_cass_out_samples_to_go = m_cass_out_bit ? 9 : 18;
-					m_cassette->output( ( m_cass_out_phase & 1 ) ? +1.0 : -1.0 );
-				}
-				break;
-			case 1:
-				if ( m_cass_out_phase == 0 )
-				{
-					m_cassette->output( 0.0 );
-				}
-				break;
-		}
-
-		m_cass_out_samples_to_go--;
-	}
-	else
-	{
-		double tap_val = m_cassette->input();
-		int casin = m_casin->cassette_input(tap_val);
-		
-		m_serproc->casin(casin);
-	}
-}
-
-WRITE_LINE_MEMBER(bbc_state::write_rxd)
-{
-	m_rxd_serial = state;
-	update_acia_rxd();
-}
-
-void bbc_state::update_acia_rxd()
-{
-	m_acia->write_rxd(BIT(m_serproc_data, 6) ? m_rxd_serial : m_rxd_cass);
+	double tap_val = m_cassette->input();
+	int casin = m_casin->cassette_input(tap_val);
+	m_serproc->casin(casin);
 }
 
 
-WRITE_LINE_MEMBER(bbc_state::write_dcd)
+void bbc_state::casout(double casout)
 {
-	m_dcd_serial = state;
-	update_acia_dcd();
-}
-
-void bbc_state::update_acia_dcd()
-{
-	m_acia->write_dcd(BIT(m_serproc_data, 6) ? m_dcd_serial : m_dcd_cass);
-}
-
-
-WRITE_LINE_MEMBER(bbc_state::write_cts)
-{
-	m_cts_serial = state;
-	update_acia_cts();
-}
-
-void bbc_state::update_acia_cts()
-{
-	m_acia->write_cts(BIT(m_serproc_data, 6) ? m_cts_serial : 0);
-}
-
-
-WRITE_LINE_MEMBER(bbc_state::write_rts)
-{
-	m_cass_out_enabled = state;
-}
-
-
-WRITE_LINE_MEMBER(bbc_state::write_txd)
-{
-	m_txd = state;
+	if (m_motor_state)
+		m_cassette->output(casout);
 }
 
 
 void bbc_state::cassette_motor(bool motor_state)
 {
-	const bool prev_state = ((m_cassette->get_state() & CASSETTE_MASK_MOTOR) == CASSETTE_MOTOR_ENABLED) ? true : false;
-
 	/* cassette relay sound */
-	if (prev_state != motor_state)
+	if (m_motor_state != motor_state)
 		m_samples->start(0, motor_state ? 1 : 0);
+
+	m_motor_state = motor_state;
+	m_motor_led = !motor_state;
 
 	if (motor_state)
 	{
@@ -1118,34 +1015,7 @@ void bbc_state::cassette_motor(bool motor_state)
 	{
 		m_cassette->change_state(CASSETTE_MOTOR_DISABLED, CASSETTE_MASK_MOTOR);
 		m_tape_timer->reset();
-		m_cass_out_phase = 0;
-		m_cass_out_samples_to_go = 4;
 	}
-	m_motor_led = !motor_state;
-}
-
-
-/*
-   Serial processor control
-   x--- ---- - Motor OFF(0)/ON(1)
-   -x-- ---- - Cassette(0)/RS243 input(1)
-   --xx x--- - Receive baud rate generator control
-   ---- -xxx - Transmit baud rate generator control
-               These possible settings apply to both the receive
-               and transmit baud generator control bits:
-               000 - 16MHz / 13 /   1 - 19200 baud
-               001 - 16MHz / 13 /  16 -  1200 baud
-               010 - 16MHz / 13 /   4 -  4800 baud
-               011 - 16MHz / 13 / 128 -   150 baud
-               100 - 16MHz / 13 /   2 -  9600 baud
-               101 - 16MHz / 13 /  64 -   300 baud
-               110 - 16MHz / 13 /   8 -  2400 baud
-               110 - 16MHz / 13 / 256 -    75 baud
-*/
-
-void bbc_state::serial_ula_w(uint8_t data)
-{
-	m_serproc->write(data);
 }
 
 
@@ -1153,15 +1023,6 @@ WRITE_LINE_MEMBER(bbc_state::casmo_w)
 {
 	if (m_cassette)
 		cassette_motor(state);
-}
-
-
-WRITE_LINE_MEMBER(bbc_state::write_acia_clock)
-{
-	m_acia->write_txc(state);
-
-	if (BIT(m_serproc_data, 6))
-		m_acia->write_rxc(state);
 }
 
 
@@ -1283,10 +1144,6 @@ void bbc_state::bbcm_drive_control_w(uint8_t data)
 
 void bbc_state::init_bbc()
 {
-	m_rxd_cass = 0;
-	m_nr_high_tones = 0;
-	m_serproc_data = 0;
-	m_cass_out_enabled = 0;
 	m_tape_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_state::tape_timer_cb), this));
 	m_reset_timer = machine().scheduler().timer_alloc(timer_expired_delegate(FUNC(bbc_state::reset_timer_cb), this));
 

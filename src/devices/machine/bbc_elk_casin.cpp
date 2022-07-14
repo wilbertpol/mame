@@ -127,6 +127,30 @@ void bbc_elk_casin_device::setup_lpf()
 }
 
 
+	/*
+	 * cassout filter
+	 *
+	 *            
+	 *                        |\       
+	 * o---R1---+--------+----|+\      
+	 *          |        |    |  \----+--C2---o
+	 * |        |        |    |  /    |
+	 * |        |        |  +-|-/     |       |
+	 * in       C1       R2 | |/      |       |
+	 * |        |        |  +---------+      out
+	 * |        |        |                    |
+	 * |        |        |                    |
+	 *          |        |   
+	 * o--------+--------+--------------------o
+	 *
+	 * R1 (R77) = 100k
+	 * R2 (R76) = 10k
+	 * C1 (C29) = 2n2
+	 * C2 (C34) = 47n
+	 * low pass filter R1 + C1 ?
+	*/
+
+
 void bbc_elk_casin_device::device_reset()
 {
 	m_hpf_x[0] = 0.0;
@@ -149,13 +173,13 @@ void bbc_elk_casin_device::reset()
 
 int bbc_elk_casin_device::cassette_input(double tap_val)
 {
-	double hpf_yn = (hpf_a0 * tap_val) + (hpf_a1 * m_hpf_x[0] + (hpf_a2 * m_hpf_x[1])) - (hpf_b1 * m_hpf_y[0]) - (hpf_b2 * m_hpf_y[1]);
+	const double hpf_yn = (hpf_a0 * tap_val) + (hpf_a1 * m_hpf_x[0] + (hpf_a2 * m_hpf_x[1])) - (hpf_b1 * m_hpf_y[0]) - (hpf_b2 * m_hpf_y[1]);
 	m_hpf_x[1] = m_hpf_x[0];
 	m_hpf_x[0] = tap_val;
 	m_hpf_y[1] = m_hpf_y[0];
 	m_hpf_y[0] = hpf_yn;
 
-	double lpf_yn = (lpf_a0 * hpf_yn) + (lpf_a1 * m_lpf_x[0] + (lpf_a2 * m_lpf_x[1])) - (lpf_b1 * m_lpf_y[0]) - (lpf_b2 * m_lpf_y[1]);
+	const double lpf_yn = (lpf_a0 * hpf_yn) + (lpf_a1 * m_lpf_x[0] + (lpf_a2 * m_lpf_x[1])) - (lpf_b1 * m_lpf_y[0]) - (lpf_b2 * m_lpf_y[1]);
 	m_lpf_x[1] = m_lpf_x[0];
 	m_lpf_x[0] = hpf_yn;
 	m_lpf_y[1] = m_lpf_y[0];
