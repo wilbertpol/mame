@@ -37,6 +37,10 @@
 #include "sound/wave.h"
 #include "formats/a26_cas.h"
 
+#define VERBOSE (LOG_GENERAL)
+#include "logmacro.h"
+
+
 DEFINE_DEVICE_TYPE(A26_ROM_SUPERCHARGER, a26_rom_ss_device, "a2600_ss", "Atari 2600 ROM Cart Supercharger")
 
 
@@ -118,6 +122,7 @@ uint8_t a26_rom_ss_device::read_rom(offs_t offset)
 	// Bankswitch
 	if (offset == 0xff8)
 	{
+		LOG("write control register %02X\n", m_reg);
 		m_write_delay = m_reg >> 5;
 		m_ram_write_enabled = BIT(m_reg, 1);
 		m_rom_enabled = !BIT(m_reg, 0);
@@ -185,9 +190,15 @@ uint8_t a26_rom_ss_device::read_rom(offs_t offset)
 			if (m_address_bus_changes == 5)
 			{
 				if (offset < 0x800)
+				{
+					LOG("%s: RAM write offset %04X, data %02X\n", machine().describe_context(), (offset & 0x7ff) + (m_base_banks[0] * 0x800), m_reg);
 					m_ram[(offset & 0x7ff) + (m_base_banks[0] * 0x800)] = m_reg;
+				}
 				else if (m_base_banks[1] != 3)
+				{
+					LOG("%s: RAM write offset %04X, data %02X\n", machine().describe_context(), (offset & 0x7ff) + (m_base_banks[1] * 0x800), m_reg);
 					m_ram[(offset & 0x7ff) + (m_base_banks[1] * 0x800)] = m_reg;
+				}
 			}
 		}
 		if (offset < 0x0100)
