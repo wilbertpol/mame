@@ -37,7 +37,7 @@
 #include "sound/wave.h"
 #include "formats/a26_cas.h"
 
-#define VERBOSE (LOG_GENERAL)
+//#define VERBOSE (LOG_GENERAL)
 #include "logmacro.h"
 
 
@@ -200,8 +200,13 @@ uint8_t a26_rom_ss_device::read_rom(offs_t offset)
 					m_ram[(offset & 0x7ff) + (m_base_banks[1] * 0x800)] = m_reg;
 				}
 			}
+			else if (offset < 0x0100)
+			{
+				m_reg = offset;
+				m_address_bus_changes = 0;
+			}
 		}
-		if (offset < 0x0100)
+		else if (offset < 0x0100)
 		{
 			m_reg = offset;
 			m_address_bus_changes = 0;
