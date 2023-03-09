@@ -32,6 +32,7 @@
 #include "superloderunner.h"
 #include "super_swangi.h"
 #include "yamaha.h"
+#include "yamaha_net.h"
 
 #include "bus/msx/slot/cartridge.h"
 
@@ -95,6 +96,8 @@ void msx_yamaha_60pin(device_slot_interface &device, bool is_in_subslot)
 {
 	device.option_add("sfg01", MSX_CART_SFG01);
 	device.option_add("sfg05", MSX_CART_SFG05);
+	device.option_add("netv1", MSX_CART_YAMAHA_NETV1);
+	device.option_add("netv2", MSX_CART_YAMAHA_NETV2);
 }
 
 void msx_yamaha_minicart(device_slot_interface &device, bool is_in_subslot)

@@ -443,8 +443,7 @@ void msx1_v9938_state::y503iir(machine_config &config)
 	add_cartridge_slot<2>(config, 2);
 	add_cartridge_slot<3>(config, MSX_SLOT_YAMAHA_MINICART, "minicart", 3, 1, msx_yamaha_minicart, nullptr);
 	add_internal_slot(config, MSX_SLOT_RAM, "ram", 3, 2, 0, 4);  // 64KB RAM
-	// This should have a serial network interface by default
-	add_cartridge_slot<4>(config, MSX_SLOT_YAMAHA_EXPANSION, "module", 3, 3, msx_yamaha_60pin, nullptr);
+	add_cartridge_slot<4>(config, MSX_SLOT_YAMAHA_EXPANSION, "module", 3, 3, msx_yamaha_60pin, "netv1");
 
 	msx1_v9938_pal(SND_YM2149, config, REGION_RUSSIA);
 	SOFTWARE_LIST(config, "minicart_list").set_original("msx_yamaha_minicart");
