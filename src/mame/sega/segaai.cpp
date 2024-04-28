@@ -167,9 +167,11 @@ private:
 	static constexpr u8 VECTOR_I8251_SEND = 0xf9;
 	static constexpr u8 VECTOR_I8251_RECEIVE = 0xfa;
 	static constexpr u8 VECTOR_UPD7759 = 0xfb;
+	static constexpr u8 VECTOR_EXP = 0xfc;
 
 	static constexpr u8 IRQ_V9938 = 0x01;
 	static constexpr u8 IRQ_UPD7759 = 0x08;
+	static constexpr u8 IRQ_EXP = 0x80;
 
 	// 8255 Port B bits
 	static constexpr u8 TOUCH_PAD_PRESSED = 0x02;
@@ -184,6 +186,7 @@ private:
 	u32 get_vector() { return m_vector; }
 	void vdp_interrupt(int state);
 	void upd7759_drq_w(int state);
+	void exp_irq_w(int state);
 	IRQ_CALLBACK_MEMBER(irq_callback);
 	u8 i8255_portb_r();
 	u8 i8255_portc_r();
@@ -222,6 +225,7 @@ private:
 	u8 m_port_1e;
 	u32 m_prev_v9938_irq;
 	u32 m_prev_upd7759_irq;
+	u32 m_prev_exp_irq;
 	u8 m_touchpad_x;
 	u8 m_touchpad_y;
 	u8 m_irq_active;
@@ -405,6 +409,20 @@ void segaai_state::upd7759_drq_w(int state)
 }
 
 
+void segaai_state::exp_irq_w(int state)
+{
+	if (state != CLEAR_LINE)
+	{
+		if (m_prev_exp_irq == CLEAR_LINE)
+		{
+			m_irq_active |= IRQ_EXP;
+		}
+	}
+	m_prev_exp_irq = state;
+
+	update_irq_state();
+}
+
 IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
 {
 	if (m_irq_active & m_irq_enabled & IRQ_V9938)
@@ -416,6 +434,11 @@ IRQ_CALLBACK_MEMBER(segaai_state::irq_callback)
 	{
 		m_vector = VECTOR_UPD7759;
 		m_irq_active &= ~IRQ_UPD7759;
+	}
+	else if (m_irq_active & m_irq_enabled & IRQ_EXP)
+	{
+		m_vector = VECTOR_EXP;
+		m_irq_active &= ~IRQ_EXP;
 	}
 	else
 	{
@@ -576,7 +599,7 @@ u8 segaai_state::irq_enable_r()
 
 // IRQ Enable
 // 76543210
-// +-------- ???
+// +-------- Expansion slot IRQ?
 //  +------- ???
 //   +------ ???
 //    +----- ???
@@ -651,6 +674,7 @@ void segaai_state::machine_start()
 	m_port_1e = 0;
 	m_prev_v9938_irq = CLEAR_LINE;
 	m_prev_upd7759_irq = CLEAR_LINE;
+	m_prev_exp_irq = CLEAR_LINE;
 	m_touchpad_x = 0;
 	m_touchpad_y = 0;
 	m_vector = 0;
@@ -665,6 +689,7 @@ void segaai_state::machine_start()
 	save_item(NAME(m_port_1e));
 	save_item(NAME(m_prev_v9938_irq));
 	save_item(NAME(m_prev_upd7759_irq));
+	save_item(NAME(m_prev_exp_irq));
 	save_item(NAME(m_touchpad_x));
 	save_item(NAME(m_touchpad_y));
 	save_item(NAME(m_irq_active));
@@ -715,6 +740,7 @@ void segaai_state::segaai(machine_config &config)
 	SEGAAI_EXP_SLOT(config, m_expslot, 21'477'272/6, segaai_exp, nullptr);  // not verified, assuming 3.58MHz
 	m_expslot->set_mem_space(m_maincpu, AS_PROGRAM);
 	m_expslot->set_io_space(m_maincpu, AS_IO);
+	m_expslot->irq_out_handler().set(FUNC(segaai_state::exp_irq_w));
 
 	// Built-in cassette
 	CASSETTE(config, m_cassette).set_stereo();

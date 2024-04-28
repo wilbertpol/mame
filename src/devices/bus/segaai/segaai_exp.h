@@ -29,9 +29,11 @@ public:
 
 	template <typename T> void set_mem_space(T &&tag, int no) { m_mem_space.set_tag(std::forward<T>(tag), no); }
 	template <typename T> void set_io_space(T &&tag, int no) { m_io_space.set_tag(std::forward<T>(tag), no); }
+	auto irq_out_handler() { return m_irq_out_handler.bind(); }
 
 	address_space& mem_space() { return *m_mem_space; }
 	address_space& io_space() { return *m_io_space; }
+	void irq_out(int state) { m_irq_out_handler(state); }
 
 protected:
 	virtual void device_start() override { }
@@ -39,6 +41,7 @@ protected:
 private:
 	optional_address_space m_mem_space;
 	optional_address_space m_io_space;
+	devcb_write_line m_irq_out_handler;
 };
 
 
@@ -51,6 +54,7 @@ public:
 protected:
 	address_space& mem_space() { return m_slot->mem_space(); }
 	address_space& io_space() { return m_slot->io_space(); }
+	void irq_out(int state) { m_slot->irq_out(state); }
 
 private:
 	segaai_exp_slot_device *const m_slot;

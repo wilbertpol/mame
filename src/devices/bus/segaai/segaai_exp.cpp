@@ -30,6 +30,7 @@ segaai_exp_slot_device::segaai_exp_slot_device(const machine_config &mconfig, co
 	, device_single_card_slot_interface<segaai_exp_interface>(mconfig, *this)
 	, m_mem_space(*this, finder_base::DUMMY_TAG, -1)
 	, m_io_space(*this, finder_base::DUMMY_TAG, -1)
+	, m_irq_out_handler(*this)
 {
 }
 

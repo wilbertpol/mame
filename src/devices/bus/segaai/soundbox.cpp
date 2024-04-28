@@ -132,7 +132,7 @@ void segaai_soundbox_device::device_add_mconfig(machine_config &config)
 	m_tmp8253->set_clk<0>(clock());    // ~3.58 MHz, seems to be tied to pin 24 in ym2151
 	m_tmp8253->out_handler<0>().set(FUNC(segaai_soundbox_device::tmp8253_out0_w));
 	// gate0 not connected
-	m_tmp8253->set_clk<1>(clock());    // 3.58 MHz?
+	m_tmp8253->set_clk<1>(clock()/16);    // 3.58 MHz/16 fixes sound in Pinpon Music titles.
 	m_tmp8253->out_handler<1>().set(FUNC(segaai_soundbox_device::tmp8253_out1_w));
 	// timer 2 is not connected, also not set up by the code
 
@@ -313,6 +313,7 @@ void segaai_soundbox_device::tmp8253_out0_w(int state)
 void segaai_soundbox_device::tmp8253_out1_w(int state)
 {
 //  LOG("Soundbox: OUT1 from tmp8253 is '%s'\n", state ? "ASSERT" : "CLEAR");
+	irq_out(state);
 }
 
 } // anonymous namespace
