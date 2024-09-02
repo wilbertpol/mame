@@ -14,6 +14,7 @@ extern char const *const ASCII16;
 extern char const *const ASCII16_SRAM;
 extern char const *const BEEPACK;
 extern char const *const BM_012;
+extern char const *const CARNIVORE2;
 extern char const *const CROSS_BLAIM;
 extern char const *const DISK_AVDPF550;
 extern char const *const DISK_CDX2;

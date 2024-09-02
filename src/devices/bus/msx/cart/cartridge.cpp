@@ -8,6 +8,7 @@
 #include "ascii.h"
 #include "beepack.h"
 #include "bm_012.h"
+#include "carnivore2.h"
 #include "crossblaim.h"
 #include "disk.h"
 #include "dooly.h"
@@ -102,6 +103,7 @@ void msx_cart(device_slot_interface &device, bool is_in_subslot)
 	device.option_add_internal(slotoptions::EC701,           MSX_CART_EC701);
 	device.option_add(slotoptions::BEEPACK,        MSX_CART_BEEPACK);
 	device.option_add(slotoptions::BM_012,         MSX_CART_BM_012);
+	device.option_add(slotoptions::CARNIVORE2,     MSX_CART_CARNIVORE2);
 	device.option_add(slotoptions::FRANKY,         MSX_CART_FRANKY);
 	device.option_add(slotoptions::HBI55,          MSX_CART_HBI55);
 	device.option_add(slotoptions::MOONSOUND,      MSX_CART_MOONSOUND);

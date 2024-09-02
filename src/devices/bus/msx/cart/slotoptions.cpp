@@ -11,6 +11,7 @@ char const *const ASCII16         = "ascii16";
 char const *const ASCII16_SRAM    = "ascii16_sram";
 char const *const BEEPACK         = "beepack";
 char const *const BM_012          = "bm_012";
+char const *const CARNIVORE2      = "carnivore2";
 char const *const CROSS_BLAIM     = "cross_blaim";
 char const *const DISK_AVDPF550   = "disk_avdpf550";
 char const *const DISK_CDX2       = "disk_cdx2";

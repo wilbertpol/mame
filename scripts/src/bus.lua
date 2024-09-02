@@ -2032,6 +2032,8 @@ if (BUSES["MSX_SLOT"]~=null) then
 		MAME_DIR .. "src/devices/bus/msx/cart/beepack.h",
 		MAME_DIR .. "src/devices/bus/msx/cart/bm_012.cpp",
 		MAME_DIR .. "src/devices/bus/msx/cart/bm_012.h",
+		MAME_DIR .. "src/devices/bus/msx/cart/carnivore2.cpp",
+		MAME_DIR .. "src/devices/bus/msx/cart/carnivore2.h",
 		MAME_DIR .. "src/devices/bus/msx/cart/cartridge.cpp",
 		MAME_DIR .. "src/devices/bus/msx/cart/cartridge.h",
 		MAME_DIR .. "src/devices/bus/msx/cart/crossblaim.cpp",
