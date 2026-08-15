@@ -23,6 +23,7 @@ the nubus like all the other slots.
 #include "ti_nubus.h"
 #include "nupi.h"
 #include "explorer_mem.h"
+#include "sib.h"
 #include "emupal.h"
 #include "screen.h"
 
@@ -34,6 +35,7 @@ void tiexplorer_nubus_cards(device_slot_interface &device)
 	device.option_add("nupi", NUPI);
 	device.option_add("mem8mb", EXPLORER_MEM8MB);
 	device.option_add("mem2mb", EXPLORER_MEM2MB);
+	device.option_add("sib", SIB);
 }
 
 class tiexplorer_state : public driver_device
@@ -90,6 +92,7 @@ void tiexplorer_state::tiexplorer(machine_config &config)
 	TI_NUBUS_SLOT(config, "nb2", "nubus", 2, tiexplorer_nubus_cards, "nupi");
 	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_cards, "mem8mb");
 	TI_NUBUS_SLOT(config, "nb4", "nubus", 4, tiexplorer_nubus_cards, "mem8mb");
+	TI_NUBUS_SLOT(config, "nb5", "nubus", 5, tiexplorer_nubus_cards, "sib");
 
 	// TODO
 	screen_device &screen(SCREEN(config, "screen"));
@@ -114,8 +117,9 @@ ROM_START(tiexplorer)
 	ROMX_LOAD("2236485-03_microcode.bin", 0x0005, 0x0800, CRC(aebd8fd0) SHA1(8507d581cf81c45089a16257711d824c44ae50fa), ROM_SKIP(7))
 	ROMX_LOAD("2236486-03_microcode.bin", 0x0006, 0x0800, CRC(8a953a12) SHA1(f10ce4f53a65da5d133489d4f43b1c7f4ec5726d), ROM_SKIP(7))
 
+	// board part number "2243895-0001", board type "CPU", vendor "TIAU"
 	ROM_REGION32_BE(0x400, "cpu_config", ROMREGION_ERASE00)
-	ROMX_LOAD("cpu_config.bin", 0x000, 0x100, NO_DUMP, ROM_SKIP(3)) // not present in any known dump; content unknown
+	ROMX_LOAD("cpu_config.bin", 0x003, 0x100, CRC(f3513e0c) SHA1(10217eee94f961ddce3e7c9d2190a3ef9208efcc), ROM_SKIP(3))
 
 ROM_END
 

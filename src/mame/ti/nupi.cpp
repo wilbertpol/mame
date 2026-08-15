@@ -73,9 +73,6 @@ void nupi_device::device_reset()
 
 TIMER_CALLBACK_MEMBER(nupi_device::timer_tick)
 {
-	// Interval timer -> autovector 4 (TIMERINT). Rate is not documented; a periodic
-	// tick is required for the firmware's software countdown loop (confirmed by the
-	// autovector-4 handler body, which only touches on-board RAM counters).
 	m_mpu->set_input_line(M68K_IRQ_4, ASSERT_LINE);
 	m_mpu->set_input_line(M68K_IRQ_4, CLEAR_LINE);
 }
@@ -276,7 +273,7 @@ ROM_START(nupi)
 	ROMX_LOAD("2238057-5_nupi.bin", 0x0001, 0x2000, CRC(bb14cf27) SHA1(3b140274764ebc1ad1efbc4ed184a3d70eb84b0c), ROM_SKIP(1))
 
 	ROM_REGION32_BE(0x100, "config_rom", ROMREGION_ERASE00)
-	ROMX_LOAD("nupi_config.bin", 0x003, 0x40, BAD_DUMP CRC(b2552262) SHA1(7dc5296c5e646b8017357d17153224f2c26aef7d), ROM_SKIP(3))
+	ROMX_LOAD("nupi_config.bin", 0x000, 0x40, BAD_DUMP CRC(b2552262) SHA1(7dc5296c5e646b8017357d17153224f2c26aef7d), ROM_SKIP(3))
 ROM_END
 
 const tiny_rom_entry *nupi_device::device_rom_region() const
