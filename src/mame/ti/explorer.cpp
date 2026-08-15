@@ -22,6 +22,7 @@ the nubus like all the other slots.
 #include "cpu/raven/raven.h"
 #include "ti_nubus.h"
 #include "nupi.h"
+#include "explorer_mem.h"
 #include "emupal.h"
 #include "screen.h"
 
@@ -31,6 +32,8 @@ namespace {
 void tiexplorer_nubus_cards(device_slot_interface &device)
 {
 	device.option_add("nupi", NUPI);
+	device.option_add("mem8mb", EXPLORER_MEM8MB);
+	device.option_add("mem2mb", EXPLORER_MEM2MB);
 }
 
 class tiexplorer_state : public driver_device
@@ -67,19 +70,7 @@ void tiexplorer_state::mem_map(address_map &map)
 {
 	map.unmap_value_high();
 
-	// Catch-all, lowest priority (declared first - later, more specific entries below and
-	// NuBus cards' dynamically-installed slot windows override it): any address with
-	// nothing real behind it reports a NuBus error, matching what a real bus timeout
-	// would produce. Self-test relies on this to detect and skip absent NuBus cards.
 	map(0x00000000, 0xffffffff).rw(m_maincpu, FUNC(raven_cpu_device::nubus_unmapped_r), FUNC(raven_cpu_device::nubus_unmapped_w));
-
-	// NuBus cards (e.g. NUPI in slot 2) install their own 16 MB slot windows directly into
-	// this space via m_nubus->install_map(), see tiexplorer().
-
-	// Slot 3 - RAM
-	map(0xf3000000, 0xf31fffff).ram(); // 2MB
-	map(0xf3ffe000, 0xf3ffefff).rom().region("memory_config", 0x1000);
-	map(0xf3fff000, 0xf3ffffff).rom().region("memory_config", 0x0000);
 
 	// Slot 6 - CPU
 	map(0xf6c00000, 0xf6c00003).r(m_maincpu, FUNC(raven_cpu_device::nubus_flag_r));
@@ -96,9 +87,9 @@ void tiexplorer_state::tiexplorer(machine_config &config)
 	TI_NUBUS(config, m_nubus);
 	m_nubus->set_space(m_maincpu, AS_DATA);
 
-	// Slots 3-6 are reserved for memory/SIB/CPU boards (wired directly above rather than
-	// through the slot mechanism); slot 2 hosts the NUPI mass storage interface.
 	TI_NUBUS_SLOT(config, "nb2", "nubus", 2, tiexplorer_nubus_cards, "nupi");
+	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_cards, "mem8mb");
+	TI_NUBUS_SLOT(config, "nb4", "nubus", 4, tiexplorer_nubus_cards, "mem8mb");
 
 	// TODO
 	screen_device &screen(SCREEN(config, "screen"));
@@ -126,9 +117,6 @@ ROM_START(tiexplorer)
 	ROM_REGION32_BE(0x400, "cpu_config", ROMREGION_ERASE00)
 	ROMX_LOAD("cpu_config.bin", 0x000, 0x100, NO_DUMP, ROM_SKIP(3)) // not present in any known dump; content unknown
 
-	ROM_REGION32_BE(0x2000, "memory_config", ROMREGION_ERASE00)
-	ROMX_LOAD("2243924-2_27s291_8mb.bin", 0x000, 0x800, CRC(6f699641) SHA1(f65ba4a2672bc5c90040da26237f1d14baac3370), ROM_SKIP(3))
-
 ROM_END
 
 
@@ -145,17 +133,6 @@ void tiexplorer_state::machine_start()
 			dest[0x4000 - 8 - i + j] = source[i + j];
 		}
 	}
-
-	// Memory config
-//	u8 *mem_cfg_src = memregion("memory_config_rom")->base();
-//	u8 *mem_cfg_dest = memregion("memory_config")->base();
-//	for (int i = 0; i < 0x800; i++)
-//	{
-//		mem_cfg_dest[(i << 2) + 3] = mem_cfg_src[i ^ 0x400];
-////		mem_cfg_dest[(i << 2) + 1] = mem_cfg_src[i ^ 0x400];
-////		mem_cfg_dest[(i << 2) + 2] = mem_cfg_src[i ^ 0x400];
-////		mem_cfg_dest[(i << 2) + 3] = mem_cfg_src[i ^ 0x400];
-//	}
 }
 
 } // anonymous namespace
