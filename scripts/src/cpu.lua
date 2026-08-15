@@ -414,6 +414,23 @@ if opt_tool(CPUS, "CADR") then
 end
 
 --------------------------------------------------
+-- TI Raven cpu (TI Explorer I cpu)
+--@src/devices/cpu/raven/raven.h,CPUS["RAVEN"] = true
+--------------------------------------------------
+
+if CPUS["RAVEN"] then
+	files {
+		MAME_DIR .. "src/devices/cpu/raven/raven.cpp",
+		MAME_DIR .. "src/devices/cpu/raven/raven.h",
+	}
+end
+
+if opt_tool(CPUS, "RAVEN") then
+	table.insert(disasm_files , MAME_DIR .. "src/devices/cpu/raven/raven_dasm.cpp")
+	table.insert(disasm_files , MAME_DIR .. "src/devices/cpu/raven/raven_dasm.h")
+end
+
+--------------------------------------------------
 -- Simutrek Cube Quest bit-sliced CPUs
 --@src/devices/cpu/cubeqcpu/cubeqcpu.h,CPUS["CUBEQCPU"] = true
 --------------------------------------------------

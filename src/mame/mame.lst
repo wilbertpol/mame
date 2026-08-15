@@ -47019,6 +47019,9 @@ tms9995bb
 exeltel
 exl100
 
+@source:ti/explorer.cpp
+tiexplorer
+
 @source:ti/geneve.cpp
 geneve
 genmod

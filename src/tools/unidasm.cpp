@@ -157,6 +157,7 @@ using util::BIT;
 #include "cpu/pps4/pps4dasm.h"
 #include "cpu/pps41/pps41d.h"
 #include "cpu/psx/psxdasm.h"
+#include "cpu/raven/raven_dasm.h"
 #include "cpu/rii/riidasm.h"
 #include "cpu/romp/rompdasm.h"
 #include "cpu/rsp/rsp_dasm.h"
@@ -600,6 +601,7 @@ static const dasm_table_entry dasm_table[] =
 	{ "r65c02",          le,  0, []() -> util::disasm_interface * { return new r65c02_disassembler; } },
 	{ "r65c19",          le,  0, []() -> util::disasm_interface * { return new r65c19_disassembler; } },
 	{ "r800",            le,  0, []() -> util::disasm_interface * { return new r800_disassembler; } },
+	{ "raven",           be, -3, []() -> util::disasm_interface * { return new raven_disassembler; } },
 	{ "romp",            be,  0, []() -> util::disasm_interface * { return new romp_disassembler; } },
 	{ "rsp",             le,  0, []() -> util::disasm_interface * { return new rsp_disassembler; } },
 	{ "rupi44",          le,  0, []() -> util::disasm_interface * { return new rupi44_disassembler; } },
