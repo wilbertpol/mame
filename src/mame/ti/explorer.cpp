@@ -24,8 +24,6 @@ the nubus like all the other slots.
 #include "nupi.h"
 #include "explorer_mem.h"
 #include "sib.h"
-#include "emupal.h"
-#include "screen.h"
 
 
 namespace {
@@ -90,17 +88,10 @@ void tiexplorer_state::tiexplorer(machine_config &config)
 	m_nubus->set_space(m_maincpu, AS_DATA);
 
 	TI_NUBUS_SLOT(config, "nb2", "nubus", 2, tiexplorer_nubus_cards, "nupi");
-	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_cards, "mem8mb");
+//	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_cards, "mem8mb");
 	TI_NUBUS_SLOT(config, "nb4", "nubus", 4, tiexplorer_nubus_cards, "mem8mb");
 	TI_NUBUS_SLOT(config, "nb5", "nubus", 5, tiexplorer_nubus_cards, "sib");
 
-	// TODO
-	screen_device &screen(SCREEN(config, "screen"));
-	screen.set_raw(6.144_MHz_XTAL, 515, 0, 160 /*480*/, 199, 0, 152);
-	screen.set_screen_update(FUNC(tiexplorer_state::screen_update));
-	screen.set_palette("palette");
-
-	PALETTE(config, "palette", palette_device::MONOCHROME_HIGHLIGHT);
 }
 
 
