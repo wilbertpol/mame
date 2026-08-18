@@ -60,7 +60,7 @@ private:
 	required_device<ncr5385_device> m_scsi;
 	required_device<nscsi_bus_device> m_scsibus;
 	required_shared_ptr<u16> m_ram;
-	required_memory_region m_config_rom;
+	required_memory_region m_firmware;
 
 	void mpu_map(address_map &map) ATTR_COLD;
 	void nubus_map(address_map &map) ATTR_COLD;

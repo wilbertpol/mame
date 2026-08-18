@@ -4,6 +4,18 @@
 
     TI Explorer System Interface Board (SIB).
 
+	How SIB interrupts work in Meroko: every SIB interrupt source (RTC tick, short/long interval timer expiry, RS232C, printer, graphics-command-ack, keyboard, mouse motion/button, power-supply, voice/sound data, power failure) posts by writing 0xFF to a CPU-configured target address. The CPU sets that target address per event type via the Event-Generator register block — 16 registers at 0xF00000, 0xF00004, 0xF00008, ... 0xF0003C, one per event (e.g. 0xF00000 = RTC vector, 0xF00004 = short-interval-timer-expired vector, 0xF00008 = long-interval-timer-expired vector). All of these deliveries are gated by one master switch: bit 0x2 of the SIB Configuration Register at 0xF00040/0xF00041 — nothing fires unless that bit is set.
+
+The concrete tie-in to our own MAME trace: self-test already does the arming sequence, all captured in our very first SIB run this session — Timers-Write-Mode-Control write 0x30/0xb0 (configuring interval timer 0), then SIB unmapped write offset .../00f00040, data 000000ff (writing 0xFF to the Configuration Register — exactly the write that would set the interrupt-enable bit). MAME just drops all of it: event_generator_map() in sib.cpp is an empty TODO stub, the Configuration Register isn't implemented at all (falls through to the generic unmapped handler), and the interval-timer registers at 0xF90000–0xF9000C are read-only stubs that return a constant and never actually count anything down.
+
+So this isn't "system startup depends on RTC" — it's that self-test arms an interval timer, right before entering the redraw loop, expecting it to expire and fire an interrupt to break the wait. Every piece of that chain (config register, event-vector table, timer countdown) is currently a no-op in MAME.
+
+Scope to fix it:
+1. 0xF00040/0xF00041 — store the Configuration Register, track the interrupt-enable bit.
+2. event_generator_map() — implement the 16 vector-address registers as plain storage (currently entirely empty).
+3. 0xF90000–0xF9000C — give the interval timers real state (load value, mode) and an actual countdown, driven by a timer_device (not wall-clock RTC), matching Meroko's CPU-cycle-derived 1MHz tick.
+4. On expiry, if enabled, write 0xFF to the configured vector address via nubus().space().write_byte(...) — which explorer.cpp's existing irq_w already picks up.
+
 **********************************************************************/
 
 #include "emu.h"
@@ -40,6 +52,9 @@ void sib_device::device_start()
 {
 	nubus().install_map(*this, &sib_device::nubus_map);
 	m_nvram->set_base(m_nv_ram.begin(), m_nv_ram.bytes());
+
+	save_item(NAME(m_configuration_register));
+	m_configuration_register = 0;
 }
 
 
@@ -86,8 +101,11 @@ void sib_device::nubus_map(address_map &map)
 	timers_map(map);
 	nvram_map(map);
 	rs232c_map(map);
-	// fc0000 - keyboard-base
-	map(0x00fc0000, 0x00fc0003).rw(m_i8251, FUNC(i8251_device::read), FUNC(i8251_device::write));
+	map(0x00fc0000, 0x00fc0007).lrw32(NAME([this] (offs_t offset) {
+		return u32(m_i8251->read((offset >> 2) ^ 1));
+	}), NAME([this] (offs_t offset, u32 data) {
+		m_i8251->write((offset >> 2) ^ 1, u8(data)); 
+	}));
 
 	configuration_rom_map(map);
 }
@@ -239,6 +257,7 @@ void sib_device::graphics_bitmap_map(address_map &map)
 		printf("Graphics-Video-Test-Register write %08x\n", data);
 	}));
 	// e9ffff?
+	// e80000 - e993ff - displayed
 	map(0x00e80000, 0x00e9ffff).lrw32(NAME([this] (offs_t offset) {
 		return m_video_ram[offset & VIDEO_RAM_MASK];
 	}), NAME([this] (offs_t offset, u32 data) {
@@ -254,19 +273,31 @@ void sib_device::event_generator_map(address_map &map)
 	// f00000 - event-generator-base
 	//
 	// f00000 - Event-Real-Time-Clock
-	// f00001 - Event-Short-Interval-Timer
-	// f00002 - Event-Long-Interval-Timer
-	// f00003 - Event-RS232C-Port
-	// f00004 - Event-Printer-Port
-	// f00005 - Event-Graphics-Controller
-	// f00006 - Event-Keyboard
-	// f00007 - Event-Power-Supply
-	// f00008 - Event-Keyboard-Special-Chord-Reset
-	// f00009 - Event-Mouse-Motion
-	// f0000a - Event-Mouse-Keyswitch
-	// f0000b - Event-Voice-Data
-	// f0000c - Event-Sound-Data
-	// f0000d - Event-Power-Failure
+	// f00004 - Event-Short-Interval-Timer
+	// f00008 - Event-Long-Interval-Timer
+	// f0000c - Event-RS232C-Port
+	// f00010 - Event-Printer-Port
+	// f00014 - Event-Graphics-Controller
+	// f00018 - Event-Keyboard
+	// f0001c - Event-Power-Supply
+	// f00020 - Event-Keyboard-Special-Chord-Reset
+	// f00024 - Event-Mouse-Motion
+	// f00028 - Event-Mouse-Keyswitch
+	// f0002c - Event-Voice-Data
+	// f00030 - Event-Sound-Data
+	// f00034 - fiber optic data link warning
+	// f00038 - Event-Power-Failure
+	// f0003c - Event-Power-Failure
+	// f00040 - configuration register
+
+	map(0x00f00040, 0x00f00043).lrw32(NAME([this] {
+		if (!machine().side_effects_disabled())
+			printf("Configuration-Register read\n");
+		return m_configuration_register;
+	}), NAME([this] (u32 data) {
+		printf("Configuration-Register write %08x\n", data);
+		m_configuration_register = data;
+	}));
 
 	// TODO
 }
@@ -464,7 +495,7 @@ void sib_device::device_add_mconfig(machine_config &config)
 
 	I8251(config, m_i8251);
 
-	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_1);
+	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
 
 	SPEAKER(config, "speaker").front_center();
 	SN76496(config, "sn76496", 1'500'000).add_route(ALL_OUTPUTS, "speaker", 0.0); // Exact model and input frequency unknown, noise

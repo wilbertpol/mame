@@ -4,9 +4,6 @@
 
     TI Explorer NuBus Peripheral Interface (NUPI) board.
 
-    See nupi.h for an overview and for notes on which parts of the
-    internal (68000-side) hardware map are confirmed versus best-effort.
-
 **********************************************************************/
 
 #include "emu.h"
@@ -39,7 +36,7 @@ nupi_device::nupi_device(const machine_config &mconfig, const char *tag, device_
 	m_scsi(*this, "scsi"),
 	m_scsibus(*this, "scsibus"),
 	m_ram(*this, "ram"),
-	m_config_rom(*this, "config_rom"),
+	m_firmware(*this, "firmware"),
 	m_command_address(0),
 	m_config_register(0),
 	m_dma_address(0),
@@ -86,17 +83,16 @@ void nupi_device::nubus_map(address_map &map)
 {
 	map.unmap_value_high();
 
+	map(0x00aa8000, 0x00aa801f).m(m_scsi, FUNC(ncr5385_device::map)).umask16(0x00ff);
+
 	// Command Address Register (>Fs'E00004) - Section 5.3.5
 	map(0x00e00004, 0x00e00007).rw(FUNC(nupi_device::command_address_r), FUNC(nupi_device::command_address_w));
+	map(0x00e00008, 0x00e00009).rw(FUNC(nupi_device::config_register_r), FUNC(nupi_device::config_register_w));
+
+	map(0x00d40002, 0x00d40002).r(FUNC(nupi_device::flag_register_r));
 
 	map(0x00ffc000, 0x00ffffff).rom().region("firmware", 0);
-
 	map(0x00ffff00, 0x00ffffff).mirror(0).r(FUNC(nupi_device::rom_config_r));
-
-	map(0x00e00008, 0x00e00009).rw(FUNC(nupi_device::config_register_r), FUNC(nupi_device::config_register_w));
-	map(0x00e0000c, 0x00e0000c).r(FUNC(nupi_device::flag_register_r));
-
-	map(0x00aa8000, 0x00aa801f).m(m_scsi, FUNC(ncr5385_device::map)).umask16(0x00ff);
 }
 
 u32 nupi_device::command_address_r()
@@ -109,8 +105,21 @@ void nupi_device::command_address_w(offs_t offset, u32 data, u32 mem_mask)
 	logerror("%s: command_address_w data=%08x mask=%08x\n", machine().describe_context(), data, mem_mask);
 	COMBINE_DATA(&m_command_address);
 
+	// Writing the MSB completes the address and starts command processing (5.3.5). Real
+	// hardware's NuBus slave logic latches the address into the MPU's own RAM at fixed offset
+	// 0x0004 and posts a level 5 interrupt with cause code 0x31 at the shared interrupt-cause
+	// register (0x280000) - confirmed against the ROM disassembly: level5int_vector reads the
+	// cause byte, and on 0x31 pushes the value it finds at 0x180004 onto its internal queue of
+	// pending commands.
 	if (mem_mask & 0xff000000)
-		m_mpu->set_input_line(M68K_IRQ_3, ASSERT_LINE);
+	{
+		m_ram[0x0004 / 2] = m_command_address >> 16;
+		m_ram[0x0006 / 2] = m_command_address & 0xffff;
+		misc_write(0x280000, 0x31);
+
+		m_mpu->set_input_line(M68K_IRQ_5, ASSERT_LINE);
+		m_mpu->set_input_line(M68K_IRQ_5, CLEAR_LINE);
+	}
 }
 
 u16 nupi_device::config_register_r()
@@ -140,8 +149,9 @@ u8 nupi_device::flag_register_r()
 
 u8 nupi_device::rom_config_r(offs_t offset)
 {
-	logerror("%s: rom_config_r offset=%02x\n", machine().describe_context(), offset);
-	return m_config_rom->base()[offset];
+	if ((offset & 3) != 3)
+		return 0x00;
+	return m_firmware->base()[0x3f00 + offset];
 }
 
 
@@ -271,9 +281,6 @@ ROM_START(nupi)
 	ROM_REGION16_BE(0x4000, "firmware", 0)
 	ROMX_LOAD("2238056-5_nupi.bin", 0x0000, 0x2000, CRC(4caf00b9) SHA1(0b96ba609e764e7052d1f26e7e242f6e89d73c9c), ROM_SKIP(1))
 	ROMX_LOAD("2238057-5_nupi.bin", 0x0001, 0x2000, CRC(bb14cf27) SHA1(3b140274764ebc1ad1efbc4ed184a3d70eb84b0c), ROM_SKIP(1))
-
-	ROM_REGION32_BE(0x100, "config_rom", ROMREGION_ERASE00)
-	ROMX_LOAD("nupi_config.bin", 0x000, 0x40, BAD_DUMP CRC(b2552262) SHA1(7dc5296c5e646b8017357d17153224f2c26aef7d), ROM_SKIP(3))
 ROM_END
 
 const tiny_rom_entry *nupi_device::device_rom_region() const

@@ -48,6 +48,7 @@ private:
     required_device<nvram_device> m_nvram;
     memory_share_creator<u32> m_video_ram;
     memory_share_creator<u8> m_nv_ram;
+    u32 m_configuration_register;
 };
 
 DECLARE_DEVICE_TYPE(SIB, sib_device)
