@@ -16,6 +16,9 @@ Slots 3 and 4 are reserved for memory boards.
 Slots 3-6 are connected through a local bus but are also accessible through
 the nubus like all the other slots.
 
+TODO:
+- Add distinction between nubus and local bus.
+
 ***************************************************************************/
 
 #include "emu.h"
