@@ -43,25 +43,19 @@ class tiexplorer_state : public driver_device
 {
 public:
 	tiexplorer_state(const machine_config &mconfig, device_type type, const char *tag) :
-        driver_device(mconfig, type, tag),
-        m_maincpu(*this, "maincpu"),
-        m_nubus(*this, "nubus")
-    { }
+		driver_device(mconfig, type, tag),
+		m_maincpu(*this, "maincpu"),
+		m_nubus(*this, "nubus")
+	{ }
 
-    void tiexplorer(machine_config &config);
-
-protected:
-	void machine_start() override ATTR_COLD;
+	void tiexplorer(machine_config &config);
+	void explorer_init() ATTR_COLD;
 
 private:
 	required_device<raven_cpu_device> m_maincpu;
 	required_device<ti_nubus_device> m_nubus;
 
-	u32 screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect)\
-	{
-		return 0;
-	}
-	void mem_map(address_map &map);
+	void mem_map(address_map &map) ATTR_COLD;
 };
 
 
@@ -112,13 +106,17 @@ ROM_START(tiexplorer)
 	ROMX_LOAD("2236486-03_microcode.bin", 0x0006, 0x0800, CRC(8a953a12) SHA1(f10ce4f53a65da5d133489d4f43b1c7f4ec5726d), ROM_SKIP(7))
 
 	// board part number "2243895-0001", board type "CPU", vendor "TIAU"
+	// 2026-08-20: bytes at file offset 0xB8 and 0xBB corrected from 0xD0 to 0xE0 (bad
+	// dump) - confirmed against both the Meroko reference emulator's independently
+	// dumped copy of this ROM and the Explorer I processor board documentation
+	// (2243144-0001A_Ex1proc_Oct85.pdf), which both give 0xE0 at these offsets.
 	ROM_REGION32_BE(0x400, "cpu_config", ROMREGION_ERASE00)
-	ROMX_LOAD("cpu_config.bin", 0x003, 0x100, CRC(f3513e0c) SHA1(10217eee94f961ddce3e7c9d2190a3ef9208efcc), ROM_SKIP(3))
+	ROMX_LOAD("cpu_config.bin", 0x003, 0x100, CRC(4f4b10c1) SHA1(7e33f843af8c3152475847c3cabadb835097f189), ROM_SKIP(3))
 
 ROM_END
 
 
-void tiexplorer_state::machine_start()
+void tiexplorer_state::explorer_init()
 {
 	u8 *source = memregion("microcode_proms")->base();
 	u8 *dest = memregion("maincpu")->base();
@@ -133,6 +131,7 @@ void tiexplorer_state::machine_start()
 	}
 }
 
+
 } // anonymous namespace
 
-COMP(1985, tiexplorer, 0, 0, tiexplorer, tiexplorer, tiexplorer_state, empty_init, "Texas Instruments", "Explorer", MACHINE_NOT_WORKING | MACHINE_NO_SOUND)
+COMP(1985, tiexplorer, 0, 0, tiexplorer, tiexplorer, tiexplorer_state, explorer_init, "Texas Instruments", "Explorer", MACHINE_NOT_WORKING | MACHINE_NO_SOUND)
