@@ -20,6 +20,9 @@ public:
 	u32 nubus_flag_r();
 	void irq_w(offs_t offset, u32 data);
 
+	u32 config_register_r();
+	void config_register_w(offs_t offset, u32 data, u32 mem_mask);
+
 	u32 nubus_unmapped_r(offs_t offset, u32 mem_mask);
 	void nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask);
 
@@ -76,6 +79,7 @@ private:
 	u8 m_sp;
 	u32 m_stack[0x40]; // 64 x 20 bits
 	u32 m_mcr;
+	u32 m_config_register = 0;
 	u32 m_imod_lo;
 	u32 m_imod_hi;
 	u32 m_vma;

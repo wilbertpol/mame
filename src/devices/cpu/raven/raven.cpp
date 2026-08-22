@@ -13,6 +13,7 @@
 
 namespace {
 
+static constexpr u8 MCR_SELF_TEST_FLAG_BIT = 27;
 static constexpr u8 MCR_MACROINSTRUCTION_CHAINING_ENABLE_BIT = 26;
 static constexpr u8 MCR_LOOP_ON_SELF_TEST_BIT = 23;
 static constexpr u8 MCR_NEED_FETCH_BIT = 22;
@@ -20,6 +21,7 @@ static constexpr u8 MCR_LOCAL_RESET_BIT = 20;
 static constexpr u8 MCR_INT_ENABLE_BIT = 15;
 static constexpr u8 MCR_MEMORY_CYCLE_ENABLE_BIT = 8;
 static constexpr u8 MCR_SUB_SYSTEM_FLAG_BIT = 7;
+static constexpr u8 MCR_TEST_FAIL_FLAG_BIT = 6;
 
 static constexpr u8 MEMORY_CYCLE_BUSY_CYCLES = 6;
 
@@ -120,6 +122,7 @@ void raven_cpu_device::device_start()
 	save_item(NAME(m_sp));
 	save_item(NAME(m_stack));
 	save_item(NAME(m_mcr));
+	save_item(NAME(m_config_register));
 	save_item(NAME(m_imod_lo));
 	save_item(NAME(m_imod_hi));
 	save_item(NAME(m_vma));
@@ -193,7 +196,26 @@ void raven_cpu_device::program_map(address_map &map)
 
 u32 raven_cpu_device::nubus_flag_r()
 {
-	return (BIT(m_mcr, MCR_SUB_SYSTEM_FLAG_BIT) ? 0x00 : 0x04) | 3;
+	u32 data = 0;
+	if (!BIT(m_mcr, MCR_SUB_SYSTEM_FLAG_BIT))
+		data |= 0x04;
+	if (!BIT(m_mcr, MCR_TEST_FAIL_FLAG_BIT))
+		data |= 0x02;
+	if (!BIT(m_mcr, MCR_SELF_TEST_FLAG_BIT))
+		data |= 0x01;
+	return data;
+}
+
+
+u32 raven_cpu_device::config_register_r()
+{
+	return m_config_register;
+}
+
+
+void raven_cpu_device::config_register_w(offs_t offset, u32 data, u32 mem_mask)
+{
+	m_config_register = data & 0xff;
 }
 
 

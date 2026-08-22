@@ -20,6 +20,8 @@ static constexpr u16 VIDEO_RAM_SIZE = 0x8000; // Guestimate
 static constexpr u16 VIDEO_RAM_MASK = VIDEO_RAM_SIZE - 1;
 static constexpr u16 SCREEN_WIDTH = 1024;
 
+u8 compute_parity(u8 data) { data ^= data >> 4; data ^= data >> 2; data ^= data >> 1; return data & 1; }
+
 } // anonymous namespace
 
 
@@ -28,6 +30,7 @@ sib_device::sib_device(const machine_config &mconfig, const char *tag, device_t 
 	device_ti_nubus_card_interface(mconfig, *this),
 	m_screen(*this, "screen"),
 	m_i8251(*this, "i8251"),
+	m_usart_clock(*this, "usart_clock"),
 	m_sn76496(*this, "sn76496"),
 	m_nvram(*this, "nvram"),
 	m_video_ram(*this, "video_ram", VIDEO_RAM_SIZE * sizeof(u32), ENDIANNESS_BIG),
@@ -42,11 +45,22 @@ void sib_device::device_start()
 	nubus().install_local_bus_map(*this, &sib_device::local_bus_map);
 	m_nvram->set_base(m_nv_ram.begin(), m_nv_ram.bytes());
 
+	m_i8251->write_cts(0);
+
 	save_item(NAME(m_configuration_register));
 	m_configuration_register = 0;
 	save_item(NAME(m_event_vector));
 	save_item(NAME(m_mask_register));
 	save_item(NAME(m_operation_register));
+	save_item(NAME(m_mouse_y_position));
+	save_item(NAME(m_mouse_x_position));
+	save_item(NAME(m_interrupt_diag_control));
+	save_item(NAME(m_monitor_control));
+	save_item(NAME(m_diagnostic_data));
+	save_item(NAME(m_voice_data_register));
+	save_item(NAME(m_printer_data));
+	save_item(NAME(m_sound_control));
+	save_item(NAME(m_speech_register));
 }
 
 
@@ -96,9 +110,11 @@ void sib_device::nubus_map(address_map &map)
 	nvram_map(map);
 	rs232c_map(map);
 	map(0x00fc0000, 0x00fc0007).lrw32(NAME([this] (offs_t offset) {
-		return u32(m_i8251->read((offset >> 2) ^ 1));
+		if (offset == 1 && BIT(m_interrupt_diag_control, 2) && !BIT(m_interrupt_diag_control, 3))
+			return diagnostic_loopback_value();
+		return u32(m_i8251->read(offset ^ 1));
 	}), NAME([this] (offs_t offset, u32 data) {
-		m_i8251->write((offset >> 2) ^ 1, u8(data));
+		m_i8251->write(offset ^ 1, u8(data));
 	}));
 
 	configuration_rom_map(map);
@@ -360,9 +376,19 @@ void sib_device::printer_map(address_map &map)
 {
 	// f10000 - printer-port-base
 	//
-	// f10000 - Printer-Data-Register / Printer-Status-Register
-
-	// TODO
+	// f10000 - Printer-Data-Register (Register 0, Table 4-10)
+	// f10004 - Printer-Control/Status-Register (Register 1, Table 4-11)
+	//
+	map(0x00f10000, 0x00f10003).lrw32(NAME([this] {
+		return m_printer_data;
+	}), NAME([this] (u32 data) {
+		m_printer_data = data & 0xff;
+	}));
+	map(0x00f10004, 0x00f10007).lrw32(NAME([] {
+		return u32(0x0c);
+	}), NAME([] (u32 data) {
+		(void)data;
+	}));
 }
 
 
@@ -386,7 +412,50 @@ void sib_device::mouse_map(address_map &map)
 	// ff - 11111111 - 111 - noise attenuation - off
 	// TODO
 
-	map(0x00f20014, 0x00f20017).w(m_sn76496, FUNC(sn76496_device::write));
+	map(0x00f20000, 0x00f20003).lrw32(NAME([this] {
+		return m_mouse_y_position;
+	}), NAME([this] (u32 data) {
+		m_mouse_y_position = data & 0xffff;
+	}));
+	map(0x00f20004, 0x00f20007).lrw32(NAME([this] {
+		return m_mouse_x_position;
+	}), NAME([this] (u32 data) {
+		m_mouse_x_position = data & 0xffff;
+	}));
+	map(0x00f20008, 0x00f2000b).lr32(NAME([this] {
+		if (diagnostic_loopback_active())
+			return diagnostic_loopback_value();
+		if (BIT(m_interrupt_diag_control, 1))
+			return m_diagnostic_data & 0xff;
+		return u32(0xffffffff);
+	}));
+	map(0x00f2000c, 0x00f2000f).lrw32(NAME([this] {
+		return (m_interrupt_diag_control & 0xff) | ((m_monitor_control & 0xf) << 8);
+	}), NAME([this] (u32 data) {
+		m_interrupt_diag_control = data & 0xff;
+		m_monitor_control = (data >> 8) & 0xf;
+	}));
+	map(0x00f20010, 0x00f20013).lrw32(NAME([this] {
+		return (m_diagnostic_data & 0xff) | (u32(compute_parity(m_diagnostic_data & 0xff)) << 8);
+	}), NAME([this] (u32 data) {
+		m_diagnostic_data = data & 0x1ff;
+		if (BIT(m_interrupt_diag_control, 0) && BIT(data, 8))
+			m_voice_data_register = data & 0xff;
+	}));
+	map(0x00f20014, 0x00f20017).lrw32(NAME([this] {
+		return (m_sound_control & 0xff) | (u32(compute_parity(m_sound_control & 0xff) ^ 1) << 8);
+	}), NAME([this] (u32 data) {
+		m_sound_control = data & 0xff;
+		m_sn76496->write(u8(data));
+	}));
+	map(0x00f20018, 0x00f2001b).lrw32(NAME([this] {
+		return (m_speech_register & 0xff) | (u32(compute_parity(m_speech_register & 0xff) ^ 1) << 8);
+	}), NAME([this] (u32 data) {
+		m_speech_register = data & 0xff;
+	}));
+	map(0x00f2001c, 0x00f2001f).lr32(NAME([this] {
+		return m_voice_data_register & 0xff;
+	}));
 }
 
 
@@ -514,6 +583,13 @@ void sib_device::configuration_rom_map(address_map &map)
 }
 
 
+void sib_device::i8251_txd_w(int state)
+{
+	if (BIT(m_interrupt_diag_control, 3))
+		m_i8251->write_rxd(state);
+}
+
+
 u32 sib_device::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect)
 {
 	const u32 black = 0x000000;
@@ -547,6 +623,11 @@ void sib_device::device_add_mconfig(machine_config &config)
 	m_screen->set_screen_update(FUNC(sib_device::screen_update));
 
 	I8251(config, m_i8251);
+	m_i8251->txd_handler().set(FUNC(sib_device::i8251_txd_w));
+
+	CLOCK(config, m_usart_clock, 153600);
+	m_usart_clock->signal_handler().set(m_i8251, FUNC(i8251_device::write_rxc));
+	m_usart_clock->signal_handler().append(m_i8251, FUNC(i8251_device::write_txc));
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
 

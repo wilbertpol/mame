@@ -13,6 +13,7 @@
 
 #include "ti_nubus.h"
 #include "screen.h"
+#include "machine/clock.h"
 #include "machine/i8251.h"
 #include "machine/nvram.h"
 #include "sound/sn76496.h"
@@ -27,7 +28,7 @@ protected:
 	// device_t implementation
 	virtual void device_start() override ATTR_COLD;
 	virtual const tiny_rom_entry *device_rom_region() const override ATTR_COLD;
-    virtual void device_add_mconfig(machine_config &config) override ATTR_COLD;
+	virtual void device_add_mconfig(machine_config &config) override ATTR_COLD;
 
 private:
 	void nubus_map(address_map &map) ATTR_COLD;
@@ -45,19 +46,32 @@ private:
 	void rs232c_map(address_map &map) ATTR_COLD;
 	void configuration_rom_map(address_map &map) ATTR_COLD;
 	uint32_t screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect);
+	void i8251_txd_w(int state);
+	bool diagnostic_loopback_active() const { return (m_interrupt_diag_control & 0x0c) != 0; }
+	u32 diagnostic_loopback_value() const { return BIT(m_diagnostic_data, 8) ? 0x00 : 0xff; }
+	u32 event_vector_r(offs_t offset);
+	void event_vector_w(offs_t offset, u32 data, u32 mem_mask);
 
 	required_device<screen_device> m_screen;
-    required_device<i8251_device> m_i8251;
-    required_device<sn76496_device> m_sn76496;
-    required_device<nvram_device> m_nvram;
-    memory_share_creator<u32> m_video_ram;
-    memory_share_creator<u8> m_nv_ram;
-    u32 m_configuration_register;
-    u32 m_event_vector[16]{};
-    u32 m_mask_register = 0;
-    u32 m_operation_register = 0;
-    u32 event_vector_r(offs_t offset);
-    void event_vector_w(offs_t offset, u32 data, u32 mem_mask);
+	required_device<i8251_device> m_i8251;
+	required_device<clock_device> m_usart_clock;
+	required_device<sn76496_device> m_sn76496;
+	required_device<nvram_device> m_nvram;
+	memory_share_creator<u32> m_video_ram;
+	memory_share_creator<u8> m_nv_ram;
+	u32 m_configuration_register;
+	u32 m_event_vector[16]{};
+	u32 m_mask_register = 0;
+	u32 m_operation_register = 0;
+	u32 m_mouse_y_position = 0;
+	u32 m_mouse_x_position = 0;
+	u32 m_interrupt_diag_control = 0;
+	u32 m_monitor_control = 0;
+	u32 m_diagnostic_data = 0;
+	u32 m_voice_data_register = 0;
+	u32 m_printer_data = 0;
+	u32 m_sound_control = 0;
+	u32 m_speech_register = 0;
 };
 
 DECLARE_DEVICE_TYPE(SIB, sib_device)

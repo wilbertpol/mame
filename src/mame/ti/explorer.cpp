@@ -72,6 +72,7 @@ void tiexplorer_state::mem_map(address_map &map)
 
 	// Slot 6 - CPU
 	map(0xf6c00000, 0xf6c00003).r(m_maincpu, FUNC(raven_cpu_device::nubus_flag_r));
+	map(0xf6d00000, 0xf6d00003).rw(m_maincpu, FUNC(raven_cpu_device::config_register_r), FUNC(raven_cpu_device::config_register_w));
 	map(0xf6e00000, 0xf6e0003f).w(m_maincpu, FUNC(raven_cpu_device::irq_w));
 	map(0xf6fffc00, 0xf6ffffff).rom().region("cpu_config", 0);
 }
