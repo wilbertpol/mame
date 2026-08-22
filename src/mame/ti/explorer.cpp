@@ -118,11 +118,11 @@ ROM_START(tiexplorer)
 
 	// board part number "2243895-0001", board type "CPU", vendor "TIAU"
 	// 2026-08-20: bytes at file offset 0xB8 and 0xBB corrected from 0xD0 to 0xE0 (bad
-	// dump) - confirmed against both the Meroko reference emulator's independently
+	// dump?) - confirmed against both the Meroko reference emulator's independently
 	// dumped copy of this ROM and the Explorer I processor board documentation
 	// (2243144-0001A_Ex1proc_Oct85.pdf), which both give 0xE0 at these offsets.
-	ROM_REGION32_BE(0x400, "cpu_config", ROMREGION_ERASE00)
-	ROMX_LOAD("cpu_config.bin", 0x003, 0x100, CRC(4f4b10c1) SHA1(7e33f843af8c3152475847c3cabadb835097f189), ROM_SKIP(3))
+	ROM_REGION32_LE(0x400, "cpu_config", ROMREGION_ERASE00)
+	ROMX_LOAD("cpu_config.bin", 0x000, 0x100, CRC(4f4b10c1) SHA1(7e33f843af8c3152475847c3cabadb835097f189), ROM_SKIP(3))
 
 ROM_END
 
