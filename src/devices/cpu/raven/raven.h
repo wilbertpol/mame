@@ -23,6 +23,12 @@ public:
 	u32 nubus_unmapped_r(offs_t offset, u32 mem_mask);
 	void nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask);
 
+	static constexpr int AS_LOCAL_BUS = AS_OPCODES + 1;
+	u32 local_bus_miss_r(offs_t offset, u32 mem_mask);
+	void local_bus_miss_w(offs_t offset, u32 data, u32 mem_mask);
+
+	void assert_bus_error() { m_nubus_error = true; }
+
 protected:
 	virtual void device_start() override ATTR_COLD;
 	virtual void device_reset() override ATTR_COLD;
@@ -46,9 +52,12 @@ private:
 
 	address_space_config m_program_config;
 	address_space_config m_data_config;
+	address_space_config m_local_bus_config;
 	memory_view m_inst_view;
 	memory_access<ADDRESS_BITS, 3, -3, ENDIANNESS_BIG>::specific m_program;
-	memory_access<EXTERNAL_ADDRESS_BITS, 2, 0, ENDIANNESS_BIG>::specific m_data;
+	memory_access<EXTERNAL_ADDRESS_BITS, 2, 0, ENDIANNESS_LITTLE>::specific m_data;
+	memory_access<EXTERNAL_ADDRESS_BITS, 2, 0, ENDIANNESS_LITTLE>::specific m_local_bus;
+	bool m_local_bus_miss;
 
 	required_shared_ptr<u64> m_control_store; // 16K x 56 bits RAM
 	u16 m_pc; // 14 bits
@@ -110,6 +119,7 @@ private:
 	bool m_page_fault;
 	u32 m_read_data;
 	u8 m_memory_busy_counter;
+	bool m_read_pending;
 	u16 m_pending_interrupts;
 	bool m_nubus_error;
 
@@ -125,6 +135,8 @@ private:
 	void write();
 	void read_unmapped();
 	void write_unmapped();
+	void read_unmapped_byte();
+	void write_unmapped_byte();
 	template <int Action> u32 vm_resolve_address();
 	u16 map2_addr();
 	u32 get_m_source();

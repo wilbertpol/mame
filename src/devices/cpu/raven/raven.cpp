@@ -21,6 +21,8 @@ static constexpr u8 MCR_INT_ENABLE_BIT = 15;
 static constexpr u8 MCR_MEMORY_CYCLE_ENABLE_BIT = 8;
 static constexpr u8 MCR_SUB_SYSTEM_FLAG_BIT = 7;
 
+static constexpr u8 MEMORY_CYCLE_BUSY_CYCLES = 6;
+
 
 static const u32 shift_mask_left[32] =
 {
@@ -71,7 +73,8 @@ enum
 raven_cpu_device::raven_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock)
 	: cpu_device(mconfig, RAVEN, tag, owner, clock)
 	, m_program_config("program", ENDIANNESS_BIG, 64/*56*/, ADDRESS_BITS, -3, address_map_constructor(FUNC(raven_cpu_device::program_map), this))
-	, m_data_config("data", ENDIANNESS_BIG, 32, EXTERNAL_ADDRESS_BITS)
+	, m_data_config("data", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS)
+	, m_local_bus_config("local_bus", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS)
 	, m_inst_view(*this, "inst_view")
 	, m_control_store(*this, "control_store")
 {
@@ -81,8 +84,9 @@ raven_cpu_device::raven_cpu_device(const machine_config &mconfig, const char *ta
 raven_cpu_device::space_config_vector raven_cpu_device::memory_space_config() const
 {
 	return space_config_vector {
-		std::make_pair(AS_PROGRAM, &m_program_config),
-		std::make_pair(AS_DATA,    &m_data_config)
+		std::make_pair(AS_PROGRAM,    &m_program_config),
+		std::make_pair(AS_DATA,       &m_data_config),
+		std::make_pair(AS_LOCAL_BUS,  &m_local_bus_config)
 	};
 }
 
@@ -98,6 +102,7 @@ void raven_cpu_device::device_start()
 {
 	space(AS_PROGRAM).specific(m_program);
 	space(AS_DATA).specific(m_data);
+	space(AS_LOCAL_BUS).specific(m_local_bus);
 
 	save_item(NAME(m_pc));
 	save_item(NAME(m_prev_pc));
@@ -131,8 +136,10 @@ void raven_cpu_device::device_start()
 	save_item(NAME(m_page_fault));
 	save_item(NAME(m_read_data));
 	save_item(NAME(m_memory_busy_counter));
+	save_item(NAME(m_read_pending));
 	save_item(NAME(m_pending_interrupts));
 	save_item(NAME(m_nubus_error));
+	save_item(NAME(m_local_bus_miss));
 
 	state_add(STATE_GENPCBASE, "CURPC", m_pc).noshow();
 	state_add(STATE_GENPC, "PC", m_pc);
@@ -167,8 +174,10 @@ void raven_cpu_device::device_reset()
 	m_pdl_pointer = 0;
 	m_page_fault = false;
 	m_memory_busy_counter = 0;
+	m_read_pending = false;
 	m_pending_interrupts = 0;
 	m_nubus_error = false;
+	m_local_bus_miss = false;
 	m_inst_view.select(0);
 }
 
@@ -196,11 +205,13 @@ void raven_cpu_device::read()
 	if (!m_page_fault)
 	{
 		m_read_data = m_data.read_dword(address);
-		m_md = m_read_data;
-		m_memory_busy_counter = 6;
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+		m_read_pending = true;
 		if (m_vma == 0xf6c00000)
 		{
 			m_memory_busy_counter = 0;
+			m_read_pending = false;
+			m_md = m_read_data;
 		}
 	}
 }
@@ -214,7 +225,8 @@ void raven_cpu_device::write()
 	if (!m_page_fault)
 	{
 		m_data.write_dword(address, m_md);
-		m_memory_busy_counter = 6;
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+		m_read_pending = false;
 		if (m_vma == 0xf6c00000)
 		{
 			m_memory_busy_counter = 0;
@@ -227,12 +239,24 @@ void raven_cpu_device::read_unmapped()
 {
 	m_nubus_error = false;
 	m_page_fault = false;
-	m_read_data = m_data.read_dword(m_vma);
-	m_memory_busy_counter = 6;
-	m_md = m_read_data;
+	m_local_bus_miss = false;
+	m_read_data = m_local_bus.read_dword(m_vma);
+	if (m_local_bus_miss)
+	{
+		m_read_data = m_data.read_dword(m_vma);
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	}
+	else
+	{
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	}
+	m_read_pending = true;
+	// TODO Get rid of this hack
 	if (/*m_vma == 0xf6c00000 ||*/ m_vma == 0x3db00000)
 	{
 		m_memory_busy_counter = 0;
+		m_read_pending = false;
+		m_md = m_read_data;
 	}
 }
 
@@ -241,8 +265,62 @@ void raven_cpu_device::write_unmapped()
 {
 	m_nubus_error = false;
 	m_page_fault = false;
-	m_data.write_dword(m_vma, m_md);
-	m_memory_busy_counter = 6;
+	m_local_bus_miss = false;
+	m_local_bus.write_dword(m_vma, m_md);
+	if (m_local_bus_miss)
+	{
+		m_data.write_dword(m_vma, m_md);
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	}
+	else
+	{
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	}
+	m_read_pending = false;
+}
+
+
+void raven_cpu_device::read_unmapped_byte()
+{
+	m_nubus_error = false;
+	m_page_fault = false;
+	u32 const shift = 8 * (m_vma & 3);
+	u32 const mask = 0xff << shift;
+	m_local_bus_miss = false;
+	u32 raw = m_local_bus.read_dword(m_vma & ~3, mask);
+	if (m_local_bus_miss)
+	{
+		raw = m_data.read_dword(m_vma & ~3, mask);
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	}
+	else
+	{
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	}
+	u8 const byte_value = u8(raw >> shift);
+	m_read_data = u32(byte_value) << (8 * (m_vma & 3));
+	m_read_pending = true;
+}
+
+void raven_cpu_device::write_unmapped_byte()
+{
+	m_nubus_error = false;
+	m_page_fault = false;
+	u32 const shift = 8 * (m_vma & 3);
+	u32 const mask = 0xff << shift;
+	u8 const byte_value = u8(m_md >> (8 * (m_vma & 3)));
+	m_local_bus_miss = false;
+	m_local_bus.write_dword(m_vma & ~3, u32(byte_value) << shift, mask);
+	if (m_local_bus_miss)
+	{
+		m_data.write_dword(m_vma & ~3, u32(byte_value) << shift, mask);
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	}
+	else
+	{
+		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	}
+	m_read_pending = false;
 }
 
 
@@ -256,6 +334,19 @@ u32 raven_cpu_device::nubus_unmapped_r(offs_t offset, u32 mem_mask)
 void raven_cpu_device::nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	m_nubus_error = true;
+}
+
+
+u32 raven_cpu_device::local_bus_miss_r(offs_t offset, u32 mem_mask)
+{
+	m_local_bus_miss = true;
+	return 0xffffffff;
+}
+
+
+void raven_cpu_device::local_bus_miss_w(offs_t offset, u32 data, u32 mem_mask)
+{
+	m_local_bus_miss = true;
 }
 
 
@@ -831,21 +922,21 @@ void raven_cpu_device::store_o_bus()
 		case 0x29: // PDL buffer index
 			m_pdl_index = m_o_bus & 0x3ff;
 			break;
-		case 0x36: // VMA start unmapped read (if NuBus access, TM0 = 1)
+		case 0x36: // VMA start unmapped read
 			m_vma = m_o_bus;
-			read_unmapped();
+			read_unmapped_byte();
 			break;
-		case 0x37: // VMA start unmapped write (if NuBus access, TM0 = 1)
+		case 0x37: // VMA start unmapped write
 			m_vma = m_o_bus;
-			write_unmapped();
+			write_unmapped_byte();
 			break;
-		case 0x3e: // MD start unmapped read (if NuBus access, TM0 = 1)
+		case 0x3e: // MD start unmapped read
 			m_md = m_o_bus;
-			read_unmapped();
+			read_unmapped_byte();
 			break;
-		case 0x3f: // MD start unmapped write (if NuBus access, TM0 = 1)
+		case 0x3f: // MD start unmapped write
 			m_md = m_o_bus;
-			write_unmapped();
+			write_unmapped_byte();
 			break;
 		default:
 			fatalerror("%04x: store_o_bus MF %02x not implemented\n", m_prev_pc, (m_ir >> 25) & 0x3f);
@@ -991,8 +1082,8 @@ void raven_cpu_device::handle_popj14()
 		if (!m_page_fault)
 		{
 			m_read_data = m_data.read_dword(address);
-			m_md = m_read_data;
-			m_memory_busy_counter = 6;
+			m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+			m_read_pending = true;
 		}
 	}
 
@@ -1168,11 +1259,11 @@ void raven_cpu_device::execute_jump()
 	{
 		if (BIT(m_ir, 31))
 		{
-			m_a_mem[(m_ir >> 19) & 0x3ff] = m_control_store[m_pc & 0x3fff] >> 32;
+			m_a_mem[(m_ir >> 19) & 0x3ff] = m_program.read_qword(m_pc) >> 32;
 		}
 		else
 		{
-			m_m_mem[(m_ir >> 19) & 0x3f] = u32(m_control_store[m_pc & 0x3fff]);
+			m_m_mem[(m_ir >> 19) & 0x3f] = u32(m_program.read_qword(m_pc));
 		}
 	}
 	if (BIT(m_ir, 9))
@@ -1288,12 +1379,33 @@ void raven_cpu_device::execute_run()
 		if (m_memory_busy_counter)
 		{
 			m_memory_busy_counter--;
+			if (!m_memory_busy_counter && m_read_pending)
+			{
+				m_md = m_read_data;
+				m_read_pending = false;
+			}
 		}
 
 		m_ir |= m_imod_lo;
 		m_imod_lo = 0;
 		m_ir |= u64(m_imod_hi) << 32;
 		m_imod_hi = 0;
+
+		// CPU is stalled when targetting VMA or MD while a memory cycle is in progress.
+		if (!m_n && m_memory_busy_counter)
+		{
+			bool const dest_hazard = !BIT(m_ir, 31) && ((m_ir >> 25) & 0x3f) >= 0x10 && ((m_ir >> 25) & 0x3f) <= 0x1f;
+			if (dest_hazard)
+			{
+				m_icount -= m_memory_busy_counter;
+				if (m_read_pending)
+				{
+					m_md = m_read_data;
+					m_read_pending = false;
+				}
+				m_memory_busy_counter = 0;
+			}
+		}
 
 		if (!m_n)
 		{

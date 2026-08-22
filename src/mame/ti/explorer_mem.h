@@ -21,12 +21,42 @@ protected:
 
 	// device_t implementation
 	virtual void device_start() override ATTR_COLD;
+	virtual void device_reset() override ATTR_COLD;
 
 private:
 	void nubus_map(address_map &map) ATTR_COLD;
 
+	u8 config_register_r();
+	void config_register_w(u8 data);
+	u8 base_register_r();
+	void base_register_w(u8 data);
+	u8 failure_latch_r();
+	u8 test_register_r();
+	void test_register_w(u8 data);
+
+	static u8 calculate_parity(u8 data);
+	u8 get_parity(offs_t offset) const;
+	void store_parity_bit(offs_t offset, u8 bit);
+	u8 test_force_bit(offs_t offset) const;
+	void update_failure_location(offs_t offset, bool failed);
+
+	u8 ram_r(offs_t offset);
+	void ram_w(offs_t offset, u8 data);
+	u8 ram_test_r(offs_t offset);
+	void ram_test_w(offs_t offset, u8 data);
+
 	u32 const m_ram_size;
 	std::unique_ptr<u8[]> m_ram;
+	std::unique_ptr<u8[]> m_parity;
+	memory_view m_ram_view;
+	memory_view m_ram_view_local_bus;
+
+	u8 m_config_register = 0;
+	u8 m_base_register = 0;
+	u8 m_failure_location = 0;
+	u8 m_test_register = 0;
+	u8 m_failure_latch = 0;
+	u16 m_nubus_status = 0;
 };
 
 

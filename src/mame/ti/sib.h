@@ -32,6 +32,10 @@ protected:
 private:
 	void nubus_map(address_map &map) ATTR_COLD;
 	void graphics_bitmap_map(address_map &map) ATTR_COLD;
+	void local_bus_map(address_map &map) ATTR_COLD;
+	u32 video_ram_r(offs_t offset);
+	void video_ram_w(offs_t offset, u32 data, u32 mem_mask);
+	void video_ram_rmw_w(offs_t offset, u32 data, u32 mem_mask);
 	void event_generator_map(address_map &map) ATTR_COLD;
 	void printer_map(address_map &map) ATTR_COLD;
 	void mouse_map(address_map &map) ATTR_COLD;
@@ -49,6 +53,11 @@ private:
     memory_share_creator<u32> m_video_ram;
     memory_share_creator<u8> m_nv_ram;
     u32 m_configuration_register;
+    u32 m_event_vector[16]{};
+    u32 m_mask_register = 0;
+    u32 m_operation_register = 0;
+    u32 event_vector_r(offs_t offset);
+    void event_vector_w(offs_t offset, u32 data, u32 mem_mask);
 };
 
 DECLARE_DEVICE_TYPE(SIB, sib_device)

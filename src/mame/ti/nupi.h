@@ -61,20 +61,31 @@ private:
 	required_device<nscsi_bus_device> m_scsibus;
 	required_shared_ptr<u16> m_ram;
 	required_memory_region m_firmware;
+	// NuBus-side view of the firmware ROM, unscrambled once at device_start()
+	// from m_firmware (which mpu_map() also uses directly, in its original
+	// interleave, for the 68000's own instruction fetch - see nubus_map()'s
+	// comment on rom_r() for why the two views differ).
+	required_memory_region m_firmware_nubus;
 
 	void mpu_map(address_map &map) ATTR_COLD;
 	void nubus_map(address_map &map) ATTR_COLD;
 
 	// NuBus-facing (host) registers - Section 5.3 of the NUPI General Description
 	u32 m_command_address; // Command Address Register (>Fs'E00004)
-	u16 m_config_register; // Configuration Register (Figure 5-1)
+	// Configuration Register (Section 5.3.2/Figure 5-1, base address >Fs'E0000B -
+	// see nubus_map()'s comment). Documented as 16 bits, but only bits 0-7 are
+	// wired up here - see nubus_map().
+	u8 m_config_register;
 
 	u32 command_address_r();
 	void command_address_w(offs_t offset, u32 data, u32 mem_mask);
-	u16 config_register_r();
-	void config_register_w(u16 data);
+	u8 config_register_r();
+	void config_register_w(u8 data);
 	u8 flag_register_r();
-	u8 rom_config_r(offs_t offset);
+	u8 rom_r(offs_t offset);
+	// DMA-Test-Register (>Fs'E0000F) - see nubus_map()'s comment.
+	u8 m_dma_test_register = 0;
+	void dma_test_register_w(u8 data);
 
 	// internal MPU-side hardware - see class comment above for confidence notes. Each
 	// address_map window into misc_read/misc_write below is installed with a distinct

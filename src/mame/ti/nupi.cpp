@@ -37,6 +37,7 @@ nupi_device::nupi_device(const machine_config &mconfig, const char *tag, device_
 	m_scsibus(*this, "scsibus"),
 	m_ram(*this, "ram"),
 	m_firmware(*this, "firmware"),
+	m_firmware_nubus(*this, "firmware_nubus"),
 	m_command_address(0),
 	m_config_register(0),
 	m_dma_address(0),
@@ -53,10 +54,18 @@ void nupi_device::device_start()
 	m_timer = timer_alloc(FUNC(nupi_device::timer_tick), this);
 	m_timer->adjust(attotime::from_hz(60), 0, attotime::from_hz(60));
 
+	{
+		u8 const *const src = m_firmware->base();
+		u8 *const dest = m_firmware_nubus->base();
+		for (int i = 0; i < 0x4000; i++)
+			dest[i] = src[i ^ 2];
+	}
+
 	save_item(NAME(m_command_address));
 	save_item(NAME(m_config_register));
 	save_item(NAME(m_dma_address));
 	save_item(NAME(m_dma_count));
+	save_item(NAME(m_dma_test_register));
 }
 
 void nupi_device::device_reset()
@@ -65,6 +74,7 @@ void nupi_device::device_reset()
 	m_config_register = 0;
 	m_dma_address = 0;
 	m_dma_count = 0;
+	m_dma_test_register = 0;
 	m_misc.clear();
 }
 
@@ -85,14 +95,13 @@ void nupi_device::nubus_map(address_map &map)
 
 	map(0x00aa8000, 0x00aa801f).m(m_scsi, FUNC(ncr5385_device::map)).umask16(0x00ff);
 
-	// Command Address Register (>Fs'E00004) - Section 5.3.5
 	map(0x00e00004, 0x00e00007).rw(FUNC(nupi_device::command_address_r), FUNC(nupi_device::command_address_w));
-	map(0x00e00008, 0x00e00009).rw(FUNC(nupi_device::config_register_r), FUNC(nupi_device::config_register_w));
+	map(0x00e0000b, 0x00e0000b).rw(FUNC(nupi_device::config_register_r), FUNC(nupi_device::config_register_w));
+	map(0x00e0000f, 0x00e0000f).w(FUNC(nupi_device::dma_test_register_w));
 
 	map(0x00d40002, 0x00d40002).r(FUNC(nupi_device::flag_register_r));
 
-	map(0x00ffc000, 0x00ffffff).rom().region("firmware", 0);
-	map(0x00ffff00, 0x00ffffff).mirror(0).r(FUNC(nupi_device::rom_config_r));
+	map(0x00ffc000, 0x00ffffff).r(FUNC(nupi_device::rom_r));
 }
 
 u32 nupi_device::command_address_r()
@@ -105,12 +114,6 @@ void nupi_device::command_address_w(offs_t offset, u32 data, u32 mem_mask)
 	logerror("%s: command_address_w data=%08x mask=%08x\n", machine().describe_context(), data, mem_mask);
 	COMBINE_DATA(&m_command_address);
 
-	// Writing the MSB completes the address and starts command processing (5.3.5). Real
-	// hardware's NuBus slave logic latches the address into the MPU's own RAM at fixed offset
-	// 0x0004 and posts a level 5 interrupt with cause code 0x31 at the shared interrupt-cause
-	// register (0x280000) - confirmed against the ROM disassembly: level5int_vector reads the
-	// cause byte, and on 0x31 pushes the value it finds at 0x180004 onto its internal queue of
-	// pending commands.
 	if (mem_mask & 0xff000000)
 	{
 		m_ram[0x0004 / 2] = m_command_address >> 16;
@@ -122,16 +125,15 @@ void nupi_device::command_address_w(offs_t offset, u32 data, u32 mem_mask)
 	}
 }
 
-u16 nupi_device::config_register_r()
+u8 nupi_device::config_register_r()
 {
-	return m_config_register;
+	return 0;
 }
 
-void nupi_device::config_register_w(u16 data)
+void nupi_device::config_register_w(u8 data)
 {
 	m_config_register = data;
 
-	// Reset bit (bit 0): resets both the NUPI and the SCSI bus.
 	if (BIT(data, 0))
 	{
 		m_mpu->reset();
@@ -139,19 +141,20 @@ void nupi_device::config_register_w(u16 data)
 	}
 }
 
+void nupi_device::dma_test_register_w(u8 data)
+{
+	m_dma_test_register = data;
+}
+
 u8 nupi_device::flag_register_r()
 {
 	logerror("%s: flag_register_r\n", machine().describe_context());
-	// Self-test-complete/passed/SCSI-passed are active low; report "all good" until the
-	// firmware's actual self-test state is wired up.
 	return 0x00;
 }
 
-u8 nupi_device::rom_config_r(offs_t offset)
+u8 nupi_device::rom_r(offs_t offset)
 {
-	if ((offset & 3) != 3)
-		return 0x00;
-	return m_firmware->base()[0x3f00 + offset];
+	return m_firmware_nubus->base()[offset & 0x3fff];
 }
 
 
@@ -190,8 +193,6 @@ void nupi_device::mpu_map(address_map &map)
 			NAME([this](offs_t offset) { return misc_read(0x518000 + offset); }),
 			NAME([this](offs_t offset, u8 data) { misc_write(0x518000 + offset, data); }));
 
-	// Best-effort DMA NuBus address/count latches - see m_dma_address/m_dma_count comment.
-	// The 68000's AS_PROGRAM is a 16-bit bus, so each 32-bit value is split into two words.
 	map(0x800c00, 0x800c01).lrw16(
 			NAME([this]() { return u16(m_dma_address >> 16); }),
 			NAME([this](u16 data) { m_dma_address = (m_dma_address & 0x0000ffff) | (u32(data) << 16); }));
@@ -281,6 +282,8 @@ ROM_START(nupi)
 	ROM_REGION16_BE(0x4000, "firmware", 0)
 	ROMX_LOAD("2238056-5_nupi.bin", 0x0000, 0x2000, CRC(4caf00b9) SHA1(0b96ba609e764e7052d1f26e7e242f6e89d73c9c), ROM_SKIP(1))
 	ROMX_LOAD("2238057-5_nupi.bin", 0x0001, 0x2000, CRC(bb14cf27) SHA1(3b140274764ebc1ad1efbc4ed184a3d70eb84b0c), ROM_SKIP(1))
+
+	ROM_REGION(0x4000, "firmware_nubus", ROMREGION_ERASE00)
 ROM_END
 
 const tiny_rom_entry *nupi_device::device_rom_region() const

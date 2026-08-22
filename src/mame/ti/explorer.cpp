@@ -56,6 +56,7 @@ private:
 	required_device<ti_nubus_device> m_nubus;
 
 	void mem_map(address_map &map) ATTR_COLD;
+	void local_bus_map(address_map &map) ATTR_COLD;
 };
 
 
@@ -76,13 +77,23 @@ void tiexplorer_state::mem_map(address_map &map)
 }
 
 
+void tiexplorer_state::local_bus_map(address_map &map)
+{
+	map.unmap_value_high();
+
+	map(0x00000000, 0xffffffff).rw(m_maincpu, FUNC(raven_cpu_device::local_bus_miss_r), FUNC(raven_cpu_device::local_bus_miss_w));
+}
+
+
 void tiexplorer_state::tiexplorer(machine_config &config)
 {
 	RAVEN(config, m_maincpu, 28_MHz_XTAL);
 	m_maincpu->set_addrmap(AS_DATA, &tiexplorer_state::mem_map);
+	m_maincpu->set_addrmap(raven_cpu_device::AS_LOCAL_BUS, &tiexplorer_state::local_bus_map);
 
 	TI_NUBUS(config, m_nubus);
 	m_nubus->set_space(m_maincpu, AS_DATA);
+	m_nubus->set_local_bus_space(m_maincpu, raven_cpu_device::AS_LOCAL_BUS);
 
 	TI_NUBUS_SLOT(config, "nb2", "nubus", 2, tiexplorer_nubus_cards, "nupi");
 //	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_cards, "mem8mb");

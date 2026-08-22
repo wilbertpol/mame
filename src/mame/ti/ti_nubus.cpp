@@ -9,6 +9,8 @@
 #include "emu.h"
 #include "ti_nubus.h"
 
+#include "cpu/raven/raven.h"
+
 
 DEFINE_DEVICE_TYPE(TI_NUBUS_SLOT, ti_nubus_slot_device, "ti_nubus_slot", "TI Explorer NuBus slot")
 
@@ -41,7 +43,8 @@ DEFINE_DEVICE_TYPE(TI_NUBUS, ti_nubus_device, "ti_nubus", "TI Explorer NuBus")
 
 ti_nubus_device::ti_nubus_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
 	device_t(mconfig, TI_NUBUS, tag, owner, clock),
-	m_space(*this, finder_base::DUMMY_TAG, -1)
+	m_space(*this, finder_base::DUMMY_TAG, -1),
+	m_local_bus_space(*this, finder_base::DUMMY_TAG, -1)
 {
 }
 
@@ -52,6 +55,15 @@ void ti_nubus_device::device_start()
 void ti_nubus_device::add_ti_nubus_card(device_ti_nubus_card_interface &card)
 {
 	m_device_list.emplace_back(card);
+}
+
+void ti_nubus_device::assert_bus_error()
+{
+	// The Explorer's AS_DATA space *is* this bus (see the header comment) -
+	// the device that owns it is always the raven CPU in this driver.
+	// TODO Get rid of this cpu device dependency. This bit is actually living
+	// on the cpu board.
+	downcast<raven_cpu_device &>(m_space->device()).assert_bus_error();
 }
 
 

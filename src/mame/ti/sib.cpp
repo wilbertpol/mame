@@ -4,18 +4,6 @@
 
     TI Explorer System Interface Board (SIB).
 
-	How SIB interrupts work in Meroko: every SIB interrupt source (RTC tick, short/long interval timer expiry, RS232C, printer, graphics-command-ack, keyboard, mouse motion/button, power-supply, voice/sound data, power failure) posts by writing 0xFF to a CPU-configured target address. The CPU sets that target address per event type via the Event-Generator register block — 16 registers at 0xF00000, 0xF00004, 0xF00008, ... 0xF0003C, one per event (e.g. 0xF00000 = RTC vector, 0xF00004 = short-interval-timer-expired vector, 0xF00008 = long-interval-timer-expired vector). All of these deliveries are gated by one master switch: bit 0x2 of the SIB Configuration Register at 0xF00040/0xF00041 — nothing fires unless that bit is set.
-
-The concrete tie-in to our own MAME trace: self-test already does the arming sequence, all captured in our very first SIB run this session — Timers-Write-Mode-Control write 0x30/0xb0 (configuring interval timer 0), then SIB unmapped write offset .../00f00040, data 000000ff (writing 0xFF to the Configuration Register — exactly the write that would set the interrupt-enable bit). MAME just drops all of it: event_generator_map() in sib.cpp is an empty TODO stub, the Configuration Register isn't implemented at all (falls through to the generic unmapped handler), and the interval-timer registers at 0xF90000–0xF9000C are read-only stubs that return a constant and never actually count anything down.
-
-So this isn't "system startup depends on RTC" — it's that self-test arms an interval timer, right before entering the redraw loop, expecting it to expire and fire an interrupt to break the wait. Every piece of that chain (config register, event-vector table, timer countdown) is currently a no-op in MAME.
-
-Scope to fix it:
-1. 0xF00040/0xF00041 — store the Configuration Register, track the interrupt-enable bit.
-2. event_generator_map() — implement the 16 vector-address registers as plain storage (currently entirely empty).
-3. 0xF90000–0xF9000C — give the interval timers real state (load value, mode) and an actual countdown, driven by a timer_device (not wall-clock RTC), matching Meroko's CPU-cycle-derived 1MHz tick.
-4. On expiry, if enabled, write 0xFF to the configured vector address via nubus().space().write_byte(...) — which explorer.cpp's existing irq_w already picks up.
-
 **********************************************************************/
 
 #include "emu.h"
@@ -51,10 +39,14 @@ sib_device::sib_device(const machine_config &mconfig, const char *tag, device_t 
 void sib_device::device_start()
 {
 	nubus().install_map(*this, &sib_device::nubus_map);
+	nubus().install_local_bus_map(*this, &sib_device::local_bus_map);
 	m_nvram->set_base(m_nv_ram.begin(), m_nv_ram.bytes());
 
 	save_item(NAME(m_configuration_register));
 	m_configuration_register = 0;
+	save_item(NAME(m_event_vector));
+	save_item(NAME(m_mask_register));
+	save_item(NAME(m_operation_register));
 }
 
 
@@ -104,7 +96,7 @@ void sib_device::nubus_map(address_map &map)
 	map(0x00fc0000, 0x00fc0007).lrw32(NAME([this] (offs_t offset) {
 		return u32(m_i8251->read((offset >> 2) ^ 1));
 	}), NAME([this] (offs_t offset, u32 data) {
-		m_i8251->write((offset >> 2) ^ 1, u8(data)); 
+		m_i8251->write((offset >> 2) ^ 1, u8(data));
 	}));
 
 	configuration_rom_map(map);
@@ -247,30 +239,77 @@ void sib_device::graphics_bitmap_map(address_map &map)
 	map(0x00e00080, 0x00e00083).lw32(NAME([] (u32 data) {
 		printf("Graphics-Attribute-Register write %08x\n", data);
 	}));
-	map(0x00e00084, 0x00e00087).lw32(NAME([] (u32 data) {
-		printf("Graphics-Mask-Register write %08x\n", data);
+	map(0x00e00084, 0x00e00087).lrw32(NAME([this] () {
+		return m_mask_register;
+	}), NAME([this] (offs_t offset, u32 data, u32 mem_mask) {
+		COMBINE_DATA(&m_mask_register);
 	}));
-	map(0x00e00088, 0x00e0008b).lw32(NAME([] (u32 data) {
-		printf("Graphics-Alu-Register write %08x\n", data);
+	map(0x00e00088, 0x00e0008b).lrw32(NAME([this] () {
+		return m_operation_register;
+	}), NAME([this] (offs_t offset, u32 data, u32 mem_mask) {
+		COMBINE_DATA(&m_operation_register);
 	}));
 	map(0x00e00098, 0x00e0009b).lw32(NAME([] (u32 data) {
 		printf("Graphics-Video-Test-Register write %08x\n", data);
 	}));
 	// e9ffff?
 	// e80000 - e993ff - displayed
-	map(0x00e80000, 0x00e9ffff).lrw32(NAME([this] (offs_t offset) {
-		return m_video_ram[offset & VIDEO_RAM_MASK];
-	}), NAME([this] (offs_t offset, u32 data) {
-		m_video_ram[offset & VIDEO_RAM_MASK] = data;
-	}));
+	map(0x00e80000, 0x00e9ffff).rw(FUNC(sib_device::video_ram_r), FUNC(sib_device::video_ram_w));
 
-	// TODO
+	map(0x00ec0000, 0x00edffff).rw(FUNC(sib_device::video_ram_r), FUNC(sib_device::video_ram_rmw_w));
+}
+
+
+void sib_device::local_bus_map(address_map &map)
+{
+	map(0x00e80000, 0x00e9ffff).rw(FUNC(sib_device::video_ram_r), FUNC(sib_device::video_ram_w));
+	map(0x00ec0000, 0x00edffff).rw(FUNC(sib_device::video_ram_r), FUNC(sib_device::video_ram_rmw_w));
+}
+
+
+u32 sib_device::video_ram_r(offs_t offset)
+{
+	return m_video_ram[offset & VIDEO_RAM_MASK];
+}
+
+
+void sib_device::video_ram_w(offs_t offset, u32 data, u32 mem_mask)
+{
+	COMBINE_DATA(&m_video_ram[offset & VIDEO_RAM_MASK]);
+}
+
+
+void sib_device::video_ram_rmw_w(offs_t offset, u32 data, u32 mem_mask)
+{
+	u32 const d = m_video_ram[offset & VIDEO_RAM_MASK];
+	u32 const s = data;
+	u32 result;
+	switch (m_operation_register & 0xf)
+	{
+	case 0x0: result = 0; break;              // CLEAR
+	case 0x1: result = ~(d | s); break;       // D NOR S
+	case 0x2: result = s & ~d; break;         // S AND D-
+	case 0x3: result = ~d; break;             // D-
+	case 0x4: result = d & ~s; break;         // S- AND D
+	case 0x5: result = ~s; break;             // S-
+	case 0x6: result = d ^ s; break;          // D XOR S
+	case 0x7: result = ~(d & s); break;       // D NAND S
+	case 0x8: result = d & s; break;          // D AND S
+	case 0x9: result = ~(d ^ s); break;       // D XNOR S
+	case 0xa: result = s; break;              // NOP (S)
+	case 0xb: result = s | ~d; break;         // S OR D-
+	case 0xc: result = d; break;              // D
+	case 0xd: result = d | ~s; break;         // D OR S-
+	case 0xe: result = d | s; break;          // D OR S
+	default:  result = 0xffffffff; break;     // SET (0xf)
+	}
+	u32 const masked_result = (result & ~m_mask_register) | (d & m_mask_register);
+	m_video_ram[offset & VIDEO_RAM_MASK] = (d & ~mem_mask) | (masked_result & mem_mask);
 }
 
 
 void sib_device::event_generator_map(address_map &map)
 {
-	// f00000 - event-generator-base
 	//
 	// f00000 - Event-Real-Time-Clock
 	// f00004 - Event-Short-Interval-Timer
@@ -290,6 +329,8 @@ void sib_device::event_generator_map(address_map &map)
 	// f0003c - Event-Power-Failure
 	// f00040 - configuration register
 
+	map(0x00f00000, 0x00f0003f).rw(FUNC(sib_device::event_vector_r), FUNC(sib_device::event_vector_w));
+
 	map(0x00f00040, 0x00f00043).lrw32(NAME([this] {
 		if (!machine().side_effects_disabled())
 			printf("Configuration-Register read\n");
@@ -300,6 +341,16 @@ void sib_device::event_generator_map(address_map &map)
 	}));
 
 	// TODO
+}
+
+u32 sib_device::event_vector_r(offs_t offset)
+{
+	return m_event_vector[offset];
+}
+
+void sib_device::event_vector_w(offs_t offset, u32 data, u32 mem_mask)
+{
+	COMBINE_DATA(&m_event_vector[offset]);
 }
 
 
