@@ -93,12 +93,12 @@ void sib_device::nubus_map(address_map &map)
 		if (!machine().side_effects_disabled())
 		{
 			printf("SIB unmapped read offset %08x / %08x\n", offset, offset << 2);
-			machine().debug_break();
+//			machine().debug_break();
 		}
 		return u32(0xffffffff);
-	}), NAME([this] (offs_t offset, u32 data) {
+	}), NAME([] (offs_t offset, u32 data) {
 		printf("SIB unmapped write offset %08x / %08x, data %08x\n", offset, offset << 2, data);
-		machine().debug_break();
+//		machine().debug_break();
 	}));
 
 	graphics_bitmap_map(map);
