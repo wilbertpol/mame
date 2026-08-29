@@ -77,6 +77,16 @@ private:
 
 	u32 command_address_r();
 	void command_address_w(offs_t offset, u32 data, u32 mem_mask);
+	// Generic view of the on-board 4KB RAM (m_ram, see mpu_map()) from the 32-bit
+	// NuBus side (>Fs'E00000-E00FFF) - see nubus_map()'s comment for the evidence
+	// this range is genuinely shared RAM, not standalone registers. m_ram is
+	// u16-wide (matching the MPU's own 16-bit bus), so a plain .ram().share()
+	// can't be used directly across the width mismatch (MAME rejects it at
+	// validation time) - these do the same big-endian word-splitting
+	// command_address_w() already did by hand, just generalized to the whole
+	// range. offset is in dwords.
+	u32 ram_window_r(offs_t offset);
+	void ram_window_w(offs_t offset, u32 data, u32 mem_mask);
 	// $280001 (byte 1 of the 0x280000-0x28000f MPU-side status block). Purpose of the
 	// byte as a whole is not confirmed - only bit 0 is understood so far: the NuBus
 	// master-error-pending flag, ACTIVE LOW (1 = idle/no error, 0 = error pending),
@@ -98,6 +108,24 @@ private:
 	u8 m_unknown_280001 = 0x01;
 	bool m_unknown_280001_bits12_toggle = false;
 	u8 unknown_280001_r();
+	// $300000/$300001 - local MPU-side status bytes, both read-only (no ROM code
+	// ever writes either). Exclusively used by the real IRQ4 handler (ROM 0x14f2+,
+	// NUINT2-/NuBus-error per the doc): $300000 is read once (0x1514) and tested
+	// bit by bit to build IRQ4's dispatch - bit 1 forks between the dynamic-jump
+	// path (0x154c) and the queue-2-drain path (0x155c), bits 2-3 feed a small D0
+	// classification value, bit 0 (checked later, 0x15a8) selects the
+	// redirect-return-address mechanism via $1800dc. $300001 is read twice by two
+	// dedicated accessor subroutines: 0xa06 masks the low nibble (andi.b #$f) and
+	// 0xb00 extracts the high nibble (andi.w #$f0, rol.w #2) into the same
+	// accumulating status word later stored at ($50,A6)/($40,A6). Not yet known
+	// what real hardware condition either byte reflects, except for one confirmed
+	// data point: the real command-processing path (ROM 0x9b6-0x9b8, called via the
+	// movep subroutine at 0x980) reads $300001's low nibble via the 0xa06 accessor
+	// and immediately does `cmpi.b #$c, D0` - i.e. real hardware is expected to read
+	// back 0x0c in the low nibble at that point, not 0. Stubbed at that fixed value
+	// pending a real identity for the rest of the byte; $300000 remains stubbed at 0.
+	u8 m_unknown_300000 = 0;
+	u8 m_unknown_300001 = 0x0c;
 	u8 config_register_r();
 	void config_register_w(u8 data);
 	// Flag Register (>Fs'D40002, Section 5.3.4/Figure 5-3): bits 0-2 are
@@ -222,10 +250,27 @@ private:
 	// (its LFSR seed, 0xa569); each subsequent read-pair then exposes the next-oldest
 	// entry, which - since the self-test's own D2 independently recomputes the exact
 	// same seed/recurrence used to fill the FIFO - keeps matching all the way through.
+	//
+	// Real hardware doc (NUPI manual Section 5.3.6) confirms this same FIFO RAM port
+	// as genuine, narrow hardware ("a 2-byte block", diagnostic-window address
+	// >FSB80000) - exactly the shape MOVEP exists to drain. The real command-processing
+	// path (ROM ~0x980-0xa04) reads this port via movep.l, i.e. four individual
+	// byte-wide accesses at $450000/$450002/$450004/$450006 (movep's byte-lane stride
+	// is 2, so $450001/3/5/7 are never touched). That's the same "two reads make a
+	// pair, pointer advances after the second" mechanism above, just observed at byte
+	// instead of word granularity - each movep byte-lane is one more byte-wide access
+	// into the same running phase, not a distinct register. m_unknown_450000_byte_phase
+	// replaces the old bool toggle: phase 0/2 return the current word's high byte,
+	// phase 1/3 the low byte (matching this space's big-endian word convention), and
+	// the FIFO pointer only advances once phase wraps from 3 back to 0 - i.e. after
+	// two full word's worth of byte accesses, same cadence as the original two-word-read
+	// pair. A plain 16-bit read at $450000 (entry 5's own access pattern) still
+	// decomposes into two byte sub-accesses the same way, so this is a strict
+	// generalization, not a behavior change for the already-confirmed entry 5 path.
 	u16 m_unknown_450000_fifo[2048] = {};
 	u8 m_unknown_450000_holding[2] = { 0, 0 };
 	u16 m_unknown_450000_pos = 0;
-	bool m_unknown_450000_read_toggle = false;
+	u8 m_unknown_450000_byte_phase = 0;
 
 	// Page register (0x0801b0, word-sized): holds the upper 14 bits (address bits 31-18)
 	// of a NuBus target address, confirmed via firmware disassembly at 0x2ee0 - the
@@ -283,11 +328,25 @@ private:
 	emu_timer *m_dma_test_timer;
 
 	// 0x100001's own dedicated storage, replacing the generic misc_read/misc_write
-	// m_misc lookup now that this address has its own fully carved-out handler. The
-	// timer starts on bit 0's rising edge (0xfe->0x03 sets bit 0; the earlier 0->0xfe
-	// arm write only sets bit 1, so it correctly doesn't trigger) - see the write
-	// handler in mpu_map() for the full evidence.
+	// m_misc lookup now that this address has its own fully carved-out handler. Plain
+	// data storage only - see m_unknown_801aa below for the actual "go" trigger.
 	u8 m_unknown_100001 = 0;
+
+	// 0x801aa (see the write handler in mpu_map()): re-examination of the ROM around
+	// entry 7's own 0x100001 self-test (0x88c-0x918) showed the busy-wait that
+	// follows is gated by D7 bit 8 (bsr $802), armed via a SEPARATE st $801aa write
+	// right after the 0x100001 load - not by 0x100001 itself. The real
+	// (non-self-test) DMA-transfer setup path confirms the same shape: it loads
+	// 0x100001 (ROM 0x2ff6/0x2ffe), then loads m_dma_address/0x80180 from the
+	// transfer descriptor, and only THEN does st $801aa (ROM 0x3020) - previously
+	// unexplained, now read as the real arm/go strobe. The DMA-complete (bit8/IRQ1)
+	// interrupt handler itself clears this same byte (sf $801aa, ROM 0xbbc) on
+	// completion, which a pure software bookkeeping flag wouldn't need. Triggers on
+	// data == 0xff specifically (the exact value st writes, never anything else) and
+	// is gated on m_unknown_100001 being nonzero, so the many other, unrelated
+	// st/sf $801aa call sites elsewhere in the ROM (generic self-test busy flags with
+	// nothing loaded in 0x100001 at the time) don't spuriously arm this timer. No
+	// separate storage/edge-detection needed for this byte itself.
 
 	// 0x100005's own dedicated storage, same reasoning as m_unknown_100001 above -
 	// see the write handler in mpu_map() for the trigger condition (write of 0 while
