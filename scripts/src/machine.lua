@@ -1527,19 +1527,13 @@ end
 
 ---------------------------------------------------
 --
---@src/devices/machine/gt913_io.h,MACHINES["GT913"] = true
---@src/devices/machine/gt913_kbd.h,MACHINES["GT913"] = true
---@src/devices/machine/gt913_snd.h,MACHINES["GT913"] = true
+--@src/devices/machine/gt913_kbd.h,MACHINES["GT913_KBD"] = true
 ---------------------------------------------------
 
-if MACHINES["GT913"] then
+if MACHINES["GT913_KBD"] then
 	files {
-		MAME_DIR .. "src/devices/machine/gt913_io.cpp",
-		MAME_DIR .. "src/devices/machine/gt913_io.h",
 		MAME_DIR .. "src/devices/machine/gt913_kbd.cpp",
 		MAME_DIR .. "src/devices/machine/gt913_kbd.h",
-		MAME_DIR .. "src/devices/machine/gt913_snd.cpp",
-		MAME_DIR .. "src/devices/machine/gt913_snd.h",
 	}
 end
 
@@ -2423,6 +2417,18 @@ if MACHINES["MC14411"] then
 	files {
 		MAME_DIR .. "src/devices/machine/mc14411.cpp",
 		MAME_DIR .. "src/devices/machine/mc14411.h",
+	}
+end
+
+---------------------------------------------------
+--
+--@src/devices/machine/mc14529.h,MACHINES["MC14529"] = true
+---------------------------------------------------
+
+if MACHINES["MC14529"] then
+	files {
+		MAME_DIR .. "src/devices/machine/mc14529.cpp",
+		MAME_DIR .. "src/devices/machine/mc14529.h",
 	}
 end
 
@@ -3365,6 +3371,18 @@ if MACHINES["S2636"] then
 	files {
 		MAME_DIR .. "src/devices/machine/s2636.cpp",
 		MAME_DIR .. "src/devices/machine/s2636.h",
+	}
+end
+
+---------------------------------------------------
+--
+--@src/devices/machine/s35180.h,MACHINES["S35180"] = true
+---------------------------------------------------
+
+if MACHINES["S35180"] then
+	files {
+		MAME_DIR .. "src/devices/machine/s35180.cpp",
+		MAME_DIR .. "src/devices/machine/s35180.h",
 	}
 end
 
@@ -5708,5 +5726,17 @@ if MACHINES["QUADMOUSE"] then
 	files {
 		MAME_DIR .. "src/devices/machine/quadmouse.cpp",
 		MAME_DIR .. "src/devices/machine/quadmouse.h",
+	}
+end
+
+---------------------------------------------------
+--
+--@src/devices/machine/at_ssrt.h,MACHINES["AT_SSRT"] = true
+---------------------------------------------------
+
+if MACHINES["AT_SSRT"] then
+	files {
+		MAME_DIR .. "src/devices/machine/at_ssrt.cpp",
+		MAME_DIR .. "src/devices/machine/at_ssrt.h",
 	}
 end

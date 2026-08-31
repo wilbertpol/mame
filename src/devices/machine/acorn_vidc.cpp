@@ -2,27 +2,36 @@
 // copyright-holders:Angelo Salese, R. Belmont, Juergen Buchmueller
 /**********************************************************************************************
 
-    Acorn VIDC10 (VIDeo Controller) device chip
+Acorn VIDC10 (VIDeo Controller) device chip
 
-    based off legacy AA VIDC implementation by Angelo Salese, R. Belmont, Juergen Buchmueller
+based off legacy AA VIDC implementation by Angelo Salese, R. Belmont, Juergen Buchmueller
 
-    TODO:
-    - subclass screen_device, derive h/vsync signals out there;
-    - improve timings for raster effects:
-      * nebulus: 20 lines off with aa310;
-      * lotustc2: abuses color flipping;
-      * quazer: needs in-flight DMA;
-    - move DAC handling into a separate sub-device(s),
-      particularly needed for proper VIDC20 mixing and likely for fixing aliasing
-      issues in VIDC10;
-    - complete VIDC20 emulation (RiscPC/ssfindo.cpp);
-    - Are CRTC values correct? VGA modes have a +1 in display line;
+TODO:
+- subclass screen_device, derive h/vsync signals out there;
+- improve timings for raster effects:
+  * caverns: has no main sprite;
+  * nebulus: 20 lines off with aa310;
+  * lotustc2: abuses color flipping;
+  * quazer: needs in-flight DMA;
+- move DAC handling into a separate sub-device(s),
+  particularly needed for proper VIDC20 mixing and likely for fixing aliasing
+  issues in VIDC10;
+- complete VIDC20 emulation (RiscPC/ssfindo.cpp);
+- Are CRTC values correct? VGA modes have a +1 in display line;
 
 **********************************************************************************************/
 
 #include "emu.h"
 #include "acorn_vidc.h"
 #include "screen.h"
+
+#define LOG_AUDIODMA (1U << 7) // log audio DMA setups
+#define LOG_STEREO   (1U << 8) // log stereo image setup, and sound control in VIDC20
+
+#define VERBOSE (LOG_GENERAL)
+//#define LOG_OUTPUT_FUNC osd_printf_info
+
+#include "logmacro.h"
 
 
 //**************************************************************************
@@ -64,6 +73,7 @@ acorn_vidc10_device::acorn_vidc10_device(const machine_config &mconfig, device_t
 	, m_sound_frequency_latch(0)
 	, m_sound_mode(false)
 	, m_dac(*this, "dac%u", 0)
+	, m_mixer(*this, "mixer%u", 0)
 	, m_dac_type(dac_type)
 	, m_speaker(*this, "speaker")
 	, m_vblank_cb(*this)
@@ -110,10 +120,18 @@ device_memory_interface::space_config_vector acorn_vidc10_device::memory_space_c
 void acorn_vidc10_device::device_add_mconfig(machine_config &config)
 {
 	SPEAKER(config, m_speaker, 2).front();
+
+	MIXER(config, m_mixer[0]);
+
+	MIXER(config, m_mixer[1]);
+
 	for (int i = 0; i < m_sound_max_channels; i++)
 	{
 		// custom DAC
-		DAC_16BIT_R2R_TWOS_COMPLEMENT(config, m_dac[i], 0).add_route(0, m_speaker, m_sound_input_gain, 0).add_route(0, m_speaker, m_sound_input_gain, 1);
+		DAC_16BIT_R2R_TWOS_COMPLEMENT(config, m_dac[i], 0).add_route(0, m_mixer[0], 1.0, i).add_route(0, m_mixer[1], 1.0, i);
+
+		m_mixer[0]->add_route(i, m_speaker, 0.5, 0);
+		m_mixer[1]->add_route(i, m_speaker, 0.5, 1);
 	}
 }
 
@@ -133,7 +151,7 @@ void acorn_vidc10_device::device_config_complete()
 	if (!has_screen())
 		return;
 
-	if (!screen().configured())
+	if (!screen().has_been_setup())
 		screen().set_raw(clock() * 2 / 3, 1024,0,735, 624/2,0,292); // RiscOS 3 default screen settings
 
 	if (!screen().has_screen_update())
@@ -204,6 +222,7 @@ void acorn_vidc10_device::device_start()
 void acorn_vidc10_device::device_reset()
 {
 	m_cursor_enable = false;
+	m_sound_mode = false;
 	memset(m_stereo_image, 4, m_sound_max_channels);
 	for (int ch = 0; ch < m_sound_max_channels; ch++)
 		refresh_stereo_image(ch);
@@ -398,13 +417,17 @@ inline void acorn_vidc10_device::refresh_stereo_image(u8 channel)
 	    -011 67% left, 33% right
 	    -010 83% left, 17% right
 	    -001 full left
-	    -000 "undefined" TODO: verify what it actually means
+	    -000 <undefined> TODO: verify what it actually means
 	*/
-	const float left_gain[8] = { 1.0f, 2.0f, 1.66f, 1.34f, 1.0f, 0.66f, 0.34f, 0.0f };
-	const float right_gain[8] = { 1.0f, 0.0f, 0.34f, 0.66f, 1.0f, 1.34f, 1.66f, 2.0f };
+	const float l_gain_settings[8] = { 1.0f, 2.0f, 1.66f, 1.34f, 1.0f, 0.66f, 0.34f, 0.0f };
+	const float r_gain_settings[8] = { 1.0f, 0.0f, 0.34f, 0.66f, 1.0f, 1.34f, 1.66f, 2.0f };
 
-	m_speaker->set_input_gain(0, left_gain[m_stereo_image[channel]] * m_sound_input_gain);
-	m_speaker->set_input_gain(1, right_gain[m_stereo_image[channel]] * m_sound_input_gain);
+	const float l_gain = l_gain_settings[m_stereo_image[channel]] * m_sound_input_gain;
+	const float r_gain = r_gain_settings[m_stereo_image[channel]] * m_sound_input_gain;
+	LOGMASKED(LOG_STEREO, "%d: %02x -> L %f R %f\n", channel, m_stereo_image[channel], l_gain, r_gain);
+
+	m_mixer[0]->set_input_gain(channel, l_gain);
+	m_mixer[1]->set_input_gain(channel, r_gain);
 }
 
 
@@ -433,16 +456,21 @@ void acorn_vidc10_device::write_dac(u8 channel, u8 data)
 	m_dac[channel & 7]->write(res);
 }
 
+u32 acorn_vidc10_device::get_sound_clock()
+{
+	return clock() / 24 / 8;
+}
+
 void acorn_vidc10_device::refresh_sound_frequency()
 {
 	// TODO: check against test bit (reloads sound frequency if 0)
-	if (m_sound_mode == true)
+	// assume a value of zero is invalid (ppcar POST setup)
+	if (m_sound_mode == true && m_sound_frequency_latch)
 	{
 		// TODO: Range is between 3 and 256 usecs
-		double sndhz = 1e6 / ((m_sound_frequency_latch & 0xff) + 2);
-		sndhz /= get_dac_mode() == true ? 2.0 : 8.0;
+		double sndhz = get_sound_clock() / ((m_sound_frequency_latch & 0xff) + 2);
 		m_sound_timer->adjust(attotime::zero, 0, attotime::from_hz(sndhz));
-		//printf("VIDC: audio DMA start, sound freq %d, sndhz = %f\n", (m_crtc_regs[0xc0] & 0xff)-2, sndhz);
+		LOGMASKED(LOG_AUDIODMA, "VIDC: audio DMA start %02x + 2 -> sndhz = %f\n", m_sound_frequency_latch, sndhz);
 	}
 	else
 		m_sound_timer->adjust(attotime::never);
@@ -461,17 +489,19 @@ void acorn_vidc10_device::draw(bitmap_rgb32 &bitmap, const rectangle &cliprect, 
 	const u8 pen_byte_sizes[4] = { 1, 2, 4, 1 };
 	const u16 pen_byte_size = pen_byte_sizes[bpp];
 	const int raster_ystart = std::max(0, cliprect.min_y-ystart);
-	xsize >>= 3-bpp;
+	const int line_size = m_crtc_interlace + 1;
+
+	xsize >>= 3 - bpp;
 
 	//printf("%d %d %d %d\n",ystart, ysize, cliprect.min_y, cliprect.max_y);
 
 	for (int srcy = raster_ystart; srcy < ysize; srcy++)
 	{
-		int dsty = (srcy + ystart) * (m_crtc_interlace+1);
+		int dsty = (srcy + ystart) << m_crtc_interlace;
 		for (int srcx = 0; srcx < xsize; srcx++)
 		{
-			u8 pen = vram[srcx + srcy * xsize];
-			int dstx = (srcx*xchar_size) + xstart;
+			u8 pen = vram[(srcx + srcy * xsize) & m_data_vram_mask];
+			int dstx = (srcx * xchar_size) + xstart;
 
 			for (int xi = 0; xi < xchar_size; xi++)
 			{
@@ -479,9 +509,16 @@ void acorn_vidc10_device::draw(bitmap_rgb32 &bitmap, const rectangle &cliprect, 
 				if (is_cursor == true && dot == 0)
 					continue;
 				dot += pen_base;
-				bitmap.pix(dsty, dstx+xi) = this->pen(dot);
-				if (m_crtc_interlace)
-					bitmap.pix(dsty+1, dstx+xi) = this->pen(dot);
+
+				for (int line_i = 0; line_i < line_size; line_i++)
+				{
+					// guard against out of bounds clip rectangle
+					// - chuckrck sets (transitional) xstart = -16 & (in actual gameplay) ystart = -16
+					if (!cliprect.contains(dstx + xi, dsty + line_i))
+						continue;
+
+					bitmap.pix(dsty + line_i, dstx + xi) = this->pen(dot);
+				}
 			}
 		}
 	}
@@ -550,7 +587,7 @@ void arm_vidc20_device::regs_map(address_map &map)
 	map(0x10, 0x1f).w(FUNC(arm_vidc20_device::vidc20_pal_data_index_w));
 	map(0x40, 0x7f).w(FUNC(arm_vidc20_device::vidc20_pal_data_cursor_w));
 	map(0x80, 0x9f).w(FUNC(arm_vidc20_device::vidc20_crtc_w));
-//  map(0xa0, 0xa7) stereo image
+	map(0xa0, 0xa7).w(FUNC(arm_vidc20_device::stereo_image_w));
 	map(0xb0, 0xb0).w(FUNC(arm_vidc20_device::vidc20_sound_frequency_w));
 	map(0xb1, 0xb1).w(FUNC(arm_vidc20_device::vidc20_sound_control_w));
 	map(0xd0, 0xdf).w(FUNC(arm_vidc20_device::fsynreg_w));
@@ -562,6 +599,7 @@ arm_vidc20_device::arm_vidc20_device(const machine_config &mconfig, const char *
 	, m_pixel_source(0)
 	, m_pixel_rate(0)
 	, m_dac32(*this, "serial_dac_%u", 0)
+	, m_ext_sclk(24'000'000)
 {
 	m_space_config = address_space_config("regs_space", ENDIANNESS_LITTLE, 32, 8, -2, address_map_constructor(FUNC(arm_vidc20_device::regs_map), this));
 	m_pal_4bpp_base = 0x000;
@@ -574,15 +612,6 @@ void arm_vidc20_device::device_add_mconfig(machine_config &config)
 {
 	acorn_vidc10_device::device_add_mconfig(config);
 
-	// FIXME: disable DACs for the time being
-	// so that it won't mixin with QS1000 source for ssfindo.cpp games
-	for (int i = 0; i < m_sound_max_channels; i++)
-	{
-		m_dac[i]->reset_routes();
-		m_dac[i]->add_route(0, m_speaker, 0.0, 0);
-		m_dac[i]->add_route(0, m_speaker, 0.0, 1);
-	}
-
 	// For simplicity we separate DACs for 32-bit mode
 	// TODO: how stereo image copes with this if at all?
 	DAC_16BIT_R2R_TWOS_COMPLEMENT(config, m_dac32[0], 0).add_route(ALL_OUTPUTS, m_speaker, 0.25, 0);
@@ -594,7 +623,7 @@ void arm_vidc20_device::device_config_complete()
 	if (!has_screen())
 		return;
 
-	if (!screen().configured())
+	if (!screen().has_been_setup())
 		screen().set_raw(clock() * 2 / 3, 1024,0,735, 624/2,0,292); // RiscOS 3 default screen settings
 
 	if (!screen().has_screen_update())
@@ -614,6 +643,7 @@ void arm_vidc20_device::device_start()
 	save_item(NAME(m_vco_v_modulo));
 	save_item(NAME(m_pal_data_index));
 	save_item(NAME(m_dac_serial_mode));
+	save_item(NAME(m_sdac));
 	save_item(NAME(m_pixel_source));
 	save_item(NAME(m_pixel_rate));
 }
@@ -626,6 +656,8 @@ void arm_vidc20_device::device_reset()
 	m_vco_r_modulo = 1;
 	m_vco_v_modulo = 1;
 
+	m_clksel = 1;
+
 	// make sure DACs don't output any undefined behaviour for now
 	// (will cause wild DC offset in ssfindo.cpp games)
 	for (int ch = 0; ch < 8; ch ++)
@@ -634,14 +666,6 @@ void arm_vidc20_device::device_reset()
 	write_dac32(0, 0);
 	write_dac32(1, 0);
 }
-
-inline void arm_vidc20_device::refresh_stereo_image(u8 channel)
-{
-	// TODO: set_input_gain hampers with both QS1000 and serial DAC mode
-	// Best option is to move the legacy DAC handling into a separate device,
-	// make it proper 8 channel output while clients are responsible of mix-ins
-}
-
 
 inline void arm_vidc20_device::update_8bpp_palette(u16 index, u32 paldata)
 {
@@ -696,7 +720,7 @@ u32 arm_vidc20_device::get_pixel_clock()
 void arm_vidc20_device::vidc20_crtc_w(offs_t offset, u32 data)
 {
 	if (offset & 0x8)
-		throw emu_fatalerror("%s accessing CRTC test register %02x, please call the ambulance",this->tag(),offset+0x80);
+		popmessage("%s accessing CRTC test register [%02x] %02x", this->tag(), offset + 0x80, data);
 
 	const u8 crtc_offset = (offset & 0x7) | ((offset & 0x10) >> 1);
 
@@ -757,30 +781,56 @@ void arm_vidc20_device::vidc20_control_w(u32 data)
 	screen_dynamic_res_change();
 }
 
+u32 arm_vidc20_device::get_sound_clock()
+{
+	// ppcar
+	if (!m_clksel)
+	{
+		return m_ext_sclk;
+	}
+
+	// 32-bit mode doubles clock rate
+	const u32 divider = 8 >> get_dac_mode();
+
+	return clock() / 24 / divider;
+}
+
+
+/*
+ * ---- x--- sclr <should never be programmed high>
+ * ---- -x-- sdac (1) VIDC10 compatible sound
+ * ---- --x- serial sound
+ * ---- ---x clksel (1) 24 MHz clock (0) optional sound clock
+ */
 void arm_vidc20_device::vidc20_sound_control_w(u32 data)
 {
-	// TODO: VIDC10 mode, ext clock bit 0
+	m_sdac = BIT(data, 2);
 	m_dac_serial_mode = BIT(data, 1);
+	m_clksel = BIT(data, 0);
 
-	if (m_dac_serial_mode)
+	LOGMASKED(LOG_STEREO, "vidc20_sound_control_w %02x: sclr %d sdac %d serial mode %d clksel %d\n",
+		data, BIT(data, 3), m_sdac, m_dac_serial_mode, m_clksel
+	);
+
+	m_dac32[0]->set_output_gain(0, m_dac_serial_mode ? 1.0 : 0.0);
+	m_dac32[1]->set_output_gain(0, m_dac_serial_mode ? 1.0 : 0.0);
+
+	if (m_sdac)
 	{
-		m_dac32[0]->set_output_gain(0, 1.0);
-		m_dac32[1]->set_output_gain(0, 1.0);
-
-		for (int ch = 0; ch < m_sound_max_channels; ch++)
-			m_dac[ch]->set_output_gain(0, 0.0);
-	}
-	else
-	{
-		m_dac32[0]->set_output_gain(0, 0.0);
-		m_dac32[1]->set_output_gain(0, 0.0);
-
 		for (int ch = 0; ch < m_sound_max_channels; ch++)
 		{
-			//m_dac[ch]->set_output_gain(0, 0.0);
+			m_dac[ch]->set_output_gain(0, 1.0);
 			refresh_stereo_image(ch);
 		}
 	}
+	else
+	{
+		for (int ch = 0; ch < m_sound_max_channels; ch++)
+			m_dac[ch]->set_output_gain(0, 0.0);
+	}
+
+	if (m_sound_mode == true)
+		refresh_sound_frequency();
 }
 
 void arm_vidc20_device::vidc20_sound_frequency_w(u32 data)
@@ -797,7 +847,7 @@ void arm_vidc20_device::write_dac32(u8 channel, u16 data)
 
 bool arm_vidc20_device::get_dac_mode()
 {
-	return m_dac_serial_mode;
+	return m_dac_serial_mode && !m_sdac;
 }
 
 u32 arm_vidc20_device::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect)

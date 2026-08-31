@@ -420,6 +420,7 @@ void upd765_family_device::tc_w(bool _tc)
 	if(tc != _tc && _tc) {
 		live_sync();
 		tc_done = true;
+		disable_transfer();
 		tc = _tc;
 		if(cur_live.fi)
 			general_continue(*cur_live.fi);
@@ -583,7 +584,7 @@ uint8_t upd765_family_device::msr_r()
 		break;
 	case PHASE_EXEC:
 		msr |= MSR_CB;
-		if(spec & SPEC_ND)
+		if((spec & SPEC_ND) && internal_drq)
 			msr |= MSR_EXM;
 		if(internal_drq) {
 			msr |= MSR_RQM;
@@ -812,7 +813,7 @@ void upd765_family_device::fifo_expect(int size, bool write)
 {
 	fifo_expected = size;
 	fifo_write = write;
-	if(fifo_write)
+	if(fifo_write && !tc_done)
 		enable_transfer();
 }
 
@@ -1196,6 +1197,7 @@ void upd765_family_device::live_run(attotime limit)
 			return;
 
 		case WRITE_SECTOR_DATA:
+			cur_live.pll.start_writing(cur_live.tm, cur_live.fi->dev);
 			if(mfm) {
 				if(cur_live.byte_counter < 12)
 					live_write_mfm(0x00);
@@ -2499,9 +2501,9 @@ void upd765_family_device::format_track_continue(floppy_info &fi)
 		case WAIT_INDEX_DONE:
 			LOGSTATE("WAIT_INDEX_DONE\n");
 			fi.sub_state = TRACK_DONE;
-			cur_live.pll.start_writing(machine().time());
 			LOGSTATE("WRITE_TRACK_PRE_SECTORS\n");
 			live_start(fi, WRITE_TRACK_PRE_SECTORS);
+			cur_live.pll.start_writing(machine().time(), cur_live.fi->dev);
 			return;
 
 		case TRACK_DONE:

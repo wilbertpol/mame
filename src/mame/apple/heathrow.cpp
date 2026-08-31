@@ -22,7 +22,6 @@
 #include "emu.h"
 #include "heathrow.h"
 
-#include "bus/ata/atapicdr.h"
 #include "bus/rs232/rs232.h"
 #include "formats/ap_dsk35.h"
 
@@ -34,6 +33,7 @@
 
 static constexpr u32 C7M  = 7833600;
 static constexpr u32 C15M = (C7M * 2);
+static constexpr u32 C31M = (C15M * 2);
 
 static constexpr u32 DMA_IRQ_MASK = 0x000007ff;
 
@@ -128,7 +128,6 @@ void macio_device::device_add_mconfig(machine_config &config)
 	R65NC22(config, m_via1, C7M / 10);
 	m_via1->readpa_handler().set(FUNC(macio_device::via_in_a));
 	m_via1->readpb_handler().set(FUNC(macio_device::via_in_b));
-	m_via1->writepa_handler().set(FUNC(macio_device::via_out_a));
 	m_via1->writepb_handler().set(FUNC(macio_device::via_out_b));
 	m_via1->cb2_handler().set(FUNC(macio_device::via_out_cb2));
 	m_via1->irq_handler().set(FUNC(macio_device::set_irq_line<18>));
@@ -165,9 +164,14 @@ void macio_device::device_add_mconfig(machine_config &config)
 	m_dma_audio_in->set_width(4);
 	m_dma_audio_in->irq_callback().set(FUNC(macio_device::set_irq_line<9>));
 
-	SWIM3(config, m_fdc, C15M);
+	SWIM3(config, m_fdc, C31M);
 	m_fdc->devsel_cb().set(FUNC(macio_device::devsel_w));
 	m_fdc->phases_cb().set(FUNC(macio_device::phases_w));
+	m_fdc->hdsel_cb().set(FUNC(macio_device::hdsel_w));
+	m_fdc->irq_cb().set(FUNC(macio_device::set_irq_line<19>));
+	m_fdc->drq_cb().set(m_dma_floppy, FUNC(dbdma_device::drq_w));
+	m_dma_floppy->dma_r().set(m_fdc, FUNC(swim3_device::dma_r));
+	m_dma_floppy->dma_w().set(m_fdc, FUNC(swim3_device::dma_w));
 
 	applefdintf_device::add_35_hd(config, m_floppy[0]);
 	applefdintf_device::add_35_nc(config, m_floppy[1]);
@@ -226,6 +230,25 @@ void ohare_device::device_add_mconfig(machine_config &config)
 	m_dma_scsi0->dma_r().set(m_mesh, FUNC(mesh_device::dma8_r));
 	m_dma_scsi0->dma_w().set(m_mesh, FUNC(mesh_device::dma8_w));
 
+	// The MESH's command done, exception, and error outputs show up in the SCSI
+	// channel's ChannelStatus so a channel program can wait for a command to
+	// finish and branch on how it went.  The lines are active low, so a bit reads
+	// 1 while its condition is clear.
+	//
+	// The O'Hare/Heathrow ERS tables give s7 = MESHCmdDone_L, s6 = MESHException_L,
+	// and s5 = MESHError_L, but that ordering is wrong: Apple's own driver source
+	// (apple-oss-distributions/AppleMESH, mesh.cpp) sets up the channel with
+	//     waitSelect   = 0x20002000;  /* Wait until command done      */
+	//     branchSelect = 0xC000C000;  /* Br if Exc or Err             */
+	// i.e. it waits on s5 for completion and branches on s6|s7 for trouble.
+	// (Apple only ever tests exception and error together, so which of s6/s7 is
+	// which is not determined; we keep the ERS's relative order for those two.)
+	m_mesh->cmd_done_handler_cb().set([this](int state) { m_dma_scsi0->status_bit_w(5, !state); });
+	m_mesh->exception_handler_cb().set([this](int state) { m_dma_scsi0->status_bit_w(6, !state); });
+	m_mesh->error_handler_cb().set([this](int state) { m_dma_scsi0->status_bit_w(7, !state); });
+
+	// O'Hare and later also have two ATA buses on-chip, and we also leave
+	// device population to the driver.
 	ATA_INTERFACE(config, m_ata[0]).options(ata_devices, nullptr, nullptr, false);
 	m_ata[0]->irq_handler().set(FUNC(macio_device::set_irq_line<13>));
 	m_ata[0]->dmarq_handler().set(FUNC(ohare_device::ata_dmarq<0>));
@@ -233,8 +256,6 @@ void ohare_device::device_add_mconfig(machine_config &config)
 	m_dma_ata0->dma_w().set(m_ata[0], FUNC(ata_interface_device::write_dma));
 
 	ATA_INTERFACE(config, m_ata[1]).options(ata_devices, nullptr, nullptr, false);
-	m_ata[1]->slot(0).set_option_machine_config("cdrom", [](device_t *device)
-			{ downcast<atapi_cdrom_device &>(*device).set_is_ready(true); });
 	m_ata[1]->irq_handler().set(FUNC(macio_device::set_irq_line<14>));
 	m_ata[1]->dmarq_handler().set(FUNC(ohare_device::ata_dmarq<1>));
 	m_dma_ata1->dma_r().set(m_ata[1], FUNC(ata_interface_device::read_dma));
@@ -259,8 +280,6 @@ macio_device::macio_device(const machine_config &mconfig, device_type type, cons
 	read_pb3(*this, 0),
 	read_codec(*this, 0),
 	write_codec(*this),
-	read_fdc_dma(*this, 0),
-	write_fdc_dma(*this),
 	read_iobus_a(*this, 0),
 	read_iobus_b(*this, 0),
 	read_iobus_c(*this, 0),
@@ -386,6 +405,8 @@ void ohare_device::ohare_start()
 
 	m_ata_config[0] = m_ata_config[1] = 0;
 	save_item(NAME(m_ata_config));
+	m_ata_selected[0] = m_ata_selected[1] = 0;
+	save_item(NAME(m_ata_selected));
 
 	m_dma_ata0->set_address_space(get_pci_busmaster_space());
 	m_dma_ata1->set_address_space(get_pci_busmaster_space());
@@ -439,9 +460,8 @@ void macio_device::via_out_cb2(int state)
 	write_cb2(state & 1);
 }
 
-void macio_device::via_out_a(u8 data)
+void macio_device::hdsel_w(int hdsel)
 {
-	int hdsel = BIT(data, 5);
 	if (hdsel != m_hdsel)
 	{
 		if (m_cur_floppy)
@@ -743,21 +763,6 @@ void macio_device::fdc_w(offs_t offset, u8 data)
 	m_fdc->write(offset >> 4, data);
 }
 
-void macio_device::fdc_drq(int state)
-{
-	if (state)
-	{
-		if (m_dma_floppy->is_to_memory())
-		{
-			m_dma_floppy->dma_write(0, read_fdc_dma(0));
-		}
-		else
-		{
-			write_fdc_dma(0, m_dma_floppy->dma_read(0));
-		}
-	}
-}
-
 u16 macio_device::scc_r(offs_t offset)
 {
 	u16 result = m_scc->dc_ab_r(offset);
@@ -837,14 +842,22 @@ template <int Ch> u32 ohare_device::ata_r(offs_t offset, u32 mem_mask)
 				const u16 w1 = ata.cs0_r(0);
 				return w0 | (u32(w1) << 16);
 			}
-			return ata.cs0_r(0, mem_mask & 0xffff);
+			return ata.cs0_r(0);
 
 		case 0x01: case 0x02: case 0x03: case 0x04:
 		case 0x05: case 0x06: case 0x07:    // command block, byte-wide
-			return ata.cs0_r((offset >> 2) & 7, 0xff);
+		{
+			const u8 value = ata.cs0_r((offset >> 2) & 7);
+			// Apple has a weak pull-down on DB7 so devices that aren't present
+			// read as 0x7f
+			return ata.slot(m_ata_selected[Ch]).dev() ? value : 0x7f;
+		}
 
 		case 0x16:  // control block: alternate status
-			return ata.cs1_r(6, 0xff);
+		{
+			const u8 value = ata.cs1_r(6);
+			return ata.slot(m_ata_selected[Ch]).dev() ? value : 0x7f;
+		}
 
 		case 0x20:  // Apple timing configuration register
 			return m_ata_config[Ch];
@@ -867,17 +880,21 @@ template <int Ch> void ohare_device::ata_w(offs_t offset, u32 data, u32 mem_mask
 			}
 			else
 			{
-				ata.cs0_w(0, data & 0xffff, mem_mask & 0xffff);
+				ata.cs0_w(0, data & 0xffff);
 			}
 			break;
 
 		case 0x01: case 0x02: case 0x03: case 0x04:
 		case 0x05: case 0x06: case 0x07:    // command block, byte-wide
-			ata.cs0_w((offset >> 2) & 7, data & 0xff, 0xff);
+			if (((offset >> 2) & 7) == 6)
+			{
+				m_ata_selected[Ch] = BIT(data, 4);
+			}
+			ata.cs0_w((offset >> 2) & 7, data & 0xff);
 			break;
 
 		case 0x16:  // control block: device control
-			ata.cs1_w(6, data & 0xff, 0xff);
+			ata.cs1_w(6, data & 0xff);
 			break;
 
 		case 0x20:  // Apple timing configuration register

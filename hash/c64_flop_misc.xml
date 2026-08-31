@@ -507,6 +507,32 @@ Hi-score table is corrupt (dump really?)
 		</part>
 	</software>
 
+	<software name="prodosdm" supported="no">
+		<description>Professional-DOS - VTS Release Demo</description>
+		<year>1987</year>
+		<publisher>VTS Data</publisher>
+		<sharedfeat name="requirement" value="iec8:c1541pd"/>
+
+		<part name="flop1" interface="floppy_5_25">
+			<dataarea name="flop" size="174848">
+				<rom name="professional-dos_vts_release_demo.d64" size="174848" crc="be43ee5e" sha1="006a821084231fa1619796aa5edd46ec5cfcc32e"/>
+			</dataarea>
+		</part>
+	</software>
+
+	<software name="ictutil" supported="no">
+		<description>ICT Hard-Disk Utilities v2</description>
+		<year>1987</year>
+		<publisher>InConTrol</publisher>
+		<sharedfeat name="requirement" value="iec8:minichief"/>
+
+		<part name="flop1" interface="floppy_5_25">
+			<dataarea name="flop" size="174848">
+				<rom name="ictutili.d64" size="174848" crc="b9677d38" sha1="5add8d2618183f9145a00068dd20fe86928f9c35"/>
+			</dataarea>
+		</part>
+	</software>
+
 	<software name="sfxse">
 		<description>SFX Sound Expander Test/Demo Disk</description>
 		<year>1985</year>
@@ -708,6 +734,38 @@ Hi-score table is corrupt (dump really?)
 		<part name="flop1" interface="floppy_5_25">
 			<dataarea name="flop" size="174848">
 				<rom name="turbo232.d64" size="174848" crc="48874d98" sha1="28b6d25bb0b62df81c4b17d9205c059c6736e817"/>
+			</dataarea>
+		</part>
+	</software>
+
+	<software name="cmdhd">
+		<description>CMD HD Utilities</description>
+		<year>1993</year>
+		<publisher>CMD</publisher>
+
+		<part name="flop1" interface="floppy_5_25">
+			<feature name="part_id" value="HD Utilities"/>
+			<dataarea name="flop" size="174848">
+				<rom name="hd-utilities.d64" size="174848" crc="4a3ab5df" sha1="b757538611e98fb71dbcfbf17f51dfa3c2ddfb6a"/>
+			</dataarea>
+		</part>
+
+		<part name="flop2" interface="floppy_5_25">
+			<feature name="part_id" value="GEOS Utilities"/>
+			<dataarea name="flop" size="174848">
+				<rom name="hd_geos_utils.d64" size="174848" crc="fd2ae57a" sha1="c132ab9b534aa51236c6622c0a37746b2f5a59ec"/>
+			</dataarea>
+		</part>
+	</software>
+
+	<software name="cmdutil04">
+		<description>CMD Utilities '04</description>
+		<year>2004</year>
+		<publisher>CMD</publisher>
+
+		<part name="flop1" interface="floppy_5_25">
+			<dataarea name="flop" size="174848">
+				<rom name="cmd_utilities_04_s1.d64" size="174848" crc="6df2288f" sha1="3a3baef7c2d055d17d8c9fd592132cac55239e78"/>
 			</dataarea>
 		</part>
 	</software>

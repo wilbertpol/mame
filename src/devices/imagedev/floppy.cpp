@@ -291,8 +291,13 @@ floppy_image_device::floppy_image_device(const machine_config &mconfig, device_t
 	m_cyl(0),
 	m_subcyl(0),
 	m_amplifier_freakout_time(attotime::from_usec(16)),
+	m_glitch_threshold(attotime::zero),
 	m_image_dirty(false),
 	m_track_dirty(false),
+	m_writing(false),
+	m_write_cyl(0),
+	m_write_ss(0),
+	m_write_subcyl(0),
 	m_ready_counter(0),
 	m_make_sound(false),
 	m_sound_out(*this, FLOPSND_TAG)
@@ -498,6 +503,8 @@ void floppy_image_device::setup_write(const floppy_image_format_t *_output_forma
 
 void floppy_image_device::commit_image()
 {
+	if(m_writing)
+		write_do_flush(machine().time());
 	m_image_dirty = false;
 	if(!m_output_format || !m_output_format->supports_save())
 		return;
@@ -649,6 +656,8 @@ std::pair<std::error_condition, const floppy_image_format_t *> floppy_image_devi
 void floppy_image_device::init_floppy_load(bool write_supported)
 {
 	cache_clear();
+	m_writing = false;
+	m_write_transition_times.clear();
 	m_revolution_start_time = m_mon ? attotime::never : machine().time();
 	m_revolution_count = 0;
 
@@ -1122,9 +1131,10 @@ void floppy_image_device::cache_clear()
 	m_cache_entry = 0;
 	m_cache_weak = false;
 }
-
 void floppy_image_device::cache_fill(const attotime &when)
 {
+	if(m_writing)
+		write_do_flush(when);
 	std::vector<uint32_t> &buf = m_image->get_buffer(m_cyl, m_ss, m_subcyl);
 	uint32_t const cells = buf.size();
 	if(cells <= 1) {
@@ -1132,7 +1142,7 @@ void floppy_image_device::cache_fill(const attotime &when)
 		m_cache_end_time = attotime::never;
 		m_cache_index = 0;
 		m_cache_entry = (cells == 1) ? buf[0] : floppy_image::MG_N;
-		cache_weakness_setup();
+		cache_weakness_setup(buf, attotime::zero);
 		return;
 	}
 
@@ -1154,18 +1164,44 @@ void floppy_image_device::cache_fill(const attotime &when)
 	for(;;) {
 		cache_fill_index(buf, index, base);
 		if(m_cache_end_time > when) {
-			cache_weakness_setup();
+			// base now belongs to the entry after the current one;
+			// cache_fill_index wrapped it if index reached zero
+			attotime const base_cur = index ? base : base - m_rev_time;
+			cache_weakness_setup(buf, base_cur);
 			break;
 		}
 	}
 }
 
-void floppy_image_device::cache_weakness_setup()
+void floppy_image_device::cache_weakness_setup(const std::vector<uint32_t> &buf, attotime base)
 {
-	u32 type = m_cache_entry & floppy_image::MG_MASK;
-	if(type == floppy_image::MG_N || type == floppy_image::MG_D) {
+	auto const weak_kind = [] (u32 e) {
+		u32 const t = e & floppy_image::MG_MASK;
+		return t == floppy_image::MG_N || t == floppy_image::MG_D;
+	};
+
+	if(weak_kind(m_cache_entry)) {
+		// Anchor the noise on the start of the weak run, not on the
+		// entry the cache sits on, so a zone serves the same stream
+		// however the decoder chopped it up
 		m_cache_weak = true;
-		m_cache_weak_start = m_cache_start_time;
+		if(buf.size() <= 1) {
+			// Whole track unformatted
+			m_cache_weak_start = m_cache_start_time;
+			return;
+		}
+		int s = m_cache_index;
+		int c = 0;
+		while(c < 1024 && s > 0 && weak_kind(buf[s-1])) {
+			s--;
+			c++;
+		}
+		if(c == 1024 || (s == 0 && weak_kind(buf[buf.size()-1]))) {
+			// Run start not reachable: no anchor, no blip
+			m_cache_weak_start = attotime::never;
+			return;
+		}
+		m_cache_weak_start = position_to_time(base, buf[s] & floppy_image::TIME_MASK);
 		return;
 	}
 
@@ -1174,6 +1210,7 @@ void floppy_image_device::cache_weakness_setup()
 		m_cache_weak_start = attotime::never;
 		return;
 	}
+	// The comparator reference needs time to decay before it follows the noise
 	m_cache_weak_start = m_cache_start_time + attotime::from_usec(16);
 }
 
@@ -1182,25 +1219,35 @@ attotime floppy_image_device::get_next_transition(const attotime &from_when)
 	if(!m_image || m_mon)
 		return attotime::never;
 
-	if(from_when < m_cache_start_time || m_cache_start_time.is_zero() || (!m_cache_end_time.is_never() && from_when >= m_cache_end_time))
-		cache_fill(from_when);
-
-	if(!m_cache_weak)
-		return m_cache_end_time;
-
-	// Put a flux transition in the middle of a 4us interval with a 50% probability
-	uint64_t interval_index = (from_when < m_cache_weak_start) ? 0 : (from_when - m_cache_weak_start).as_ticks(250000);
-	attotime weak_time = m_cache_weak_start + attotime::from_ticks(interval_index*2+1, 500000);
+	attotime from = from_when;
 	for(;;) {
-		if(weak_time >= m_cache_end_time)
-			return m_cache_end_time;
-		if(weak_time > from_when) {
-			u32 test = hash32(hash32(hash32(hash32(m_revolution_count) ^ 0x4242) + m_cache_index) + interval_index);
-			if(test & 1)
-				return weak_time;
+		if(from < m_cache_start_time || m_cache_start_time.is_zero() || (!m_cache_end_time.is_never() && from >= m_cache_end_time))
+			cache_fill(from);
+
+		if(m_cache_weak) {
+			// Weak surface: noise at an unknown rate.  One hash-drawn
+			// blip per zone per revolution, silence for the rest -
+			// entries are skipped like the bounce filter skips ring,
+			// so no entry boundaries leak out as flux.
+			if(m_cache_weak_start.is_never())
+				return attotime::never;
+			attotime const blip = m_cache_weak_start
+				+ attotime::from_nsec(hash32(hash32(m_revolution_count) ^ 0x4242
+						^ u32(m_cache_weak_start.as_ticks(7000000))) % 50000);
+			if(blip > from && blip < m_cache_end_time)
+				return blip;
+			if(m_cache_end_time.is_never())
+				return attotime::never;
+			from = m_cache_end_time;
+			continue;
 		}
-		weak_time += attotime::from_usec(4);
-		interval_index ++;
+		// A change too close after the previous one is read-chain ring,
+		// not signal - drop it
+		if(!m_cache_end_time.is_never() && m_cache_end_time - m_cache_start_time < m_glitch_threshold) {
+			from = m_cache_end_time;
+			continue;
+		}
+		return m_cache_end_time;
 	}
 }
 
@@ -1211,7 +1258,7 @@ bool floppy_image_device::writing_disabled() const
 	return m_wpt || (m_phases & 2);
 }
 
-void floppy_image_device::write_flux(const attotime &start, const attotime &end, int transition_count, const attotime *transitions)
+void floppy_image_device::write_start(const attotime &when)
 {
 	if(!m_image || m_mon)
 		return;
@@ -1219,23 +1266,83 @@ void floppy_image_device::write_flux(const attotime &start, const attotime &end,
 	if(writing_disabled())
 		return;
 
+	if(m_writing)
+		write_do_flush(when);
+
+	m_writing = true;
+	m_write_cyl = m_cyl;
+	m_write_ss = m_ss;
+	m_write_subcyl = m_subcyl;
+	m_write_start_time = when;
+	m_write_transition_times.clear();
 	m_image_dirty = true;
 	m_track_dirty = true;
-	cache_clear();
+}
+
+void floppy_image_device::write_flux_change(const attotime &when)
+{
+	if(!m_writing)
+		return;
+
+	// Some controllers speculatively run ahead of machine time then
+	// replay from an earlier point.  Discard stale entries so the
+	// replayed transitions replace them cleanly.
+	if(!m_write_transition_times.empty() && when <= m_write_transition_times.back()) {
+		auto it = std::lower_bound(m_write_transition_times.begin(), m_write_transition_times.end(), when);
+		m_write_transition_times.erase(it, m_write_transition_times.end());
+	}
+	// Best-effort rewind if replay crosses a flush boundary.  Does not
+	// reconstruct transitions already committed to the track, but no
+	// current controller replays across a committed flush point.
+	if(when < m_write_start_time)
+		m_write_start_time = when;
+	m_write_transition_times.push_back(when);
+}
+
+void floppy_image_device::write_end(const attotime &when)
+{
+	if(!m_writing)
+		return;
+
+	write_do_flush(when);
+	m_writing = false;
+}
+
+void floppy_image_device::write_flush(const attotime &when)
+{
+	if(!m_writing)
+		return;
+
+	write_do_flush(when);
+}
+
+void floppy_image_device::write_do_flush(const attotime &when)
+{
+	// A rollback replay can call us with `when` earlier than a prior
+	// speculative flush already advanced m_write_start_time to; treating
+	// that as a forward span would wrap around and wipe the track. Skip
+	// it -- the replay's next forward flush will overwrite correctly.
+	if(when < m_write_start_time)
+		return;
+
+	int committed = 0;
+	for(int i = 0; i != int(m_write_transition_times.size()); i++)
+		if(m_write_transition_times[i] < when)
+			committed = i + 1;
+
+	if(when == m_write_start_time && !committed)
+		return;
 
 	std::vector<wspan> wspans(1);
-
 	attotime base;
-	wspans[0].start = find_position(base, start);
-	wspans[0].end   = find_position(base, end);
-
-	for(int i=0; i != transition_count; i++)
-		wspans[0].flux_change_positions.push_back(find_position(base, transitions[i]));
+	wspans[0].start = find_position(base, m_write_start_time);
+	wspans[0].end = find_position(base, when);
+	for(int i = 0; i != committed; i++)
+		wspans[0].flux_change_positions.push_back(find_position(base, m_write_transition_times[i]));
 
 	wspan_split_on_wrap(wspans);
 
-	std::vector<uint32_t> &buf = m_image->get_buffer(m_cyl, m_ss, m_subcyl);
-
+	std::vector<uint32_t> &buf = m_image->get_buffer(m_write_cyl, m_write_ss, m_write_subcyl);
 	if(buf.empty()) {
 		buf.push_back(floppy_image::MG_N);
 		buf.push_back(floppy_image::MG_E | 199999999);
@@ -1244,6 +1351,9 @@ void floppy_image_device::write_flux(const attotime &start, const attotime &end,
 	wspan_remove_damaged(wspans, buf);
 	wspan_write(wspans, buf);
 
+	if(committed)
+		m_write_transition_times.erase(m_write_transition_times.begin(), m_write_transition_times.begin() + committed);
+	m_write_start_time = when;
 	cache_clear();
 }
 
@@ -1370,6 +1480,8 @@ void floppy_image_device::wspan_write(const std::vector<wspan> &wspans, std::vec
 void floppy_image_device::set_write_splice(const attotime &when)
 {
 	if(m_image && !m_mon) {
+		if(m_writing)
+			write_do_flush(when);
 		m_image_dirty = true;
 		attotime base;
 		int splice_pos = find_position(base, when);
@@ -1582,8 +1694,9 @@ void floppy_35_dd::setup_characteristics()
 	m_tracks = 84;
 	m_sides = 2;
 	set_rpm(300);
+	// Changes closer than ~2.1us are read-chain ring; legal DD flux never comes closer than 4us
+	m_glitch_threshold = attotime::from_nsec(2100);
 
-	add_variant(floppy_image::SSSD);
 	add_variant(floppy_image::SSDD);
 	add_variant(floppy_image::DSDD);
 }
@@ -2457,7 +2570,7 @@ void teac_fd_55g::setup_characteristics()
 //-------------------------------------------------
 //  ALPS 32551901 (black) / 32551902 (brown)
 //
-//  used in the Commodoere 1541 disk drive
+//  used in the Commodore 1541 disk drive
 //-------------------------------------------------
 
 alps_3255190x::alps_3255190x(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :

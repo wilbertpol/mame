@@ -145,7 +145,10 @@ public:
 
 	attotime time_next_index();
 	attotime get_next_transition(const attotime &from_when);
-	void write_flux(const attotime &start, const attotime &end, int transition_count, const attotime *transitions);
+	void write_start(const attotime &when);
+	void write_flux_change(const attotime &when);
+	void write_end(const attotime &when);
+	void write_flush(const attotime &when);
 	void set_write_splice(const attotime &when);
 	int get_sides() { return m_sides; }
 	uint32_t get_form_factor() const;
@@ -226,11 +229,17 @@ protected:
 	/* Current floppy zone cache */
 	attotime m_cache_start_time, m_cache_end_time, m_cache_weak_start;
 	attotime m_amplifier_freakout_time;
+	// Read-chain bounce filter threshold; zero disables it
+	attotime m_glitch_threshold;
 	int m_cache_index;
 	u32 m_cache_entry;
 	bool m_cache_weak;
 
 	bool m_image_dirty, m_track_dirty;
+	bool m_writing;
+	int m_write_cyl, m_write_ss, m_write_subcyl;
+	attotime m_write_start_time;
+	std::vector<attotime> m_write_transition_times;
 	int m_ready_counter;
 
 	load_cb m_cur_load_cb;
@@ -260,13 +269,14 @@ protected:
 	attotime position_to_time(const attotime &base, int position) const;
 
 	void commit_image();
+	void write_do_flush(const attotime &when);
 
 	u32 hash32(u32 val) const;
 
 	void cache_clear();
 	void cache_fill_index(const std::vector<uint32_t> &buf, int &index, attotime &base);
 	void cache_fill(const attotime &when);
-	void cache_weakness_setup();
+	void cache_weakness_setup(const std::vector<uint32_t> &buf, attotime base);
 
 	// Sound support
 	bool m_make_sound;

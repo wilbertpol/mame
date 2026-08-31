@@ -1824,12 +1824,12 @@ static void do_verify(parameters_map &params)
 
 		// determine how much to read
 		uint32_t bytes_to_read = (std::min<uint64_t>)(buffer.size(), input_chd.logical_bytes() - offset);
-		std::error_condition err = input_chd.read_bytes(offset, &buffer[0], bytes_to_read);
+		std::error_condition err = input_chd.read_bytes(offset, buffer.data(), bytes_to_read);
 		if (err)
 			report_error(1, "Error reading CHD file (%s): %s", *input_chd_str->second, err.message());
 
 		// add to the checksum
-		rawsha1.append(&buffer[0], bytes_to_read);
+		rawsha1.append(buffer.data(), bytes_to_read);
 		offset += bytes_to_read;
 	}
 	util::sha1_t computed_sha1 = rawsha1.finish();
@@ -2617,12 +2617,12 @@ static void do_extract_raw(parameters_map &params)
 
 			// determine how much to read
 			uint32_t bytes_to_read = (std::min<uint64_t>)(buffer.size(), input_end - offset);
-			std::error_condition err = input_chd.read_bytes(offset, &buffer[0], bytes_to_read);
+			std::error_condition err = input_chd.read_bytes(offset, buffer.data(), bytes_to_read);
 			if (err)
 				report_error(1, "Error reading CHD file (%s): %s", *params.find(OPTION_INPUT)->second, err.message());
 
 			// write to the output
-			auto const [writerr, count] = write(*output_file, &buffer[0], bytes_to_read);
+			auto const [writerr, count] = write(*output_file, buffer.data(), bytes_to_read);
 			if (writerr)
 				report_error(1, "Error writing to file; check disk space (%s)", *output_file_str->second);
 
@@ -2867,6 +2867,7 @@ static void do_extract_cd(parameters_map &params)
 		uint64_t outputoffs = 0;
 		uint32_t discoffs = 0;
 		std::vector<uint8_t> buffer;
+		int sessionnum = -1;
 
 		for (int tracknum = 0; tracknum < toc.numtrks; tracknum++)
 		{
@@ -2899,6 +2900,13 @@ static void do_extract_cd(parameters_map &params)
 
 			// output the metadata about the track to the TOC file
 			const cdrom_file::track_info &trackinfo = toc.tracks[tracknum];
+
+			if (mode == MODE_CUEBIN && toc.numsessions > 1 && sessionnum != trackinfo.session)
+			{
+				output_toc_file->printf("REM SESSION %02d\n", trackinfo.session+1);
+				sessionnum = trackinfo.session;
+			}
+			
 			output_track_metadata(mode, *output_toc_file, tracknum, trackinfo, std::string(core_filename_extract_base(trackbin_name)), discoffs, outputoffs);
 
 			// If this is bin/cue output and the CHD contains subdata, warn the user and don't include
@@ -2960,7 +2968,7 @@ static void do_extract_cd(parameters_map &params)
 				if (bufferoffs == buffer.size() || frame == actualframes - 1)
 				{
 					output_bin_file->seek(outputoffs, SEEK_SET);
-					auto const [writerr, byteswritten] = write(*output_bin_file, &buffer[0], bufferoffs);
+					auto const [writerr, byteswritten] = write(*output_bin_file, buffer.data(), bufferoffs);
 					if (writerr)
 						report_error(1, "Error writing frame %d to file (%s): %s\n", frame, *output_file_str->second, "Write error");
 					outputoffs += bufferoffs;
@@ -3312,7 +3320,7 @@ static void do_dump_metadata(parameters_map &params)
 
 			// output the metadata
 			size_t count;
-			std::tie(filerr, count) = write(*output_file, &buffer[0], buffer.size());
+			std::tie(filerr, count) = write(*output_file, buffer.data(), buffer.size());
 			if (!filerr)
 				filerr = output_file->flush();
 			if (filerr)
@@ -3326,7 +3334,7 @@ static void do_dump_metadata(parameters_map &params)
 		{
 			// flush to stdout
 			// FIXME: check for errors
-			fwrite(&buffer[0], 1, buffer.size(), stdout);
+			fwrite(buffer.data(), 1, buffer.size(), stdout);
 			fflush(stdout);
 		}
 	}

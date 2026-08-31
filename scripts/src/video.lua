@@ -439,6 +439,18 @@ end
 
 --------------------------------------------------
 --
+--@src/devices/video/gba_ppu.h,VIDEOS["GBA_PPU"] = true
+--------------------------------------------------
+
+if VIDEOS["GBA_PPU"] then
+	files {
+		MAME_DIR .. "src/devices/video/gba_ppu.cpp",
+		MAME_DIR .. "src/devices/video/gba_ppu.h",
+	}
+end
+
+--------------------------------------------------
+--
 --@src/devices/video/gf4500.h,VIDEOS["GF4500"] = true
 --------------------------------------------------
 
@@ -734,6 +746,18 @@ if VIDEOS["I8275"] then
 	files {
 		MAME_DIR .. "src/devices/video/i8275.cpp",
 		MAME_DIR .. "src/devices/video/i8275.h",
+	}
+end
+
+--------------------------------------------------
+--
+--@src/devices/video/ili9335.h,VIDEOS["ILI9335"] = true
+--------------------------------------------------
+
+if VIDEOS["ILI9335"] then
+	files {
+		MAME_DIR .. "src/devices/video/ili9335.cpp",
+		MAME_DIR .. "src/devices/video/ili9335.h",
 	}
 end
 
