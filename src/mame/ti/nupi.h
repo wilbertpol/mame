@@ -146,8 +146,130 @@ private:
 	// Best-effort DMA address/count latches (0x800c00/0x802c00 in the reverse-engineered
 	// map): the firmware reads both as longwords right after a NuBus-write interrupt, which
 	// is consistent with an address+count pair, but this has not been validated dynamically.
+	// m_dma_count is now known to be the real interval-timer word count (doc 4.5.1.4),
+	// fed from 0x100001 - see the 0x100001 write handler in mpu_map().
 	u32 m_dma_address;
 	u32 m_dma_count;
+
+	// 0x802c00's self-test readback (entry 4: write a table word to 0x801b0/page
+	// register, expect this to read back rol(word, 2) & 0xfffc) - decoupled from the
+	// real m_dma_count above. 0x801b0 is a real, load-bearing register (NuBus paging,
+	// hit constantly during real command processing - see page_register_w()), so tying
+	// its writes to m_dma_count meant ordinary paging during real commands stomped the
+	// real transfer count. Confirmed necessary by direct test: removing the write
+	// entirely (without this shadow) broke entry 4's self-test.
+	u16 m_page_register_802c00_shadow = 0;
+
+	// scsi_dreq_w()'s own byte-pairing state for pushing real SCSI-side bytes into
+	// m_unknown_450000_fifo (the real on-board FIFO RAM, doc Section 4.3.4/4.5.4 - see
+	// that member above for the self-test evidence establishing it). Kept separate from
+	// m_unknown_450000_holding/m_unknown_450000_byte_phase (the self-test-driven
+	// $440000/$3801e8 write path into the same array) so this doesn't disturb that
+	// already-verified wiring - both paths share the same underlying FIFO array/position
+	// pointer, matching real hardware having one physical FIFO fed from two sources.
+	u8 m_scsi_fifo_pending_byte = 0;
+	bool m_scsi_fifo_have_pending_byte = false;
+
+	// FIFO -> NuBus stage (doc 4.3.4: "the DMA bus transfers data from the SCSI bus to
+	// the FIFO RAM and from the FIFO RAM to the NuBus"): NuBus is a 32-bit synchronous
+	// bus, so every second FIFO halfword completes one real 32-bit NuBus write. Big-endian
+	// assembly (first word = high 16 bits) to match every other multi-byte NuBus value
+	// in this driver.
+	u16 m_scsi_fifo_pending_word = 0;
+	bool m_scsi_fifo_have_pending_word = false;
+
+	// Real 0x801aa go-strobe (see mpu_map()): before this fires, scsi_dreq_w() only
+	// fills m_unknown_450000_fifo - no NuBus writes, since $2FD2's real
+	// m_dma_address/m_dma_count aren't set up yet at that point in the real command
+	// sequence. Once the go-strobe arms m_dma_active, m_fifo_drain_pos starts at
+	// whatever m_unknown_450000_fifo's write position is AT THAT MOMENT (see
+	// mpu_map()) - not rewound backward by count, since go-strobe fires as soon as
+	// $2FD2's setup finishes, well before real SCSI data bytes start arriving (SCSI
+	// arbitration/selection/command-phase overhead), so there's normally nothing of
+	// this transfer's own to rewind into yet. The FIFO then gets drained by
+	// dma_drain_timer_expired()/dma_drain_kick() below - one real, timed step per
+	// word, not an instant catch-up - decrementing m_dma_count and firing IRQ1 on
+	// completion (subject to m_dma_fire_irq, see below). Whether a tick waits for
+	// fresh bytes to exist at m_fifo_drain_pos before popping them depends on
+	// m_dma_write_to_nubus (see dma_drain_timer_expired()'s own comment): a real
+	// transfer does wait, for correctness; entry 7's self-test doesn't need to (no
+	// real target, so the exact bytes transferred don't matter) and its own first
+	// DMA-complete wait relies on this - it has no real FIFO data behind it at all
+	// yet when its go-strobe fires. m_fifo_drain_pos tracks how far the drain has
+	// gotten, independent of the write position (m_unknown_450000_pos) so this
+	// doesn't disturb the self-test's own FIFO usage. Used uniformly for both a real
+	// SCSI transfer and entry 7's DMA-complete self-test.
+	bool m_dma_active = false;
+	u32 m_fifo_drain_pos = 0;
+	void push_fifo_word_to_nubus(u16 word);
+
+	// Where a real transfer's own data actually begins in m_unknown_450000_fifo -
+	// recorded by scsi_dreq_w() the moment the FIRST word of a new transfer lands,
+	// not computed at go-strobe time. Necessary because go-strobe's own timing
+	// relative to real data arrival varies: $2FD2's setup (descriptor/address/
+	// go-strobe) can finish before SCSI arbitration/selection/command-phase overhead
+	// lets real data start flowing, but confirmed live that it doesn't always - real
+	// bytes can already be streaming in (even fully queued) well before go-strobe
+	// fires. m_dma_transfer_start_pending marks "the next word scsi_dreq_w() buffers
+	// starts a new transfer" - set true at device_reset() and whenever
+	// push_fifo_word_to_nubus() finishes a transfer (m_dma_count reaches 0), consumed
+	// (and m_dma_transfer_start_pos captured) on the next word write.
+	u32 m_dma_transfer_start_pos = 0;
+	bool m_dma_transfer_start_pending = true;
+	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
+	void dma_drain_kick();
+
+	// Whether this transfer's NuBus target address was freshly configured, i.e. real
+	// hardware actually knows where to write - set by the 0x801c0/0x801d0 write
+	// handlers (m_dma_address's own halves, always written by $2FD2 right before its
+	// own go-strobe), cleared by any 0x100001 write (a new descriptor load starting,
+	// invalidating whatever address was configured for a PREVIOUS transfer). Entry 7's
+	// self-test never writes 0x801c0/0x801d0 at all, so this is false for its own
+	// go-strobes - confirmed necessary, not just defensive: without it, its drain
+	// performed real NuBus writes using whatever page_register happened to be left
+	// over from an earlier, unrelated self-test (0x3fff), landing on unmapped space
+	// and setting the main raven CPU's own m_nubus_error flag (see
+	// cpu/raven/raven.cpp) on every word, corrupting its "bus error on last transfer"
+	// status for later, completely unrelated bus activity. m_dma_write_to_nubus
+	// snapshots this at go-strobe time (see mpu_map()) for push_fifo_word_to_nubus()
+	// to consult for the whole transfer, since m_dma_target_configured itself may be
+	// invalidated again before the drain finishes.
+	bool m_dma_target_configured = false;
+	bool m_dma_write_to_nubus = false;
+
+	// Whether THIS transfer's own completion should assert IRQ1 - snapshotted at
+	// go-strobe time (see mpu_map()). A real transfer (m_dma_write_to_nubus) always
+	// fires its own - m_dma_test_fifo below is entry 7 self-test scratch space,
+	// wholly unrelated to a real SCSI transfer; checking it unconditionally here
+	// caused a real transfer's completion IRQ1 to be silently swallowed whenever
+	// self-test happened to leave m_dma_test_fifo's read/write positions unequal
+	// earlier in the session. For a transfer with no real target (self-test), this
+	// DOES check whether m_dma_test_fifo already has queued, unread data: entry 7's
+	// second DMA wait writes its 16 real test words to 0x440000 BEFORE its own
+	// go-strobe - those land in m_dma_test_fifo, a separate, pre-existing 16-entry
+	// array (fed exclusively by 0x440000, drained by the 0x801c00/0x801c02 read
+	// handlers below), not m_unknown_450000_fifo. That mechanism already asserts
+	// IRQ1 itself when its own last entry is popped - confirmed necessary to gate on
+	// here, not fire unconditionally: without this, push_fifo_word_to_nubus()
+	// (walking m_unknown_450000_fifo/m_fifo_drain_pos, which holds none of this
+	// wait's real data at all) asserted a second, independent IRQ1 roughly 2.6ms
+	// earlier than the real mechanism's own natural timing - two competing
+	// completion signals for what the self-test expects to be one event. Entry 7's
+	// FIRST DMA wait has no such competing source (the 0x440000 writes happen only
+	// after it completes), so m_dma_test_fifo is still empty at that go-strobe and
+	// this stays true, letting push_fifo_word_to_nubus() provide the only completion
+	// signal that exists for it.
+	bool m_dma_fire_irq = true;
+
+	// Real per-transfer count (doc 4.5.1.4, interval timer): the ROM writes the real
+	// transfer descriptor to 0x100001 as two sequential bytes (low byte, then the byte
+	// originally at bits 8-15 after a ror.l #8) - see the 0x100001 write handler in
+	// mpu_map(). Traced and confirmed: for a real 0x400 (1024) byte transfer, the ROM
+	// writes 0xfe then 0x00, i.e. ((0x400>>2)-2) split across two bytes; inverting that
+	// transform ((descriptor+2)*4) recovers the real byte count. Sets m_dma_count
+	// directly once both bytes have arrived.
+	u8 m_dma_count_pending_byte = 0;
+	bool m_dma_count_have_pending_byte = false;
 
 	// Self-test source addresses 0x801c0/0x801d0/0x801b0 (the latter is the page
 	// register, see below) are write-only - never read back anywhere in the ROM.
@@ -315,17 +437,14 @@ private:
 	TIMER_CALLBACK_MEMBER(interval_timer_expired);
 	emu_timer *m_interval_timer;
 
-	// DMA-complete self-test trigger (IRQ level 1, DMAINT-). Confirmed via ROM
-	// self-test (0x298 dispatcher entry 7, ROM 0x88c-0x890): writes 0xfe then 3 to
-	// 0x100001, then waits for an interrupt - the same "parameter write, then a
-	// second write starts it" shape as the interval timer above (0x100005), but for
-	// DMA completion instead of the timer. The real end-to-end DMA path
-	// (m_dma_count reaching 0 via scsi_dreq_w) doesn't apply here since entry 7 never
-	// sets up a real transfer, so modeled as its own one-shot, mirroring
-	// m_interval_timer's fixed-delay approach pending better evidence for the real
-	// timing.
-	TIMER_CALLBACK_MEMBER(dma_test_timer_expired);
-	emu_timer *m_dma_test_timer;
+	// DMA completion trigger (IRQ level 1, DMAINT-). Confirmed via ROM self-test
+	// (0x298 dispatcher entry 7, ROM 0x88c-0x890): writes 0xfe then 3 to 0x100001,
+	// then waits for an interrupt - the same "parameter write, then a second write
+	// starts it" shape as the interval timer above (0x100005), but for DMA completion
+	// instead of the timer. Both entry 7's self-test and a real SCSI transfer share
+	// the real end-to-end path now (m_dma_count reaching 0 via
+	// dma_drain_timer_expired()/push_fifo_word_to_nubus() above) - see m_dma_active.
+	emu_timer *m_dma_drain_timer;
 
 	// 0x100001's own dedicated storage, replacing the generic misc_read/misc_write
 	// m_misc lookup now that this address has its own fully carved-out handler. Plain

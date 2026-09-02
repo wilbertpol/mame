@@ -12,10 +12,13 @@
 #pragma once
 
 #include "ti_nubus.h"
+#include "explorer_kbd.h"
+#include "explorer_rtc.h"
 #include "screen.h"
 #include "machine/clock.h"
 #include "machine/i8251.h"
 #include "machine/nvram.h"
+#include "machine/pit8253.h"
 #include "sound/sn76496.h"
 
 
@@ -51,9 +54,20 @@ private:
 	u32 diagnostic_loopback_value() const { return BIT(m_diagnostic_data, 8) ? 0x00 : 0xff; }
 	u32 event_vector_r(offs_t offset);
 	void event_vector_w(offs_t offset, u32 data, u32 mem_mask);
+	// Event Generator (section 4.4.5): on a monitored interrupt condition, becomes
+	// NuBus master and writes a plain 0xFF byte to the preprogrammed address stored
+	// in m_event_vector[cause] (Table 4-4 gives the cause->index mapping) - not a
+	// real CPU interrupt line, software just polls that memory location. Only
+	// wired to the long-term interval timer's own completion (cause 2) for now;
+	// the other 15 causes aren't hooked up yet.
+	void post_event(int cause);
+	void pit_out2_w(int state);
 
 	required_device<screen_device> m_screen;
 	required_device<i8251_device> m_i8251;
+	required_device<explorer_keyboard_device> m_keyboard;
+	required_device<explorer_rtc_device> m_rtc;
+	required_device<pit8253_device> m_pit;
 	required_device<clock_device> m_usart_clock;
 	required_device<sn76496_device> m_sn76496;
 	required_device<nvram_device> m_nvram;

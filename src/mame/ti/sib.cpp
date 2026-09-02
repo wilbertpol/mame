@@ -20,6 +20,14 @@ static constexpr u16 VIDEO_RAM_SIZE = 0x8000; // Guestimate
 static constexpr u16 VIDEO_RAM_MASK = VIDEO_RAM_SIZE - 1;
 static constexpr u16 SCREEN_WIDTH = 1024;
 
+// Real hardware bit assignments (2243145-0001A SI General Description, page 4-15,
+// Figure 4-4): bit 0 (Reset) is write-only and always reads 0 - a momentary strobe,
+// never latched into the readable register. Bit 2 (SI board test LED) and bit 10
+// (PSU overtemperature warning) are read-only, hardware-driven - software writes to
+// them have no effect. Only bits 1/3 (NuBus master enable, NuBus test) and 8/9
+// (monitor/chassis self-test LEDs) and the reserved-but-R/W bits 4-7 are storable.
+static constexpr u32 CONFIGURATION_REGISTER_WRITABLE_MASK = 0x3fa;
+
 u8 compute_parity(u8 data) { data ^= data >> 4; data ^= data >> 2; data ^= data >> 1; return data & 1; }
 
 } // anonymous namespace
@@ -30,6 +38,9 @@ sib_device::sib_device(const machine_config &mconfig, const char *tag, device_t 
 	device_ti_nubus_card_interface(mconfig, *this),
 	m_screen(*this, "screen"),
 	m_i8251(*this, "i8251"),
+	m_keyboard(*this, "keyboard"),
+	m_rtc(*this, "rtc"),
+	m_pit(*this, "pit"),
 	m_usart_clock(*this, "usart_clock"),
 	m_sn76496(*this, "sn76496"),
 	m_nvram(*this, "nvram"),
@@ -46,6 +57,7 @@ void sib_device::device_start()
 	m_nvram->set_base(m_nv_ram.begin(), m_nv_ram.bytes());
 
 	m_i8251->write_cts(0);
+	m_i8251->write_dsr(1);
 
 	save_item(NAME(m_configuration_register));
 	m_configuration_register = 0;
@@ -355,7 +367,7 @@ void sib_device::event_generator_map(address_map &map)
 		return m_configuration_register;
 	}), NAME([this] (u32 data) {
 		printf("Configuration-Register write %08x\n", data);
-		m_configuration_register = data;
+		m_configuration_register = data & CONFIGURATION_REGISTER_WRITABLE_MASK;
 	}));
 
 	// TODO
@@ -369,6 +381,27 @@ u32 sib_device::event_vector_r(offs_t offset)
 void sib_device::event_vector_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	COMBINE_DATA(&m_event_vector[offset]);
+}
+
+void sib_device::post_event(int cause)
+{
+	// Configuration register bit 1, "NuBus master enable" (Figure 4-4) - the doc
+	// is explicit that the event generator must not act until this is set, since
+	// it should only be enabled once the host has finished programming the event
+	// addresses (section 4.4.4/4.4.5.2's own init-order requirement).
+	if (!BIT(m_configuration_register, 1))
+		return;
+
+	nubus().space().write_byte(m_event_vector[cause], 0xff);
+}
+
+void sib_device::pit_out2_w(int state)
+{
+	// Mode 0 (interrupt on terminal count): the output is forced low the instant
+	// the control word is written, then goes high (and stays high) once the count
+	// reaches zero - only that rising edge is the real "interval elapsed" event.
+	if (state)
+		post_event(2); // "Interval timer (long)", Table 4-4
 }
 
 
@@ -488,12 +521,7 @@ void sib_device::rtc_map(address_map &map)
 	// f80058 - Rtclock-Standby-Interrupt
 	// f8005c - Rtclock-Test-Mode
 
-	map(0x00f80040, 0x00f80043).lr32(NAME([this] {
-		if (!machine().side_effects_disabled())
-			printf("Rtclock-Interrupt-Status-Register read\n");
-		return u32(0);
-	}));
-	// TODO
+	map(0x00f80000, 0x00f8005f).m(m_rtc, FUNC(explorer_rtc_device::map));
 }
 
 
@@ -501,51 +529,42 @@ void sib_device::timers_map(address_map &map)
 {
 	// f90000 - timers-base
 	//
-	// f90000 - Timers-Read-Counter-0 / Timers-Load-Counter-0
-	// f90004 - Timers-Read-Counter-1 / Timers-Load-Counter-1
-	// f90008 - Timers-Read-Counter-2 / Timers-Load-Counter-2
-	// f9000c - Timers-Write-Mode-Control
-
-	map(0x00f90000, 0x00f90003).lrw32(NAME([this] {
-		if (!machine().side_effects_disabled())
-			printf("Timers-Read-Counter-0 read\n");
-		return u32(0xffffffff);
-	}), NAME([] (u32 data) {
-		printf("Timers-Load-Counter-0 write %08x\n", data);
+	// f90000 - Timers-Read-Counter-0 / Timers-Load-Counter-0 (short-term interval timer)
+	// f90004 - Timers-Read-Counter-1 / Timers-Load-Counter-1 (square-wave rate generator)
+	// f90008 - Timers-Read-Counter-2 / Timers-Load-Counter-2 (long-term interval timer)
+	// f9000c - Timers-Write-Mode-Control (Figure 4-6: SC1 SC0 RL1 RL0 M2 M1 M0 BCD)
+	//
+	// The SI General Description never names this chip - unlike the i8251,
+	// MC68000, an NCR part, and the Z8530, which are all explicitly
+	// identified elsewhere in the doc. But the documented control-byte
+	// format, the Mode 0 "output forced low the instant the control word
+	// is written" and "one full CLK edge pair before a load completes"
+	// quirks (both specific real Intel 8253 behaviors, not just generic
+	// PIT-shaped ones), and the exact power-up example (Figure 4-7:
+	// 0x30/0xB0 to FSF9000C, matching the firmware's own boot sequence)
+	// all line up precisely with a genuine 8253 - used here as a
+	// well-evidenced best fit, not a confirmed part number.
+	// pit8253_device::read/write expect the real 8253's own byte-adjacent register
+	// spacing (offset 0-3, its A1/A0 address lines) - SIB's NuBus registers are
+	// word-spaced (F90000/04/08/0C) like everything else on this board, so the
+	// raw byte offset needs dividing by 4 first (same reason the i8251 wiring
+	// above uses an explicit wrapper rather than installing it directly).
+	// Installed as a dword-wide (.lrw32) handler, not byte-wide - matching the
+	// i8251 wiring above. raven_cpu_device::write_unmapped_byte() issues a
+	// masked DWORD write, not a true standalone byte access; a byte-wide
+	// (.lrw8) install doesn't respect that mask and gets called once per byte
+	// lane in the dword regardless, feeding three spurious 0x00 writes for
+	// every real one - which corrupts pit8253_device's two-byte LSB-then-MSB
+	// counter loads (confirmed live: counter 1 ended up loaded with 0,
+	// wrapping to 65536, instead of the real 1000). Offset is already a
+	// dword index here (0-3, matching the register order directly), unlike
+	// pit8253_device's own read/write which expect the real chip's
+	// byte-adjacent addressing - no manual shift needed either way now.
+	map(0x00f90000, 0x00f9000f).lrw32(NAME([this] (offs_t offset) {
+		return u32(m_pit->read(offset));
+	}), NAME([this] (offs_t offset, u32 data) {
+		m_pit->write(offset, u8(data));
 	}));
-	map(0x00f90004, 0x00f90007).lrw32(NAME([this] {
-		if (!machine().side_effects_disabled())
-			printf("Timers-Read-Counter-1 read\n");
-		return u32(0xffffffff);
-	}), NAME([] (u32 data) {
-		printf("Timers-Load-Counter-1 write %08x\n", data);
-	}));
-	map(0x00f90008, 0x00f9000b).lrw32(NAME([this] {
-		if (!machine().side_effects_disabled())
-			printf("Timers-Read-Counter-2 read\n");
-		return u32(0xffffffff);
-	}), NAME([] (u32 data) {
-		printf("Timers-Load-Counter-2 write %08x\n", data);
-	}));
-	map(0x00f9000c, 0x00f9000f).lw32(NAME([] (u32 data) {
-		// 76------ - Counter selection
-		//            00 - Timers-Select-Counter-0
-		//            01 - Timers-Select-Counter-1
-		//            10 - Timers-Select-Counter-2
-		// --54---- - Byte ordering
-		//            00 - Timers-Ordering-Counter-Latching
-		//            01 - Timers-Ordering-LSB
-		//            10 - Timers-Ordering-MSB
-		//            11 - Timers-Ordering-LSB-Then-MSB
-		// ----321- - Timers mode
-		//            000 - Timers-Mode-Interrupt-On-Last-Count
-		//            011 - Timers-Mode-Square-Wave
-		// -------0 - Timers raxis
-		//            0 - Timers-Base-Binary
-		//            1 - Timers-Base-BCD
-		printf("Timers-Write-Mode-Control write %08x\n", data);
-	}));
-
 }
 
 
@@ -585,8 +604,12 @@ void sib_device::configuration_rom_map(address_map &map)
 
 void sib_device::i8251_txd_w(int state)
 {
+	// The diagnostic loopback path and the real keyboard both drive the
+	// i8251's RXD line; only one should be connected at a time.
 	if (BIT(m_interrupt_diag_control, 3))
 		m_i8251->write_rxd(state);
+	else
+		m_keyboard->rxd_w(state);
 }
 
 
@@ -616,6 +639,7 @@ u32 sib_device::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const
 
 void sib_device::device_add_mconfig(machine_config &config)
 {
+	// System documents mention 1024x808 pixels
 	SCREEN(config, m_screen);
 	m_screen->set_refresh_hz(60);
 	m_screen->set_size(1024, 1024); // TODO
@@ -624,6 +648,23 @@ void sib_device::device_add_mconfig(machine_config &config)
 
 	I8251(config, m_i8251);
 	m_i8251->txd_handler().set(FUNC(sib_device::i8251_txd_w));
+
+	EXPLORER_KEYBOARD(config, m_keyboard);
+	m_keyboard->txd_handler().set(m_i8251, FUNC(i8251_device::write_rxd));
+
+	EXPLORER_RTC(config, m_rtc);
+
+	// Counters 0/1 driven by "a 1-megahertz clock derived from the NuBus
+	// clock" (section 4.4.8, 10MHz NuBus CLK- per section 4.4.1.2 - the
+	// doc's own worked example, Figure 4-8, treats it as an exact 1MHz/
+	// 1us period with no rounding). Counter 2 (the long-term interval
+	// counter) has no fixed input clock at all - it's driven by counter
+	// 1's own programmable square-wave output.
+	PIT8253(config, m_pit);
+	m_pit->set_clk<0>(1000000.0);
+	m_pit->set_clk<1>(1000000.0);
+	m_pit->out_handler<1>().set(m_pit, FUNC(pit8253_device::write_clk2));
+	m_pit->out_handler<2>().set(FUNC(sib_device::pit_out2_w));
 
 	CLOCK(config, m_usart_clock, 153600);
 	m_usart_clock->signal_handler().set(m_i8251, FUNC(i8251_device::write_rxc));

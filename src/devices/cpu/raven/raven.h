@@ -141,6 +141,7 @@ private:
 	void write_unmapped();
 	void read_unmapped_byte();
 	void write_unmapped_byte();
+	void kbdusart_trace(u32 vma, u16 prev_pc, const char *label, u32 data);
 	template <int Action> u32 vm_resolve_address();
 	u16 map2_addr();
 	u32 get_m_source();

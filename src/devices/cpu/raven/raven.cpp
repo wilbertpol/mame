@@ -19,11 +19,30 @@ static constexpr u8 MCR_LOOP_ON_SELF_TEST_BIT = 23;
 static constexpr u8 MCR_NEED_FETCH_BIT = 22;
 static constexpr u8 MCR_LOCAL_RESET_BIT = 20;
 static constexpr u8 MCR_INT_ENABLE_BIT = 15;
+// Real MCR bit 11 (0x800), per Meroko's own raven_cpu.c (MCR_PROM_Disable).
+// Switches instruction fetch for addresses 0-0x7FF away from the boot ROM overlay
+// to the writable control-store RAM (see m_inst_view/program_map()), letting
+// freshly-downloaded microcode (e.g. a microload read from disk) actually execute.
+static constexpr u8 MCR_PROM_DISABLE_BIT = 11;
 static constexpr u8 MCR_MEMORY_CYCLE_ENABLE_BIT = 8;
 static constexpr u8 MCR_SUB_SYSTEM_FLAG_BIT = 7;
 static constexpr u8 MCR_TEST_FAIL_FLAG_BIT = 6;
 
-static constexpr u8 MEMORY_CYCLE_BUSY_CYCLES = 6;
+// Real memory read latency, in instructions, before requested data becomes visible
+// in MD. Was 6 - confirmed wrong: the microcode's own read-then-use pattern
+// (VMA-START-UNMAPPED-READ, then two instructions later SETM MD) only leaves 2
+// instructions before use, matching Meroko's real hardware model ("2 INSTRUCTIONS
+// PASS BEFORE COMPLETION", raven_cpu.c's lcbus_io_request()). Confirmed working
+// live: MAME successfully reads a real microload from disk with this value.
+static constexpr u8 MEMORY_CYCLE_BUSY_CYCLES = 2; // was 6
+
+
+// TEMP/TESTING: user directed - unconditional, always-on trace of the keyboard
+// USART address range (SIB, f5fc0000-f5fc0007), to watch the register setup and
+// data exchange with explorer_kbd_device during the ongoing SIB self-test
+// investigation (see ti_explorer.md). s_instr_counter is a plain, unconditional
+// dispatched-instruction count, kept only to timestamp these lines.
+static long long s_instr_counter = 0;
 
 
 static const u32 shift_mask_left[32] =
@@ -52,6 +71,16 @@ static const u32 shift_mask_right[32] =
 
 
 } // anonymous namespace
+
+
+void raven_cpu_device::kbdusart_trace(u32 vma, u16 prev_pc, const char *label, u32 data)
+{
+	u32 const slot = (vma >> 24) & 0xff;
+	u32 const slot_offset = vma & 0x00ffffff;
+	if (slot == 0xf5 && slot_offset >= 0x00fc0000 && slot_offset <= 0x00fc0007)
+		printf("KBDUSART instr=%lld pc=%04x %s vma=%08x data=%08x\n",
+				s_instr_counter, prev_pc, label, vma, data);
+}
 
 
 DEFINE_DEVICE_TYPE(RAVEN, raven_cpu_device, "raven", "TI Raven")
@@ -236,6 +265,7 @@ void raven_cpu_device::read()
 			m_md = m_read_data;
 		}
 	}
+	kbdusart_trace(m_vma, m_prev_pc, "read", m_read_data);
 }
 
 
@@ -254,6 +284,7 @@ void raven_cpu_device::write()
 			m_memory_busy_counter = 0;
 		}
 	}
+	kbdusart_trace(m_vma, m_prev_pc, "write", m_md);
 }
 
 
@@ -280,6 +311,7 @@ void raven_cpu_device::read_unmapped()
 		m_read_pending = false;
 		m_md = m_read_data;
 	}
+	kbdusart_trace(m_vma, m_prev_pc, "read_unmapped", m_read_data);
 }
 
 
@@ -299,6 +331,7 @@ void raven_cpu_device::write_unmapped()
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 	}
 	m_read_pending = false;
+	kbdusart_trace(m_vma, m_prev_pc, "write_unmapped", m_md);
 }
 
 
@@ -322,6 +355,7 @@ void raven_cpu_device::read_unmapped_byte()
 	u8 const byte_value = u8(raw >> shift);
 	m_read_data = u32(byte_value) << (8 * (m_vma & 3));
 	m_read_pending = true;
+	kbdusart_trace(m_vma, m_prev_pc, "read_unmapped_byte", byte_value);
 }
 
 void raven_cpu_device::write_unmapped_byte()
@@ -343,6 +377,7 @@ void raven_cpu_device::write_unmapped_byte()
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 	}
 	m_read_pending = false;
+	kbdusart_trace(m_vma, m_prev_pc, "write_unmapped_byte", byte_value);
 }
 
 
@@ -831,6 +866,11 @@ void raven_cpu_device::store_o_bus()
 			m_mcr |= (1 << MCR_NEED_FETCH_BIT);
 			break;
 		case 0x02: // MCR
+			// PROM-disable is a rising-edge trigger (0 -> 1 only) - matches Meroko's own
+			// equivalent check, which explicitly compares the OLD MCR value against the
+			// new one being written, not just the new value's own state.
+			if (!BIT(m_mcr, MCR_PROM_DISABLE_BIT) && BIT(m_o_bus, MCR_PROM_DISABLE_BIT))
+				m_inst_view.select(1);
 			m_mcr = (m_mcr & (0xf08f0000 | (1 << MCR_NEED_FETCH_BIT))) | (m_o_bus & (0x0f70ffff & ~(1 << MCR_NEED_FETCH_BIT)));
 			if (BIT(m_mcr, 21))
 			{
@@ -1435,6 +1475,7 @@ void raven_cpu_device::execute_run()
 		}
 		m_prev_pc = m_pc;
 		m_pc = m_next_pc;
+		s_instr_counter++;
 		u64 next_op = m_program.read_qword(m_next_pc++);
 
 		if (!m_n)
