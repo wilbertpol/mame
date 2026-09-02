@@ -23,9 +23,13 @@
       waiting for this reply; without it the poll never completes.
     - Key transmission: a key-down sends its scancode with the high bit
       set (scancode | 0x80); a key-up sends the bare scancode. Scancode
-      values below are taken from the Meroko emulator's own reverse
-      engineered US-keyboard map (svn/sib.c, init_sdl_to_keysym_map()),
-      not from the SI General Description manual.
+      values below match the SCAN-CODE-* constants in the real TI kernel
+      source (keyboard-chars.lisp, KBD-MAKE-TI-TABLE) - authoritative,
+      not reverse-engineered. Cross-checked against Meroko's own
+      independently reverse-engineered map (svn/sib.c,
+      init_sdl_to_keysym_map()): every key both sides define agrees,
+      except Meroko's Tab (0x35), which the kernel source shows is
+      actually Keypad-Tab - the real Tab is 0x38.
 
 **********************************************************************/
 

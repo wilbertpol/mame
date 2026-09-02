@@ -26,8 +26,9 @@ explorer_keyboard_device::explorer_keyboard_device(const machine_config &mconfig
 // Only the keys needed to drive the SIB's D/M/R/E boot menu and general
 // menu navigation are mapped here (letters, digits, enter, backspace, tab,
 // esc, space, arrows). Punctuation and modifier keys (shift/ctrl/alt) are
-// not mapped: Meroko's own map[] uses non-obvious special-cased codes for
-// several of those that aren't worth carrying over speculatively.
+// not mapped: the real kernel source (keyboard-chars.lisp) special-cases
+// several of those with asymmetric/non-obvious codes not worth carrying
+// over speculatively.
 static INPUT_PORTS_START( explorer_kbd )
 	PORT_START("ROW0")
 	PORT_BIT(0xffff, IP_ACTIVE_HIGH, IPT_UNUSED)
@@ -51,9 +52,8 @@ static INPUT_PORTS_START( explorer_kbd )
 	PORT_BIT(0xc000, IP_ACTIVE_HIGH, IPT_UNUSED)
 
 	PORT_START("ROW3")
-	PORT_BIT(0x001f, IP_ACTIVE_HIGH, IPT_UNUSED)
-	PORT_BIT(0x0020, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("TAB") PORT_CODE(KEYCODE_TAB) PORT_CHAR('\t')
-	PORT_BIT(0x01c0, IP_ACTIVE_HIGH, IPT_UNUSED)
+	PORT_BIT(0x00ff, IP_ACTIVE_HIGH, IPT_UNUSED)
+	PORT_BIT(0x0100, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("TAB") PORT_CODE(KEYCODE_TAB) PORT_CHAR('\t')
 	PORT_BIT(0x0200, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_Q) PORT_CHAR('q') PORT_CHAR('Q')
 	PORT_BIT(0x0400, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_W) PORT_CHAR('w') PORT_CHAR('W')
 	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_E) PORT_CHAR('e') PORT_CHAR('E')
