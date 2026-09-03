@@ -73,16 +73,6 @@ static const u32 shift_mask_right[32] =
 } // anonymous namespace
 
 
-void raven_cpu_device::kbdusart_trace(u32 vma, u16 prev_pc, const char *label, u32 data)
-{
-	u32 const slot = (vma >> 24) & 0xff;
-	u32 const slot_offset = vma & 0x00ffffff;
-	if (slot == 0xf5 && slot_offset >= 0x00fc0000 && slot_offset <= 0x00fc0007)
-		printf("KBDUSART instr=%lld pc=%04x %s vma=%08x data=%08x\n",
-				s_instr_counter, prev_pc, label, vma, data);
-}
-
-
 DEFINE_DEVICE_TYPE(RAVEN, raven_cpu_device, "raven", "TI Raven")
 
 
@@ -265,7 +255,6 @@ void raven_cpu_device::read()
 			m_md = m_read_data;
 		}
 	}
-	kbdusart_trace(m_vma, m_prev_pc, "read", m_read_data);
 }
 
 
@@ -284,7 +273,6 @@ void raven_cpu_device::write()
 			m_memory_busy_counter = 0;
 		}
 	}
-	kbdusart_trace(m_vma, m_prev_pc, "write", m_md);
 }
 
 
@@ -311,7 +299,6 @@ void raven_cpu_device::read_unmapped()
 		m_read_pending = false;
 		m_md = m_read_data;
 	}
-	kbdusart_trace(m_vma, m_prev_pc, "read_unmapped", m_read_data);
 }
 
 
@@ -331,7 +318,6 @@ void raven_cpu_device::write_unmapped()
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 	}
 	m_read_pending = false;
-	kbdusart_trace(m_vma, m_prev_pc, "write_unmapped", m_md);
 }
 
 
@@ -355,7 +341,6 @@ void raven_cpu_device::read_unmapped_byte()
 	u8 const byte_value = u8(raw >> shift);
 	m_read_data = u32(byte_value) << (8 * (m_vma & 3));
 	m_read_pending = true;
-	kbdusart_trace(m_vma, m_prev_pc, "read_unmapped_byte", byte_value);
 }
 
 void raven_cpu_device::write_unmapped_byte()
@@ -377,7 +362,6 @@ void raven_cpu_device::write_unmapped_byte()
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 	}
 	m_read_pending = false;
-	kbdusart_trace(m_vma, m_prev_pc, "write_unmapped_byte", byte_value);
 }
 
 

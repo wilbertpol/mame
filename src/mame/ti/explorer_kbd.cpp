@@ -118,8 +118,6 @@ void explorer_keyboard_device::device_start()
 
 void explorer_keyboard_device::device_reset()
 {
-	printf("EXPLORER_KBD device_reset\n");
-
 	// Matches the SIB's USART mode instruction (SI General Description,
 	// Figure 4-22): 1 stop bit, parity enabled, even parity, 8-bit
 	// characters, clock/64 (153600 Hz / 64 = 2400 baud).
@@ -138,15 +136,20 @@ void explorer_keyboard_device::device_reset()
 
 void explorer_keyboard_device::received_byte(u8 byte)
 {
-	// TEMP/TESTING: user directed - trace every byte the keyboard device
-	// receives, to verify the SIB<->keyboard USART exchange is actually
-	// working (bit-level framing correct, etc).
-	printf("EXPLORER_KBD received_byte=%02x\n", byte);
+	// The SIB's self-test sequence sends a hardware BREAK (SBRK) on this same
+	// link before switching it into diagnostic loopback for its own USART
+	// test. A held-low break is indistinguishable from a real start bit to
+	// device_buffered_serial_interface's generic byte framer - it happens to
+	// land on a byte boundary and gets delivered here as if it were genuine
+	// data, spuriously acking a break as if it were the real 0x00 init byte.
+	// Real keyboard hardware has proper break detection and wouldn't do
+	// this; discard framing-error receptions the same way.
+	if (is_receive_framing_error())
+		return;
 
 	switch (byte)
 	{
 	case 0x00: // keyboard initialization/reset code
-		printf("EXPLORER_KBD sending ack 0x70\n");
 		transmit_byte(0x70); // acknowledge
 		break;
 

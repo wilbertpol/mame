@@ -57,6 +57,9 @@ void sib_device::device_start()
 	m_nvram->set_base(m_nv_ram.begin(), m_nv_ram.bytes());
 
 	m_i8251->write_cts(0);
+	// DSR starts deasserted, matching TXD's own idle-high default (see
+	// i8251_txd_w(), which keeps DSR wired to TXD from the first transition
+	// onward).
 	m_i8251->write_dsr(1);
 
 	save_item(NAME(m_configuration_register));
@@ -610,6 +613,26 @@ void sib_device::i8251_txd_w(int state)
 		m_i8251->write_rxd(state);
 	else
 		m_keyboard->rxd_w(state);
+
+	// TXD is also hard-wired back into the i8251's own DSR input (matches
+	// Meroko's sib.c: the keyboard USART's status-read comment documents DSR
+	// as "always high... EXCEPT WITH BREAK", and its code reads DSR high
+	// exactly while SEND-BREAK is commanded - which is exactly when TXD is
+	// held low). Real hardware has no separate BRK output pin to route for
+	// this, so TXD (which already reflects the break state) is the only
+	// signal this loopback trace could plausibly be wired from.
+	m_i8251->write_dsr(state);
+}
+
+void sib_device::keyboard_txd_w(int state)
+{
+	// Mirrors i8251_txd_w()'s own gating in the other direction: on real
+	// hardware, diagnostic loopback mode physically disconnects the
+	// fiber-optic keyboard link from the i8251's RXD, so the keyboard's own
+	// TXD must not be allowed to drive it either while bit 3 is set - only
+	// the SIB->keyboard direction was gated before, not this one.
+	if (!BIT(m_interrupt_diag_control, 3))
+		m_i8251->write_rxd(state);
 }
 
 
@@ -650,7 +673,7 @@ void sib_device::device_add_mconfig(machine_config &config)
 	m_i8251->txd_handler().set(FUNC(sib_device::i8251_txd_w));
 
 	EXPLORER_KEYBOARD(config, m_keyboard);
-	m_keyboard->txd_handler().set(m_i8251, FUNC(i8251_device::write_rxd));
+	m_keyboard->txd_handler().set(FUNC(sib_device::keyboard_txd_w));
 
 	EXPLORER_RTC(config, m_rtc);
 

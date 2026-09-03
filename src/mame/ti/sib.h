@@ -50,6 +50,7 @@ private:
 	void configuration_rom_map(address_map &map) ATTR_COLD;
 	uint32_t screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect);
 	void i8251_txd_w(int state);
+	void keyboard_txd_w(int state);
 	bool diagnostic_loopback_active() const { return (m_interrupt_diag_control & 0x0c) != 0; }
 	u32 diagnostic_loopback_value() const { return BIT(m_diagnostic_data, 8) ? 0x00 : 0xff; }
 	u32 event_vector_r(offs_t offset);

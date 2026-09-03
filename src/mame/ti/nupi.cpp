@@ -382,7 +382,6 @@ void nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
 	logerror("%s: ram_window_w addr=%06x data=%08x mask=%08x\n", machine().describe_context(), 0xe00000 + offset * 4, data, mem_mask);
 	u32 val = (u32(m_ram[offset * 2]) << 16) | m_ram[offset * 2 + 1];
 	COMBINE_DATA(&val);
-	printf("ram_window_w addr=%06x data=%08x mask=%08x, val=%08x\n", 0xe00000 + offset * 4, data, mem_mask, val);
 	m_ram[offset * 2] = val >> 16;
 	m_ram[offset * 2 + 1] = val & 0xffff;
 
@@ -568,7 +567,6 @@ void nupi_device::mpu_map(address_map &map)
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801aa\n", machine().describe_context()); return 0; }),
 			NAME([this](u8 data) {
 				LOGMASKED(LOG_MISC, "%s: WR 801aa = %02x\n", machine().describe_context(), data);
-				printf("%s: WR 801aa = %02x\n", machine().describe_context().c_str(), data);
 				if (data == 0xff && m_dma_count)
 				{
 					// Arm the real, timed FIFO -> NuBus drain (dma_drain_timer_expired/
@@ -645,8 +643,8 @@ void nupi_device::mpu_map(address_map &map)
 			NAME([this](u16 data) { page_register_w(data); }));
 	// Write-only self-test sources: each write directly rotates into the matching half of m_dma_address below,
 	// exactly like a real write to that register - see nupi.h.
-	map(0x0801c0, 0x0801c1).lw16(NAME([this](u16 data) { m_dma_address = (m_dma_address & 0xffff0000) | rol2(data); m_dma_address_lo_fresh = true; m_dma_target_configured = true; printf("%s: WR 801c0 = %04x -> m_dma_address=%08x\n", machine().describe_context().c_str(), data, m_dma_address); }));
-	map(0x0801d0, 0x0801d1).lw16(NAME([this](u16 data) { m_dma_address = (m_dma_address & 0x0000ffff) | (u32(rol2(data)) << 16); m_dma_target_configured = true; printf("%s: WR 801d0 = %04x -> m_dma_address=%08x\n", machine().describe_context().c_str(), data, m_dma_address); }));
+	map(0x0801c0, 0x0801c1).lw16(NAME([this](u16 data) { m_dma_address = (m_dma_address & 0xffff0000) | rol2(data); m_dma_address_lo_fresh = true; m_dma_target_configured = true; LOGMASKED(LOG_DMA, "%s: WR 801c0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address); }));
+	map(0x0801d0, 0x0801d1).lw16(NAME([this](u16 data) { m_dma_address = (m_dma_address & 0x0000ffff) | (u32(rol2(data)) << 16); m_dma_target_configured = true; LOGMASKED(LOG_DMA, "%s: WR 801d0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address); }));
 	// DMA-complete self-test parameter (0x100001) - see m_unknown_100001 in nupi.h.
 	// Plain data storage only now - see the 0x801aa handler below for the actual
 	// "go" trigger. (Previously modeled as arming m_dma_test_timer itself on a bit 0
@@ -679,7 +677,7 @@ void nupi_device::mpu_map(address_map &map)
 				{
 					u16 const descriptor = (u16(data) << 8) | m_dma_count_pending_byte;
 					m_dma_count = u32(descriptor) + 2;
-					printf("%s: 100001 descriptor complete (%02x,%02x) -> m_dma_count=%08x (32-bit NuBus words)\n", machine().describe_context().c_str(), m_dma_count_pending_byte, data, m_dma_count);
+					LOGMASKED(LOG_DMA, "%s: 100001 descriptor complete (%02x,%02x) -> m_dma_count=%08x (32-bit NuBus words)\n", machine().describe_context(), m_dma_count_pending_byte, data, m_dma_count);
 					m_dma_count_have_pending_byte = false;
 				}
 			}));
@@ -958,7 +956,7 @@ u16 nupi_device::page_register_r()
 void nupi_device::page_register_w(u16 data)
 {
 	m_page_register = data;
-	printf("%s: page_register = %04x\n", machine().describe_context().c_str(), data);
+	LOGMASKED(LOG_MISC, "%s: page_register = %04x\n", machine().describe_context(), data);
 
 	// See m_page_register_802c00_shadow in nupi.h - entry 4's self-test readback only,
 	// decoupled from the real m_dma_count.
@@ -987,7 +985,6 @@ u16 nupi_device::nubus_window_r(offs_t offset, u16 mem_mask)
 	u32 const nubus_addr = (u32(m_page_register) << 18) | ((offset ^ 1) << 1);
 	u16 const data = nubus().space().read_word(nubus_addr, mem_mask);
 	LOGMASKED(LOG_DMA, "%s: nubus_window_r offset=%05x -> nubus_addr=%08x data=%04x\n", machine().describe_context(), offset, nubus_addr, data);
-	printf("nubus_window_r offset=%05x -> nubus_addr=%08x data=%04x\n", offset, nubus_addr, data);
 	return data;
 }
 
@@ -996,7 +993,6 @@ void nupi_device::nubus_window_w(offs_t offset, u16 data, u16 mem_mask)
 	// See nubus_window_r() above for the offset^1 endianness-swap rationale.
 	u32 const nubus_addr = (u32(m_page_register) << 18) | ((offset ^ 1) << 1);
 	LOGMASKED(LOG_DMA, "%s: nubus_window_w offset=%05x -> nubus_addr=%08x data=%04x\n", machine().describe_context(), offset, nubus_addr, data);
-	printf("nubus_window_w offset=%05x -> nubus_addr=%08x data=%04x\n", offset, nubus_addr, data);
 	nubus().space().write_word(nubus_addr, data, mem_mask);
 }
 
@@ -1006,7 +1002,7 @@ void nupi_device::nubus_window_w(offs_t offset, u16 data, u16 mem_mask)
 
 void nupi_device::scsi_irq_w(int state)
 {
-	printf("%s: scsi_irq_w state=%d\n", machine().describe_context().c_str(), state);
+	LOGMASKED(LOG_MISC, "%s: scsi_irq_w state=%d\n", machine().describe_context(), state);
 	m_mpu->set_input_line(M68K_IRQ_2, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
@@ -1055,12 +1051,12 @@ void nupi_device::push_fifo_word_to_nubus(u16 word)
 	// NuBus, matching that its own ROM never programs a target address at all.
 	if (m_dma_write_to_nubus)
 	{
-		printf("%s: dma -> nubus[%08x] = %08x\n", machine().describe_context().c_str(), real_addr, longword);
+		LOGMASKED(LOG_DMA, "%s: dma -> nubus[%08x] = %08x\n", machine().describe_context(), real_addr, longword);
 		nubus().space().write_dword(real_addr, longword);
 	}
 	else
 	{
-		printf("%s: dma (no target configured, not writing to nubus) dma_addr=%08x = %08x\n", machine().describe_context().c_str(), m_dma_address, longword);
+		LOGMASKED(LOG_DMA, "%s: dma (no target configured, not writing to nubus) dma_addr=%08x = %08x\n", machine().describe_context(), m_dma_address, longword);
 	}
 	m_dma_address += 4;
 	m_scsi_fifo_have_pending_word = false;
@@ -1123,7 +1119,7 @@ void nupi_device::scsi_dreq_w(int state)
 	if (!state)
 		return;
 
-	printf("%s: scsi_dreq_w state=%d m_dma_count=%08x\n", machine().describe_context().c_str(), state, m_dma_count);
+	LOGMASKED(LOG_DMA, "%s: scsi_dreq_w state=%d m_dma_count=%08x\n", machine().describe_context(), state, m_dma_count);
 
 	u32 const ctrl = m_scsibus->ctrl_r();
 	bool const in = (ctrl & nscsi_device_interface::S_INP);
@@ -1133,7 +1129,7 @@ void nupi_device::scsi_dreq_w(int state)
 		u8 const data = m_scsi->dma_r();
 		if (!m_scsi_fifo_have_pending_byte)
 		{
-			printf("%s: scsi_dreq_w IN byte=%02x (pending, no word yet)\n", machine().describe_context().c_str(), data);
+			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x (pending, no word yet)\n", machine().describe_context(), data);
 			m_scsi_fifo_pending_byte = data;
 			m_scsi_fifo_have_pending_byte = true;
 		}
@@ -1153,7 +1149,7 @@ void nupi_device::scsi_dreq_w(int state)
 			}
 
 			u16 const word = (u16(m_scsi_fifo_pending_byte) << 8) | data;
-			printf("%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context().c_str(), data, m_unknown_450000_pos, word);
+			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_unknown_450000_pos, word);
 			m_unknown_450000_fifo[m_unknown_450000_pos] = word;
 			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
 			m_scsi_fifo_have_pending_byte = false;
