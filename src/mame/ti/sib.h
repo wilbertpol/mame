@@ -63,6 +63,7 @@ private:
 	// the other 15 causes aren't hooked up yet.
 	void post_event(int cause);
 	void pit_out2_w(int state);
+	void rtc_irq_w(int state);
 
 	required_device<screen_device> m_screen;
 	required_device<i8251_device> m_i8251;

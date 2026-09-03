@@ -37,6 +37,8 @@ class explorer_rtc_device : public device_t, public device_rtc_interface
 public:
 	explorer_rtc_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock = 0);
 
+	auto irq_handler() { return m_irq_handler.bind(); }
+
 	void map(address_map &map) ATTR_COLD;
 
 protected:
@@ -49,13 +51,17 @@ protected:
 private:
 	void update_subsecond_split(unsigned &ms_tens, unsigned &ms_units, unsigned &frac_100us) const;
 	void set_subsecond_part(unsigned reg_index, u8 bcd_value);
+	void resync_tick_timer();
 	u8 live_register(unsigned index);
 	void check_compare();
+	void raise_interrupt_status(u32 bit);
 
 	u32 reg_r(offs_t offset);
 	void reg_w(offs_t offset, u32 data);
 
 	TIMER_CALLBACK_MEMBER(tick);
+
+	devcb_write_line m_irq_handler;
 
 	u8 m_ram[8]{};
 	attotime m_second_boundary;

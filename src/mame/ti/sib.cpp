@@ -407,6 +407,17 @@ void sib_device::pit_out2_w(int state)
 		post_event(2); // "Interval timer (long)", Table 4-4
 }
 
+void sib_device::rtc_irq_w(int state)
+{
+	// explorer_rtc_device raises this only on the rising edge of an
+	// otherwise-clear interrupt-status register (any of its eight sources -
+	// Table 4-7), matching pit_out2_w() above - this device just didn't
+	// have anything wired to the event generator before, so none of its own
+	// interrupts (including D0 Compare) ever reached the CPU.
+	if (state)
+		post_event(0); // "Real-time clock", Table 4-4
+}
+
 
 void sib_device::printer_map(address_map &map)
 {
@@ -676,6 +687,7 @@ void sib_device::device_add_mconfig(machine_config &config)
 	m_keyboard->txd_handler().set(FUNC(sib_device::keyboard_txd_w));
 
 	EXPLORER_RTC(config, m_rtc);
+	m_rtc->irq_handler().set(FUNC(sib_device::rtc_irq_w));
 
 	// Counters 0/1 driven by "a 1-megahertz clock derived from the NuBus
 	// clock" (section 4.4.8, 10MHz NuBus CLK- per section 4.4.1.2 - the

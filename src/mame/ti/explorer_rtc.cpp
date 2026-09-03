@@ -16,7 +16,8 @@ DEFINE_DEVICE_TYPE(EXPLORER_RTC, explorer_rtc_device, "explorer_rtc", "TI Explor
 
 explorer_rtc_device::explorer_rtc_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
 	device_t(mconfig, EXPLORER_RTC, tag, owner, clock),
-	device_rtc_interface(mconfig, *this)
+	device_rtc_interface(mconfig, *this),
+	m_irq_handler(*this)
 {
 }
 
@@ -35,9 +36,27 @@ void explorer_rtc_device::device_start()
 void explorer_rtc_device::device_reset()
 {
 	m_second_boundary = machine().time();
+	resync_tick_timer();
 	m_interrupt_control = 0;
 	m_interrupt_status = 0;
 	std::fill(std::begin(m_ram), std::end(m_ram), 0);
+}
+
+// The 1ms tick's own phase is otherwise fixed from whenever device_start()
+// first armed it, with no relation to m_second_boundary - so on a given real
+// run, live_register(0) (the 100-microsecond digit) samples at essentially
+// the same fixed, arbitrary point within each millisecond every time,
+// almost never landing on exactly 0. Re-phasing the tick to fire exactly on
+// m_second_boundary's own millisecond grid whenever the boundary moves fixes
+// that: sampling then lines up with true millisecond edges, so frac_100us
+// reads 0 right when register 1 also matches - see check_compare()'s D0
+// Compare self-test, which needs both simultaneously.
+void explorer_rtc_device::resync_tick_timer()
+{
+	double const elapsed = (machine().time() - m_second_boundary).as_double();
+	double const into_ms = std::fmod(elapsed, 0.001);
+	double const until_next = (into_ms > 0.0) ? (0.001 - into_ms) : 0.0;
+	m_tick_timer->adjust(attotime::from_double(until_next), 0, attotime::from_msec(1));
 }
 
 // Register 0 (100-microseconds counter, Table 4-6): only the tens nibble
@@ -73,6 +92,7 @@ void explorer_rtc_device::set_subsecond_part(unsigned reg_index, u8 bcd_value)
 
 	double const total_ms = double(ms_tens * 100 + ms_units * 10) + frac_100us * 0.1;
 	m_second_boundary = machine().time() - attotime::from_double(total_ms / 1000.0);
+	resync_tick_timer();
 }
 
 // Maps Table 4-5's register indices 0-7 to their live BCD-packed byte value -
@@ -99,6 +119,20 @@ u8 explorer_rtc_device::live_register(unsigned index)
 	return 0;
 }
 
+// Sets an interrupt-status bit and, on the rising edge (no other source was
+// already pending), asserts the device's own interrupt output line. Real
+// hardware has a single interrupt output for all eight sources (Table 4-7),
+// so the SIB only needs to know "some RTC event is now pending", not which
+// one - matching how sib_device::post_event() is wired for the interval
+// timer (pit_out2_w()).
+void explorer_rtc_device::raise_interrupt_status(u32 bit)
+{
+	bool const was_clear = (m_interrupt_status == 0);
+	m_interrupt_status |= bit;
+	if (was_clear)
+		m_irq_handler(1);
+}
+
 // D0 (Compare, Table 4-7): "an interrupt is generated when the current value
 // in the timing registers is equal to the value programmed into the RAM
 // registers."
@@ -111,7 +145,7 @@ void explorer_rtc_device::check_compare()
 		if (live_register(i) != m_ram[i])
 			return;
 
-	m_interrupt_status |= 0x01;
+	raise_interrupt_status(0x01);
 }
 
 TIMER_CALLBACK_MEMBER(explorer_rtc_device::tick)
@@ -130,7 +164,7 @@ TIMER_CALLBACK_MEMBER(explorer_rtc_device::tick)
 	{
 		m_10hz_divider = 0;
 		if (BIT(m_interrupt_control, 1))
-			m_interrupt_status |= 0x02;
+			raise_interrupt_status(0x02);
 	}
 
 	if (machine().time() - m_second_boundary >= attotime::from_seconds(1))
@@ -146,17 +180,17 @@ TIMER_CALLBACK_MEMBER(explorer_rtc_device::tick)
 		advance_seconds();
 
 		if (BIT(m_interrupt_control, 2))
-			m_interrupt_status |= 0x04; // 1 Hz
+			raise_interrupt_status(0x04); // 1 Hz
 		if (BIT(m_interrupt_control, 3) && get_clock_register(RTC_MINUTE) != prev_minute)
-			m_interrupt_status |= 0x08; // 1 minute
+			raise_interrupt_status(0x08); // 1 minute
 		if (BIT(m_interrupt_control, 4) && get_clock_register(RTC_HOUR) != prev_hour)
-			m_interrupt_status |= 0x10; // 1 hour
+			raise_interrupt_status(0x10); // 1 hour
 		if (BIT(m_interrupt_control, 5) && get_clock_register(RTC_DAY) != prev_day)
-			m_interrupt_status |= 0x20; // 1 day
+			raise_interrupt_status(0x20); // 1 day
 		if (BIT(m_interrupt_control, 6) && get_clock_register(RTC_DAY_OF_WEEK) != prev_dow && get_clock_register(RTC_DAY_OF_WEEK) == 1)
-			m_interrupt_status |= 0x40; // 1 week
+			raise_interrupt_status(0x40); // 1 week
 		if (BIT(m_interrupt_control, 7) && get_clock_register(RTC_MONTH) != prev_month)
-			m_interrupt_status |= 0x80; // 1 month
+			raise_interrupt_status(0x80); // 1 month
 	}
 
 	check_compare();
@@ -174,8 +208,11 @@ u32 explorer_rtc_device::reg_r(offs_t offset)
 	case 16: // Interrupt status - "reading this register clears and resets the interrupt output"
 		{
 			u32 const result = m_interrupt_status;
-			if (!machine().side_effects_disabled())
+			if (!machine().side_effects_disabled() && m_interrupt_status != 0)
+			{
 				m_interrupt_status = 0;
+				m_irq_handler(0);
+			}
 			return result;
 		}
 	case 17: // Interrupt control (write-only per the doc, but harmless to read back)
@@ -219,6 +256,7 @@ void explorer_rtc_device::reg_w(offs_t offset, u32 data)
 			for (int reg : { RTC_SECOND, RTC_MINUTE, RTC_HOUR, RTC_DAY_OF_WEEK, RTC_DAY, RTC_MONTH })
 				set_clock_register(reg, 0);
 			m_second_boundary = machine().time();
+			resync_tick_timer();
 			clock_updated();
 		}
 		break;
@@ -237,6 +275,7 @@ void explorer_rtc_device::reg_w(offs_t offset, u32 data)
 			int const seconds = get_clock_register(RTC_SECOND);
 			set_clock_register(RTC_SECOND, 0);
 			m_second_boundary = machine().time();
+			resync_tick_timer();
 			if (seconds > 40)
 				advance_minutes();
 			else
