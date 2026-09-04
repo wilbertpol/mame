@@ -66,7 +66,6 @@ nupi_device::nupi_device(const machine_config &mconfig, const char *tag, device_
 	m_firmware(*this, "firmware"),
 	m_firmware_nubus(*this, "firmware_nubus"),
 	m_command_address(0),
-	m_config_register(0),
 	m_flag_register(0x07),
 	m_dma_address(0),
 	m_dma_count(0),
@@ -110,7 +109,6 @@ void nupi_device::device_start()
 	}
 
 	save_item(NAME(m_command_address));
-	save_item(NAME(m_config_register));
 	save_item(NAME(m_flag_register));
 	save_item(NAME(m_dma_address));
 	save_item(NAME(m_dma_count));
@@ -131,6 +129,19 @@ void nupi_device::device_start()
 	save_item(NAME(m_unknown_dma_803c00));
 	save_item(NAME(m_dma_address_lo_fresh));
 	save_item(NAME(m_dma_address_lo_negate_next));
+	save_item(NAME(m_dma_address_lo_raw));
+	save_item(NAME(m_dma_address_hi_raw));
+	save_item(NAME(m_dma_address_loaded));
+	save_item(NAME(m_selftest_dma_active));
+	save_item(NAME(m_selftest_dma_to_fifo));
+	save_item(NAME(m_selftest_dma_16bit));
+	save_item(NAME(m_selftest_dma_addr));
+	save_item(NAME(m_selftest_dma_left));
+	save_item(NAME(m_selftest_dma_credits));
+	save_item(NAME(m_dma_direction));
+	save_item(NAME(m_fifo_out_pos));
+	save_item(NAME(m_dma_irq5_armed));
+	save_item(NAME(m_selftest_dma_irq5));
 	save_item(NAME(m_unknown_800c04_toggle));
 	save_item(NAME(m_unknown_280001));
 	save_item(NAME(m_unknown_280001_bits12_toggle));
@@ -147,6 +158,7 @@ void nupi_device::device_start()
 	save_item(NAME(m_dma_active));
 	save_item(NAME(m_fifo_drain_pos));
 	save_item(NAME(m_dma_target_configured));
+	save_item(NAME(m_dma_in_flight));
 	save_item(NAME(m_dma_write_to_nubus));
 	save_item(NAME(m_dma_fire_irq));
 	save_item(NAME(m_dma_transfer_start_pos));
@@ -159,7 +171,6 @@ void nupi_device::device_start()
 void nupi_device::device_reset()
 {
 	m_command_address = 0;
-	m_config_register = 0;
 	m_flag_register = 0x07;
 	m_dma_address = 0;
 	m_dma_count = 0;
@@ -181,6 +192,19 @@ void nupi_device::device_reset()
 	m_unknown_dma_803c00 = 0;
 	m_dma_address_lo_fresh = true;
 	m_dma_address_lo_negate_next = false;
+	m_dma_address_lo_raw = 0;
+	m_dma_address_hi_raw = 0;
+	m_dma_address_loaded = false;
+	m_selftest_dma_active = false;
+	m_selftest_dma_to_fifo = false;
+	m_selftest_dma_16bit = false;
+	m_selftest_dma_addr = 0;
+	m_selftest_dma_left = 0;
+	m_selftest_dma_credits = 0;
+	m_dma_direction = 0;
+	m_fifo_out_pos = 0;
+	m_dma_irq5_armed = false;
+	m_selftest_dma_irq5 = false;
 	m_unknown_800c04_toggle = 0;
 	m_unknown_280001 = 0x01;
 	m_unknown_280001_bits12_toggle = false;
@@ -198,6 +222,7 @@ void nupi_device::device_reset()
 	m_dma_active = false;
 	m_fifo_drain_pos = 0;
 	m_dma_target_configured = false;
+	m_dma_in_flight = false;
 	m_dma_write_to_nubus = false;
 	m_dma_fire_irq = true;
 	m_dma_transfer_start_pos = 0;
@@ -295,6 +320,86 @@ void nupi_device::dma_drain_kick()
 }
 
 
+// On-board DMA target decode - see the m_selftest_dma_* block in nupi.h. The 18-bit
+// address that $801c0 carries selects ROM with bit 17 and the 4K RAM without it; both
+// are reached through the MPU's own map, the ROM via its 0x040000 mirror.
+u16 nupi_device::selftest_dma_read16(u32 addr)
+{
+	u32 const local = (addr & 0x20000) ? (0x040000 | (addr & 0x3fff)) : (0x180000 | (addr & 0x0fff));
+	return m_mpu->space(AS_PROGRAM).read_word(local);
+}
+
+void nupi_device::selftest_dma_write16(u32 addr, u16 data)
+{
+	if (addr & 0x20000)
+		return; // ROM - a transfer into it moves nothing
+	m_mpu->space(AS_PROGRAM).write_word(0x180000 | (addr & 0x0fff), data);
+}
+
+// Runs whatever steps of an armed on-board transfer are currently allowed. Free-running
+// except for the 16-bit FIFO-to-memory case, which spends one credit per step - see the
+// m_selftest_dma_* block in nupi.h for where the credits come from and why.
+void nupi_device::selftest_dma_run()
+{
+	while (m_selftest_dma_active && m_selftest_dma_left)
+	{
+		if (!m_selftest_dma_to_fifo && m_selftest_dma_16bit)
+		{
+			if (!m_selftest_dma_credits)
+				return;
+			m_selftest_dma_credits--;
+		}
+
+		if (m_selftest_dma_to_fifo)
+		{
+			u16 const first = selftest_dma_read16(m_selftest_dma_addr + 2);
+			u16 const second = selftest_dma_read16(m_selftest_dma_addr);
+			// 16-bit: only the halfword at +0 is real, and it fills both halves of the
+			// FIFO group (nothing else is driving the other half).
+			m_unknown_450000_fifo[m_unknown_450000_pos] = m_selftest_dma_16bit ? second : first;
+			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+			m_unknown_450000_fifo[m_unknown_450000_pos] = second;
+			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+			m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
+		}
+		else
+		{
+			u16 const first = m_unknown_450000_fifo[m_fifo_out_pos];
+			m_fifo_out_pos = (m_fifo_out_pos + 1) % 2048;
+			if (m_selftest_dma_16bit)
+			{
+				// The host port takes the group's other half - see nupi.h.
+				selftest_dma_write16(m_selftest_dma_addr, first);
+				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 1) & 0x0fff;
+			}
+			else
+			{
+				u16 const second = m_unknown_450000_fifo[m_fifo_out_pos];
+				m_fifo_out_pos = (m_fifo_out_pos + 1) % 2048;
+				selftest_dma_write16(m_selftest_dma_addr + 2, first);
+				selftest_dma_write16(m_selftest_dma_addr, second);
+				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
+			}
+		}
+
+		m_selftest_dma_addr += 4;
+		m_selftest_dma_left--;
+	}
+
+	if (!m_selftest_dma_left)
+	{
+		m_selftest_dma_active = false;
+		// An on-board transfer's completion also raises IRQ5, if $3801ea armed it - see
+		// m_dma_irq5_armed in nupi.h.
+		if (m_selftest_dma_irq5)
+		{
+			m_selftest_dma_irq5 = false;
+			m_mpu->set_input_line(M68K_IRQ_5, ASSERT_LINE);
+		}
+	}
+}
+
+
 //**************************************************************************
 //  NuBus-facing (host) registers - Section 5.3 of the NUPI General Description
 //**************************************************************************
@@ -330,7 +435,16 @@ void nupi_device::nubus_map(address_map &map)
 	// to test the plain-shared-RAM behavior in isolation first.
 	map(0x00e00000, 0x00e00fff).rw(FUNC(nupi_device::ram_window_r), FUNC(nupi_device::ram_window_w));
 //	map(0x00e00004, 0x00e00007).rw(FUNC(nupi_device::command_address_r), FUNC(nupi_device::command_address_w));
-	map(0x00e0000b, 0x00e0000b).r(FUNC(nupi_device::config_register_r));
+	// Configuration Register (>Fs'E0000B) is genuinely on-board RAM (doc Section
+	// 5.3.2), the same byte the 68000 firmware itself reads/writes at $180008 -
+	// confirmed via ROM disassembly (System Bus Test code at $1FA4-$201E). No
+	// special-cased read handler needed - falls through to the wide
+	// ram_window_r() above like any other RAM byte, same as the command
+	// address register already does. Re-applied for accurate entry-8 testing
+	// (2026-09-03): a hardcoded-0 read here makes raven see the config
+	// register's bit3 (System Bus Test) as always-already-clear, masking
+	// whether NUPI's own entry-8 self-test ever genuinely completes - not
+	// representative for investigating entry 8's real behavior.
 //	map(0x00e0000b, 0x00e0000b).w(FUNC(nupi_device::config_register_w));
 //	map(0x00e0000f, 0x00e0000f).w(FUNC(nupi_device::dma_test_register_w));
 
@@ -426,22 +540,15 @@ u8 nupi_device::unknown_280001_r()
 	return data;
 }
 
-u8 nupi_device::config_register_r()
-{
-	return m_config_register;
-}
-
 void nupi_device::config_register_w(u8 data)
 {
 	// Doc Section 4.1.1.2/5.3.2 states this register "resides in the on-board
 	// NUPI RAM", same as command_address (which really is shadowed into
-	// m_ram - see command_address_w() above). Tried modeling config register
-	// the same way (shadowed into m_ram at local 0x18000a/0x18000b instead of
-	// this disconnected member); root-caused via bisection (git stash) as the
-	// trigger for a raven-side hang after "Slot 2" once reads stopped always
-	// returning 0. Reverted - m_config_register stays permanently 0 (matching
-	// config_register_r()'s old hardcoded-0 stub) - only the Reset bit's real
-	// side effect below is honored.
+	// m_ram - see command_address_w() above). This map entry stays commented
+	// out below (nubus_map()) - real writes already fall through to the wide
+	// ram_window_w() like any other RAM byte, so this handler is currently
+	// unreachable; only the Reset bit's real side effect below would matter
+	// if it were ever wired back in.
 	logerror("%s: config_register_w data=%02x\n", machine().describe_context(), data);
 	if (BIT(data, 0))
 	{
@@ -505,7 +612,16 @@ void nupi_device::mpu_map(address_map &map)
 	// bus cycle as 0x3801e8 above, not ROM-driven - logged for completeness.
 	map(0x080180, 0x080181).lrw16(
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 80180\n", machine().describe_context()); return 0; }),
-			NAME([this](u16 data) { logerror("%s: TEMP WR 80180 = %04x (masked %04x)\n", machine().describe_context(), data, data & 0x0fff); m_unknown_508000 = m_unknown_508000_live = data & 0x0fff; }));
+			NAME([this](u16 data) {
+				logerror("%s: TEMP WR 80180 = %04x (masked %04x)\n", machine().describe_context(), data, data & 0x0fff);
+				m_unknown_508000 = m_unknown_508000_live = data & 0x0fff;
+				// Reloading the FIFO address counter repositions the FIFO itself, both
+				// cursors together - see m_fifo_out_pos in nupi.h. Every self-test that
+				// fills the FIFO and then reads it back reloads this immediately before
+				// the read-back phase, which is what keeps the two ends aligned across
+				// entry 5's 2048-word walk and each of entry 8's three phases.
+				m_unknown_450000_pos = m_fifo_out_pos = data & 0x07ff;
+			}));
 	map(0x080190, 0x080191).lrw16(
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 80190\n", machine().describe_context()); return 0; }),
 			NAME([this](u16 data) { logerror("%s: TEMP WR 80190 = %04x (masked %04x)\n", machine().describe_context(), data, data & 0x0fff); m_unknown_518000 = m_unknown_518000_live = data & 0x0fff; }));
@@ -552,7 +668,10 @@ void nupi_device::mpu_map(address_map &map)
 				m_unknown_280001_bits12_toggle = !data;
 			}));
 	map(0x0801a6, 0x0801a6).lrw8(NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801a6\n", machine().describe_context()); return 0; }), NAME([this](u8 data) { LOGMASKED(LOG_MISC, "%s: WR 801a6 = %02x\n", machine().describe_context(), data); }));
-	map(0x0801a8, 0x0801a8).lrw8(NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801a8\n", machine().describe_context()); return 0; }), NAME([this](u8 data) { LOGMASKED(LOG_MISC, "%s: WR 801a8 = %02x\n", machine().describe_context(), data); }));
+	// Transfer direction (0 = FIFO to memory, 0xff = memory to FIFO), driven from the
+	// command block's own bit 15 by the real setup path at ROM 0x2fd4-0x2fda - see the
+	// m_selftest_dma_* block in nupi.h.
+	map(0x0801a8, 0x0801a8).lrw8(NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801a8\n", machine().describe_context()); return 0; }), NAME([this](u8 data) { LOGMASKED(LOG_MISC, "%s: WR 801a8 = %02x\n", machine().describe_context(), data); m_dma_direction = data; }));
 	// Also the real "go" strobe for a DMA transfer (see m_unknown_100001 above and its
 	// own comment in nupi.h): entry 7's self-test writes 0x100001 (the count/
 	// parameter), then st's this byte right before its busy-wait (ROM 0x89c); the real
@@ -569,6 +688,14 @@ void nupi_device::mpu_map(address_map &map)
 				LOGMASKED(LOG_MISC, "%s: WR 801aa = %02x\n", machine().describe_context(), data);
 				if (data == 0xff && m_dma_count)
 				{
+					// This strobe starts a transfer; it runs until the firmware
+					// acknowledges it (0x100007 write). While that window is open the
+					// FIFO address-counter pair reads back tracking each other - see
+					// the 0x518000 handler. Gated on m_dma_count for the same reason
+					// the drain below is: the idle poll loop's own unrelated st $801aa
+					// (ROM 0x1f8a) must not open this window.
+					m_dma_in_flight = true;
+
 					// Arm the real, timed FIFO -> NuBus drain (dma_drain_timer_expired/
 					// dma_drain_kick) - no need to distinguish a real transfer from
 					// entry 7's self-test here: both just leave real data sitting in
@@ -623,7 +750,40 @@ void nupi_device::mpu_map(address_map &map)
 					// never touched when no real SCSI transfer is in progress).
 					m_fifo_drain_pos = m_dma_transfer_start_pos;
 					dma_drain_kick();
+
+					// Arm the on-board (non-NuBus) side of the same transfer, if this
+					// one was given a target at all - see the m_selftest_dma_* block in
+					// nupi.h. Entry 7 deliberately programs a count and a go-strobe with
+					// no address whatsoever (ROM 0x860-0x94e), which is what makes it a
+					// pure count/interrupt-timing diagnostic and why it must not move any
+					// data; entry 8's three phases each load $801c0/$801d0 right before
+					// their own go-strobe.
+					if (m_dma_address_loaded)
+					{
+						m_selftest_dma_active = true;
+						m_selftest_dma_addr = u32(m_dma_address_lo_raw) << 2;
+						m_selftest_dma_to_fifo = m_dma_direction != 0;
+						m_selftest_dma_16bit = BIT(m_dma_address_hi_raw, 15);
+						m_selftest_dma_left = m_dma_count;
+						m_selftest_dma_credits = 0;
+						m_selftest_dma_irq5 = m_dma_irq5_armed;
+						LOGMASKED(LOG_DMA, "%s: on-board dma armed addr=%05x %s %u-bit count=%u\n", machine().describe_context(),
+								m_selftest_dma_addr, m_selftest_dma_to_fifo ? "mem->fifo" : "fifo->mem",
+								m_selftest_dma_16bit ? 16 : 32, m_selftest_dma_left);
+						selftest_dma_run();
+					}
 				}
+				// Any write here ends the previous transfer's setup window, whether or
+				// not it starts one. Without this, an address left behind by the
+				// register test at ROM 0x510 (which programs $801c0/$801d0 with walking
+				// patterns and never fires a go-strobe of its own) was still sitting
+				// armed when entry 7 fired its address-less go-strobe two entries later,
+				// and moved a whole transfer's worth of data that entry 7 expects
+				// nothing to move. Every real setup path writes 0x00 here before
+				// programming its address ($af2 at ROM 0xaf2, $ac2 at 0xac2), so this
+				// only ever discards leftovers.
+				m_dma_address_loaded = false;
+				m_dma_irq5_armed = false;
 			}));
 	map(0x0801ab, 0x0801ab).lrw8(NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801ab\n", machine().describe_context()); return 0; }), NAME([this](u8 data) { LOGMASKED(LOG_MISC, "%s: WR 801ab = %02x\n", machine().describe_context(), data); }));
 	map(0x0801ac, 0x0801ac).lrw8(
@@ -643,8 +803,8 @@ void nupi_device::mpu_map(address_map &map)
 			NAME([this](u16 data) { page_register_w(data); }));
 	// Write-only self-test sources: each write directly rotates into the matching half of m_dma_address below,
 	// exactly like a real write to that register - see nupi.h.
-	map(0x0801c0, 0x0801c1).lw16(NAME([this](u16 data) { m_dma_address = (m_dma_address & 0xffff0000) | rol2(data); m_dma_address_lo_fresh = true; m_dma_target_configured = true; LOGMASKED(LOG_DMA, "%s: WR 801c0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address); }));
-	map(0x0801d0, 0x0801d1).lw16(NAME([this](u16 data) { m_dma_address = (m_dma_address & 0x0000ffff) | (u32(rol2(data)) << 16); m_dma_target_configured = true; LOGMASKED(LOG_DMA, "%s: WR 801d0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address); }));
+	map(0x0801c0, 0x0801c1).lw16(NAME([this](u16 data) { m_dma_address = (m_dma_address & 0xffff0000) | rol2(data); m_dma_address_lo_raw = data; m_dma_address_loaded = true; m_dma_address_lo_fresh = true; m_dma_target_configured = true; LOGMASKED(LOG_DMA, "%s: WR 801c0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address); }));
+	map(0x0801d0, 0x0801d1).lw16(NAME([this](u16 data) { m_dma_address = (m_dma_address & 0x0000ffff) | (u32(rol2(data)) << 16); m_dma_address_hi_raw = data; m_dma_address_loaded = true; m_dma_target_configured = true; LOGMASKED(LOG_DMA, "%s: WR 801d0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address); }));
 	// DMA-complete self-test parameter (0x100001) - see m_unknown_100001 in nupi.h.
 	// Plain data storage only now - see the 0x801aa handler below for the actual
 	// "go" trigger. (Previously modeled as arming m_dma_test_timer itself on a bit 0
@@ -721,6 +881,14 @@ void nupi_device::mpu_map(address_map &map)
 				LOGMASKED(LOG_MISC, "%s: WR 100007 = %02x\n", machine().describe_context(), data);
 				m_mpu->set_input_line(M68K_IRQ_3, CLEAR_LINE);
 				m_mpu->set_input_line(M68K_IRQ_1, CLEAR_LINE);
+				// Acknowledging the transfer closes the in-flight window opened by the
+				// 0x801aa go-strobe - see m_dma_in_flight in nupi.h and the 0x518000
+				// handler. Entry 7 relies on this ordering: it acks here (ROM 0x216)
+				// immediately before requiring the idle +2 gap back at ROM 0x95a.
+				m_dma_in_flight = false;
+				// ...and leaves the channel quiet again - see
+				// m_unknown_300001 in nupi.h.
+				m_unknown_300001 = (m_unknown_300001 & 0xf0) | 0x0c;
 			}));
 
 	// $280000 - see m_unknown_280000 in nupi.h. The value returned genuinely matters:
@@ -739,8 +907,18 @@ void nupi_device::mpu_map(address_map &map)
 	}));
 	// $280001 - see m_unknown_280001 in nupi.h.
 	map(0x280001, 0x280001).r(FUNC(nupi_device::unknown_280001_r));
+	// $280002 - readback of the low byte of the DMA address register's low half, i.e.
+	// of the raw value most recently written to $801c0 (see m_dma_address_lo_raw in
+	// nupi.h). Entry 8's self-test (ROM 0x9be-0x9ca) reads this byte, XORs it against
+	// the same value it just wrote to $801c0 (still sitting in D2's low byte, put there
+	// by $ac2's own address computation) and requires bits 0-3 and 7 of the two to
+	// agree (andi.b #$8f). Bits 4-6 are deliberately masked out of that comparison, so
+	// nothing is known about them - returned as 0 here rather than guessed at.
+	map(0x280002, 0x280002).lr8(NAME([this]() { return u8(m_dma_address_lo_raw) & 0x8f; }));
 
-	// $300000/$300001 - see m_unknown_300000/m_unknown_300001 in nupi.h.
+	// $300000/$300001 - see m_unknown_300000/m_unknown_300001 in nupi.h. The low nibble
+	// is dynamic (0x0c "channel quiet" / 0x00 "FIFO port busy") - see
+	// set_dma_status_nibble() and its callers.
 	map(0x300000, 0x300000).lr8(NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 300000 = %02x\n", machine().describe_context(), m_unknown_300000); return m_unknown_300000; }));
 	map(0x300001, 0x300001).lr8(NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 300001 = %02x\n", machine().describe_context(), m_unknown_300001); return m_unknown_300001; }));
 
@@ -757,6 +935,11 @@ void nupi_device::mpu_map(address_map &map)
 			NAME([this](u8 data) {
 				LOGMASKED(LOG_MISC, "%s: WR 3801e0 = %02x\n", machine().describe_context(), data);
 				m_mpu->set_input_line(M68K_IRQ_4, CLEAR_LINE);
+				// Doubles as the DMA/FIFO status nibble's own set/clear strobe - see
+				// m_unknown_300001 in nupi.h. Entry 8 arms it (st, 0xff) as part of its
+				// pre-transfer setup at ROM 0xaf6 and later clears it (clr.w, 0x00) at
+				// ROM 0x9fc, requiring 0x0c then 0x00 back from $300001 either side.
+				m_unknown_300001 = (m_unknown_300001 & 0xf0) | (data ? 0x0c : 0x00);
 			}));
 	map(0x3801e4, 0x3801e4).lrw8(NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 3801e4\n", machine().describe_context()); return 0; }), NAME([this](u8 data) { LOGMASKED(LOG_MISC, "%s: WR 3801e4 = %02x\n", machine().describe_context(), data); }));
 	// Written once per pass of a bounded ~32K-iteration dbra delay loop (ROM
@@ -777,16 +960,34 @@ void nupi_device::mpu_map(address_map &map)
 				m_unknown_508000 = m_unknown_508000_live++;
 				m_unknown_518000 = m_unknown_518000_live++;
 				logerror("%s: TEMP 3801e8 strobe -> 508000=%04x 518000=%04x\n", machine().describe_context(), m_unknown_508000, m_unknown_518000);
-				m_unknown_450000_fifo[m_unknown_450000_pos] = (u16(m_unknown_450000_holding[0]) << 8) | m_unknown_450000_holding[1];
-				m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+				// No longer pushes the holding register into the FIFO: a $450000 word
+				// write now does that itself, at the moment it completes (see the
+				// $450000 write handler). Pushing here as well double-counted every
+				// word entry 5 and entry 8 write.
 				m_unknown_450000_byte_phase = 0;
 			}));
+	// $380218: the "transfer finished with it" strobe in the same flag-byte family.
+	// Only ever written by $a16 (ROM 0xa1e), the shared tail entry 8 uses after each of
+	// its transfers - and only once $802 has confirmed the DMA-complete interrupt
+	// arrived, so by definition nothing of ours is outstanding by the time it fires.
+	// Puts the $300001 status nibble back to "channel quiet", which is what entry 8
+	// reads back two instructions later (ROM 0x9f4-0x9fa) - see m_unknown_300001 in
+	// nupi.h. Can't be folded into the $100007 acknowledge instead: that fires from the
+	// IRQ1 handler, which is masked (SR=0x2500) until well inside entry 8's own
+	// verification loop, and every movep.l in that loop clears the nibble again.
+	map(0x380218, 0x380218).lw8(NAME([this](u8 data) {
+		LOGMASKED(LOG_MISC, "%s: WR 380218 = %02x\n", machine().describe_context(), data);
+		m_unknown_300001 = (m_unknown_300001 & 0xf0) | 0x0c;
+	}));
 	// Ack IRQ5?
 	map(0x3801ea, 0x3801ea).lrw8(
 		NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 3801ea\n", machine().describe_context()); return 0; }),
 		NAME([this](u8 data) {
 			LOGMASKED(LOG_MISC, "%s: WR 3801ea = %02x\n", machine().describe_context(), data);
 			m_mpu->set_input_line(M68K_IRQ_5, CLEAR_LINE);
+			// A 0xff write also arms "raise IRQ5 when the next on-board transfer
+			// finishes" - see m_dma_irq5_armed in nupi.h.
+			m_dma_irq5_armed = data != 0;
 		}));
 
 	// Read: immediate loopback of the holding register (see m_unknown_450000_holding in
@@ -795,7 +996,15 @@ void nupi_device::mpu_map(address_map &map)
 	// m_dma_test_fifo in nupi.h.
 	map(0x440000, 0x440001).lrw16(
 			NAME([this]() { return (u16(m_unknown_450000_holding[0]) << 8) | m_unknown_450000_holding[1]; }),
-			NAME([this](u16 data) { m_dma_test_fifo[m_dma_test_fifo_write_pos++ % 16] = data; }));
+			NAME([this](u16 data) {
+				m_dma_test_fifo[m_dma_test_fifo_write_pos++ % 16] = data;
+				// Also a FIFO fill port, alongside $450000's byte-wide one: entry 8's
+				// $ac2 loads the 256 words each of its first two DMA phases transfers
+				// through here (ROM 0xae2 - the index register D4 is 0xffff0000, so the
+				// indexed write lands at $440000, not at the $450000 A1 points at).
+				m_unknown_450000_fifo[m_unknown_450000_pos] = data;
+				m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+			}));
 	// Byte-wide FIFO output read (see m_unknown_450000_fifo/m_unknown_450000_byte_phase
 	// in nupi.h) - carved out to take priority over the byte-wide holding-register
 	// writer below for reads. Spans $450000-$450007 to also serve the real
@@ -804,37 +1013,68 @@ void nupi_device::mpu_map(address_map &map)
 	// byte-lanes triggered it, since the FIFO doesn't care which address woke it, only
 	// how many times it's been read.
 	map(0x450000, 0x450007).lr8(NAME([this]() {
-		u16 const data = m_unknown_450000_fifo[m_unknown_450000_pos];
+		// Touching the FIFO port takes the channel out of the "quiet" state the
+		// $300001 status nibble reports - see m_unknown_300001 in nupi.h. Entry 8
+		// requires 0x0c immediately after its own setup/acknowledge writes and 0x00
+		// after each movep.l through this port (ROM 0x9cc/0x9d8, 0x9ea).
+		m_unknown_300001 &= 0xf0;
+		u16 const data = m_unknown_450000_fifo[m_fifo_out_pos];
 		u8 const result = (m_unknown_450000_byte_phase & 1) ? u8(data) : u8(data >> 8);
 		m_unknown_450000_byte_phase = (m_unknown_450000_byte_phase + 1) & 3;
 		if (m_unknown_450000_byte_phase == 0)
-			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+		{
+			m_fifo_out_pos = (m_fifo_out_pos + 1) % 2048;
+			// Taking one half of a FIFO group here is what lets a 16-bit outbound
+			// transfer take the other - see the m_selftest_dma_* block in nupi.h.
+			m_selftest_dma_credits++;
+			selftest_dma_run();
+		}
 		return result;
 	}));
-	map(0x450000, 0x450001).lw8(NAME([this](offs_t offset, u8 data) { m_unknown_450000_holding[offset] = data; }));
+	// Write side of the same port. Also the FIFO's own fill path: a completed word (the
+	// odd byte lane) is pushed at the write cursor. Entry 5 fills 2048 words through
+	// here and reads them straight back (ROM 0x6a8/0x6ac then 0x6ce), and entry 8's
+	// $ac2 fills 256 words for each of its first two DMA phases (ROM 0xae2).
+	map(0x450000, 0x450001).lw8(NAME([this](offs_t offset, u8 data) {
+		m_unknown_450000_holding[offset] = data;
+		if (offset == 1)
+		{
+			m_unknown_450000_fifo[m_unknown_450000_pos] = (u16(m_unknown_450000_holding[0]) << 8) | m_unknown_450000_holding[1];
+			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+		}
+	}));
 
 	// Real register - see m_unknown_508000 in nupi.h.
 	map(0x508000, 0x508001).lrw16(
 			NAME([this]() { logerror("%s: TEMP RD 508000 -> %04x\n", machine().describe_context(), m_unknown_508000); return m_unknown_508000; }),
 			NAME([this](u16 data) { logerror("%s: TEMP WR 508000 = %04x\n", machine().describe_context(), data); m_unknown_508000 = m_unknown_508000_live = data; }));
-	// Real register (see m_unknown_518000 in nupi.h). Entry 7's own DMA-test FIFO
-	// (m_dma_test_fifo, fed exclusively by 0x440000 writes - never touched by any
-	// other entry) starts this pair 2 apart (508000/518000's initial writes at ROM
-	// 0x8f4/0x8ee), then entry 7's loop drains it via 0x801c00/0x801c02. While the
-	// FIFO still has unpopped entries, 518000's read mirrors 508000's current value
-	// (raw equality, satisfying the loop's own 0x91e check on all 8 passes); once
-	// fully drained, it reverts to its own true stored value (the original +2 gap,
-	// satisfying the post-loop check at 0x95a). Safe for entry 5's own, unrelated use
-	// of this pair - entry 5 never writes 0x440000, so the FIFO stays permanently
-	// empty (read_pos==write_pos==0) there, meaning this never triggers and entry 5
-	// always sees its own independently-strobed value.
+	// The far side of the same FIFO address-counter pair (see m_unknown_508000/518000
+	// in nupi.h). The two counters sit one halfword (2 bytes) apart when idle - doc
+	// 4.5.4, "the input addresses are always ahead of the output addresses" - and the
+	// DMA controller "continuously compar[es] the addresses" while a transfer runs.
+	// Modelled here as: while a transfer is in flight (m_dma_in_flight, set by the
+	// 0x801aa go-strobe and cleared by the 0x100007 acknowledge), reading this side
+	// tracks the near side, so the pair reads back equal; once the transfer is
+	// acknowledged it reverts to its own value, showing the idle +2 gap again.
+	//
+	// This is what the three self-tests that touch the pair actually require, and all
+	// three fall out of it without any special-casing:
+	// - Entry 5 (ROM 0x5f8) never fires a go-strobe at all, so it always reads both
+	//   sides' own values; it sets both equal (0x7ff via 0x80180/0x80190 at ROM
+	//   0x692/0x694) and strobes once per pass, requiring both to track its own D6.
+	// - Entry 7 (ROM 0x84a) sets them 2 apart (0x100/0x102, ROM 0x8ee/0x8f4), fires a
+	//   go-strobe at 0x912, then requires a raw-equal read on all 8 passes of its loop
+	//   (0x91e) - satisfied by the in-flight tracking, independent of drain pacing -
+	//   and after the DMA is acknowledged requires the +2 gap back (0x95a).
+	// - Entry 8 (ROM 0x964) sets them 2 apart (0/2) and requires an equal read right
+	//   after its own go-strobe (0x9ae), i.e. the same in-flight case as entry 7's loop.
 	map(0x518000, 0x518001).lrw16(
 			NAME([this]() {
-				u16 const result = (m_dma_test_fifo_read_pos != m_dma_test_fifo_write_pos) ? m_unknown_508000 : m_unknown_518000;
-				logerror("%s: TEMP RD 518000 -> %04x (mirroring=%d, 508000=%04x, 518000=%04x)\n", machine().describe_context(), result, m_dma_test_fifo_read_pos != m_dma_test_fifo_write_pos, m_unknown_508000, m_unknown_518000);
+				u16 const result = m_dma_in_flight ? m_unknown_508000 : m_unknown_518000;
+				LOGMASKED(LOG_DMA, "%s: RD 518000 -> %04x (in_flight=%d, 508000=%04x, 518000=%04x)\n", machine().describe_context(), result, m_dma_in_flight, m_unknown_508000, m_unknown_518000);
 				return result;
 			}),
-			NAME([this](u16 data) { logerror("%s: TEMP WR 518000 = %04x\n", machine().describe_context(), data); m_unknown_518000 = m_unknown_518000_live = data; }));
+			NAME([this](u16 data) { LOGMASKED(LOG_DMA, "%s: WR 518000 = %04x\n", machine().describe_context(), data); m_unknown_518000 = m_unknown_518000_live = data; }));
 
 	map(0x568000, 0x56801f).m(m_scsi, FUNC(ncr5385_device::map)).umask16(0x00ff);
 

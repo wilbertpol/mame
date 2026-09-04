@@ -70,10 +70,6 @@ private:
 
 	// NuBus-facing (host) registers - Section 5.3 of the NUPI General Description
 	u32 m_command_address; // Command Address Register (>Fs'E00004)
-	// Configuration Register (Section 5.3.2/Figure 5-1, base address >Fs'E0000B -
-	// see nubus_map()'s comment). Documented as 16 bits, but only bits 0-7 are
-	// wired up here - see nubus_map().
-	u8 m_config_register;
 
 	u32 command_address_r();
 	void command_address_w(offs_t offset, u32 data, u32 mem_mask);
@@ -124,9 +120,20 @@ private:
 	// and immediately does `cmpi.b #$c, D0` - i.e. real hardware is expected to read
 	// back 0x0c in the low nibble at that point, not 0. Stubbed at that fixed value
 	// pending a real identity for the rest of the byte; $300000 remains stubbed at 0.
+	// $300001's low nibble is not a constant: entry 8 (the only ROM code that reads it,
+	// via the 0xa06 accessor) requires 0x0c at ROM 0x9b8 and 0x9f6 but 0x00 at 0x9d8
+	// and 0xa02, so it tracks live channel state. What separates those four reads is
+	// exactly which register was touched last, giving the rule modeled in mpu_map():
+	// set to 0x0c by a $3801e0 arm (st) and by the $100007 DMA acknowledge - both of
+	// which mean "no transfer of ours is outstanding" - and cleared to 0x00 by a
+	// $3801e0 disarm (clr.w) and by any read of the $450000 FIFO port. Reading it as
+	// "channel quiet" matches the real IRQ4 handler's own use of the same nibble (ROM
+	// 0x152c-0x1544): bits 3 and 2 both set is its no-error case, and bit 3 set with
+	// bit 2 clear is its hard-error case, which this rule never produces. The high
+	// nibble stays 0 - $af2 folds it into the DMA setup word (ROM 0xb00) but nothing
+	// checks the result, so there's no evidence for any value there.
 	u8 m_unknown_300000 = 0;
 	u8 m_unknown_300001 = 0x0c;
-	u8 config_register_r();
 	void config_register_w(u8 data);
 	// Flag Register (>Fs'D40002, Section 5.3.4/Figure 5-3): bits 0-2 are
 	// active-low (self-test complete / self-test passed / SCSI passed);
@@ -290,6 +297,92 @@ private:
 	bool m_dma_address_lo_fresh = true;
 	bool m_dma_address_lo_negate_next = false;
 
+	// Raw (un-rotated) value of the last write to $801c0, kept because $280002 reads
+	// its low byte straight back out - see the $280002 handler in mpu_map(). m_dma_address
+	// itself can't serve: it holds the rotated form and the engine advances it as a
+	// transfer runs, while entry 8 expects the value it wrote.
+	u16 m_dma_address_lo_raw = 0;
+	u16 m_dma_address_hi_raw = 0;
+
+	// ---- On-board ("self-test") DMA transfers -------------------------------------
+	//
+	// Entry 8 runs three real DMA transfers between the FIFO and the NUPI's own
+	// memory, and checks the moved data byte for byte. Everything below is what those
+	// three phases pin down; none of it is documented, but each phase's expectations
+	// only line up one way.
+	//
+	// Target address. The ROM builds it by ror.l #2 on the byte address and handing
+	// the LOW word of that to $801c0 (ROM 0xace-0xad6, 0xb14) - i.e. $801c0 carries
+	// address bits 17:2, and the transfer is confined to an 18-bit on-board space.
+	// $801d0 gets a literal in these phases ($bc38/$3c38/$bc3f), so it carries no
+	// address at all here - it's mode bits. Decode of the 18-bit address: bit 17 set
+	// selects ROM, clear selects the 4K RAM. That's what the phases need - phase A/B
+	// use 0x034e -> 0x0d38 -> RAM offset 0xd38 (= the stack scratch at 0x180d38 their
+	// own checks read back), phase C uses 0xc080 -> 0x30200 -> ROM offset 0x200 (= the
+	// 0x40200 mirror its own comparison loop walks).
+	//
+	// Width. $801d0 bit 15 set = 16-bit, clear = 32-bit. Phase A ($bc38) writes only
+	// the halfword at each 4-byte step, leaving the other half of the longword as
+	// $ac2 cleared it - which is exactly what its loop checks (ROM 0x9e2/0x9e6:
+	// value, then zero). Phase B ($3c38) writes both halves, and its loop checks both
+	// (0xa50/0xa56). Phase C ($bc3f) reads one halfword per 4-byte step, which is why
+	// its comparison loop advances the ROM pointer by 4 while consuming one FIFO
+	// halfword's worth of data.
+	//
+	// Direction comes from $801a8 (0 = FIFO to memory, 0xff = memory to FIFO), the
+	// same byte the real $2FD2 setup drives from the command block's own bit 15
+	// (ROM 0x2fd4-0x2fda).
+	//
+	// Halfword order within a 32-bit step: the first halfword out of the FIFO lands
+	// at the HIGH byte offset (+2) and the second at +0. Phase B's loop is what pins
+	// this down - it expects (0xfe, 0xff) for a FIFO holding 0x00ff, 0x00fe - and it
+	// matches NuBus being little-endian while the 68000 reading it back is not.
+	//
+	// 16-bit mode splits the FIFO group: only one of the two halfwords goes to (or
+	// comes from) memory. Going out, the other half is what the host reads through
+	// the $450000 port, so a 16-bit FIFO-to-memory transfer only advances when the
+	// host has taken its half - modeled as m_selftest_dma_credits. Phase A depends on
+	// that pacing, not just on the data: its check at ROM 0x9d0 requires that only ONE
+	// longword has been written by the time it runs, after its own single movep.l at
+	// 0x9cc, and each loop iteration then checks the longword its previous movep.l
+	// released. Coming in, there's no host half to pair with, so the same halfword
+	// fills both - which is why phase C's readback loop reads each value twice
+	// (0xa94-0xaaa reads $450000 four times per ROM word).
+	bool m_dma_address_loaded = false;
+	bool m_selftest_dma_active = false;
+	bool m_selftest_dma_to_fifo = false;
+	bool m_selftest_dma_16bit = false;
+	u32 m_selftest_dma_addr = 0;
+	u32 m_selftest_dma_left = 0;
+	u32 m_selftest_dma_credits = 0;
+	// Last value written to $801a8 - the transfer direction bit, see above.
+	u8 m_dma_direction = 0;
+	// An on-board transfer's completion raises IRQ5 as well as IRQ1, when $3801ea has
+	// been st'd (0xff) to arm it - which $af2 does as part of every transfer setup
+	// entry 8 performs (ROM 0xafa). Entry 8's shared post-transfer tail requires it:
+	// $a16 clears D7 bit 12 at ROM 0xa22 and fails unless something set it, and the
+	// only thing that ever does is the IRQ5 handler's own short path at ROM 0x23a -
+	// the one it takes when D7 bit 11 is set, which is exactly what entry 8 arms
+	// (ori.w #$900) immediately before unmasking interrupts at 0x9e0/0xa4c. $3801ea is
+	// the natural place for that arm: $af2 addresses this whole flag-byte block
+	// through A5 = $3801ea, and the same handler path acks by writing here (0x23e).
+	// Deliberately limited to on-board transfers, so a real SCSI-to-NuBus transfer's
+	// completion still raises IRQ1 alone.
+	// Armed by an st (0xff) to $3801ea, cleared by any write to $801aa, and latched
+	// into m_selftest_dma_irq5 by the go-strobe so only the transfer whose own setup
+	// armed it raises the interrupt. The clear matters: the register test at ROM 0x510
+	// fires a stray go-strobe of its own (smi $801aa at 0x586, with a leftover count
+	// still loaded), and letting that transfer raise IRQ5 sent the firmware through the
+	// full IRQ5 handler and back into the reset path at 0x1822 - a self-test restart
+	// loop. It writes 0x00 to $801aa on its way in, so the clear disarms it there;
+	// every real setup path arms $3801ea after its own $801aa write ($af2, ROM
+	// 0xaf2 then 0xafa).
+	bool m_dma_irq5_armed = false;
+	bool m_selftest_dma_irq5 = false;
+	void selftest_dma_run();
+	u16 selftest_dma_read16(u32 addr);
+	void selftest_dma_write16(u32 addr, u16 data);
+
 	// 0x800c04: no register at all behind this address - confirmed nothing else in
 	// the ROM ever touches it. Just replays the fixed two-value sequence this one
 	// self-test expects to read - see mpu_map().
@@ -310,10 +403,23 @@ private:
 	// write (0x80180/0x80190) resets both the live counter and the latched value
 	// together, preserving the earlier, already-confirmed write/immediate-read checks
 	// in 0x5b2 (which never touch $3801e8, so nothing here ever drifts for them).
+	// FIFO address-counter pair (doc 4.5.4). Each side is an address counter plus its
+	// own readback latch: a 0x3801e8 strobe reports the value from before that strobe
+	// and advances the counter for the next one (confirmed by entry 5, whose first
+	// pass requires the setup value to still be readable after its own first strobe,
+	// ROM 0x692-0x69e). The _live half is the counter, the other half is what reads
+	// return. See the 0x518000 handler in mpu_map() for how the pair reads back while
+	// a transfer is in flight.
 	u16 m_unknown_508000 = 0;
 	u16 m_unknown_508000_live = 0;
 	u16 m_unknown_518000 = 0;
 	u16 m_unknown_518000_live = 0;
+	// Set by the 0x801aa go-strobe, cleared by the 0x100007 DMA acknowledge. A strobe
+	// trigger with an explicit acknowledge is the only "is a transfer running" signal
+	// available here - there is nothing to poll - so this brackets the in-flight
+	// window without depending on drain pacing (which is only a placeholder, see
+	// dma_drain_kick()).
+	bool m_dma_in_flight = false;
 
 	// Likely a real register in the same DMA register file as m_dma_address (0x800c00),
 	// m_dma_count (0x802c00), and m_unknown_dma_803c00 below: 0x801c00 sits exactly
@@ -393,6 +499,15 @@ private:
 	u8 m_unknown_450000_holding[2] = { 0, 0 };
 	u16 m_unknown_450000_pos = 0;
 	u8 m_unknown_450000_byte_phase = 0;
+	// The FIFO's own read cursor, split out from m_unknown_450000_pos (which stays the
+	// write cursor). They used to be one variable, which only worked because every
+	// path that had exercised the FIFO so far wrote and read in lockstep. Entry 8 does
+	// not: it fills the FIFO with 256 words up front and only then starts reading, so
+	// the two genuinely have to move independently. A $80180 write reloads BOTH (see
+	// mpu_map()) - that's what keeps every self-test's fill and its own readback
+	// aligned, since each one reloads $80180 immediately before the phase that reads
+	// back what it just wrote.
+	u16 m_fifo_out_pos = 0;
 
 	// Page register (0x0801b0, word-sized): holds the upper 14 bits (address bits 31-18)
 	// of a NuBus target address, confirmed via firmware disassembly at 0x2ee0 - the
