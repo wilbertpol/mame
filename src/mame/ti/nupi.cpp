@@ -620,7 +620,20 @@ void nupi_device::mpu_map(address_map &map)
 				// fills the FIFO and then reads it back reloads this immediately before
 				// the read-back phase, which is what keeps the two ends aligned across
 				// entry 5's 2048-word walk and each of entry 8's three phases.
-				m_unknown_450000_pos = m_fifo_out_pos = data & 0x07ff;
+				m_fifo_out_pos = data & 0x07ff;
+				// The write-in cursor only follows along if this transfer's real data
+				// hasn't started arriving yet - see m_dma_transfer_start_pending in
+				// nupi.h (true for every self-test path, which never touches it; false
+				// once scsi_dreq_w() has landed this transfer's first real byte). Real
+				// SCSI data can already be streaming into the FIFO before the firmware
+				// reaches this register (confirmed live: raven's own boot-sector read
+				// already had 12 real halfwords filled in from the disk by the time
+				// this fired) - resetting the write cursor out from under an in-flight
+				// fill orphaned everything already received and redirected the rest of
+				// the transfer to the wrong FIFO offset, corrupting all data past that
+				// point.
+				if (m_dma_transfer_start_pending)
+					m_unknown_450000_pos = data & 0x07ff;
 			}));
 	map(0x080190, 0x080191).lrw16(
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 80190\n", machine().describe_context()); return 0; }),
@@ -758,7 +771,30 @@ void nupi_device::mpu_map(address_map &map)
 					// pure count/interrupt-timing diagnostic and why it must not move any
 					// data; entry 8's three phases each load $801c0/$801d0 right before
 					// their own go-strobe.
-					if (m_dma_address_loaded)
+					//
+					// Gated on !m_dma_write_to_nubus - a REAL transfer's setup (ROM
+					// 0x2FD2-0x3020) ALSO writes 0x801c0/0x801d0 (confirmed live: WR
+					// 801c0/801d0 at PC 0x300A/0x3010, immediately followed by "on-board
+					// dma armed" at 0x3028), so without this the on-board engine armed for
+					// every real disk transfer too - not just entry 8. Its target-address
+					// decode (m_dma_address_lo_raw<<2, an 18-bit on-board offset) is
+					// meaningless for a real transfer's actual 32-bit NuBus target, so it
+					// scribbled the drained FIFO data straight into NUPI's own live 4KB
+					// local RAM (0x180000-0x180fff, masked from garbage low bits of the
+					// real address) on every real read, alongside the correct write
+					// push_fifo_word_to_nubus() was already making to the real target -
+					// confirmed live (dma -> nubus[f400c400] = 4c42414c, the real LABL
+					// sector, landing correctly at the same time as a same-data
+					// on-board-dma-armed write to local addr 0x0c400/0x180400). This is
+					// what corrupted the boot to "DEVICE ERROR" once entry 8's on-board
+					// engine existed. Real transfers keep m_dma_target_configured (and so
+					// m_dma_write_to_nubus) true through their own go-strobe (count-then-
+					// address order); entry 8's setup loads its count via 0x100001 AFTER
+					// its own 0x801c0/0x801d0 writes, which clears m_dma_target_configured
+					// again before its go-strobe - confirmed live (no "dma -> nubus" line
+					// for any of entry 8's three go-strobes) - so this flag already
+					// distinguishes the two cases correctly with no new state needed.
+					if (m_dma_address_loaded && !m_dma_write_to_nubus)
 					{
 						m_selftest_dma_active = true;
 						m_selftest_dma_addr = u32(m_dma_address_lo_raw) << 2;
@@ -1259,15 +1295,20 @@ void nupi_device::push_fifo_word_to_nubus(u16 word)
 		return;
 	}
 
-	// TEMP/TESTING: back to the full 4-byte reversal per direct instruction. Of the
-	// three transforms tried, this is the only one that gets past "MICROLOAD NOT
-	// FOUND" (to "BAD MICROCODE FORMAT") - even though it directly corrupts the
-	// LABL sector's own content at the byte level (confirmed via raven's own
-	// read-back: known-correct 0x4C41424C read back as 0x4C42414C with this swap
-	// active). Whatever "MICROLOAD NOT FOUND" actually checks apparently isn't
-	// simply "this sector's bytes in natural order" - raven being little-endian
-	// (m_data_config in raven.cpp) means the real relationship between on-disk byte
-	// order and what raven's own check wants may not be the naive one.
+	// Byte order confirmed against Meroko's own working DMA code (nupi.c "READ
+	// BUSY-LOOP"): it stores disk bytes b0,b1,b2,b3 directly into consecutive bytes
+	// of a native `unsigned long`, then passes that whole native (little-endian
+	// host) value straight to the NuBus write - i.e. real memory ends up holding the
+	// raw disk bytes in natural order. scsi_dreq_w() pairs two sequential disk bytes
+	// into each FIFO halfword as (b_even<<8)|b_odd, so reproducing Meroko's
+	// byte-for-byte layout from those two halfwords means reversing all 4 bytes of
+	// their straight (first<<16)|second combination. Verified live: with this, the
+	// boot-sector buffer matches the source disk byte-for-byte (confirmed via a
+	// write-tap diff) and boot reaches the real "Available Load Devices" menu
+	// instead of "DEVICE ERROR: MICROLOAD NOT FOUND" - an earlier attempt at this
+	// same swap regressed boot, but that was measured before the real corruption bug
+	// (the $80180 write-cursor race - see the 0x080180 handler above) was found and
+	// fixed, so it wasn't valid evidence against this byte order.
 	u32 const longword = swapendian_int32((u32(m_scsi_fifo_pending_word) << 16) | word);
 	// Real NuBus address = m_dma_address directly, NOT combined with the page
 	// register. Was (m_page_register<<18)|(m_dma_address&0x1ffff), by analogy with
