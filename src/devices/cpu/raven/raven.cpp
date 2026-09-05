@@ -1389,6 +1389,10 @@ void raven_cpu_device::execute_dispatch()
 			}
 		}
 		break;
+	case 0x01: // MF bus - MF(29:25), shifted into dispatch address positions (5:1); position 0 comes
+	           // from the dispatch address field itself (IR(20)), or is overridden below.
+		dispatch_source = ((m_m >> 25) & 0x1f) << 1;
+		break;
 	default:
 		fatalerror("%04x: dispatch source address %02x not implemented\n", m_prev_pc, (m_ir >> 12) & 0x03);
 	}
@@ -1405,13 +1409,44 @@ void raven_cpu_device::execute_dispatch()
 
 	m_dispatch_constant = (m_ir >> 32) & 0x3ff;
 
+	// Dispatch address field IR(31:20), inclusively ORed with the selected source's LSBs.
+	u32 const disp_address = (((m_ir >> 20) & 0xfff) | dispatch_source) & 0xfff;
+
 	switch ((m_ir >> 8) & 0x03)
 	{
+	case 0x00: // plain dispatch - multiway transfer of control via the dispatch memory.
+	           // Each dispatch memory entry holds a 14-bit target micro-PC and 3 transfer-type
+	           // bits (R:P:N) with identical semantics to the jump instruction's R/P/N bits.
+		{
+			u32 const disp_word = m_dispatch[disp_address];
+			u16 const new_pc = disp_word & 0x3fff;
+			u8 const jump_op = (disp_word >> 14) & 0x07;
+
+			m_n = BIT(jump_op, 0);
+
+			switch ((jump_op >> 1) & 0x03)
+			{
+			case 0x00: // branch
+				m_next_pc = new_pc;
+				break;
+			case 0x01: // call
+				push(m_n ? m_pc : (m_pc + 1));
+				m_next_pc = new_pc;
+				break;
+			case 0x02: // return
+				pop();
+				break;
+			case 0x03: // R and P both set: dispatch is ignored, next instruction's
+			           // execution still depends on N (already applied above)
+				break;
+			}
+		}
+		break;
 	case 0x01: // read
-		m_q = m_dispatch[(m_ir >> 20) & 0xfff];
+		m_q = m_dispatch[disp_address];
 		break;
 	case 0x02: // write
-		m_dispatch[(m_ir >> 20) & 0xfff] = m_a & 0x1ffff;
+		m_dispatch[disp_address] = m_a & 0x1ffff;
 		break;
 	default:
 		fatalerror("%04x: dispatch mode %02x not implemented, source = %08x\n", m_prev_pc, (m_ir >> 8) & 0x03, dispatch_source);

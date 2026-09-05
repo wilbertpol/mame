@@ -134,6 +134,16 @@ private:
 	// checks the result, so there's no evidence for any value there.
 	u8 m_unknown_300000 = 0;
 	u8 m_unknown_300001 = 0x0c;
+	// Interval Timer (doc Section 4.5.1.4: "contains the NuBus data transfer
+	// count during DMA operations... on-board event generation for polling and
+	// time-outs") - a distinct hardware block per Figure 4-4, never previously
+	// mapped at all (every access here bus-errored as unmapped). Real DMA
+	// completion is already tracked separately in this file (m_dma_count/
+	// m_dma_drain_timer), so this stub is plain read-back storage only, not a
+	// real countdown - enough to stop firmware's own init/verify write-readback
+	// from looping forever on a bus error. Address/size unconfirmed beyond the
+	// single byte (>Fs'200018) seen live - see ti_explorer.md.
+	u8 m_interval_timer_regs[0x40]{};
 	void config_register_w(u8 data);
 	// Flag Register (>Fs'D40002, Section 5.3.4/Figure 5-3): bits 0-2 are
 	// active-low (self-test complete / self-test passed / SCSI passed);
@@ -225,6 +235,14 @@ private:
 	bool m_dma_transfer_start_pending = true;
 	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
 	void dma_drain_kick();
+
+	// TEMP/TESTING: see ti_explorer.md - deferred CMDLOG dump. Reading word0
+	// synchronously inside the E00004 write handler may race a still-pending
+	// write to the command block if raven's own bus writes aren't drained in
+	// strict issue order; this timer re-reads it one tick later to check.
+	TIMER_CALLBACK_MEMBER(cmdlog_deferred_dump);
+	emu_timer *m_cmdlog_timer = nullptr;
+	u32 m_cmdlog_addr = 0;
 
 	// Whether this transfer's NuBus target address was freshly configured, i.e. real
 	// hardware actually knows where to write - set by the 0x801c0/0x801d0 write
