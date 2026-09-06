@@ -105,7 +105,6 @@ void nupi_device::device_start()
 
 	m_interval_timer = timer_alloc(FUNC(nupi_device::interval_timer_expired), this);
 	m_dma_drain_timer = timer_alloc(FUNC(nupi_device::dma_drain_timer_expired), this);
-	m_cmdlog_timer = timer_alloc(FUNC(nupi_device::cmdlog_deferred_dump), this);
 
 	{
 		u8 const *const src = m_firmware->base();
@@ -277,15 +276,6 @@ TIMER_CALLBACK_MEMBER(nupi_device::interval_timer_expired)
 // finish and real data bytes start arriving (scsi_dreq_w() hasn't written anything at
 // m_fifo_drain_pos yet), so ticking unconditionally read stale, unrelated leftover
 // FIFO content and wrote wrong data to real NuBus memory.
-// TEMP/TESTING: see ti_explorer.md - deferred CMDLOG word0 re-read, scheduled
-// from ram_window_w() right after the synchronous CMDLOG dump, to check for a
-// race between this handler's own read and a still-pending write to word0.
-TIMER_CALLBACK_MEMBER(nupi_device::cmdlog_deferred_dump)
-{
-	u32 const word0_now = nubus().space().read_dword(m_cmdlog_addr);
-	logerror("CMDLOG-DEFERRED cmd_addr=%08X word0=%08X\n", m_cmdlog_addr, word0_now);
-}
-
 TIMER_CALLBACK_MEMBER(nupi_device::dma_drain_timer_expired)
 {
 	if (m_dma_write_to_nubus && m_fifo_drain_pos == m_unknown_450000_pos)
@@ -548,11 +538,6 @@ void nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
 				cmd_addr, word0, (word0 >> 24) & 0x3f, word0 & 0xff, (word0 >> 3) & 0x7, word0 & 0x1,
 				BIT(word0, 31), BIT(word0, 30),
 				buffer_ptr, word_count, block_addr, event_addr);
-			// TEMP/TESTING: see ti_explorer.md - deferred re-read, in case this
-			// synchronous read races a still-pending write to word0's last
-			// byte (user report: sees a bit set here that this read doesn't).
-			m_cmdlog_addr = cmd_addr;
-			m_cmdlog_timer->adjust(attotime::zero, 0);
 
 			// TEMP/TESTING: see ti_explorer.md - trace 68000 execution after
 			// command #24 (the 0-indexed 23rd) specifically, per direction.

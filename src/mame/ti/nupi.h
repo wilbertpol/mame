@@ -236,14 +236,6 @@ private:
 	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
 	void dma_drain_kick();
 
-	// TEMP/TESTING: see ti_explorer.md - deferred CMDLOG dump. Reading word0
-	// synchronously inside the E00004 write handler may race a still-pending
-	// write to the command block if raven's own bus writes aren't drained in
-	// strict issue order; this timer re-reads it one tick later to check.
-	TIMER_CALLBACK_MEMBER(cmdlog_deferred_dump);
-	emu_timer *m_cmdlog_timer = nullptr;
-	u32 m_cmdlog_addr = 0;
-
 	// Whether this transfer's NuBus target address was freshly configured, i.e. real
 	// hardware actually knows where to write - set by the 0x801c0/0x801d0 write
 	// handlers (m_dma_address's own halves, always written by $2FD2 right before its
