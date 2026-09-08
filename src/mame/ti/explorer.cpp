@@ -26,7 +26,7 @@ TODO:
 #include "ti_nubus.h"
 #include "nupi.h"
 #include "explorer_mem.h"
-#include "sib.h"
+#include "explorer_sib.h"
 
 
 namespace {

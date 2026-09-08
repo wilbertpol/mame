@@ -7,11 +7,11 @@
 **********************************************************************/
 
 #include "emu.h"
-#include "sib.h"
+#include "explorer_sib.h"
 #include "speaker.h"
 
 
-DEFINE_DEVICE_TYPE(SIB, sib_device, "sib", "TI Explorer System Interface Board")
+DEFINE_DEVICE_TYPE(SIB, explorer_sib_device, "sib", "TI Explorer System Interface Board")
 
 
 namespace {
@@ -33,7 +33,7 @@ u8 compute_parity(u8 data) { data ^= data >> 4; data ^= data >> 2; data ^= data 
 } // anonymous namespace
 
 
-sib_device::sib_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
+explorer_sib_device::explorer_sib_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
 	device_t(mconfig, SIB, tag, owner, clock),
 	device_ti_nubus_card_interface(mconfig, *this),
 	m_screen(*this, "screen"),
@@ -50,10 +50,10 @@ sib_device::sib_device(const machine_config &mconfig, const char *tag, device_t 
 }
 
 
-void sib_device::device_start()
+void explorer_sib_device::device_start()
 {
-	nubus().install_map(*this, &sib_device::nubus_map);
-	nubus().install_local_bus_map(*this, &sib_device::local_bus_map);
+	nubus().install_map(*this, &explorer_sib_device::nubus_map);
+	nubus().install_local_bus_map(*this, &explorer_sib_device::local_bus_map);
 	m_nvram->set_base(m_nv_ram.begin(), m_nv_ram.bytes());
 
 	m_i8251->write_cts(0);
@@ -79,7 +79,7 @@ void sib_device::device_start()
 }
 
 
-void sib_device::nubus_map(address_map &map)
+void explorer_sib_device::nubus_map(address_map &map)
 {
 	map.unmap_value_high();
 
@@ -136,7 +136,7 @@ void sib_device::nubus_map(address_map &map)
 }
 
 
-void sib_device::graphics_bitmap_map(address_map &map)
+void explorer_sib_device::graphics_bitmap_map(address_map &map)
 {
 	// e00000 - graphics-and-bit-map-control-base
 	//
@@ -287,32 +287,32 @@ void sib_device::graphics_bitmap_map(address_map &map)
 	}));
 	// e9ffff?
 	// e80000 - e993ff - displayed
-	map(0x00e80000, 0x00e9ffff).rw(FUNC(sib_device::video_ram_r), FUNC(sib_device::video_ram_w));
+	map(0x00e80000, 0x00e9ffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_w));
 
-	map(0x00ec0000, 0x00edffff).rw(FUNC(sib_device::video_ram_r), FUNC(sib_device::video_ram_rmw_w));
+	map(0x00ec0000, 0x00edffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_rmw_w));
 }
 
 
-void sib_device::local_bus_map(address_map &map)
+void explorer_sib_device::local_bus_map(address_map &map)
 {
-	map(0x00e80000, 0x00e9ffff).rw(FUNC(sib_device::video_ram_r), FUNC(sib_device::video_ram_w));
-	map(0x00ec0000, 0x00edffff).rw(FUNC(sib_device::video_ram_r), FUNC(sib_device::video_ram_rmw_w));
+	map(0x00e80000, 0x00e9ffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_w));
+	map(0x00ec0000, 0x00edffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_rmw_w));
 }
 
 
-u32 sib_device::video_ram_r(offs_t offset)
+u32 explorer_sib_device::video_ram_r(offs_t offset)
 {
 	return m_video_ram[offset & VIDEO_RAM_MASK];
 }
 
 
-void sib_device::video_ram_w(offs_t offset, u32 data, u32 mem_mask)
+void explorer_sib_device::video_ram_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	COMBINE_DATA(&m_video_ram[offset & VIDEO_RAM_MASK]);
 }
 
 
-void sib_device::video_ram_rmw_w(offs_t offset, u32 data, u32 mem_mask)
+void explorer_sib_device::video_ram_rmw_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	u32 const d = m_video_ram[offset & VIDEO_RAM_MASK];
 	u32 const s = data;
@@ -341,7 +341,7 @@ void sib_device::video_ram_rmw_w(offs_t offset, u32 data, u32 mem_mask)
 }
 
 
-void sib_device::event_generator_map(address_map &map)
+void explorer_sib_device::event_generator_map(address_map &map)
 {
 	//
 	// f00000 - Event-Real-Time-Clock
@@ -362,7 +362,7 @@ void sib_device::event_generator_map(address_map &map)
 	// f0003c - Event-Power-Failure
 	// f00040 - configuration register
 
-	map(0x00f00000, 0x00f0003f).rw(FUNC(sib_device::event_vector_r), FUNC(sib_device::event_vector_w));
+	map(0x00f00000, 0x00f0003f).rw(FUNC(explorer_sib_device::event_vector_r), FUNC(explorer_sib_device::event_vector_w));
 
 	map(0x00f00040, 0x00f00043).lrw32(NAME([this] {
 		if (!machine().side_effects_disabled())
@@ -376,17 +376,17 @@ void sib_device::event_generator_map(address_map &map)
 	// TODO
 }
 
-u32 sib_device::event_vector_r(offs_t offset)
+u32 explorer_sib_device::event_vector_r(offs_t offset)
 {
 	return m_event_vector[offset];
 }
 
-void sib_device::event_vector_w(offs_t offset, u32 data, u32 mem_mask)
+void explorer_sib_device::event_vector_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	COMBINE_DATA(&m_event_vector[offset]);
 }
 
-void sib_device::post_event(int cause)
+void explorer_sib_device::post_event(int cause)
 {
 	// Configuration register bit 1, "NuBus master enable" (Figure 4-4) - the doc
 	// is explicit that the event generator must not act until this is set, since
@@ -398,7 +398,7 @@ void sib_device::post_event(int cause)
 	nubus().space().write_byte(m_event_vector[cause], 0xff);
 }
 
-void sib_device::pit_out2_w(int state)
+void explorer_sib_device::pit_out2_w(int state)
 {
 	// Mode 0 (interrupt on terminal count): the output is forced low the instant
 	// the control word is written, then goes high (and stays high) once the count
@@ -407,7 +407,7 @@ void sib_device::pit_out2_w(int state)
 		post_event(2); // "Interval timer (long)", Table 4-4
 }
 
-void sib_device::rtc_irq_w(int state)
+void explorer_sib_device::rtc_irq_w(int state)
 {
 	// explorer_rtc_device raises this only on the rising edge of an
 	// otherwise-clear interrupt-status register (any of its eight sources -
@@ -419,7 +419,7 @@ void sib_device::rtc_irq_w(int state)
 }
 
 
-void sib_device::printer_map(address_map &map)
+void explorer_sib_device::printer_map(address_map &map)
 {
 	// f10000 - printer-port-base
 	//
@@ -439,7 +439,7 @@ void sib_device::printer_map(address_map &map)
 }
 
 
-void sib_device::mouse_map(address_map &map)
+void explorer_sib_device::mouse_map(address_map &map)
 {
 	// f20000 - mouse-registers-base
 	//
@@ -506,7 +506,7 @@ void sib_device::mouse_map(address_map &map)
 }
 
 
-void sib_device::rtc_map(address_map &map)
+void explorer_sib_device::rtc_map(address_map &map)
 {
 	// f80000 - real-time-clock-base
 	//
@@ -539,7 +539,7 @@ void sib_device::rtc_map(address_map &map)
 }
 
 
-void sib_device::timers_map(address_map &map)
+void explorer_sib_device::timers_map(address_map &map)
 {
 	// f90000 - timers-base
 	//
@@ -582,7 +582,7 @@ void sib_device::timers_map(address_map &map)
 }
 
 
-void sib_device::nvram_map(address_map &map)
+void explorer_sib_device::nvram_map(address_map &map)
 {
 	// fa0000 - non-volatile-ram-base
 	map(0x00fa0000, 0x00fa1fff).lrw32(NAME([this] (offs_t offset) {
@@ -596,7 +596,7 @@ void sib_device::nvram_map(address_map &map)
 }
 
 
-void sib_device::rs232c_map(address_map &map)
+void explorer_sib_device::rs232c_map(address_map &map)
 {
 	// fb0000 - rs232c-port-base
 	//
@@ -609,14 +609,14 @@ void sib_device::rs232c_map(address_map &map)
 }
 
 
-void sib_device::configuration_rom_map(address_map &map)
+void explorer_sib_device::configuration_rom_map(address_map &map)
 {
 	// fe0000 - configuration-rom-base
 	map(0xff8000, 0xffffff).rom().region("sib_config", 0);
 }
 
 
-void sib_device::i8251_txd_w(int state)
+void explorer_sib_device::i8251_txd_w(int state)
 {
 	// The diagnostic loopback path and the real keyboard both drive the
 	// i8251's RXD line; only one should be connected at a time.
@@ -635,7 +635,7 @@ void sib_device::i8251_txd_w(int state)
 	m_i8251->write_dsr(state);
 }
 
-void sib_device::keyboard_txd_w(int state)
+void explorer_sib_device::keyboard_txd_w(int state)
 {
 	// Mirrors i8251_txd_w()'s own gating in the other direction: on real
 	// hardware, diagnostic loopback mode physically disconnects the
@@ -647,7 +647,7 @@ void sib_device::keyboard_txd_w(int state)
 }
 
 
-u32 sib_device::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect)
+u32 explorer_sib_device::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect)
 {
 	const u32 black = 0x000000;
 	const u32 white = 0xffffff;
@@ -671,23 +671,23 @@ u32 sib_device::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const
 }
 
 
-void sib_device::device_add_mconfig(machine_config &config)
+void explorer_sib_device::device_add_mconfig(machine_config &config)
 {
 	// System documents mention 1024x808 pixels
 	SCREEN(config, m_screen);
 	m_screen->set_refresh_hz(60);
 	m_screen->set_size(1024, 1024); // TODO
 	m_screen->set_visarea(0, 1024-1, 0, 1024-1); // TODO
-	m_screen->set_screen_update(FUNC(sib_device::screen_update));
+	m_screen->set_screen_update(FUNC(explorer_sib_device::screen_update));
 
 	I8251(config, m_i8251);
-	m_i8251->txd_handler().set(FUNC(sib_device::i8251_txd_w));
+	m_i8251->txd_handler().set(FUNC(explorer_sib_device::i8251_txd_w));
 
 	EXPLORER_KEYBOARD(config, m_keyboard);
-	m_keyboard->txd_handler().set(FUNC(sib_device::keyboard_txd_w));
+	m_keyboard->txd_handler().set(FUNC(explorer_sib_device::keyboard_txd_w));
 
 	EXPLORER_RTC(config, m_rtc);
-	m_rtc->irq_handler().set(FUNC(sib_device::rtc_irq_w));
+	m_rtc->irq_handler().set(FUNC(explorer_sib_device::rtc_irq_w));
 
 	// Counters 0/1 driven by "a 1-megahertz clock derived from the NuBus
 	// clock" (section 4.4.8, 10MHz NuBus CLK- per section 4.4.1.2 - the
@@ -699,7 +699,7 @@ void sib_device::device_add_mconfig(machine_config &config)
 	m_pit->set_clk<0>(1000000.0);
 	m_pit->set_clk<1>(1000000.0);
 	m_pit->out_handler<1>().set(m_pit, FUNC(pit8253_device::write_clk2));
-	m_pit->out_handler<2>().set(FUNC(sib_device::pit_out2_w));
+	m_pit->out_handler<2>().set(FUNC(explorer_sib_device::pit_out2_w));
 
 	CLOCK(config, m_usart_clock, 153600);
 	m_usart_clock->signal_handler().set(m_i8251, FUNC(i8251_device::write_rxc));
@@ -717,7 +717,7 @@ ROM_START(sib)
 	ROMX_LOAD("2236662_sib.bin", 0x003, 0x2000, CRC(3f1fc829) SHA1(f16d9d9b6d8e51282fd835e2cb716cb173b3eb39), ROM_SKIP(3))
 ROM_END
 
-const tiny_rom_entry *sib_device::device_rom_region() const
+const tiny_rom_entry *explorer_sib_device::device_rom_region() const
 {
 	return ROM_NAME(sib);
 }

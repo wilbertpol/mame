@@ -6,8 +6,8 @@
 
 **********************************************************************/
 
-#ifndef MAME_TI_SIB_H
-#define MAME_TI_SIB_H
+#ifndef MAME_TI_EXPLORER_SIB_H
+#define MAME_TI_EXPLORER_SIB_H
 
 #pragma once
 
@@ -22,10 +22,10 @@
 #include "sound/sn76496.h"
 
 
-class sib_device : public device_t, public device_ti_nubus_card_interface
+class explorer_sib_device : public device_t, public device_ti_nubus_card_interface
 {
 public:
-	sib_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
+	explorer_sib_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
 
 protected:
 	// device_t implementation
@@ -90,6 +90,6 @@ private:
 	u32 m_speech_register = 0;
 };
 
-DECLARE_DEVICE_TYPE(SIB, sib_device)
+DECLARE_DEVICE_TYPE(SIB, explorer_sib_device)
 
-#endif // MAME_TI_SIB_H
+#endif // MAME_TI_EXPLORER_SIB_H

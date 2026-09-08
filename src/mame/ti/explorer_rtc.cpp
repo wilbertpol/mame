@@ -123,7 +123,7 @@ u8 explorer_rtc_device::live_register(unsigned index)
 // already pending), asserts the device's own interrupt output line. Real
 // hardware has a single interrupt output for all eight sources (Table 4-7),
 // so the SIB only needs to know "some RTC event is now pending", not which
-// one - matching how sib_device::post_event() is wired for the interval
+// one - matching how explorer_sib_device::post_event() is wired for the interval
 // timer (pit_out2_w()).
 void explorer_rtc_device::raise_interrupt_status(u32 bit)
 {
