@@ -32,7 +32,7 @@ the winchester disks.
 **********************************************************************/
 
 #include "emu.h"
-#include "nupi.h"
+#include "explorer_nupi.h"
 
 #include "bus/nscsi/hd.h"
 #include "nupi_formatter.h"
@@ -49,7 +49,7 @@ bool g_trace_cmd1 = false;
 #include "logmacro.h"
 
 
-DEFINE_DEVICE_TYPE(NUPI, nupi_device, "nupi", "TI NuBus Peripheral Interface")
+DEFINE_DEVICE_TYPE(NUPI, explorer_nupi_device, "nupi", "TI NuBus Peripheral Interface")
 
 namespace {
 
@@ -74,7 +74,7 @@ constexpr u16 UNKNOWN_800C04_SEQUENCE[] = { 0xeb34, 0xeb38 };
 } // anonymous namespace
 
 
-nupi_device::nupi_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
+explorer_nupi_device::explorer_nupi_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
 	device_t(mconfig, NUPI, tag, owner, clock),
 	device_ti_nubus_card_interface(mconfig, *this),
 	m_mpu(*this, "mpu"),
@@ -94,9 +94,9 @@ nupi_device::nupi_device(const machine_config &mconfig, const char *tag, device_
 }
 
 
-void nupi_device::device_start()
+void explorer_nupi_device::device_start()
 {
-	nubus().install_map(*this, &nupi_device::nubus_map);
+	nubus().install_map(*this, &explorer_nupi_device::nubus_map);
 
 	// Real drive timing, from the mounted CHD's own geometry (917 cyl, 15 heads,
 	// matching the Maxtor XT-1140's 15 heads/918 cylinders exactly - see
@@ -113,11 +113,11 @@ void nupi_device::device_start()
 			fmt->set_seek_timing(4000, 26000, 43000, 3600, 1);
 	}
 
-	m_timer = timer_alloc(FUNC(nupi_device::timer_tick), this);
+	m_timer = timer_alloc(FUNC(explorer_nupi_device::timer_tick), this);
 	m_timer->adjust(attotime::from_hz(60), 0, attotime::from_hz(60));
 
-	m_interval_timer = timer_alloc(FUNC(nupi_device::interval_timer_expired), this);
-	m_dma_drain_timer = timer_alloc(FUNC(nupi_device::dma_drain_timer_expired), this);
+	m_interval_timer = timer_alloc(FUNC(explorer_nupi_device::interval_timer_expired), this);
+	m_dma_drain_timer = timer_alloc(FUNC(explorer_nupi_device::dma_drain_timer_expired), this);
 
 	{
 		u8 const *const src = m_firmware->base();
@@ -187,7 +187,7 @@ void nupi_device::device_start()
 }
 
 
-void nupi_device::device_reset()
+void explorer_nupi_device::device_reset()
 {
 	m_command_address = 0;
 	m_flag_register = 0x07;
@@ -251,13 +251,13 @@ void nupi_device::device_reset()
 	m_unknown_450000_byte_phase = 0;
 }
 
-TIMER_CALLBACK_MEMBER(nupi_device::timer_tick)
+TIMER_CALLBACK_MEMBER(explorer_nupi_device::timer_tick)
 {
 	m_mpu->set_input_line(M68K_IRQ_4, ASSERT_LINE);
 	m_mpu->set_input_line(M68K_IRQ_4, CLEAR_LINE);
 }
 
-TIMER_CALLBACK_MEMBER(nupi_device::interval_timer_expired)
+TIMER_CALLBACK_MEMBER(explorer_nupi_device::interval_timer_expired)
 {
 	// Level-sensitive: held asserted until the 0x100007 write handler acknowledges
 	// it - see m_interval_timer in nupi.h.
@@ -289,7 +289,7 @@ TIMER_CALLBACK_MEMBER(nupi_device::interval_timer_expired)
 // finish and real data bytes start arriving (scsi_dreq_w() hasn't written anything at
 // m_fifo_drain_pos yet), so ticking unconditionally read stale, unrelated leftover
 // FIFO content and wrote wrong data to real NuBus memory.
-TIMER_CALLBACK_MEMBER(nupi_device::dma_drain_timer_expired)
+TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_drain_timer_expired)
 {
 	if (m_dma_write_to_nubus && m_fifo_drain_pos == m_unknown_450000_pos)
 		return;
@@ -332,7 +332,7 @@ TIMER_CALLBACK_MEMBER(nupi_device::dma_drain_timer_expired)
 //   but this is no longer believed to explain the "BAD MICROCODE FORMAT"/"MICROLOAD
 //   NOT FOUND" symptoms - see push_fifo_word_to_nubus()'s own comment for the
 //   current live hypothesis (byte order) on that front.
-void nupi_device::dma_drain_kick()
+void explorer_nupi_device::dma_drain_kick()
 {
 	if (m_dma_active && !m_dma_drain_timer->enabled())
 		m_dma_drain_timer->adjust(m_dma_write_to_nubus ? attotime::from_usec(1) : attotime::from_usec(4));
@@ -342,13 +342,13 @@ void nupi_device::dma_drain_kick()
 // On-board DMA target decode - see the m_selftest_dma_* block in nupi.h. The 18-bit
 // address that $801c0 carries selects ROM with bit 17 and the 4K RAM without it; both
 // are reached through the MPU's own map, the ROM via its 0x040000 mirror.
-u16 nupi_device::selftest_dma_read16(u32 addr)
+u16 explorer_nupi_device::selftest_dma_read16(u32 addr)
 {
 	u32 const local = (addr & 0x20000) ? (0x040000 | (addr & 0x3fff)) : (0x180000 | (addr & 0x0fff));
 	return m_mpu->space(AS_PROGRAM).read_word(local);
 }
 
-void nupi_device::selftest_dma_write16(u32 addr, u16 data)
+void explorer_nupi_device::selftest_dma_write16(u32 addr, u16 data)
 {
 	if (addr & 0x20000)
 		return; // ROM - a transfer into it moves nothing
@@ -358,7 +358,7 @@ void nupi_device::selftest_dma_write16(u32 addr, u16 data)
 // Runs whatever steps of an armed on-board transfer are currently allowed. Free-running
 // except for the 16-bit FIFO-to-memory case, which spends one credit per step - see the
 // m_selftest_dma_* block in nupi.h for where the credits come from and why.
-void nupi_device::selftest_dma_run()
+void explorer_nupi_device::selftest_dma_run()
 {
 	while (m_selftest_dma_active && m_selftest_dma_left)
 	{
@@ -423,7 +423,7 @@ void nupi_device::selftest_dma_run()
 //  NuBus-facing (host) registers - Section 5.3 of the NUPI General Description
 //**************************************************************************
 
-void nupi_device::nubus_map(address_map &map)
+void explorer_nupi_device::nubus_map(address_map &map)
 {
 	map.unmap_value_high();
 
@@ -452,8 +452,8 @@ void nupi_device::nubus_map(address_map &map)
 	// special-behavior handlers below could override their own specific bytes,
 	// same layering as everywhere else in this map - but commented out for now
 	// to test the plain-shared-RAM behavior in isolation first.
-	map(0x00e00000, 0x00e00fff).rw(FUNC(nupi_device::ram_window_r), FUNC(nupi_device::ram_window_w));
-//	map(0x00e00004, 0x00e00007).rw(FUNC(nupi_device::command_address_r), FUNC(nupi_device::command_address_w));
+	map(0x00e00000, 0x00e00fff).rw(FUNC(explorer_nupi_device::ram_window_r), FUNC(explorer_nupi_device::ram_window_w));
+//	map(0x00e00004, 0x00e00007).rw(FUNC(explorer_nupi_device::command_address_r), FUNC(explorer_nupi_device::command_address_w));
 	// Configuration Register (>Fs'E0000B) is genuinely on-board RAM (doc Section
 	// 5.3.2), the same byte the 68000 firmware itself reads/writes at $180008 -
 	// confirmed via ROM disassembly (System Bus Test code at $1FA4-$201E). No
@@ -464,22 +464,22 @@ void nupi_device::nubus_map(address_map &map)
 	// register's bit3 (System Bus Test) as always-already-clear, masking
 	// whether NUPI's own entry-8 self-test ever genuinely completes - not
 	// representative for investigating entry 8's real behavior.
-//	map(0x00e0000b, 0x00e0000b).w(FUNC(nupi_device::config_register_w));
-//	map(0x00e0000f, 0x00e0000f).w(FUNC(nupi_device::dma_test_register_w));
+//	map(0x00e0000b, 0x00e0000b).w(FUNC(explorer_nupi_device::config_register_w));
+//	map(0x00e0000f, 0x00e0000f).w(FUNC(explorer_nupi_device::dma_test_register_w));
 
-	map(0x00d40002, 0x00d40002).r(FUNC(nupi_device::flag_register_r));
+	map(0x00d40002, 0x00d40002).r(FUNC(explorer_nupi_device::flag_register_r));
 
 	// 00e00000 - 4kb - 68000 ram
 
-	map(0x00ffc000, 0x00ffffff).r(FUNC(nupi_device::rom_r));
+	map(0x00ffc000, 0x00ffffff).r(FUNC(explorer_nupi_device::rom_r));
 }
 
-u32 nupi_device::command_address_r()
+u32 explorer_nupi_device::command_address_r()
 {
 	return m_command_address;
 }
 
-void nupi_device::command_address_w(offs_t offset, u32 data, u32 mem_mask)
+void explorer_nupi_device::command_address_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	logerror("%s: command_address_w data=%08x mask=%08x\n", machine().describe_context(), data, mem_mask);
 	COMBINE_DATA(&m_command_address);
@@ -505,12 +505,12 @@ void nupi_device::command_address_w(offs_t offset, u32 data, u32 mem_mask)
 	}
 }
 
-u32 nupi_device::ram_window_r(offs_t offset)
+u32 explorer_nupi_device::ram_window_r(offs_t offset)
 {
 	return (u32(m_ram[offset * 2]) << 16) | m_ram[offset * 2 + 1];
 }
 
-void nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
+void explorer_nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	logerror("%s: ram_window_w addr=%06x data=%08x mask=%08x\n", machine().describe_context(), 0xe00000 + offset * 4, data, mem_mask);
 
@@ -596,14 +596,14 @@ void nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
 	}
 }
 
-u8 nupi_device::unknown_280001_r()
+u8 explorer_nupi_device::unknown_280001_r()
 {
 	u8 const data = m_unknown_280001 ^ (m_unknown_280001_bits12_toggle ? 0x06 : 0x00);
 	logerror("%s: TEMP RD 280001 -> %02x (toggle was %d)\n", machine().describe_context(), data, m_unknown_280001_bits12_toggle);
 	return data;
 }
 
-void nupi_device::config_register_w(u8 data)
+void explorer_nupi_device::config_register_w(u8 data)
 {
 	// Doc Section 4.1.1.2/5.3.2 states this register "resides in the on-board
 	// NUPI RAM", same as command_address (which really is shadowed into
@@ -620,18 +620,18 @@ void nupi_device::config_register_w(u8 data)
 	}
 }
 
-void nupi_device::dma_test_register_w(u8 data)
+void explorer_nupi_device::dma_test_register_w(u8 data)
 {
 	m_dma_test_register = data;
 }
 
-u8 nupi_device::flag_register_r()
+u8 explorer_nupi_device::flag_register_r()
 {
 	logerror("%s: flag_register_r = %02x\n", machine().describe_context(), m_flag_register);
 	return m_flag_register;
 }
 
-u8 nupi_device::rom_r(offs_t offset)
+u8 explorer_nupi_device::rom_r(offs_t offset)
 {
 	return m_firmware_nubus->base()[offset & 0x3fff];
 }
@@ -641,7 +641,7 @@ u8 nupi_device::rom_r(offs_t offset)
 //  MPU-side (internal) hardware
 //**************************************************************************
 
-void nupi_device::mpu_map(address_map &map)
+void explorer_nupi_device::mpu_map(address_map &map)
 {
 	map.unmap_value_high();
 
@@ -1019,7 +1019,7 @@ void nupi_device::mpu_map(address_map &map)
 		return m_unknown_280000;
 	}));
 	// $280001 - see m_unknown_280001 in nupi.h.
-	map(0x280001, 0x280001).r(FUNC(nupi_device::unknown_280001_r));
+	map(0x280001, 0x280001).r(FUNC(explorer_nupi_device::unknown_280001_r));
 	// $280002 - readback of the low byte of the DMA address register's low half, i.e.
 	// of the raw value most recently written to $801c0 (see m_dma_address_lo_raw in
 	// nupi.h). Entry 8's self-test (ROM 0x9be-0x9ca) reads this byte, XORs it against
@@ -1303,15 +1303,15 @@ void nupi_device::mpu_map(address_map &map)
 	map(0x806e56, 0x806e57).lr16(NAME([]() { return u16(0x6e55); }));
 
 	// Real NuBus access window - see m_page_register/nubus_window_r/w in nupi.h.
-	map(0x880000, 0x89ffff).rw(FUNC(nupi_device::nubus_window_r), FUNC(nupi_device::nubus_window_w));
+	map(0x880000, 0x89ffff).rw(FUNC(explorer_nupi_device::nubus_window_r), FUNC(explorer_nupi_device::nubus_window_w));
 }
 
-u16 nupi_device::page_register_r()
+u16 explorer_nupi_device::page_register_r()
 {
 	return m_page_register;
 }
 
-void nupi_device::page_register_w(u16 data)
+void explorer_nupi_device::page_register_w(u16 data)
 {
 	m_page_register = data;
 	LOGMASKED(LOG_MISC, "%s: page_register = %04x\n", machine().describe_context(), data);
@@ -1321,7 +1321,7 @@ void nupi_device::page_register_w(u16 data)
 	m_page_register_802c00_shadow = rol2(data);
 }
 
-u16 nupi_device::nubus_window_r(offs_t offset, u16 mem_mask)
+u16 explorer_nupi_device::nubus_window_r(offs_t offset, u16 mem_mask)
 {
 	// See m_page_register in nupi.h: bits 31-18 from the page register,
 	// bits 16-0 from the accessed offset within this window; bit 17 is
@@ -1346,7 +1346,7 @@ u16 nupi_device::nubus_window_r(offs_t offset, u16 mem_mask)
 	return data;
 }
 
-void nupi_device::nubus_window_w(offs_t offset, u16 data, u16 mem_mask)
+void explorer_nupi_device::nubus_window_w(offs_t offset, u16 data, u16 mem_mask)
 {
 	// See nubus_window_r() above for the offset^1 endianness-swap rationale.
 	u32 const nubus_addr = (u32(m_page_register) << 18) | ((offset ^ 1) << 1);
@@ -1358,7 +1358,7 @@ void nupi_device::nubus_window_w(offs_t offset, u16 data, u16 mem_mask)
 //  SCSI
 //**************************************************************************
 
-void nupi_device::scsi_irq_w(int state)
+void explorer_nupi_device::scsi_irq_w(int state)
 {
 	LOGMASKED(LOG_MISC, "%s: scsi_irq_w state=%d\n", machine().describe_context(), state);
 	m_mpu->set_input_line(M68K_IRQ_2, state ? ASSERT_LINE : CLEAR_LINE);
@@ -1368,7 +1368,7 @@ void nupi_device::scsi_irq_w(int state)
 // after $2FD2's real setup has completed) - see m_dma_active in nupi.h. Pairs
 // successive words into one real 32-bit NuBus longword write, matching NuBus being a
 // 32-bit synchronous bus while the FIFO holds 16-bit halfwords (doc 4.3.4/4.5.3.3).
-void nupi_device::push_fifo_word_to_nubus(u16 word)
+void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
 {
 	if (!m_scsi_fifo_have_pending_word)
 	{
@@ -1477,7 +1477,7 @@ void nupi_device::push_fifo_word_to_nubus(u16 word)
 	}
 }
 
-void nupi_device::scsi_dreq_w(int state)
+void explorer_nupi_device::scsi_dreq_w(int state)
 {
 	if (!state)
 		return;
@@ -1538,10 +1538,10 @@ void nupi_device::scsi_dreq_w(int state)
 //  Machine configuration
 //**************************************************************************
 
-void nupi_device::device_add_mconfig(machine_config &config)
+void explorer_nupi_device::device_add_mconfig(machine_config &config)
 {
 	M68000(config, m_mpu, 10_MHz_XTAL); // "controlled by an MC68000 ... running at a frequency of 10 megahertz" (1.2)
-	m_mpu->set_addrmap(AS_PROGRAM, &nupi_device::mpu_map);
+	m_mpu->set_addrmap(AS_PROGRAM, &explorer_nupi_device::mpu_map);
 
 	NSCSI_BUS(config, m_scsibus);
 	NSCSI_CONNECTOR(config, "scsibus:0", nupi_scsi_devices, "formatter", false); // unit 00
@@ -1556,8 +1556,8 @@ void nupi_device::device_add_mconfig(machine_config &config)
 	// enclosure).
 	m_scsibus->set_external_device(5, m_scsi);
 	m_scsi->set_own_id(5);
-	m_scsi->irq().set(FUNC(nupi_device::scsi_irq_w));
-	m_scsi->dreq().set(FUNC(nupi_device::scsi_dreq_w));
+	m_scsi->irq().set(FUNC(explorer_nupi_device::scsi_irq_w));
+	m_scsi->dreq().set(FUNC(explorer_nupi_device::scsi_dreq_w));
 }
 
 
@@ -1573,7 +1573,7 @@ ROM_START(nupi)
 	ROM_REGION(0x4000, "firmware_nubus", ROMREGION_ERASE00)
 ROM_END
 
-const tiny_rom_entry *nupi_device::device_rom_region() const
+const tiny_rom_entry *explorer_nupi_device::device_rom_region() const
 {
 	return ROM_NAME(nupi);
 }

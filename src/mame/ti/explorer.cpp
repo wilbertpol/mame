@@ -24,7 +24,7 @@ TODO:
 #include "emu.h"
 #include "cpu/raven/raven.h"
 #include "ti_nubus.h"
-#include "nupi.h"
+#include "explorer_nupi.h"
 #include "explorer_mem.h"
 #include "explorer_sib.h"
 

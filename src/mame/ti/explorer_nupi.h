@@ -29,8 +29,8 @@
 
 **********************************************************************/
 
-#ifndef MAME_TI_NUPI_H
-#define MAME_TI_NUPI_H
+#ifndef MAME_TI_EXPLORER_NUPI_H
+#define MAME_TI_EXPLORER_NUPI_H
 
 #pragma once
 
@@ -41,10 +41,10 @@
 #include "machine/nscsi_bus.h"
 
 
-class nupi_device : public device_t, public device_ti_nubus_card_interface
+class explorer_nupi_device : public device_t, public device_ti_nubus_card_interface
 {
 public:
-	nupi_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
+	explorer_nupi_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
 
 protected:
 	// device_t implementation
@@ -605,6 +605,6 @@ private:
 	u8 m_unknown_280000 = 0;
 };
 
-DECLARE_DEVICE_TYPE(NUPI, nupi_device)
+DECLARE_DEVICE_TYPE(NUPI, explorer_nupi_device)
 
-#endif // MAME_TI_NUPI_H
+#endif // MAME_TI_EXPLORER_NUPI_H
