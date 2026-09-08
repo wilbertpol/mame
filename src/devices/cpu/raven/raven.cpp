@@ -774,7 +774,7 @@ void raven_cpu_device::set_o_bus(u32 alu_out, u32 carry_out)
 			break;
 
 		default:
-			fatalerror("%04x: set_o_bus tagged %02x not implemented\n", m_prev_pc, (m_ir >> 16) & 0x07);
+			fatalerror("%04x, %08x%08x: set_o_bus tagged %02x not implemented\n", m_prev_pc, (m_ir >> 32), u32(m_ir), (m_ir >> 16) & 0x07);
 		}
 	}
 	else
