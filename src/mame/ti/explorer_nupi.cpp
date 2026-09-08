@@ -35,7 +35,7 @@ the winchester disks.
 #include "explorer_nupi.h"
 
 #include "bus/nscsi/hd.h"
-#include "nupi_formatter.h"
+#include "explorer_formatter.h"
 
 // Set by ram_window_w()'s CMDLOG tracing below when it logs command #1's /
 // command #24's trigger - kept per user direction alongside CMDLOG itself.
@@ -109,7 +109,7 @@ void explorer_nupi_device::device_start()
 	// formatter trace.
 	for (char const *tag : { "scsibus:0:formatter", "scsibus:1:formatter", "scsibus:3:formatter" })
 	{
-		if (auto *fmt = dynamic_cast<nupi_formatter_device *>(subdevice(tag)))
+		if (auto *fmt = dynamic_cast<explorer_formatter_device *>(subdevice(tag)))
 			fmt->set_seek_timing(4000, 26000, 43000, 3600, 1);
 	}
 

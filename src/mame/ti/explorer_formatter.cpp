@@ -12,7 +12,7 @@
 **********************************************************************/
 
 #include "emu.h"
-#include "nupi_formatter.h"
+#include "explorer_formatter.h"
 
 #include "multibyte.h"
 
@@ -26,9 +26,9 @@
 
 #include "logmacro.h"
 
-DEFINE_DEVICE_TYPE(NUPI_FORMATTER, nupi_formatter_device, "nupi_formatter", "TI Explorer NUPI Disk Formatter")
+DEFINE_DEVICE_TYPE(NUPI_FORMATTER, explorer_formatter_device, "nupi_formatter", "TI Explorer NUPI Disk Formatter")
 
-nupi_formatter_device::nupi_formatter_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
+explorer_formatter_device::explorer_formatter_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
 	nscsi_full_device(mconfig, NUPI_FORMATTER, tag, owner, clock),
 	m_image(*this, "image%u", 0U),
 	m_active_lun(0)
@@ -39,7 +39,7 @@ nupi_formatter_device::nupi_formatter_device(const machine_config &mconfig, cons
 		"1.00";
 }
 
-void nupi_formatter_device::device_start()
+void explorer_formatter_device::device_start()
 {
 	nscsi_full_device::device_start();
 	for (unsigned i = 0; i < LUN_COUNT; i++)
@@ -52,7 +52,7 @@ void nupi_formatter_device::device_start()
 	}
 }
 
-void nupi_formatter_device::device_reset()
+void explorer_formatter_device::device_reset()
 {
 	nscsi_full_device::device_reset();
 
@@ -89,7 +89,7 @@ void nupi_formatter_device::device_reset()
 		m_scsi_id = -1;
 }
 
-void nupi_formatter_device::set_seek_timing(uint32_t track_us, uint32_t average_us, uint32_t full_us, uint32_t rpm, uint8_t interleave)
+void explorer_formatter_device::set_seek_timing(uint32_t track_us, uint32_t average_us, uint32_t full_us, uint32_t rpm, uint8_t interleave)
 {
 	m_seek_track_us = track_us;
 	m_seek_range_us = (full_us > track_us) ? (full_us - track_us) : 0;
@@ -101,7 +101,7 @@ void nupi_formatter_device::set_seek_timing(uint32_t track_us, uint32_t average_
 	m_seek_model = true;
 }
 
-attotime nupi_formatter_device::seek_time(lun_state &l, uint32_t lba)
+attotime explorer_formatter_device::seek_time(lun_state &l, uint32_t lba)
 {
 	uint32_t spt = 1, spc = 1, ncyl = 1;
 	int const idx = int(&l - &m_lun[0]);
@@ -128,7 +128,7 @@ attotime nupi_formatter_device::seek_time(lun_state &l, uint32_t lba)
 	return attotime::from_usec(us);
 }
 
-attotime nupi_formatter_device::scsi_data_command_delay()
+attotime explorer_formatter_device::scsi_data_command_delay()
 {
 	if (!m_seek_model)
 		return attotime::zero;
@@ -154,18 +154,18 @@ attotime nupi_formatter_device::scsi_data_command_delay()
 	}
 }
 
-attotime nupi_formatter_device::scsi_data_byte_period()
+attotime explorer_formatter_device::scsi_data_byte_period()
 {
 	return m_lun[m_active_lun].byte_period;
 }
 
-void nupi_formatter_device::device_add_mconfig(machine_config &config)
+void explorer_formatter_device::device_add_mconfig(machine_config &config)
 {
 	for (unsigned i = 0; i < LUN_COUNT; i++)
 		HARDDISK(config, m_image[i]).set_interface("scsi_hdd,hdd");
 }
 
-uint8_t nupi_formatter_device::scsi_get_data(int id, int pos)
+uint8_t explorer_formatter_device::scsi_get_data(int id, int pos)
 {
 	uint8_t data = 0;
 	if (id != 2)
@@ -191,7 +191,7 @@ uint8_t nupi_formatter_device::scsi_get_data(int id, int pos)
 	return data;
 }
 
-void nupi_formatter_device::scsi_put_data(int id, int pos, uint8_t data)
+void explorer_formatter_device::scsi_put_data(int id, int pos, uint8_t data)
 {
 	LOGMASKED(LOG_DATA, "nupi_formatter: scsi_put_data, id:%d pos:%d data:%02x %c\n", id, pos, data, data >= 0x20 && data < 0x7f ? (char)data : ' ');
 	if (id != 2)
@@ -211,7 +211,7 @@ void nupi_formatter_device::scsi_put_data(int id, int pos, uint8_t data)
 	}
 }
 
-void nupi_formatter_device::scsi_command()
+void explorer_formatter_device::scsi_command()
 {
 	m_active_lun = get_lun(m_scsi_cmdbuf[1] >> 5);
 	bool const lun_ok = m_active_lun >= 0 && m_active_lun < int(LUN_COUNT) && m_image[m_active_lun]->exists();

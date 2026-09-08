@@ -14,18 +14,18 @@
 
 **********************************************************************/
 
-#ifndef MAME_TI_NUPI_FORMATTER_H
-#define MAME_TI_NUPI_FORMATTER_H
+#ifndef MAME_TI_EXPLORER_FORMATTER_H
+#define MAME_TI_EXPLORER_FORMATTER_H
 
 #pragma once
 
 #include "machine/nscsi_hle.h"
 #include "imagedev/harddriv.h"
 
-class nupi_formatter_device : public nscsi_full_device
+class explorer_formatter_device : public nscsi_full_device
 {
 public:
-	nupi_formatter_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
+	explorer_formatter_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
 
 	// See nscsi_harddisk_device::set_seek_timing() (bus/nscsi/hd.h) for the
 	// parameter meanings; applies identically to both LUNs.
@@ -72,6 +72,6 @@ private:
 	double   m_seek_exp = 1.0;
 };
 
-DECLARE_DEVICE_TYPE(NUPI_FORMATTER, nupi_formatter_device)
+DECLARE_DEVICE_TYPE(NUPI_FORMATTER, explorer_formatter_device)
 
-#endif // MAME_TI_NUPI_FORMATTER_H
+#endif // MAME_TI_EXPLORER_FORMATTER_H
