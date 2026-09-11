@@ -19,6 +19,7 @@ namespace {
 static constexpr u16 VIDEO_RAM_SIZE = 0x8000; // Guestimate
 static constexpr u16 VIDEO_RAM_MASK = VIDEO_RAM_SIZE - 1;
 static constexpr u16 SCREEN_WIDTH = 1024;
+static constexpr u16 SCREEN_HEIGHT = 808;
 
 // Real hardware bit assignments (2243145-0001A SI General Description, page 4-15,
 // Figure 4-4): bit 0 (Reset) is write-only and always reads 0 - a momentary strobe,
@@ -77,6 +78,10 @@ void explorer_sib_device::device_start()
 	save_item(NAME(m_printer_data));
 	save_item(NAME(m_sound_control));
 	save_item(NAME(m_speech_register));
+	save_item(NAME(m_graphics_interrupt_enable));
+	save_item(NAME(m_graphics_interrupt_pending));
+	save_item(NAME(m_usart_rxrdy));
+	save_item(NAME(m_usart_txrdy));
 }
 
 
@@ -254,12 +259,18 @@ void explorer_sib_device::graphics_bitmap_map(address_map &map)
 	map(0x00e00064, 0x00e00067).lw32(NAME([] (u32 data) {
 		printf("Graphics-Cursor-Column write %08x\n", data);
 	}));
+	// R3A (read) / R1A (write), paragraph 4.4.10.7: "Reading address hexadecimal
+	// FSE00068 returns interrupt status and simultaneously clears the interrupt.
+	// Bit 7 is set if an interrupt is pending (hexadecimal C0); all bits are
+	// clear (hexadecimal 00) if no interrupt is pending." Note the documented
+	// pending value is C0, not 80 - the enable bit reads back alongside it.
 	map(0x00e00068, 0x00e0006b).lrw32(NAME([this] {
+		u32 const result = m_graphics_interrupt_pending ? 0xc0 : 0x00;
 		if (!machine().side_effects_disabled())
-			printf("Graphics-Status-Register read\n");
-		return u32(0);
-	}), NAME([] (u32 data) {
-		printf("Graphics-Interrupt-Enable write %08x\n", data);
+			m_graphics_interrupt_pending = false;
+		return result;
+	}), NAME([this] (u32 data) {
+		m_graphics_interrupt_enable = u8(data);
 	}));
 	map(0x00e0006c, 0x00e0006f).lw32(NAME([] (u32 data) {
 		printf("Graphics-Light-Pen-Row write %08x\n", data);
@@ -424,6 +435,49 @@ void explorer_sib_device::rtc_irq_w(int state)
 		post_event(0); // "Real-time clock", Table 4-4
 }
 
+void explorer_sib_device::screen_vblank_w(int state)
+{
+	// Paragraph 4.4.10.7: the CRT controller generates an interrupt "at the
+	// start of each vertical retrace... once every 16.67 milliseconds
+	// immediately after the CRT has completed a full video display refresh",
+	// enabled by bit 6 of the byte written to e00068. The screen is configured
+	// at 60 Hz, so its own vblank edge is that retrace.
+	if (!state || !BIT(m_graphics_interrupt_enable, 6))
+		return;
+
+	// "The interrupt must be cleared before another interrupt is generated" -
+	// a still-pending interrupt suppresses the next one rather than stacking.
+	if (m_graphics_interrupt_pending)
+		return;
+
+	m_graphics_interrupt_pending = true;
+	post_event(5);
+}
+
+// Table 4-4 gives the keyboard USART one interrupt cause, "Ready to
+// transmit/receive" - but the two readies have to be edge-detected separately
+// rather than ORed into a single line. TxRDY idles asserted on an enabled,
+// empty transmitter, so an ORed line sits permanently high and a later RxRDY
+// can never produce an edge on it; the keystroke's interrupt is swallowed.
+// (Observed exactly that way first: the byte reached the USART at t=45.076s and
+// no event was posted.) Paragraph 4.4.5 has the generator posting one event per
+// interrupt received, so each ready asserting is its own interrupt.
+void explorer_sib_device::usart_rxrdy_w(int state)
+{
+	bool const asserted = bool(state);
+	if (asserted && !m_usart_rxrdy)
+		post_event(6); // "Keyboard USART", Table 4-4 (event vector f00018)
+	m_usart_rxrdy = asserted;
+}
+
+void explorer_sib_device::usart_txrdy_w(int state)
+{
+	bool const asserted = bool(state);
+	if (asserted && !m_usart_txrdy)
+		post_event(6);
+	m_usart_txrdy = asserted;
+}
+
 
 void explorer_sib_device::printer_map(address_map &map)
 {
@@ -580,6 +634,15 @@ void explorer_sib_device::timers_map(address_map &map)
 	// dword index here (0-3, matching the register order directly), unlike
 	// pit8253_device's own read/write which expect the real chip's
 	// byte-adjacent addressing - no manual shift needed either way now.
+	// The band programs counters 0 and 2 for mode 0 (control bytes 30/B0), never
+	// loads a count into either, and then repeatedly issues the counter-0 latch
+	// command (control byte 00, Figure 4-6 RL=00) and reads the two latched
+	// bytes - i.e. it reads counter 0 as though it were a free-running
+	// microsecond clock. Per 4.4.8.1 an unloaded counter does not count, so
+	// those reads correctly return a constant; Meroko instead free-runs the
+	// counter down from 0xFFFF. Tested both ways: making counter 0 free-run
+	// here produces a byte-identical boot and screen, so this difference is not
+	// what the boot is waiting on.
 	map(0x00f90000, 0x00f9000f).lrw32(NAME([this] (offs_t offset) {
 		return u32(m_pit->read(offset));
 	}), NAME([this] (offs_t offset, u32 data) {
@@ -658,13 +721,25 @@ u32 explorer_sib_device::screen_update(screen_device &screen, bitmap_rgb32 &bitm
 	const u32 black = 0x000000;
 	const u32 white = 0xffffff;
 
+	// Video attributes register, Figure 4-12. Bit 0 blanks the display outright
+	// ("1 = blank video, 0 = video enable"); bit 1 selects polarity - normal (0)
+	// lights a pixel whose bit-mapped memory bit is 1, reverse (1) lights the
+	// pixel whose bit is 0. The band runs the display in reverse video, so
+	// ignoring this bit showed the whole screen inverted.
+	if (BIT(m_attribute_register, 0))
+	{
+		bitmap.fill(black, cliprect);
+		return 0;
+	}
+	const u32 invert = BIT(m_attribute_register, 1) ? 0xffffffff : 0;
+
 	for (int y = cliprect.top(); y <= cliprect.bottom(); y++)
 	{
-		const u16 line_start = y * (SCREEN_WIDTH / 32);
+		const u32 line_start = y * (SCREEN_WIDTH / 32);
 
 		for (int x = 0; x < (SCREEN_WIDTH / 32); x++)
 		{
-			const u32 d = m_video_ram[line_start + x];
+			const u32 d = m_video_ram[line_start + x] ^ invert;
 			const u32 xs = x * 32;
 
 			for (int i = 0; i < 32; i++)
@@ -682,12 +757,20 @@ void explorer_sib_device::device_add_mconfig(machine_config &config)
 	// System documents mention 1024x808 pixels
 	SCREEN(config, m_screen);
 	m_screen->set_refresh_hz(60);
-	m_screen->set_size(1024, 1024); // TODO
-	m_screen->set_visarea(0, 1024-1, 0, 1024-1); // TODO
+	// Figure 4-11 fixes the bit-mapped display at 1024 x 808: line 0 starts at
+	// FSE80000 and line 807 at FSE99380, which is 807 * 128 bytes further on
+	// (1024 pixels = 32 words = 128 bytes per line). That also matches the CRT
+	// controller values the band programs - R07 visible data rows per frame =
+	// 0x64 (100 rows) at R08 = 8 scan lines per data row.
+	m_screen->set_size(SCREEN_WIDTH, SCREEN_HEIGHT);
+	m_screen->set_visarea(0, SCREEN_WIDTH - 1, 0, SCREEN_HEIGHT - 1);
 	m_screen->set_screen_update(FUNC(explorer_sib_device::screen_update));
+	m_screen->screen_vblank().set(FUNC(explorer_sib_device::screen_vblank_w));
 
 	I8251(config, m_i8251);
 	m_i8251->txd_handler().set(FUNC(explorer_sib_device::i8251_txd_w));
+	m_i8251->rxrdy_handler().set(FUNC(explorer_sib_device::usart_rxrdy_w));
+	m_i8251->txrdy_handler().set(FUNC(explorer_sib_device::usart_txrdy_w));
 
 	EXPLORER_KEYBOARD(config, m_keyboard);
 	m_keyboard->txd_handler().set(FUNC(explorer_sib_device::keyboard_txd_w));

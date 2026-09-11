@@ -64,6 +64,9 @@ private:
 	void post_event(int cause);
 	void pit_out2_w(int state);
 	void rtc_irq_w(int state);
+	void screen_vblank_w(int state);
+	void usart_rxrdy_w(int state);
+	void usart_txrdy_w(int state);
 
 	required_device<screen_device> m_screen;
 	required_device<i8251_device> m_i8251;
@@ -77,7 +80,10 @@ private:
 	memory_share_creator<u8> m_nv_ram;
 	u32 m_configuration_register;
 	u32 m_event_vector[16]{};
-	u32 m_attribute_register = 0;
+	// Power-up state per the NOTE in paragraph 4.4.10.7: "When the system is
+	// powered up or the board is reset, the attributes register will be set to
+	// reverse video and a blanked video display" - bits 1 and 0 both set.
+	u32 m_attribute_register = 0x03;
 	u32 m_mask_register = 0;
 	u32 m_operation_register = 0;
 	u32 m_mouse_y_position = 0;
@@ -89,6 +95,13 @@ private:
 	u32 m_printer_data = 0;
 	u32 m_sound_control = 0;
 	u32 m_speech_register = 0;
+	// CRT controller R1A (write) / R3A (read) at e00068 - see paragraph
+	// 4.4.10.7, "CRT Controller Initialization and Interrupts".
+	u8 m_graphics_interrupt_enable = 0;
+	bool m_graphics_interrupt_pending = false;
+	// Keyboard USART interrupt, Table 4-4 cause 6 ("Ready to transmit/receive").
+	bool m_usart_rxrdy = false;
+	bool m_usart_txrdy = false;
 };
 
 DECLARE_DEVICE_TYPE(SIB, explorer_sib_device)
