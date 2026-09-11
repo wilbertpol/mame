@@ -120,6 +120,9 @@ private:
 
 	u32 m_dispatch[0x1000]{}; // 4096 x 17 bits
 	u16 m_dispatch_constant = 0; // 10 bits
+	// GC volatility of the page most recently translated (level-2 control bits
+	// 12:11), used by the GC-volatility dispatch in execute_dispatch().
+	u8 m_cached_gc_volatility = 0;
 	bool m_page_fault = false;
 	u32 m_read_data = 0;
 	u8 m_memory_busy_counter = 0;

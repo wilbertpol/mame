@@ -145,22 +145,24 @@ attotime explorer_formatter_device::scsi_data_command_delay()
 	}
 }
 
-// Byte transfer rate: one byte per eight cycles of the NCR 5385's own 10MHz
-// clock (1.25MB/s) - what the controller can sustain - rather than a period
-// derived from platter geometry. A geometry-derived period made the firmware's
-// SCSI interrupt land either side of a wait loop's exit depending on run-to-run
-// timing, so the slot 2 self-test only passed intermittently; this is stable.
+// Byte transfer rate: a fixed 1.25MB/s, rather than a period derived from
+// platter geometry. A geometry-derived period made the firmware's SCSI
+// interrupt land either side of a wait loop's exit depending on run-to-run
+// timing, so the slot 2 self-test only passed intermittently; a fixed rate is
+// stable (verified 16/16 identical runs).
 //
-// The drives actually fitted to an Explorer report 0.625MB/s, i.e. half this,
-// and that value works identically (verified: 16/16 identical runs, same boot
-// depth) - but the controller-side rate is used deliberately, because it runs
-// the emulation faster and nothing in the firmware's timing depends on the
-// difference.
+// Reference points: the NCR 5385E data sheet (May 1985, section 1) lists
+// "asynchronous data transfers to 1.5 MBPS" as the controller's maximum, and
+// the drives actually fitted to an Explorer report 0.625MB/s. 0.625MB/s works
+// identically here (also 16/16 identical, same boot depth) and would be the
+// more faithful choice; 1.25MB/s is used because it runs the emulation faster
+// and nothing in the firmware's timing depends on the difference.
 //
-// Do NOT raise it further: rates above 1.25MB/s are not sustainable through the
-// NUPI's own FIFO/DMA path. Measured boot depth by rate - 500k/625k/750k/1M/
-// 1.25M all reach CMDLOG 39; the 5385's 1.5MB/s paper maximum drops to 36, and
-// 2MB/s breaks the disk boot outright (6).
+// The 1.25MB/s figure is empirical, not derived from either data sheet - it is
+// simply the fastest rate that does not regress the disk boot. Do NOT raise it
+// to the 5385's documented 1.5MB/s maximum: the NUPI's own FIFO/DMA path
+// cannot sustain that. Measured boot depth by rate - 500k/625k/750k/1M/1.25M
+// all reach CMDLOG 39; 1.5MB/s drops to 36; 2MB/s breaks the boot outright (6).
 attotime explorer_formatter_device::scsi_data_byte_period()
 {
 	return attotime::from_ticks(1, 1'250'000);

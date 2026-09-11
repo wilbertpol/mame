@@ -16,6 +16,12 @@ namespace {
 static constexpr u8 MCR_SELF_TEST_FLAG_BIT = 27;
 static constexpr u8 MCR_MACROINSTRUCTION_CHAINING_ENABLE_BIT = 26;
 static constexpr u8 MCR_LOOP_ON_SELF_TEST_BIT = 23;
+// The two MISCOP-decode group enables gating the IBUF instruction-decode
+// dispatch (see execute_dispatch()); 2243144-0001A paragraph 4.5.9 notes only
+// that "MISCOP detection can be disabled under the control of two bits in the
+// MCR" without naming them - these positions are Meroko's MCR_Misc_Op_Group_0.
+static constexpr u8 MCR_MISC_OP_GROUP_0_BIT = 24;
+static constexpr u8 MCR_MISC_OP_GROUP_1_BIT = 25;
 static constexpr u8 MCR_NEED_FETCH_BIT = 22;
 static constexpr u8 MCR_LOCAL_RESET_BIT = 20;
 static constexpr u8 MCR_INT_ENABLE_BIT = 15;
@@ -155,6 +161,7 @@ void raven_cpu_device::device_start()
 	save_item(NAME(m_vma_lvl2_map));
 	save_item(NAME(m_dispatch));
 	save_item(NAME(m_dispatch_constant));
+	save_item(NAME(m_cached_gc_volatility));
 	save_item(NAME(m_page_fault));
 	save_item(NAME(m_read_data));
 	save_item(NAME(m_memory_busy_counter));
@@ -438,6 +445,11 @@ u32 raven_cpu_device::vm_resolve_address()
 	u32 lvl1_map_data = m_vma_lvl1_map[vpage_block];
 	u32 lvl2_index = ((lvl1_map_data & 0x7f) << 5) | vpage_offset;
 	u32 lvl2_control = m_vma_lvl2_control[lvl2_index];
+
+	// Cache this page's GC volatility (level-2 control bits 12:11) for the next
+	// GC-volatility dispatch - see execute_dispatch(). Same point Meroko updates
+	// its cached_gcv, inside the address translation itself.
+	m_cached_gc_volatility = (lvl2_control >> 11) & 0x03;
 
 	m_page_fault = false;
 
@@ -1334,33 +1346,58 @@ void raven_cpu_device::execute_jump()
 
 	if (condition)
 	{
-		if ((m_ir >> 51) & 0x07)
-		{
-			perform_abj();
-		}
-		else
-		{
-			u16 new_pc = (m_ir >> 18) & 0x3fff;
-			m_n = BIT(m_ir, 5);
+		u16 new_pc = (m_ir >> 18) & 0x3fff;
+		m_n = BIT(m_ir, 5);
 
-			switch ((m_ir >> 6) & 0x03)
-			{
-			case 0x00: // branch
-				m_next_pc = new_pc;
-				break;
-			case 0x01: // call
-				push(m_n ? m_pc : (m_pc + 1));
-				m_next_pc = new_pc;
-				break;
-			case 0x02: // return
-				pop();
-				break;
-			case 0x03: // RPN = 11x: same as branch (R and P both set degenerates to a plain branch)
-				m_next_pc = new_pc;
-				break;
-			default:
-				fatalerror("%04x: jump type %02x not implemented\n", m_prev_pc, (m_ir >> 6) & 0x03);
-			}
+		switch ((m_ir >> 6) & 0x03)
+		{
+		case 0x00: // branch
+			m_next_pc = new_pc;
+			break;
+		case 0x01: // call
+			push(m_n ? m_pc : (m_pc + 1));
+			m_next_pc = new_pc;
+			break;
+		case 0x02: // return
+			pop();
+			break;
+		case 0x03: // RPN = 11x: same as branch (R and P both set degenerates to a plain branch)
+			m_next_pc = new_pc;
+			break;
+		default:
+			fatalerror("%04x: jump type %02x not implemented\n", m_prev_pc, (m_ir >> 6) & 0x03);
+		}
+	}
+	else
+	{
+		// The abbreviated jump field is the jump instruction's *else* arm: the
+		// RPN transfer above happens when the tested condition is true, and the
+		// ABJ only when it is false - never both, since either way it is the one
+		// uPCS operation the instruction performs. 2243144-0001A (Processor
+		// General Description) Table 4-22 restricts IR(53:51) to 000, 110 or 111
+		// in the jump format, and paragraph 4.5.1.2 says the ABJ operations
+		// "allow a change of control in ALU and byte microinstructions only,
+		// having no effect in jump or dispatch microinstructions" apart from
+		// POPJ/POPJ-XCT-next, with "POPJ ... interpreted as POPJ-XCT-Next in
+		// jump and dispatch microinstructions" - so 110 behaves as 111 here,
+		// i.e. pop without inhibiting the delay slot, and the call/skip codes
+		// are ignored rather than run through perform_abj().
+		//
+		// Found live: microcode PC $26A9 is
+		//   POPJ IF-GREATER A-016 M-1c AND-POPJ-XCT-NEXT   (RPN=101, ABJ=111)
+		// - "return now, skipping the next instruction, if greater; otherwise
+		// execute the next instruction and then return". With the ABJ attached
+		// to the true arm this fell through to $26AB instead of returning, and
+		// the Lisp world span forever in the $2690-$26AB scan right after the
+		// first four demand-paging reads.
+		switch ((m_ir >> 51) & 0x07)
+		{
+		case 0x06: // POPJ - reads as POPJ-XCT-next in a jump microinstruction
+		case 0x07: // POPJ-XCT-next
+			pop();
+			break;
+		default:
+			break;
 		}
 	}
 }
@@ -1398,18 +1435,47 @@ void raven_cpu_device::execute_dispatch()
 	           // from the dispatch address field itself (IR(20)), or is overridden below.
 		dispatch_source = ((m_m >> 25) & 0x1f) << 1;
 		break;
-	default:
-		fatalerror("%04x: dispatch source address %02x not implemented\n", m_prev_pc, (m_ir >> 12) & 0x03);
+	default: // IR(13) set: IBUF - the instruction-decode dispatch (2243144-0001A
+	         // Table 4-24, IR(13:12) = 1x, "IBUF(09:00) or IBUF(15:06) - auto
+	         // selected by the macroinstruction opcode if MISCOP decoding is
+	         // enabled"). Paragraph 4.5.9: only IBUF's seven low-order bits are
+	         // ORed with the dispatch address field, the next three MSBs replace
+	         // the IR field's (hence mir_mask below), the next MSB is the IR bit
+	         // ORed with the MISCOP decode status, and the MSB comes from IR -
+	         // which is also why "if the MSB of the dispatch address source
+	         // select field (IR(13)) is 1, then the most significant address bit
+	         // into the dispatch memory is forced to 1". The MISCOP decode test
+	         // itself (which macroinstruction opcodes count, and the MCR group
+	         // enables that gate it) is not spelled out in the doc; the form here
+	         // is Meroko's, raven_cpu.c's own MIR/MIR2 dispatch source.
+		{
+			u32 const ibuf = BIT(m_lc, 0) ? (m_ibuf & 0xffff) : ((m_ibuf >> 16) & 0xffff);
+			if (BIT(m_mcr, MCR_MISC_OP_GROUP_0_BIT)
+				&& ((BIT(m_mcr, MCR_MISC_OP_GROUP_1_BIT) ^ 1) & BIT(ibuf, 13)) == 0
+				&& ((ibuf >> 9) & 0x0f) == 0x0d)
+			{
+				dispatch_source = 0x800 | ((BIT(ibuf, 13) ^ 1) << 9) | (ibuf & 0x1ff);
+			}
+			else
+			{
+				dispatch_source = 0xc00 | ((ibuf >> 6) & 0x3ff);
+			}
+		}
+		break;
 	}
 
-//	u8 gc_volatility_flag = 0;
-
+	// GC volatility enable, IR(10) (2243144-0001A Table 4-24): "When IR(10) is
+	// set, the LSB of the dispatch address is set to 1 if the GC volatility bit
+	// is 1", and per paragraph 4.5.9 it is ORed together with the old-space bit
+	// and IR(20) when IR(11) is set too. The doc does not say how the fault bit
+	// itself is derived; this comparison of the referencing page's cached
+	// volatility against the referenced region's level-1 volatility field (bits
+	// 9:7, stored inverted) is Meroko's gc_volatilty_flag.
+	u32 gc_volatility_flag = 0;
 	if (BIT(m_ir, 10))
 	{
-//		u8 map_1_volatility = (m_vma_lvl1_map[(m_md >> 13) & 0xfff] >> 7) & 0x07;
-
-		fatalerror("%04x: dispatch gc volatility not implemented\n", m_prev_pc);
-//		gc_volatility_flag = (m_cached_gc_volatility + 4 > (map_1_volatility ^ 7)) ? 0 : 1;
+		u8 const map_1_volatility = (m_vma_lvl1_map[(m_md >> 13) & 0xfff] >> 7) & 0x07;
+		gc_volatility_flag = (m_cached_gc_volatility + 4 > u32(map_1_volatility ^ 7)) ? 0 : 1;
 	}
 
 	m_dispatch_constant = (m_ir >> 32) & 0x3ff;
@@ -1426,7 +1492,12 @@ void raven_cpu_device::execute_dispatch()
 		oldspace_flag = BIT(m_vma_lvl1_map[(m_md >> 13) & 0xfff], 10) ? 1 : 0;
 
 	// Dispatch address field IR(31:20), inclusively ORed with the selected source's LSBs.
-	u32 const disp_address = (((m_ir >> 20) & 0xfff) | dispatch_source | oldspace_flag) & 0xfff;
+	// On an IBUF (instruction-decode) dispatch the three bits below the two MSBs
+	// come from IBUF instead of the IR field, so they are masked out of the IR's
+	// contribution first - 2243144-0001A paragraph 4.5.9, "the three next MSBs of
+	// IBUF replace the bits from the IR field".
+	u32 const mir_mask = BIT(m_ir, 13) ? 0xc7f : 0xfff;
+	u32 const disp_address = ((mir_mask & ((m_ir >> 20) & 0xfff)) | dispatch_source | oldspace_flag | gc_volatility_flag) & 0xfff;
 
 	switch ((m_ir >> 8) & 0x03)
 	{
@@ -1438,6 +1509,43 @@ void raven_cpu_device::execute_dispatch()
 			u16 const new_pc = disp_word & 0x3fff;
 			u8 const jump_op = (disp_word >> 14) & 0x07;
 
+			// IR(15), "Enable instruction stream hardware" (2243144-0001A
+			// Table 4-24): a plain dispatch with this bit set also advances the
+			// macroinstruction stream - prefetch the next 32-bit word into MD
+			// when the low half of LC is exhausted, then step LC and recompute
+			// the need-fetch flag. Same sequence handle_popj14() already runs
+			// for the macroinstruction-chaining POPJ, and the same as Meroko's
+			// MInst_Enable_IStream block in raven_cpu.c's dispatch case.
+			//
+			// Found live at microcode PC $153D, the macroinstruction decode
+			// path: $153C loads LOCATION-COUNTER, $153D is this ISTREAM
+			// dispatch, $153E tests for the resulting page fault, and $1546
+			// then does (IBUF) SETM MD before $154A dispatches on the opcode.
+			// Without the prefetch, MD (and so IBUF, and so the decode
+			// dispatch) still held whatever the previous instruction left, and
+			// the Lisp world ran off into the microcode's halt loop at $0051.
+			if (BIT(m_ir, 15))
+			{
+				if (BIT(m_mcr, MCR_NEED_FETCH_BIT))
+				{
+					m_vma = (m_lc >> 1) & 0x1ffffff;
+					u32 const address = vm_resolve_address<MEM_READ>();
+					if (!m_page_fault)
+					{
+						m_read_data = m_data.read_dword(address);
+						m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+						m_read_pending = true;
+					}
+				}
+
+				m_lc++;
+
+				if (BIT(m_lc, 0))
+					m_mcr &= ~(1 << MCR_NEED_FETCH_BIT);
+				else
+					m_mcr |= (1 << MCR_NEED_FETCH_BIT);
+			}
+
 			m_n = BIT(jump_op, 0);
 
 			switch ((jump_op >> 1) & 0x03)
@@ -1446,14 +1554,54 @@ void raven_cpu_device::execute_dispatch()
 				m_next_pc = new_pc;
 				break;
 			case 0x01: // call
-				push(m_n ? m_pc : (m_pc + 1));
+				// IR(17), Stack-own-address (2243144-0001A Table 4-24):
+				// "alters the return address pushed on the uPCS by the call
+				// transfer type. If the N bit is set, the address of this
+				// instruction should be stacked rather than the next
+				// instruction." That is how a faulting dispatch arranges to be
+				// *re-executed* once the trap handler returns, rather than
+				// resumed at its successor. m_pc is already this instruction's
+				// address + 1 here, so its own address is m_pc - 1.
+				//
+				// Found live at microcode PC $027B, the macroinstruction branch
+				// dispatch (which carries Stack-Own-Addr): MAME stacked $027C,
+				// so when the page-fault handler at $32D8 returned the microcode
+				// resumed one instruction past the dispatch, never retried it,
+				// and ran on into a trap to $000A.
+				push(m_n ? ((BIT(m_ir, 17) ? (m_pc - 1) : m_pc)) : (m_pc + 1));
 				m_next_pc = new_pc;
 				break;
 			case 0x02: // return
 				pop();
 				break;
 			case 0x03: // R and P both set: dispatch is ignored, next instruction's
-			           // execution still depends on N (already applied above)
+			           // execution still depends on N (already applied above).
+			           // 2243144-0001A paragraph 4.5.9: "With both R and P set to
+			           // one, the dispatch operation is ignored and the execution
+			           // of the next instruction is based on the state of the N
+			           // bit." That leaves the uPCS free, so this is the one
+			           // dispatch-word transfer type under which the abbreviated
+			           // jump field can act - Table 4-24 restricts IR(53:51) to
+			           // 000/110/111 here, and paragraph 4.5.1.2's "POPJ is
+			           // interpreted as POPJ-XCT-Next in jump and dispatch
+			           // microinstructions" makes both non-zero codes a pop that
+			           // leaves the delay slot running. Same restriction Meroko
+			           // expresses with its live_abj flag.
+			           //
+			           // Found live at microcode PC $027B,
+			           //   DISPATCH <A-$001,MD> addr $680 ... AND-POPJ-XCT-NEXT
+			           // in the macroinstruction branch path: without the pop the
+			           // microcode fell through to $027D instead of returning,
+			           // and ended up taking a trap to $000A.
+				switch ((m_ir >> 51) & 0x07)
+				{
+				case 0x06: // POPJ - reads as POPJ-XCT-next in a dispatch microinstruction
+				case 0x07: // POPJ-XCT-next
+					pop();
+					break;
+				default:
+					break;
+				}
 				break;
 			}
 		}
