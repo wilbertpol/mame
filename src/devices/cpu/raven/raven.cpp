@@ -31,6 +31,9 @@ static constexpr u8 MCR_INT_ENABLE_BIT = 15;
 // freshly-downloaded microcode (e.g. a microload read from disk) actually execute.
 static constexpr u8 MCR_PROM_DISABLE_BIT = 11;
 static constexpr u8 MCR_MEMORY_CYCLE_ENABLE_BIT = 8;
+// 2243144-0001A Table 4-16, MCR M(09): "Forced access request". Pairs with the
+// level-2 map control's own M(10) "Forced access bit" - see vm_resolve_address().
+static constexpr u8 MCR_FORCED_ACCESS_REQUEST_BIT = 9;
 static constexpr u8 MCR_SUB_SYSTEM_FLAG_BIT = 7;
 static constexpr u8 MCR_TEST_FAIL_FLAG_BIT = 6;
 
@@ -467,21 +470,46 @@ u32 raven_cpu_device::vm_resolve_address()
 
 	if (Action == MEM_WRITE)
 	{
-		if (!m2_writeable || (m2_forceable))
+		// The level-2 control's M(10) "Forced access bit" (Table 4-16) is
+		// *permissive*, not restrictive: together with the MCR's own M(09)
+		// "Forced access request" it is a second way to let a write through a
+		// page that is not otherwise writeable. It is not a reason to fault a
+		// page that is.
+		//
+		// This was inverted, faulting whenever the bit was set. The band hung
+		// forever because of it: the page at VMA cbfdfc00 is valid, accessible
+		// and writeable with only the forced-access bit set, so every write
+		// faulted, and the microcode's write-retry loop at $32F2-$32FA re-issued
+		// VMA-START-WRITE about 33000 times a second with the location counter
+		// frozen. The loop's own dispatch at $32F6 selects dispatch[$18C], whose
+		// entry is the one "nothing to fix here" entry among its neighbours -
+		// the microcode had correctly concluded the write should simply succeed.
+		if (!(m2_writeable || (m2_forceable && BIT(m_mcr, MCR_FORCED_ACCESS_REQUEST_BIT))))
 		{
 			m_page_fault = true;
 		}
-		if (!m_page_fault)
-		{
-//			fatalerror("%04x: vm_resolve_address write not implemented", m_prev_pc);
-		}
+
+		// Level-1 cycle-status write-back, Table 4-16: the top of the LVL1 map
+		// data read is not stored map contents at all but status from the cycle
+		// just performed - M(15) "Unmapped cycle", M(14) "Not(forced cycle)",
+		// M(13) "Privilege fault - write", M(12) "Privilege fault - access". The
+		// microcode reads them back through the MEMORY-MAP-LEVEL-1 M source to
+		// find out what its own access did, so they have to be deposited here.
+		// (A write leaves M(12) alone; only a read sets or clears it.)
+		lvl1_map_data &= 0x1fff;
+		if (!(m2_forceable && BIT(m_mcr, MCR_FORCED_ACCESS_REQUEST_BIT)))
+			lvl1_map_data |= 0x4000;
+		if (m_page_fault)
+			lvl1_map_data |= 0x2000;
+		m_vma_lvl1_map[vpage_block] = lvl1_map_data;
 	}
 	else
 	{
-		if (!m_page_fault)
-		{
-//			fatalerror("%04x: vm_resolve_address read not implemented", m_prev_pc);
-		}
+		lvl1_map_data &= 0x0fff;
+		lvl1_map_data |= 0x4000;
+		if (m_page_fault)
+			lvl1_map_data |= 0x1000;
+		m_vma_lvl1_map[vpage_block] = lvl1_map_data;
 	}
 	return address;
 }
