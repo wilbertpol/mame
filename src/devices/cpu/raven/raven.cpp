@@ -850,12 +850,17 @@ void raven_cpu_device::store_o_bus()
 			m_mcr |= (1 << MCR_NEED_FETCH_BIT);
 			break;
 		case 0x02: // MCR
-			// PROM-disable is a rising-edge trigger (0 -> 1 only) - matches Meroko's own
-			// equivalent check, which explicitly compares the OLD MCR value against the
-			// new one being written, not just the new value's own state.
-			if (!BIT(m_mcr, MCR_PROM_DISABLE_BIT) && BIT(m_o_bus, MCR_PROM_DISABLE_BIT))
-				m_inst_view.select(1);
 			m_mcr = (m_mcr & (0xf08f0000 | (1 << MCR_NEED_FETCH_BIT))) | (m_o_bus & (0x0f70ffff & ~(1 << MCR_NEED_FETCH_BIT)));
+			// The boot-PROM overlay follows the PROM-disable bit's current *level*, not
+			// its 0->1 edge. After the loaded microcode is live the microcode clears this
+			// bit again to run PROM-resident code (the $001E-$0023 entry sequence), and
+			// must see the PROM there; latching the overlay on the rising edge left
+			// address 0-0x7ff permanently mapped to the writable control store, so
+			// $001E executed the wrong microinstruction and fell into the PROM
+			// self-test loop - the "Loading Configuration Partition" hang. Meroko
+			// re-evaluates "loc_ctr_cnt > 2048 || MCregister & MCR_PROM_Disable" on
+			// every fetch; its 0->1 test in the MBD-MCR case is only a logmsg().
+			m_inst_view.select(BIT(m_mcr, MCR_PROM_DISABLE_BIT) ? 1 : 0);
 			if (BIT(m_mcr, 21))
 			{
 				fatalerror("store_mf: NUBUS RESET\n");
