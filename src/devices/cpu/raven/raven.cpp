@@ -508,8 +508,16 @@ u32 raven_cpu_device::get_m_source()
 			return m_vma;
 		case 0x01: // Q
 			return m_q;
-		case 0x02: // IBUF argument offset field zero extended
-			return m_ibuf & 0x3f;
+		case 0x02: // IBUF argument offset field zero extended. Table 4-16 defines
+		           // this as "IBUF(05:00) of current macroinstruction" - the same
+		           // wording as the IBUF register and IBUF branch offset sources
+		           // below, so LC(0) selects which 16-bit half of IBUF is current
+		           // in exactly the same way. This used to take the low half
+		           // unconditionally, which is right only for odd LC: on even LC
+		           // it fed the *previous* macroinstruction's argument field into
+		           // every MIB-ARGUMENT-OFFSET-FIELD read (PDL indexing at $01A8,
+		           // the argument-count tests at $2416/$26B6, ...).
+			return BIT(m_lc, 0) ? (m_ibuf & 0x3f) : ((m_ibuf >> 16) & 0x3f);
 		case 0x03: // micro-stack pointer
 			return m_sp;
 		case 0x04: // MCR
@@ -583,12 +591,22 @@ u32 raven_cpu_device::get_m_source()
 }
 
 
+// Condition 01100 in 2243144-0001A Table 4-19 is "Typed-data overflow", and the
+// next entry in the same table identifies ALU(24) as the "boxed sign bit" - so
+// the flag is *signed* overflow of the 25-bit boxed value in ALU(24:00), not a
+// carry out of some narrower unsigned field. Both helpers below therefore use
+// the textbook signed-overflow test taken at bit 24: for an add, both operands'
+// signs differ from the result's; for a subtract, the operands' signs differ and
+// the result's sign differs from the minuend's. (This used to be a carry out of
+// bit 23 of a 24-bit field, which is a different quantity entirely and made
+// TYPED-DATA SUB at microcode PC $0305 report an overflow the real machine does
+// not - see ti_explorer.md.) Matches Meroko's ALU_Fixnum_Oflow.
 void raven_cpu_device::add32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_out, u32 &fixnum_overflow)
 {
 	const u64 result = u64(a) + u64(m) + carry_in;
 	res = u32(result);
 	carry_out = BIT(result, 32);
-	fixnum_overflow = BIT((a & 0xffffff) + (m & 0xffffff) + carry_in, 24);
+	fixnum_overflow = BIT((m ^ res) & (a ^ res), 24);
 }
 
 
@@ -598,7 +616,7 @@ void raven_cpu_device::sub32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_ou
 	const u64 result = u64(m) - u64(a) - (carry_in ? 0 : 1);
 	res = u32(result);
 	carry_out = BIT(result, 32);
-	fixnum_overflow = BIT((m & 0xffffff) - (a & 0xffffff) - (carry_in ? 0 : 1), 24);
+	fixnum_overflow = BIT((m ^ a) & (m ^ res), 24);
 }
 
 
@@ -1275,6 +1293,11 @@ void raven_cpu_device::execute_alu()
 void raven_cpu_device::execute_byte()
 {
 	u64 alu_out = m_m - m_a - 1;
+	// The condition and sense field is common to the ALU, byte and jump formats
+	// (2243144-0001A paragraph 4.5.5), so "Typed-data overflow" is testable here
+	// too - it used to be hardcoded inactive. Same forced M-A-1 subtract as the
+	// jump instruction, so the same signed-overflow test at bit 24 applies.
+	u32 const byte_fixnum_overflow = BIT((m_m ^ m_a) & (m_m ^ u32(alu_out)), 24);
 
 	shifter(BIT(m_ir, 17), BIT(m_ir, 18), m_ir & 0x1f);
 /*
@@ -1309,7 +1332,7 @@ void raven_cpu_device::execute_byte()
 
 	store_o_bus();
 
-	if (is_condition(alu_out, BIT(alu_out, 32), 0))
+	if (is_condition(alu_out, BIT(alu_out, 32), byte_fixnum_overflow))
 	{
 		perform_abj();
 	}
@@ -1342,7 +1365,10 @@ void raven_cpu_device::execute_jump()
 	if (BIT(m_ir, 17))
 		fatalerror("%04x: jump MSEL (IR(17)) set - unexpected, ir=%014x\n", m_prev_pc, m_ir);
 
-	bool const condition = is_condition(alu_out, BIT(alu_out, 32), 0);
+	// See execute_byte(): the condition field is shared, so the jump's own forced
+	// M-A-1 subtract has to supply a real typed-data overflow flag as well.
+	u32 const jump_fixnum_overflow = BIT((m_m ^ m_a) & (m_m ^ u32(alu_out)), 24);
+	bool const condition = is_condition(alu_out, BIT(alu_out, 32), jump_fixnum_overflow);
 
 	if (condition)
 	{
