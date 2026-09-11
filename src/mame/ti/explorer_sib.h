@@ -77,6 +77,7 @@ private:
 	memory_share_creator<u8> m_nv_ram;
 	u32 m_configuration_register;
 	u32 m_event_vector[16]{};
+	u32 m_attribute_register = 0;
 	u32 m_mask_register = 0;
 	u32 m_operation_register = 0;
 	u32 m_mouse_y_position = 0;

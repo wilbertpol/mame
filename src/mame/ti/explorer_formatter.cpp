@@ -63,7 +63,6 @@ void explorer_formatter_device::device_reset()
 		if (!m_image[i]->exists())
 		{
 			l.bytes_per_sector = 0;
-			l.byte_period = nscsi_full_device::scsi_data_byte_period();
 		}
 		else
 		{
@@ -71,14 +70,6 @@ void explorer_formatter_device::device_reset()
 			const auto &hdinfo = m_image[i]->get_info();
 			l.bytes_per_sector = hdinfo.sectorbytes;
 			m_image[i]->get_inquiry_data(l.inquiry_data);
-
-			if (!m_seek_model || !hdinfo.sectors || !hdinfo.sectorbytes)
-				l.byte_period = nscsi_full_device::scsi_data_byte_period();
-			else
-			{
-				const uint32_t bytes_per_track = hdinfo.sectors * hdinfo.sectorbytes;
-				l.byte_period = attotime::from_hz(double(m_rpm) / 60.0) / bytes_per_track;
-			}
 		}
 		l.cur_lba = -1;
 		l.last_cylinder = -1;
@@ -154,9 +145,25 @@ attotime explorer_formatter_device::scsi_data_command_delay()
 	}
 }
 
+// Byte transfer rate: one byte per eight cycles of the NCR 5385's own 10MHz
+// clock (1.25MB/s) - what the controller can sustain - rather than a period
+// derived from platter geometry. A geometry-derived period made the firmware's
+// SCSI interrupt land either side of a wait loop's exit depending on run-to-run
+// timing, so the slot 2 self-test only passed intermittently; this is stable.
+//
+// The drives actually fitted to an Explorer report 0.625MB/s, i.e. half this,
+// and that value works identically (verified: 16/16 identical runs, same boot
+// depth) - but the controller-side rate is used deliberately, because it runs
+// the emulation faster and nothing in the firmware's timing depends on the
+// difference.
+//
+// Do NOT raise it further: rates above 1.25MB/s are not sustainable through the
+// NUPI's own FIFO/DMA path. Measured boot depth by rate - 500k/625k/750k/1M/
+// 1.25M all reach CMDLOG 39; the 5385's 1.5MB/s paper maximum drops to 36, and
+// 2MB/s breaks the disk boot outright (6).
 attotime explorer_formatter_device::scsi_data_byte_period()
 {
-	return m_lun[m_active_lun].byte_period;
+	return attotime::from_ticks(1, 1'250'000);
 }
 
 void explorer_formatter_device::device_add_mconfig(machine_config &config)

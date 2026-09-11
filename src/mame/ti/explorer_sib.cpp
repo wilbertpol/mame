@@ -65,6 +65,7 @@ void explorer_sib_device::device_start()
 	save_item(NAME(m_configuration_register));
 	m_configuration_register = 0;
 	save_item(NAME(m_event_vector));
+	save_item(NAME(m_attribute_register));
 	save_item(NAME(m_mask_register));
 	save_item(NAME(m_operation_register));
 	save_item(NAME(m_mouse_y_position));
@@ -269,8 +270,13 @@ void explorer_sib_device::graphics_bitmap_map(address_map &map)
 	map(0x00e0007c, 0x00e0007f).lw32(NAME([] (u32 data) {
 		printf("Graphics-Char-Per-Horiz-Period write %08x\n", data);
 	}));
-	map(0x00e00080, 0x00e00083).lw32(NAME([] (u32 data) {
-		printf("Graphics-Attribute-Register write %08x\n", data);
+	// Readable as well as writable, like the adjacent mask and ALU registers.
+	// Meroko's sib.c reads it back as sib_video_attr; installed write-only here,
+	// reads fell through to the slot's unmapped handler instead.
+	map(0x00e00080, 0x00e00083).lrw32(NAME([this] () {
+		return m_attribute_register;
+	}), NAME([this] (offs_t offset, u32 data, u32 mem_mask) {
+		COMBINE_DATA(&m_attribute_register);
 	}));
 	map(0x00e00084, 0x00e00087).lrw32(NAME([this] () {
 		return m_mask_register;

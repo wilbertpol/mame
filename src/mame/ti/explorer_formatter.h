@@ -54,7 +54,6 @@ private:
 		int bytes_per_sector = 0;
 		std::vector<u8> inquiry_data;
 		int last_cylinder = -1;
-		attotime byte_period;
 	};
 
 	attotime seek_time(lun_state &l, uint32_t lba);

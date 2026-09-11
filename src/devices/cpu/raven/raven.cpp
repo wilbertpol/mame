@@ -1414,8 +1414,19 @@ void raven_cpu_device::execute_dispatch()
 
 	m_dispatch_constant = (m_ir >> 32) & 0x3ff;
 
+	// Map-Oldspace (IR(11)): when set, dispatch address bit 0 carries the GC
+	// "oldspace" answer for the object MD points at - level-1 map entry bit 10 -
+	// rather than coming from the rotated source, whose bit 0 the mask above
+	// already cleared for exactly this purpose. Without it the dispatch always
+	// selected the not-in-oldspace arm; that only starts to matter once the
+	// loaded Lisp world runs its own GC-aware code, where it stalled the boot
+	// right after the band load. Matches Meroko's oldspace_flag in raven_cpu.c.
+	u32 oldspace_flag = 0;
+	if (BIT(m_ir, 11))
+		oldspace_flag = BIT(m_vma_lvl1_map[(m_md >> 13) & 0xfff], 10) ? 1 : 0;
+
 	// Dispatch address field IR(31:20), inclusively ORed with the selected source's LSBs.
-	u32 const disp_address = (((m_ir >> 20) & 0xfff) | dispatch_source) & 0xfff;
+	u32 const disp_address = (((m_ir >> 20) & 0xfff) | dispatch_source | oldspace_flag) & 0xfff;
 
 	switch ((m_ir >> 8) & 0x03)
 	{

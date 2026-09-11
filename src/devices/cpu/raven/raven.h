@@ -60,34 +60,34 @@ private:
 	memory_access<ADDRESS_BITS, 3, -3, ENDIANNESS_BIG>::specific m_program;
 	memory_access<EXTERNAL_ADDRESS_BITS, 2, 0, ENDIANNESS_LITTLE>::specific m_data;
 	memory_access<EXTERNAL_ADDRESS_BITS, 2, 0, ENDIANNESS_LITTLE>::specific m_local_bus;
-	bool m_local_bus_miss;
+	bool m_local_bus_miss = false;
 
 	required_shared_ptr<u64> m_control_store; // 16K x 56 bits RAM
-	u16 m_pc; // 14 bits
-	u16 m_prev_pc;
-	u16 m_next_pc;
-	bool m_n;
-	u64 m_ir;
-	u32 m_a; // 32 bits
-	u32 m_a_mem[0x400]; // 1024 x 32 bits
-	u32 m_m; // 32 bits
-	u32 m_m_mem[0x40]; // 64 x 32 bits
-	u32 m_t_memory[16]; // Tag-classifier RAM
-	u32 m_o_bus;
-	u32 m_q;
-	u32 m_md;
-	u8 m_sp;
-	u32 m_stack[0x40]; // 64 x 20 bits
-	u32 m_mcr;
+	u16 m_pc = 0; // 14 bits
+	u16 m_prev_pc = 0;
+	u16 m_next_pc = 0;
+	bool m_n = false;
+	u64 m_ir = 0;
+	u32 m_a = 0; // 32 bits
+	u32 m_a_mem[0x400]{}; // 1024 x 32 bits
+	u32 m_m = 0; // 32 bits
+	u32 m_m_mem[0x40]{}; // 64 x 32 bits
+	u32 m_t_memory[16]{}; // Tag-classifier RAM
+	u32 m_o_bus = 0;
+	u32 m_q = 0;
+	u32 m_md = 0;
+	u8 m_sp = 0;
+	u32 m_stack[0x40]{}; // 64 x 20 bits
+	u32 m_mcr = 0;
 	u32 m_config_register = 0;
-	u32 m_imod_lo;
-	u32 m_imod_hi;
-	u32 m_vma;
-	u32 m_pdl[0x400]; // 1024 x 32 bits
-	u16 m_pdl_pointer; // 10 bits
-	u16 m_pdl_index; // 10 bits
-	u32 m_lc; // 32 bits?
-	u32 m_ibuf; // 32 bits?
+	u32 m_imod_lo = 0;
+	u32 m_imod_hi = 0;
+	u32 m_vma = 0;
+	u32 m_pdl[0x400]{}; // 1024 x 32 bits
+	u16 m_pdl_pointer = 0; // 10 bits
+	u16 m_pdl_index = 0; // 10 bits
+	u32 m_lc = 0; // 32 bits?
+	u32 m_ibuf = 0; // 32 bits?
 
 	// Virtual memory level 1 map - 4096 x 32 bits?
 	// xxxxxxxx xxxxxxxx -------- -------- Unused (0)
@@ -99,7 +99,7 @@ private:
 	// -------- -------- -----x-- -------- Oldspace meta bit; 0 = oldspace / reserved
 	// -------- -------- ------xx x------- Garbage collector volatility bits, bit 9 = GC valid bit)
 	// -------- -------- -------- -xxxxxxx Level 2 block number
-	u32 m_vma_lvl1_map[0x1000];
+	u32 m_vma_lvl1_map[0x1000]{};
 
 	// Virtual memory level 2 control - 4096 x 32 bits?
 	// xxxxxxxx xxxxxxxx -------- -------- Unused (0)
@@ -111,23 +111,23 @@ private:
 	// -------- -------- ------xx -------- Read / Write access rights
 	// -------- -------- -------- xx------ Map status
 	// -------- -------- -------- --xxxxxx Meta bits (software controlled memory management)
-	u32 m_vma_lvl2_control[0x1000];
+	u32 m_vma_lvl2_control[0x1000]{};
 
 	// Virtual memory levvel 2 map - 4096 x 32 bits?
 	// xxxxxxxx xx------ -------- -------- Unused (0)
 	// -------- --xxxxxx xxxxxxxx xxxxxxxx Physical page number
-	u32 m_vma_lvl2_map[0x1000];
+	u32 m_vma_lvl2_map[0x1000]{};
 
-	u32 m_dispatch[0x1000]; // 4096 x 17 bits
-	u16 m_dispatch_constant; // 10 bits
-	bool m_page_fault;
-	u32 m_read_data;
-	u8 m_memory_busy_counter;
-	bool m_read_pending;
-	u16 m_pending_interrupts;
-	bool m_nubus_error;
+	u32 m_dispatch[0x1000]{}; // 4096 x 17 bits
+	u16 m_dispatch_constant = 0; // 10 bits
+	bool m_page_fault = false;
+	u32 m_read_data = 0;
+	u8 m_memory_busy_counter = 0;
+	bool m_read_pending = false;
+	u16 m_pending_interrupts = 0;
+	bool m_nubus_error = false;
 
-	int m_icount;
+	int m_icount = 0;
 
 	enum {
 		MEM_READ,
