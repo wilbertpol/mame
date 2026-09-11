@@ -1303,7 +1303,18 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	map(0x806e56, 0x806e57).lr16(NAME([]() { return u16(0x6e55); }));
 
 	// Real NuBus access window - see m_page_register/nubus_window_r/w in nupi.h.
-	map(0x880000, 0x89ffff).rw(FUNC(explorer_nupi_device::nubus_window_r), FUNC(explorer_nupi_device::nubus_window_w));
+	//
+	// The window is a full page: the page register supplies NuBus address bits
+	// 31-18, so the window itself has to supply all 18 low bits, i.e. 0x40000
+	// bytes. It was 0x880000-0x89ffff (half that) and that truncation was live: the
+	// band's Request NUPI Status for command block F427404C set page_register=FD09
+	// (page bits = 0x3d09 -> F4240000) and the firmware then read local 0x8B404C,
+	// which fell outside the window, came back as unmapped 0xFFFF, and was decoded
+	// as a malformed command block. The NUPI duly reported "illegal command"
+	// (status word 0 bit 4, Figure 5-15) in the following status request, the band
+	// saw a status word without bit 31 set and called its microcode error handler
+	// at $0039, which halts in the $0051-$0057 loop.
+	map(0x880000, 0x8bffff).rw(FUNC(explorer_nupi_device::nubus_window_r), FUNC(explorer_nupi_device::nubus_window_w));
 }
 
 u16 explorer_nupi_device::page_register_r()
