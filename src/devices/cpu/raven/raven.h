@@ -123,10 +123,19 @@ private:
 	// GC volatility of the page most recently translated (level-2 control bits
 	// 12:11), used by the GC-volatility dispatch in execute_dispatch().
 	u8 m_cached_gc_volatility = 0;
+	// Level-1 map output latch - see the MEMORY-MAP-LEVEL-1 M source and
+	// update_cached_lvl1_from_md().
+	u32 m_cached_lvl1 = 0;
 	bool m_page_fault = false;
 	u32 m_read_data = 0;
 	u8 m_memory_busy_counter = 0;
 	bool m_read_pending = false;
+
+	// Macroinstruction-chaining POPJ prefetch, deferred - see handle_popj14().
+	u32 m_pj14_fetch_vma = 0;
+	u32 m_pj14_fetch_addr = 0;
+	bool m_pj14_fetch_pending = false;
+	bool m_pj14_fetch_go = false;
 	u16 m_pending_interrupts = 0;
 	bool m_nubus_error = false;
 
@@ -145,6 +154,7 @@ private:
 	void read_unmapped_byte();
 	void write_unmapped_byte();
 	template <int Action> u32 vm_resolve_address();
+	void update_cached_lvl1_from_md();
 	u16 map2_addr();
 	u32 get_m_source();
 	void add32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_out, u32 &fixnum_overflow);
@@ -153,8 +163,9 @@ private:
 	bool is_condition(u32 alu_out, u32 carry_out, u32 fixnum_overflow);
 	bool active_int() const;
 	void push(u32 pc);
-	void pop();
-	void handle_popj14();
+	void pop(bool after_next);
+	void handle_popj14(bool after_next);
+	void service_pj14_fetch();
 	void perform_abj();
 	u32 shifter(bool rotate_r, bool rotate_mask, int rot_count);
 	void set_o_bus(u32 alu_out, u32 carry_out);

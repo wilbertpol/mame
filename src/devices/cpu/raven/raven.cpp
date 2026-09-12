@@ -46,14 +46,6 @@ static constexpr u8 MCR_TEST_FAIL_FLAG_BIT = 6;
 static constexpr u8 MEMORY_CYCLE_BUSY_CYCLES = 2; // was 6
 
 
-// TEMP/TESTING: user directed - unconditional, always-on trace of the keyboard
-// USART address range (SIB, f5fc0000-f5fc0007), to watch the register setup and
-// data exchange with explorer_kbd_device during the ongoing SIB self-test
-// investigation (see ti_explorer.md). s_instr_counter is a plain, unconditional
-// dispatched-instruction count, kept only to timestamp these lines.
-static long long s_instr_counter = 0;
-
-
 static const u32 shift_mask_left[32] =
 {
 	0x00000001, 0x00000003, 0x00000007, 0x0000000f,
@@ -165,10 +157,15 @@ void raven_cpu_device::device_start()
 	save_item(NAME(m_dispatch));
 	save_item(NAME(m_dispatch_constant));
 	save_item(NAME(m_cached_gc_volatility));
+	save_item(NAME(m_cached_lvl1));
 	save_item(NAME(m_page_fault));
 	save_item(NAME(m_read_data));
 	save_item(NAME(m_memory_busy_counter));
 	save_item(NAME(m_read_pending));
+	save_item(NAME(m_pj14_fetch_vma));
+	save_item(NAME(m_pj14_fetch_addr));
+	save_item(NAME(m_pj14_fetch_pending));
+	save_item(NAME(m_pj14_fetch_go));
 	save_item(NAME(m_pending_interrupts));
 	save_item(NAME(m_nubus_error));
 	save_item(NAME(m_local_bus_miss));
@@ -502,6 +499,7 @@ u32 raven_cpu_device::vm_resolve_address()
 		if (m_page_fault)
 			lvl1_map_data |= 0x2000;
 		m_vma_lvl1_map[vpage_block] = lvl1_map_data;
+		m_cached_lvl1 = lvl1_map_data;
 	}
 	else
 	{
@@ -510,8 +508,20 @@ u32 raven_cpu_device::vm_resolve_address()
 		if (m_page_fault)
 			lvl1_map_data |= 0x1000;
 		m_vma_lvl1_map[vpage_block] = lvl1_map_data;
+		m_cached_lvl1 = lvl1_map_data;
 	}
+
 	return address;
+}
+
+
+// The level-1 map output latch - see the MEMORY-MAP-LEVEL-1 M source in
+// get_m_source(). The map is addressed by MD whenever MD is loaded, so refresh
+// the latch from the MD-indexed entry there; vm_resolve_address() refreshes it
+// from the VMA-indexed entry it just translated.
+void raven_cpu_device::update_cached_lvl1_from_md()
+{
+	m_cached_lvl1 = m_vma_lvl1_map[(m_md >> 13) & 0xfff];
 }
 
 
@@ -557,7 +567,32 @@ u32 raven_cpu_device::get_m_source()
 		case 0x07: // dispatch constant
 			return m_dispatch_constant;
 		case 0x08: // memory map level 1
-			return m_vma_lvl1_map[(m_md >> 13) & 0xfff];
+			// Figure 4-8 (Map Logic Block Diagram) feeds the map's VIRTUAL ADDRESS
+			// input from a VMA/MD multiplexer and takes READ DATA out to the MF
+			// bus, so what this source returns is whatever the map last put out -
+			// addressed by VMA when a cycle translated one, and by MD when MD was
+			// last loaded. m_cached_lvl1 is that output; see update_cached_lvl1().
+			//
+			// This used to index by MD unconditionally. Found live at $2BD0,
+			//   2bcf: JUMP #x2BE7 IF-BIT-SET <GC valid, M(09)> MEMORY-MAP-LEVEL-1
+			//   2bd0: (M-1c) LDB <M(08:07), GC region volatility> MEMORY-MAP-LEVEL-1
+			//   2bd1: (MD) SETA A-2b0
+			// - the microcode reads the GC volatility of the page it has just
+			// accessed and only *then* loads MD with that page's address (saved
+			// out of VMA at $2BCE) for the map writes that follow. Indexing by MD
+			// read a stale, unrelated page: MD was C806A245 where VMA was
+			// 184A73FA, giving GC volatility 11 instead of 00. That inverted A-2af
+			// bits 06:05 at $2BD4, stopped the search loop at $282B-$2834 one entry
+			// early, and the Lisp world went on to read an uninitialised word and
+			// take a TRANS-TRAP into the debugger.
+			//
+			// Indexing by VMA instead is *not* enough - tried, and it breaks the
+			// boot far earlier (CMDLOG 332 -> 35): once MD has been loaded without
+			// an intervening cycle the map output has to follow MD. Table 4-16's
+			// own M(15:12) for this source are cycle status, which only mean
+			// anything for the cycle just performed, so a latch of the map output
+			// is the right shape. Same model as Meroko's `cached_lv1`.
+			return m_cached_lvl1 & 0xffff;
 		case 0x09: // memory map level 2 - control
 			return m_vma_lvl2_control[map2_addr()];
 		case 0x0a: // IBUF register
@@ -955,6 +990,7 @@ void raven_cpu_device::store_o_bus()
 		case 0x11: // VMA write map level 1
 			m_vma = m_o_bus;
 			m_vma_lvl1_map[(m_md >> 13) & 0xfff] = m_vma & 0x0fff;
+			m_cached_lvl1 = m_vma; // the map put out what was just written to it
 			break;
 		case 0x12: // VMA write map level 2 control
 			m_vma = m_o_bus;
@@ -982,33 +1018,41 @@ void raven_cpu_device::store_o_bus()
 			break;
 		case 0x18: // MD
 			m_md = m_o_bus;
+			update_cached_lvl1_from_md();
 			break;
 		case 0x19: // MD write map level 1
 			m_md = m_o_bus;
 			m_vma_lvl1_map[(m_md >> 13) & 0xfff] = m_vma & 0x0fff;
+			m_cached_lvl1 = m_vma;
 			break;
 		case 0x1a: // MD write map level 2 control
 			m_md = m_o_bus;
+			update_cached_lvl1_from_md();
 			m_vma_lvl2_control[map2_addr()] = m_vma & 0xffff;
 			break;
 		case 0x1b: // MD write map level 2
 			m_md = m_o_bus;
+			update_cached_lvl1_from_md();
 			m_vma_lvl2_map[map2_addr()] = m_vma & 0x3fffff;
 			break;
 		case 0x1c: // MD start read
 			m_md = m_o_bus;
+			update_cached_lvl1_from_md();
 			read();
 			break;
 		case 0x1d: // MD start write
 			m_md = m_o_bus;
+			update_cached_lvl1_from_md();
 			write();
 			break;
 		case 0x1e: // MD start unmapped read
 			m_md = m_o_bus;
+			update_cached_lvl1_from_md();
 			read_unmapped();
 			break;
 		case 0x1f: // MD start unmapped write
 			m_md = m_o_bus;
+			update_cached_lvl1_from_md();
 			write_unmapped();
 			break;
 		case 0x20: // PDL buffer pointer data
@@ -1167,16 +1211,41 @@ void raven_cpu_device::push(u32 pc)
 }
 
 
-void raven_cpu_device::pop()
+void raven_cpu_device::pop(bool after_next)
 {
 	// TODO What to do with the other bits from the mpcs?
 	m_next_pc = m_stack[m_sp] & 0xfffff;
 	m_sp = (m_sp - 1) & 0x3f;
-	handle_popj14();
+	handle_popj14(after_next);
 }
 
 
-void raven_cpu_device::handle_popj14()
+// The macroinstruction-chaining POPJ's prefetch does not take effect in the
+// cycle that starts it: the bus request, and with it the VMA overwrite, land two
+// microinstructions later - so the delay-slot instruction of a POPJ-XCT-next
+// still sees the VMA the *previous* memory cycle left behind. See
+// handle_popj14() for the evidence.
+void raven_cpu_device::service_pj14_fetch()
+{
+	if (!m_pj14_fetch_pending)
+		return;
+
+	if (!m_pj14_fetch_go)
+	{
+		m_pj14_fetch_go = true;
+		return;
+	}
+
+	m_vma = m_pj14_fetch_vma;
+	m_read_data = m_data.read_dword(m_pj14_fetch_addr);
+	m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
+	m_read_pending = true;
+	m_pj14_fetch_pending = false;
+	m_pj14_fetch_go = false;
+}
+
+
+void raven_cpu_device::handle_popj14(bool after_next)
 {
 	if (!BIT(m_next_pc, 14))
 		return;
@@ -1186,13 +1255,39 @@ void raven_cpu_device::handle_popj14()
 
 	if (need_fetch)
 	{
+		// The address is resolved now - the map side effects and any page fault
+		// belong to this cycle - but the memory cycle itself is queued, and for
+		// the XCT-next forms (RPN=100 Return-XCT-Next and ABJ POPJ-XCT-next) so
+		// is the VMA overwrite. The manual documents the dispatch's ISTREAM bit
+		// and Table 4-23's transfer types but says nothing about when the
+		// chaining POPJ loads VMA; Meroko models it explicitly, saving VMA
+		// across the resolve in handle_popj_14_nxt() and restoring it, then
+		// overwriting it from the main loop's pj14_fetch_go interlock.
+		//
+		// Found live at microcode PC $0195,
+		//   (C-PDL-POINTER-PUSH) DPB (BYTE-FIELD 25 0) VMA A-1eb
+		// the delay slot of $0194's DISPATCH ... AND-POPJ-XCT-NEXT. It builds a
+		// locative out of VMA. Overwriting VMA a cycle early made that a
+		// locative to the macrocode word being fetched ($160C2BD4) instead of to
+		// the operand cell the previous cycle read ($1606A842); the microcode
+		// then dereferenced it, read a word of compiled code as if it were a
+		// forwarding pointer, chased it into unallocated storage and the Lisp
+		// world took ">>Trap #o26136 (TRANS-TRAP) ... #<SYS:DTP-TRAP 0> was read
+		// from location #o16050030" during NET::HOST :SET-HOST-DEFAULTS.
+		//
+		// A page fault is the exception: the VMA overwrite happens immediately,
+		// because the fault handler reads VMA to find the faulting address.
+		u32 const saved_vma = m_vma;
 		m_vma = (m_lc >> 1) & 0x1ffffff;
 		u32 const address = vm_resolve_address<MEM_READ>();
 		if (!m_page_fault)
 		{
-			m_read_data = m_data.read_dword(address);
-			m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
-			m_read_pending = true;
+			m_pj14_fetch_vma = m_vma;
+			m_pj14_fetch_addr = address;
+			m_pj14_fetch_pending = true;
+			m_pj14_fetch_go = false;
+			if (after_next)
+				m_vma = saved_vma;
 		}
 	}
 
@@ -1248,11 +1343,11 @@ void raven_cpu_device::perform_abj()
 		m_n = true;
 		break;
 	case 0x06: // pop
-		pop();
+		pop(false);
 		m_n = true;
 		break;
 	case 0x07: // popj after next
-		pop();
+		pop(true);
 		break;
 	default:
 		fatalerror("%04x: perform_abj %02x not implemented\n", m_prev_pc, (m_ir >> 51) & 0x07);
@@ -1409,11 +1504,42 @@ void raven_cpu_device::execute_jump()
 			m_next_pc = new_pc;
 			break;
 		case 0x01: // call
-			push(m_n ? m_pc : (m_pc + 1));
+			// Figure 4-16 names the jump format's three transfer bits RETURN, PUSH
+			// and NOP, and the abbreviated jump field's POPJ-XCT-next is a return
+			// as well - so RPN=010 (Call-XCT-next) with ABJ=111 asks the uPCS for a
+			// push and a pop in the same cycle. Both act after the delay slot, and
+			// with one stack pointer they cancel: the transfer happens and the
+			// depth is unchanged, i.e. it degenerates into Branch-XCT-next.
+			//
+			// 4.5.1.2 does not define this - it says the abbreviated jump
+			// operations have "no effect in jump or dispatch microinstructions"
+			// apart from POPJ/POPJ-XCT-next, and then that POPJ-XCT-next "should
+			// not be set when the destination of a microinstruction is the uPCS",
+			// which is exactly what the P bit is. The band's microcode does it
+			// anyway (5 instructions in the live control store), so the encoding
+			// has to be given the meaning the hardware gave it. Meroko's
+			// raven_cpu.c suppresses the push here too, under its own "HACK HERE"
+			// comment, and this is the only evidence there is.
+			//
+			// Found live at $1B27, in the scan loop at $1B0A: with the push, the
+			// call to $1B21 returned into $1B29, whose tail
+			// (JUMP-XCT-NEXT #x1B1D + MICROSTACK-DATA-POP) pops again - so the
+			// loop leaked one microstack entry per iteration. Four iterations in
+			// and the uPCS was empty, the next POPJ read 0 and trapped to $0000,
+			// which calls the band's error handler at $0039 and halts at $0051.
+			//
+			// Only RPN=010 is treated this way, matching Meroko. RPN=011 (Call,
+			// delay slot inhibited) with the same ABJ also exists in the control
+			// store, twice, but nothing has exercised it yet and its two halves
+			// disagree about the delay slot as well, so it is left pushing.
+			if (m_n || ((m_ir >> 51) & 0x07) < 0x06)
+				push(m_n ? m_pc : (m_pc + 1));
 			m_next_pc = new_pc;
 			break;
 		case 0x02: // return
-			pop();
+			// RPN=100 Return-XCT-Next defers the chaining prefetch's VMA
+			// overwrite past the delay slot; RPN=101 Return does not.
+			pop(!m_n);
 			break;
 		case 0x03: // RPN = 11x: same as branch (R and P both set degenerates to a plain branch)
 			m_next_pc = new_pc;
@@ -1448,7 +1574,7 @@ void raven_cpu_device::execute_jump()
 		{
 		case 0x06: // POPJ - reads as POPJ-XCT-next in a jump microinstruction
 		case 0x07: // POPJ-XCT-next
-			pop();
+			pop(true);
 			break;
 		default:
 			break;
@@ -1626,7 +1752,8 @@ void raven_cpu_device::execute_dispatch()
 				m_next_pc = new_pc;
 				break;
 			case 0x02: // return
-				pop();
+				// As in execute_jump(): N picks Return vs Return-XCT-Next.
+				pop(!m_n);
 				break;
 			case 0x03: // R and P both set: dispatch is ignored, next instruction's
 			           // execution still depends on N (already applied above).
@@ -1651,7 +1778,7 @@ void raven_cpu_device::execute_dispatch()
 				{
 				case 0x06: // POPJ - reads as POPJ-XCT-next in a dispatch microinstruction
 				case 0x07: // POPJ-XCT-next
-					pop();
+					pop(true);
 					break;
 				default:
 					break;
@@ -1675,6 +1802,11 @@ void raven_cpu_device::execute_dispatch()
 void raven_cpu_device::execute_run()
 {
 	do {
+		// A queued macroinstruction-chaining prefetch takes effect here, at the
+		// top of the clock and before this cycle's microinstruction runs - the
+		// same position as Meroko's pj14_fetch_go interlock.
+		service_pj14_fetch();
+
 		if (m_memory_busy_counter)
 		{
 			m_memory_busy_counter--;
@@ -1710,9 +1842,9 @@ void raven_cpu_device::execute_run()
 		{
 			debugger_instruction_hook(m_pc);
 		}
+
 		m_prev_pc = m_pc;
 		m_pc = m_next_pc;
-		s_instr_counter++;
 		u64 next_op = m_program.read_qword(m_next_pc++);
 
 		if (!m_n)

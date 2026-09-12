@@ -530,15 +530,6 @@ void explorer_nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
 		{
 			u32 const cmd_addr = val;
 			u32 const word0 = nubus().space().read_dword(cmd_addr);
-			// TEMP/TESTING: see ti_explorer.md - explicit byte-by-byte
-			// cross-check against the read_dword() call above, to find any
-			// endianness/assembly mismatch between the two.
-			u8 const b0 = nubus().space().read_byte(cmd_addr + 0);
-			u8 const b1 = nubus().space().read_byte(cmd_addr + 1);
-			u8 const b2 = nubus().space().read_byte(cmd_addr + 2);
-			u8 const b3 = nubus().space().read_byte(cmd_addr + 3);
-			logerror("CMDLOG-BYTES cmd_addr=%08X b0=%02x b1=%02x b2=%02x b3=%02x word0(dword)=%08x\n",
-				cmd_addr, b0, b1, b2, b3, word0);
 			u32 const buffer_ptr = nubus().space().read_dword(cmd_addr + 0x08);
 			u32 const word_count = nubus().space().read_dword(cmd_addr + 0x0c);
 			u32 const block_addr = nubus().space().read_dword(cmd_addr + 0x10);
