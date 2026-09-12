@@ -49,7 +49,7 @@ bool g_trace_cmd1 = false;
 #include "logmacro.h"
 
 
-DEFINE_DEVICE_TYPE(NUPI, explorer_nupi_device, "nupi", "TI NuBus Peripheral Interface")
+DEFINE_DEVICE_TYPE(NUPI, explorer_nupi_device, "explorer_nupi", "TI NuBus Peripheral Interface (2243146-0001B)")
 
 namespace {
 

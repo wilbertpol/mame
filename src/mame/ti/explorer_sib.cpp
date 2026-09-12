@@ -11,7 +11,7 @@
 #include "speaker.h"
 
 
-DEFINE_DEVICE_TYPE(SIB, explorer_sib_device, "sib", "TI Explorer System Interface Board")
+DEFINE_DEVICE_TYPE(SIB, explorer_sib_device, "explorer_sib", "TI Explorer System Interface Board (2243145-0001A)")
 
 
 namespace {

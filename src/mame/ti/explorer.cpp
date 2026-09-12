@@ -16,8 +16,6 @@ Slots 3 and 4 are reserved for memory boards.
 Slots 3-6 are connected through a local bus but are also accessible through
 the nubus like all the other slots.
 
-TODO:
-- Add distinction between nubus and local bus.
 
 ***************************************************************************/
 
@@ -75,14 +73,14 @@ void tiexplorer_state::tiexplorer(machine_config &config)
 {
 	TI_NUBUS(config, m_nubus);
 
-	// Main CPU card
+	// Reserved card slots
 	TI_NUBUS_SLOT(config, "nb6", "nubus", 6, tiexplorer_cpu_cards, "cpu");
+	TI_NUBUS_SLOT(config, "nb5", "nubus", 5, tiexplorer_nubus_cards, "sib");
+	TI_NUBUS_SLOT(config, "nb4", "nubus", 4, tiexplorer_nubus_cards, "mem8mb");
+//	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_cards, "mem8mb");
 
 	// Other cards
 	TI_NUBUS_SLOT(config, "nb2", "nubus", 2, tiexplorer_nubus_cards, "nupi");
-//	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_cards, "mem8mb");
-	TI_NUBUS_SLOT(config, "nb4", "nubus", 4, tiexplorer_nubus_cards, "mem8mb");
-	TI_NUBUS_SLOT(config, "nb5", "nubus", 5, tiexplorer_nubus_cards, "sib");
 
 	// The backplane has no address spaces of its own: the NuBus and the local
 	// bus are the CPU board's AS_DATA and AS_LOCAL_BUS, so point it at the

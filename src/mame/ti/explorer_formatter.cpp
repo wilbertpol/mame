@@ -26,7 +26,7 @@
 
 #include "logmacro.h"
 
-DEFINE_DEVICE_TYPE(NUPI_FORMATTER, explorer_formatter_device, "nupi_formatter", "TI Explorer NUPI Disk Formatter")
+DEFINE_DEVICE_TYPE(NUPI_FORMATTER, explorer_formatter_device, "explorer_nupi_formatter", "TI Explorer NUPI Disk Formatter")
 
 explorer_formatter_device::explorer_formatter_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
 	nscsi_full_device(mconfig, NUPI_FORMATTER, tag, owner, clock),
