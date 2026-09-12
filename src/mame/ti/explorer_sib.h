@@ -80,10 +80,38 @@ private:
 	memory_share_creator<u8> m_nv_ram;
 	u32 m_configuration_register;
 	u32 m_event_vector[16]{};
-	// Power-up state per the NOTE in paragraph 4.4.10.7: "When the system is
-	// powered up or the board is reset, the attributes register will be set to
-	// reverse video and a blanked video display" - bits 1 and 0 both set.
-	u32 m_attribute_register = 0x03;
+	// Reverse video (bit 1) but *not* blanked, which is a deliberate deviation
+	// from one manual in favour of another - the two disagree, see below.
+	//
+	// The NOTE beside Figure 4-12 says "when the system is powered up or the
+	// board is reset, the attributes register will be set to reverse video and
+	// a blanked video display", i.e. 0x03, and that the display must be
+	// unblanked to view video. But nothing in the boot path unblanks it for the
+	// first eight seconds: the only write is 0x02 from the board's own
+	// ROM-resident diagnostic, which the processor runs when the slot scan
+	// reaches slot 5 - long after it has printed "Slot 6 TESTING SYSTEM", "Slot
+	// 0 passed" and so on into the bit map. (Verified: every access into this
+	// slot's window was logged for the whole boot, there is no earlier write,
+	// and Meroko's own log shows its "Video State Changed to 2" at exactly the
+	// same point in the same command stream, so this is the boot code's real
+	// behaviour and not a divergence.)
+	//
+	// The System Field Maintenance manual documents what a real machine
+	// actually shows, and it is not a screen that stays dark that long: Table
+	// 1-1, "Power-Up Sequence of LED and Video Display Actions" (book OP 1-22/
+	// 1-23), has the display blank for the first two steps, "Goes white" at
+	// step 3, and then each self-test line appearing in turn - SLOT 6 TESTING
+	// SYSTEM, SLOT 0 PASSED, SLOT 2 PASSED ... up to SLOT 5 PASSED at step 10,
+	// which is the step where this board's own diagnostic finishes. So the bit
+	// map is on screen well before the write that the NOTE says is needed, and
+	// starting blanked would hide the entire power-up self-test display (see
+	// Figure 1-14 for what it is supposed to look like).
+	//
+	// Whatever the board really does there is not modelled, so start unblanked
+	// and keep the documented reverse video: an empty bit map then reads as the
+	// white screen of Table 1-1 step 3, and the self-test text appears black on
+	// white as the manual's figures show.
+	u32 m_attribute_register = 0x02;
 	u32 m_mask_register = 0;
 	u32 m_operation_register = 0;
 	u32 m_mouse_y_position = 0;
