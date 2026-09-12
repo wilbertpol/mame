@@ -179,6 +179,8 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_target_configured));
 	save_item(NAME(m_dma_in_flight));
 	save_item(NAME(m_dma_write_to_nubus));
+	save_item(NAME(m_dma_out_to_scsi));
+	save_item(NAME(m_dma_out_byte_phase));
 	save_item(NAME(m_dma_fire_irq));
 	save_item(NAME(m_dma_transfer_start_pos));
 	save_item(NAME(m_dma_transfer_start_pending));
@@ -243,6 +245,8 @@ void explorer_nupi_device::device_reset()
 	m_dma_target_configured = false;
 	m_dma_in_flight = false;
 	m_dma_write_to_nubus = false;
+	m_dma_out_to_scsi = false;
+	m_dma_out_byte_phase = 0;
 	m_dma_fire_irq = true;
 	m_dma_transfer_start_pos = 0;
 	m_dma_transfer_start_pending = true;
@@ -769,7 +773,16 @@ void explorer_nupi_device::mpu_map(address_map &map)
 					// the FIFO for the same mechanism to walk, one word at a time,
 					// until m_dma_count reaches zero (push_fifo_word_to_nubus() then
 					// fires the real IRQ1 and clears m_dma_active).
-					m_dma_active = true;
+					//
+					// ...but only when this transfer actually runs that way. A real
+					// transfer going the other way (NuBus -> FIFO -> SCSI, i.e. a disk
+					// write) drives m_dma_address/m_dma_count from scsi_dreq_w()'s own
+					// outbound branch instead, and must NOT also arm the drain against
+					// the same two registers - see m_dma_out_to_scsi in nupi.h for what
+					// that collision did to the file system.
+					m_dma_out_to_scsi = m_dma_target_configured && (m_dma_direction != 0);
+					m_dma_active = !m_dma_out_to_scsi;
+					m_dma_out_byte_phase = 0;
 
 					// Whether THIS transfer actually drives the real NuBus write cycle -
 					// see m_dma_target_configured in nupi.h. Real $2FD2 setup always
@@ -785,7 +798,8 @@ void explorer_nupi_device::mpu_map(address_map &map)
 					// word, corrupting its "bus error on last transfer" status for
 					// completely unrelated later bus activity. Consumed here (reset to
 					// false) so the NEXT go-strobe needs its own fresh configuration.
-					m_dma_write_to_nubus = m_dma_target_configured;
+					m_dma_write_to_nubus = m_dma_target_configured && !m_dma_out_to_scsi;
+					bool const real_transfer = m_dma_target_configured;
 					m_dma_target_configured = false;
 
 					// Whether THIS transfer's own completion should assert IRQ1 - see
@@ -801,7 +815,10 @@ void explorer_nupi_device::mpu_map(address_map &map)
 					// will independently fire IRQ1 when they pop its last entry, real
 					// physical evidence THIS transfer's completion belongs to that
 					// mechanism instead.
-					m_dma_fire_irq = m_dma_write_to_nubus || (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos);
+					// (real_transfer, not m_dma_write_to_nubus - an outbound real
+					// transfer has to fire its own IRQ1 just the same, and it is the
+					// outbound branch of scsi_dreq_w() that does it.)
+					m_dma_fire_irq = real_transfer || (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos);
 
 					// Start draining from where THIS transfer's own first byte actually
 					// landed (see m_dma_transfer_start_pos in nupi.h/scsi_dreq_w()) -
@@ -815,8 +832,13 @@ void explorer_nupi_device::mpu_map(address_map &map)
 					// dma_drain_timer_expired()'s m_dma_write_to_nubus gate and
 					// discards the data either way, since m_dma_transfer_start_pos is
 					// never touched when no real SCSI transfer is in progress).
-					m_fifo_drain_pos = m_dma_transfer_start_pos;
-					dma_drain_kick();
+					// (Nothing to drain for an outbound transfer, and its FIFO cursors
+					// belong to whatever inbound transfer comes next.)
+					if (!m_dma_out_to_scsi)
+					{
+						m_fifo_drain_pos = m_dma_transfer_start_pos;
+						dma_drain_kick();
+					}
 
 					// Arm the on-board (non-NuBus) side of the same transfer, if this
 					// one was given a target at all - see the m_selftest_dma_* block in
@@ -848,7 +870,12 @@ void explorer_nupi_device::mpu_map(address_map &map)
 					// again before its go-strobe - confirmed live (no "dma -> nubus" line
 					// for any of entry 8's three go-strobes) - so this flag already
 					// distinguishes the two cases correctly with no new state needed.
-					if (m_dma_address_loaded && !m_dma_write_to_nubus)
+					// (real_transfer rather than m_dma_write_to_nubus: the two were the
+					// same thing until an outbound real transfer could clear the
+					// latter, and arming the on-board engine for a real disk WRITE
+					// would scribble into NUPI's own local RAM for exactly the reason
+					// spelled out above.)
+					if (m_dma_address_loaded && !real_transfer)
 					{
 						m_selftest_dma_active = true;
 						m_selftest_dma_addr = u32(m_dma_address_lo_raw) << 2;
@@ -1530,8 +1557,37 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 	}
 	else
 	{
+		// NuBus -> FIFO -> SCSI: a disk write. m_dma_address advances one byte per
+		// SCSI byte, and byte order needs no swap here because the inbound side's own
+		// swapendian_int32() (see push_fifo_word_to_nubus()) is exactly what makes
+		// real memory hold raw disk bytes in natural order in the first place - so
+		// reading them back out one byte at a time reproduces that order directly.
+		// Verified live by diffing a written block against the same block as Meroko
+		// writes it.
 		m_scsi->dma_w(nubus().space().read_byte(m_dma_address));
 		m_dma_address++;
+
+		// m_dma_count is a count of 32-bit NuBus words in this direction too (doc
+		// 4.5.1.4), so it moves once per four bytes - the mirror of what
+		// push_fifo_word_to_nubus() does per completed longword inbound. Without this
+		// the outbound side never counted at all; it only appeared to work because
+		// the inbound drain was wrongly running underneath it and counting on its
+		// behalf, off its own stale FIFO residue. See m_dma_out_to_scsi in nupi.h.
+		if (m_dma_out_to_scsi && ++m_dma_out_byte_phase == 4)
+		{
+			m_dma_out_byte_phase = 0;
+			m_dma_count--;
+
+			if (!m_dma_count)
+			{
+				// IRQ1/DMAINT- on completion, same as the inbound side.
+				if (m_dma_fire_irq)
+					m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
+
+				m_dma_out_to_scsi = false;
+				m_unknown_100001 = 0;
+			}
+		}
 	}
 }
 

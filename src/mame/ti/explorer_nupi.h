@@ -254,6 +254,31 @@ private:
 	bool m_dma_target_configured = false;
 	bool m_dma_write_to_nubus = false;
 
+	// The other direction of the same engine: NuBus -> FIFO -> SCSI, i.e. a disk
+	// WRITE. Which way a transfer runs comes from $801a8 (0 = FIFO to memory, 0xff =
+	// memory to FIFO - see m_dma_direction below), and this snapshots
+	// "m_dma_target_configured && m_dma_direction != 0" at go-strobe time, the same
+	// way m_dma_write_to_nubus snapshots the inbound case. Confirmed live: every one
+	// of the 642 disk reads in a full boot go-strobes with $801a8 = 0x00 and every
+	// one of the 8 disk writes with 0xff.
+	//
+	// It exists because m_dma_address and m_dma_count are one shared engine that can
+	// only run one way at a time. Before this, a disk write still armed m_dma_active,
+	// so the FIFO -> NuBus drain kept running underneath it on whatever unconsumed
+	// residue the previous read transfer had left in the FIFO (a read ends on its
+	// count reaching zero, not on the FIFO going empty, so residue is normal) - it
+	// wrote that stale data straight into the host's source buffer AND advanced the
+	// very m_dma_address/m_dma_count the outbound side was using. The outbound stream
+	// then read a scattered subset of a buffer it was simultaneously shredding:
+	// address deltas of +1,+5,+1,+1,+5..., count already down 10 longwords before the
+	// first byte left. That is what corrupted the file system on the first boot that
+	// mounted it (see ti_explorer.md).
+	bool m_dma_out_to_scsi = false;
+	// Bytes sent on the outbound side since the last m_dma_count decrement - the doc
+	// (4.5.1.4) counts 32-bit NuBus words, so the count only moves every fourth byte,
+	// exactly as push_fifo_word_to_nubus() does it for the inbound side.
+	u8 m_dma_out_byte_phase = 0;
+
 	// Whether THIS transfer's own completion should assert IRQ1 - snapshotted at
 	// go-strobe time (see mpu_map()). A real transfer (m_dma_write_to_nubus) always
 	// fires its own - m_dma_test_fifo below is entry 7 self-test scratch space,
