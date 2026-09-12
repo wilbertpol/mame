@@ -31,6 +31,7 @@ public:
 protected:
 	// device_t implementation
 	virtual void device_start() override ATTR_COLD;
+	virtual void device_reset() override ATTR_COLD;
 	virtual const tiny_rom_entry *device_rom_region() const override ATTR_COLD;
 	virtual void device_add_mconfig(machine_config &config) override ATTR_COLD;
 
@@ -45,6 +46,7 @@ private:
 	u8 crtc_r(offs_t offset);
 	void crtc_w(offs_t offset, u8 data);
 	void printer_map(address_map &map) ATTR_COLD;
+	void update_speaker_amplifier();
 	void mouse_map(address_map &map) ATTR_COLD;
 	void rtc_map(address_map &map) ATTR_COLD;
 	void timers_map(address_map &map) ATTR_COLD;

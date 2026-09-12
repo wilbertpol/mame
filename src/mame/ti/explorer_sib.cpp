@@ -65,6 +65,11 @@ static constexpr u16 VBEND = VTOTAL - SCREEN_HEIGHT;
 // (monitor/chassis self-test LEDs) and the reserved-but-R/W bits 4-7 are storable.
 static constexpr u32 CONFIGURATION_REGISTER_WRITABLE_MASK = 0x3fa;
 
+// The monitor's speaker amplifier, in both the places that set its level: the
+// sound chip's route into the speaker, and the MOSENB mute in
+// update_speaker_amplifier(). MAME multiplies the two, so they have to agree.
+static constexpr float SN76496_GAIN = 1.0f;
+
 u8 compute_parity(u8 data) { data ^= data >> 4; data ^= data >> 2; data ^= data >> 1; return data & 1; }
 
 } // anonymous namespace
@@ -117,6 +122,19 @@ void explorer_sib_device::device_start()
 	save_item(NAME(m_speech_register));
 	save_item(NAME(m_usart_rxrdy));
 	save_item(NAME(m_usart_txrdy));
+}
+
+
+void explorer_sib_device::device_reset()
+{
+	// Paragraph 4.4.11.4: both halves of f2000c clear "on power-up or SI board
+	// reset" - the interrupt enables because "the programmer must set the
+	// appropriate interrupt enables as part of the board initialization
+	// procedures", and MOSENB so the speaker amplifier always comes back up
+	// muted (see update_speaker_amplifier()).
+	m_interrupt_diag_control = 0;
+	m_monitor_control = 0;
+	update_speaker_amplifier();
 }
 
 
@@ -258,12 +276,22 @@ void explorer_sib_device::graphics_bitmap_map(address_map &map)
 u8 explorer_sib_device::crtc_r(offs_t offset)
 {
 	// The map is 32 words wide, so offset is already the 0-0x1f register
-	// number. Bit 5 is not in the address at all: the chip has a six-bit
-	// register space and the board decodes five, selecting the read bank by
-	// the direction of the cycle instead. That is why Table 4-13 lists some
-	// addresses twice, and why the 0x20 has to be ORed in here - reads of
-	// e00054/e00058 would otherwise hit the chip's read-side Start and Reset
-	// commands at R15/R16.
+	// number. Bit 5 is not in the address at all - the chip needs six register
+	// select lines for its 64 registers and the board's four-byte spacing over
+	// e00000-e0007f supplies five - so the read bank has to be ORed in here.
+	// It is not a convenience: reads of e00054/e00058 would otherwise hit the
+	// chip's read-side Start and Reset commands at R15/R16, and the read-only
+	// light pen registers would be unreachable.
+	//
+	// What fixes the missing bit as "1 on a read" is TI's own offset table in
+	// kernel/micro-time.lisp, which puts Graphics-Interrupt-Enable (write) and
+	// Graphics-Status-Register (read) both at offset 104 = R1A, and puts the
+	// read-only Graphics-Light-Pen-Row/Column at 108/112 = R1B/R1C where the
+	// chip has no write registers at all. The same five address bits have to
+	// reach R1A for a write and R3A/R3B/R3C for a read, so the bit cannot come
+	// from the address. How the board actually generates it is not in the
+	// documentation to hand; only the mapping matters here. That is also why
+	// Table 4-13 lists some addresses twice.
 	//
 	// Paragraph 4.4.10.7's "bit 7 is set if an interrupt is pending
 	// (hexadecimal C0); all bits are clear (hexadecimal 00) if no interrupt is
@@ -477,6 +505,32 @@ void explorer_sib_device::printer_map(address_map &map)
 }
 
 
+// MOSENB, bit 8 of f2000c - i.e. bit 0 of the monitor control register at
+// f2000d (Figure 4-16). None of the audio is on this board: paragraph 4.4.11.6
+// puts "a sound generator, an audio amplifier, and a speaker" in the system
+// monitor, reached over the fiber-optic link, and MOSENB is the enable for that
+// speaker amplifier - so it gates the chip's output rather than the chip.
+//
+// Paragraph 4.4.11.4 spells out both the power-up state and the reason for it:
+// "Monitor sound enable (MOSOENB) is disabled on power-up or SI board reset.
+// The monitor sound enable bit must be set by a subsequent control word to
+// enable the monitor speaker amplifier. This disabling and enabling procedure
+// prevents possible annoying sound bursts between the time a board reset is
+// released and the time the sound generator and speech synthesizer setups are
+// completed." Which is exactly what MAME's sn76496_device does when left
+// ungated: its four channels power up at attenuation 0 (maximum volume) with a
+// 0x400 tone period, and drone until the SIB self-test finally writes
+// 9f/bf/df/ff to turn them off.
+//
+// TI's own field specs agree on the bit: %%MONITOR-SPEAKER-ENABLE #o1001 in
+// ucode/lroy-qdev.lisp, Mouse-Control-Sound-Enable #o1001 in
+// kernel/micro-time.lisp - ppss, bit 8, one bit wide.
+void explorer_sib_device::update_speaker_amplifier()
+{
+	m_sn76496->set_output_gain(ALL_OUTPUTS, BIT(m_monitor_control, 0) ? SN76496_GAIN : 0.0f);
+}
+
+
 void explorer_sib_device::mouse_map(address_map &map)
 {
 	// f20000 - mouse-registers-base
@@ -490,12 +544,21 @@ void explorer_sib_device::mouse_map(address_map &map)
 	// f20018 - Mouse-Speech-Register
 	// f2001c - Mouse-Voice-Register
 
-	// f20005 - sn76496?
+	// f2000c is two registers in one longword (Figure 4-16). The low byte is the
+	// Interrupt Enable and Diagnostic Control register: SERRENB 7, MINTENB 6,
+	// KINTENB 5, VINTENB 4, diagnostic control 3-0 (Figure 4-20: ELOPBAK,
+	// ILOPBAK, MOUSSEL, VOICSEL). The high byte is the Monitor Control register
+	// at f2000d: MOSENB 8, HIGAIN 9 (3.2x microphone gain), ALOPBAK 10 (analog
+	// loopback through the monitor's codec), PARCHK 11 (force bad sound parity);
+	// 12-15 are no connection.
+
+	// f20014 - sound control register, an 8-bit value plus generated odd parity
+	// (Figure 4-17) shipped to the sound generator in the monitor. The self-test
+	// writes the four "channel off" bytes:
 	// 9f - 10011111 - 001 - tone 1 attenuation - off
 	// bf - 10111111 - 011 - tone 2 attenuation - off
 	// df - 11011111 - 101 - tone 3 attenuation - off
 	// ff - 11111111 - 111 - noise attenuation - off
-	// TODO
 
 	map(0x00f20000, 0x00f20003).lrw32(NAME([this] {
 		return m_mouse_y_position;
@@ -519,6 +582,7 @@ void explorer_sib_device::mouse_map(address_map &map)
 	}), NAME([this] (u32 data) {
 		m_interrupt_diag_control = data & 0xff;
 		m_monitor_control = (data >> 8) & 0xf;
+		update_speaker_amplifier();
 	}));
 	map(0x00f20010, 0x00f20013).lrw32(NAME([this] {
 		return (m_diagnostic_data & 0xff) | (u32(compute_parity(m_diagnostic_data & 0xff)) << 8);
@@ -785,7 +849,7 @@ void explorer_sib_device::device_add_mconfig(machine_config &config)
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
 
 	SPEAKER(config, "speaker").front_center();
-	SN76496(config, "sn76496", 1'500'000).add_route(ALL_OUTPUTS, "speaker", 0.3); // Exact model and input frequency unknown, noise
+	SN76496(config, "sn76496", 1'500'000).add_route(ALL_OUTPUTS, "speaker", SN76496_GAIN); // Exact model and input frequency unknown, noise
 }
 
 
