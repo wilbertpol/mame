@@ -9,8 +9,6 @@
 #include "emu.h"
 #include "ti_nubus.h"
 
-#include "cpu/raven/raven.h"
-
 
 DEFINE_DEVICE_TYPE(TI_NUBUS_SLOT, ti_nubus_slot_device, "ti_nubus_slot", "TI Explorer NuBus slot")
 
@@ -44,7 +42,8 @@ DEFINE_DEVICE_TYPE(TI_NUBUS, ti_nubus_device, "ti_nubus", "TI Explorer NuBus")
 ti_nubus_device::ti_nubus_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
 	device_t(mconfig, TI_NUBUS, tag, owner, clock),
 	m_space(*this, finder_base::DUMMY_TAG, -1),
-	m_local_bus_space(*this, finder_base::DUMMY_TAG, -1)
+	m_local_bus_space(*this, finder_base::DUMMY_TAG, -1),
+	m_bus_error_card(nullptr)
 {
 }
 
@@ -59,11 +58,16 @@ void ti_nubus_device::add_ti_nubus_card(device_ti_nubus_card_interface &card)
 
 void ti_nubus_device::assert_bus_error()
 {
-	// The Explorer's AS_DATA space *is* this bus (see the header comment) -
-	// the device that owns it is always the raven CPU in this driver.
-	// TODO Get rid of this cpu device dependency. This bit is actually living
-	// on the cpu board.
-	downcast<raven_cpu_device &>(m_space->device()).assert_bus_error();
+	// Straight to the board that owns the line. This used to reach into
+	// m_space->device() and downcast it to raven_cpu_device, which baked two
+	// assumptions into the backplane: that the bus master is whatever device
+	// happens to own AS_DATA, and that it is a raven. Both belong to the CPU
+	// board (see explorer_cpu.cpp), which nominates itself here at start-up.
+	//
+	// Nothing to do if no card claimed the line: a machine with no CPU board
+	// has no bus cycles to fail in the first place.
+	if (m_bus_error_card)
+		m_bus_error_card->assert_bus_error();
 }
 
 

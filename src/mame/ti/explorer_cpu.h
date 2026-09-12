@@ -15,7 +15,9 @@
     local bus *are* this board's own address spaces: the raven's AS_DATA
     is the NuBus and AS_LOCAL_BUS is the local bus, which is why the
     backplane (ti_nubus_device) is pointed at this board's CPU rather
-    than the other way round.
+    than the other way round. Both spaces are left entirely to the cards
+    on them - the processor itself handles a cycle no card answers, since
+    neither bus has a signal for that (see raven.cpp's data_map()).
 
 **********************************************************************/
 
@@ -40,6 +42,9 @@ protected:
 	virtual const tiny_rom_entry *device_rom_region() const override ATTR_COLD;
 	virtual void device_add_mconfig(machine_config &config) override ATTR_COLD;
 
+	// device_ti_nubus_card_interface implementation
+	virtual void assert_bus_error() override;
+
 private:
 	required_device<raven_cpu_device> m_cpu;
 	// The seven boot PROMs as dumped (one bit-slice per file, interleaved), and
@@ -51,9 +56,6 @@ private:
 	// This board's own NuBus slot window (>Fs'xx000000), installed the same way
 	// every other card installs its own.
 	void nubus_map(address_map &map) ATTR_COLD;
-	// ...and the two whole address spaces the board *provides* to the machine.
-	void mem_map(address_map &map) ATTR_COLD;
-	void local_bus_map(address_map &map) ATTR_COLD;
 };
 
 DECLARE_DEVICE_TYPE(EXPLORER_CPU, explorer_cpu_device)

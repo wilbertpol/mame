@@ -25,12 +25,28 @@ public:
 
 	u32 get_slotspace() const { return 0xf000'0000 | (u32(m_slot) << 24); }
 
+	// Only slots 3 through 6 are wired to the local bus that ties the CPU,
+	// memory and SIB boards together (see explorer.cpp's header); a card in any
+	// lower slot reaches the processor over the NuBus alone. A board that can
+	// sit on either - the memory board can legitimately be put in slot 2 - must
+	// consult this rather than assume, and install_local_bus_map() below
+	// enforces it for the cards that use the helper.
+	static constexpr int FIRST_LOCAL_BUS_SLOT = 3;
+	bool on_local_bus() const { return m_slot >= FIRST_LOCAL_BUS_SLOT; }
+
 	void set_ti_nubus(ti_nubus_device *nubus, const char *slottag, int slot)
 	{
 		m_nubus = nubus;
 		m_nubus_slottag = slottag;
 		m_slot = slot;
 	}
+
+	// Raised when a bus cycle finds nothing at its target address. The
+	// bus-error line is not the backplane's - it lives on the board that
+	// provides the bus's address spaces, i.e. the CPU board, which is the only
+	// card that implements this and registers itself as the target via
+	// ti_nubus_device::set_bus_error_card().
+	virtual void assert_bus_error() { }
 
 protected:
 	device_ti_nubus_card_interface(const machine_config &mconfig, device_t &device);
@@ -90,6 +106,11 @@ public:
 
 	void add_ti_nubus_card(device_ti_nubus_card_interface &card);
 
+	// Nominate the card that owns the bus-error line - see
+	// device_ti_nubus_card_interface::assert_bus_error(). The CPU board calls
+	// this from its own device_start().
+	void set_bus_error_card(device_ti_nubus_card_interface &card) { m_bus_error_card = &card; }
+
 	template <typename T>
 	void install_map(T &device, void (T::*map)(address_map &map))
 	{
@@ -102,6 +123,12 @@ public:
 	template <typename T>
 	void install_local_bus_map(T &device, void (T::*map)(address_map &map))
 	{
+		// Silently nothing to do for a card that is not on the local bus - that
+		// is a legal machine, not a mistake, and the card simply is not wired to
+		// this bus. See device_ti_nubus_card_interface::on_local_bus().
+		if (!device.on_local_bus())
+			return;
+
 		const offs_t start = device.get_slotspace();
 		const offs_t end = start + 0x00ff'ffff;
 
@@ -122,6 +149,7 @@ protected:
 	required_address_space m_local_bus_space;
 
 	std::vector<std::reference_wrapper<device_ti_nubus_card_interface>> m_device_list;
+	device_ti_nubus_card_interface *m_bus_error_card;
 };
 
 DECLARE_DEVICE_TYPE(TI_NUBUS, ti_nubus_device)

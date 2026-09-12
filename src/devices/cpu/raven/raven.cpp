@@ -95,8 +95,8 @@ enum
 raven_cpu_device::raven_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock)
 	: cpu_device(mconfig, RAVEN, tag, owner, clock)
 	, m_program_config("program", ENDIANNESS_BIG, 64/*56*/, ADDRESS_BITS, -3, address_map_constructor(FUNC(raven_cpu_device::program_map), this))
-	, m_data_config("data", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS)
-	, m_local_bus_config("local_bus", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS)
+	, m_data_config("data", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS, 0, address_map_constructor(FUNC(raven_cpu_device::data_map), this))
+	, m_local_bus_config("local_bus", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS, 0, address_map_constructor(FUNC(raven_cpu_device::local_bus_map), this))
 	, m_inst_view(*this, "inst_view")
 	, m_control_store(*this, "control_store")
 {
@@ -167,7 +167,7 @@ void raven_cpu_device::device_start()
 	save_item(NAME(m_pj14_fetch_pending));
 	save_item(NAME(m_pj14_fetch_go));
 	save_item(NAME(m_pending_interrupts));
-	save_item(NAME(m_nubus_error));
+	save_item(NAME(m_bus_error));
 	save_item(NAME(m_local_bus_miss));
 
 	state_add(STATE_GENPCBASE, "CURPC", m_pc).noshow();
@@ -205,7 +205,7 @@ void raven_cpu_device::device_reset()
 	m_memory_busy_counter = 0;
 	m_read_pending = false;
 	m_pending_interrupts = 0;
-	m_nubus_error = false;
+	m_bus_error = false;
 	m_local_bus_miss = false;
 	m_inst_view.select(0);
 }
@@ -217,6 +217,29 @@ void raven_cpu_device::program_map(address_map &map)
 	map(0, 0x7ff).view(m_inst_view);
 	m_inst_view[0](0, 0x7ff).rom();
 	m_inst_view[1];
+}
+
+
+// AS_DATA is the NuBus and AS_LOCAL_BUS is the local bus. Neither bus has any
+// way of reporting that nothing answered a cycle - there is no "unmapped"
+// signal on the backplane - so the processor detects it by timing the cycle out
+// and these catch-alls are that timeout. They are the space configuration's own
+// internal maps (see memory_space_config()), which means any board this CPU is
+// placed on gets the behavior for free and cannot forget to wire it up; the
+// cards on the bus then install their own slot windows over the top at runtime.
+void raven_cpu_device::data_map(address_map &map)
+{
+	map.unmap_value_high();
+
+	map(0x00000000, 0xffffffff).rw(FUNC(raven_cpu_device::nubus_unmapped_r), FUNC(raven_cpu_device::nubus_unmapped_w));
+}
+
+
+void raven_cpu_device::local_bus_map(address_map &map)
+{
+	map.unmap_value_high();
+
+	map(0x00000000, 0xffffffff).rw(FUNC(raven_cpu_device::local_bus_miss_r), FUNC(raven_cpu_device::local_bus_miss_w));
 }
 
 
@@ -247,7 +270,7 @@ void raven_cpu_device::config_register_w(offs_t offset, u32 data, u32 mem_mask)
 
 void raven_cpu_device::read()
 {
-	m_nubus_error = false;
+	m_bus_error = false;
 	u32 address = vm_resolve_address<MEM_READ>();
 
 	if (!m_page_fault)
@@ -267,7 +290,7 @@ void raven_cpu_device::read()
 
 void raven_cpu_device::write()
 {
-	m_nubus_error = false;
+	m_bus_error = false;
 	u32 address = vm_resolve_address<MEM_WRITE>();
 
 	if (!m_page_fault)
@@ -285,7 +308,7 @@ void raven_cpu_device::write()
 
 void raven_cpu_device::read_unmapped()
 {
-	m_nubus_error = false;
+	m_bus_error = false;
 	m_page_fault = false;
 	m_local_bus_miss = false;
 	m_read_data = m_local_bus.read_dword(m_vma);
@@ -311,7 +334,7 @@ void raven_cpu_device::read_unmapped()
 
 void raven_cpu_device::write_unmapped()
 {
-	m_nubus_error = false;
+	m_bus_error = false;
 	m_page_fault = false;
 	m_local_bus_miss = false;
 	m_local_bus.write_dword(m_vma, m_md);
@@ -330,7 +353,7 @@ void raven_cpu_device::write_unmapped()
 
 void raven_cpu_device::read_unmapped_byte()
 {
-	m_nubus_error = false;
+	m_bus_error = false;
 	m_page_fault = false;
 	u32 const shift = 8 * (m_vma & 3);
 	u32 const mask = 0xff << shift;
@@ -352,7 +375,7 @@ void raven_cpu_device::read_unmapped_byte()
 
 void raven_cpu_device::write_unmapped_byte()
 {
-	m_nubus_error = false;
+	m_bus_error = false;
 	m_page_fault = false;
 	u32 const shift = 8 * (m_vma & 3);
 	u32 const mask = 0xff << shift;
@@ -374,14 +397,14 @@ void raven_cpu_device::write_unmapped_byte()
 
 u32 raven_cpu_device::nubus_unmapped_r(offs_t offset, u32 mem_mask)
 {
-	m_nubus_error = true;
+	m_bus_error = true;
 	return 0xffffffff;
 }
 
 
 void raven_cpu_device::nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask)
 {
-	m_nubus_error = true;
+	m_bus_error = true;
 }
 
 
@@ -979,7 +1002,7 @@ void raven_cpu_device::store_o_bus()
 			break;
 		case 0x0f: // TEST-SYNC
 			m_md = 0;
-			m_nubus_error = false;
+			m_bus_error = false;
 /*
 			m_local_bus_error = 0;
 */
@@ -1176,7 +1199,7 @@ bool raven_cpu_device::is_condition(u32 alu_out, u32 carry_out, u32 fixnum_overf
 			result = BIT(m_q, 0);
 			break;
 		case 0x0b: // bus error on last transfer attempt
-			result = m_nubus_error;
+			result = m_bus_error;
 			break;
 		case 0x0c: // not (typed-data overflow)
 			result = !fixnum_overflow;

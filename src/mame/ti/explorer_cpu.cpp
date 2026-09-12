@@ -27,6 +27,10 @@ void explorer_cpu_device::device_start()
 {
 	nubus().install_map(*this, &explorer_cpu_device::nubus_map);
 
+	// The bus-error line is this board's, so claim it - see
+	// ti_nubus_device::assert_bus_error().
+	nubus().set_bus_error_card(*this);
+
 	// The static boot microcode is dumped as seven separate PROMs, one 8-bit
 	// slice of each 56-bit microinstruction per file, loaded interleaved with
 	// ROM_SKIP(7) so that each group of 8 bytes is one microinstruction (the
@@ -46,6 +50,16 @@ void explorer_cpu_device::device_start()
 }
 
 
+// A NuBus cycle that found nothing at its target address. The status bit the
+// microcode reads back for it lives in the raven (see its m_nubus_error and
+// "bus error on last transfer"), which is why this board, and not the
+// backplane, is the one that knows what to do with it.
+void explorer_cpu_device::assert_bus_error()
+{
+	m_cpu->assert_bus_error();
+}
+
+
 // This board's NuBus slot window. Addresses are slot-relative - the driver puts
 // the board in slot 6, so these appear at >Fs'F6C00000 etc., which is where the
 // band's own microcode and the SIB's event vectors expect them (an event vector
@@ -56,28 +70,6 @@ void explorer_cpu_device::nubus_map(address_map &map)
 	map(0xd00000, 0xd00003).rw(m_cpu, FUNC(raven_cpu_device::config_register_r), FUNC(raven_cpu_device::config_register_w));
 	map(0xe00000, 0xe0003f).w(m_cpu, FUNC(raven_cpu_device::irq_w));
 	map(0xfffc00, 0xffffff).rom().region("cpu_config", 0);
-}
-
-
-// The raven's AS_DATA *is* the NuBus. Everything in it comes from the cards
-// installing their own slot windows over this catch-all (including this board's
-// own nubus_map() above); what is left unclaimed reads back as a bus error.
-void explorer_cpu_device::mem_map(address_map &map)
-{
-	map.unmap_value_high();
-
-	map(0x00000000, 0xffffffff).rw(m_cpu, FUNC(raven_cpu_device::nubus_unmapped_r), FUNC(raven_cpu_device::nubus_unmapped_w));
-}
-
-
-// Likewise AS_LOCAL_BUS is the local bus that ties slots 3-6 together. Only the
-// boards on it install anything here; a miss is a distinct condition from a
-// NuBus miss, hence its own handler.
-void explorer_cpu_device::local_bus_map(address_map &map)
-{
-	map.unmap_value_high();
-
-	map(0x00000000, 0xffffffff).rw(m_cpu, FUNC(raven_cpu_device::local_bus_miss_r), FUNC(raven_cpu_device::local_bus_miss_w));
 }
 
 
@@ -112,7 +104,10 @@ const tiny_rom_entry *explorer_cpu_device::device_rom_region() const
 
 void explorer_cpu_device::device_add_mconfig(machine_config &config)
 {
+	// The NuBus and the local bus are this CPU's AS_DATA and AS_LOCAL_BUS. The
+	// board supplies no map for either: nothing on those buses answers by
+	// default, and the processor's own space configuration already handles a
+	// cycle nothing answers (see raven.cpp's data_map()/local_bus_map()). Cards,
+	// this board's nubus_map() included, install their slot windows at runtime.
 	RAVEN(config, m_cpu, 28_MHz_XTAL);
-	m_cpu->set_addrmap(AS_DATA, &explorer_cpu_device::mem_map);
-	m_cpu->set_addrmap(raven_cpu_device::AS_LOCAL_BUS, &explorer_cpu_device::local_bus_map);
 }

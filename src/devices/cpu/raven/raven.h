@@ -23,14 +23,15 @@ public:
 	u32 config_register_r();
 	void config_register_w(offs_t offset, u32 data, u32 mem_mask);
 
-	u32 nubus_unmapped_r(offs_t offset, u32 mem_mask);
-	void nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask);
-
 	static constexpr int AS_LOCAL_BUS = AS_OPCODES + 1;
-	u32 local_bus_miss_r(offs_t offset, u32 mem_mask);
-	void local_bus_miss_w(offs_t offset, u32 data, u32 mem_mask);
 
-	void assert_bus_error() { m_nubus_error = true; }
+	// Table 4-19's condition 01011, "Bus error on last transfer attempt". One
+	// flag for both hardware paths on purpose: a local-bus board asserts BERR-
+	// (the memory board does that for a parity failure, via NUERR-), while a
+	// card in a slot below 3 is not on the local bus at all and can only report
+	// an error as a NuBus TM0-/TM1- termination. The microcode has a single
+	// condition for the two, so this is the whole of what it can see.
+	void assert_bus_error() { m_bus_error = true; }
 
 protected:
 	virtual void device_start() override ATTR_COLD;
@@ -137,7 +138,7 @@ private:
 	bool m_pj14_fetch_pending = false;
 	bool m_pj14_fetch_go = false;
 	u16 m_pending_interrupts = 0;
-	bool m_nubus_error = false;
+	bool m_bus_error = false;
 
 	int m_icount = 0;
 
@@ -147,6 +148,18 @@ private:
 	};
 
 	void program_map(address_map &map) ATTR_COLD;
+	// Neither the NuBus nor the local bus carries an "unmapped" signal - nothing
+	// on the backplane tells the processor that no card answered a cycle. The
+	// processor works that out for itself, by timing the cycle out, so these are
+	// its own behavior and belong in its own space configuration rather than in
+	// a map whatever board it sits on has to remember to supply.
+	void data_map(address_map &map) ATTR_COLD;
+	void local_bus_map(address_map &map) ATTR_COLD;
+
+	u32 nubus_unmapped_r(offs_t offset, u32 mem_mask);
+	void nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask);
+	u32 local_bus_miss_r(offs_t offset, u32 mem_mask);
+	void local_bus_miss_w(offs_t offset, u32 data, u32 mem_mask);
 	void read();
 	void write();
 	void read_unmapped();

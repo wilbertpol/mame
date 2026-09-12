@@ -40,9 +40,16 @@ void explorer_mem_device_base::device_start()
 
 	nubus().install_map(*this, &explorer_mem_device_base::nubus_map);
 
-	nubus().local_bus_space().install_view(base, base + m_ram_size - 1, m_ram_view_local_bus);
-	m_ram_view_local_bus[0].install_readwrite_handler(base, base + m_ram_size - 1, read8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_r)), write8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_w)));
-	m_ram_view_local_bus[1].install_readwrite_handler(base, base + m_ram_size - 1, read8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_test_r)), write8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_test_w)));
+	// ...and on the local bus as well, but only from a slot that is actually
+	// wired to it (see device_ti_nubus_card_interface::on_local_bus()). The
+	// board is perfectly usable in a lower slot - it is then reachable over the
+	// NuBus alone, which is also the only way it could report an error.
+	if (on_local_bus())
+	{
+		nubus().local_bus_space().install_view(base, base + m_ram_size - 1, m_ram_view_local_bus);
+		m_ram_view_local_bus[0].install_readwrite_handler(base, base + m_ram_size - 1, read8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_r)), write8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_w)));
+		m_ram_view_local_bus[1].install_readwrite_handler(base, base + m_ram_size - 1, read8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_test_r)), write8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_test_w)));
+	}
 
 	save_item(NAME(m_config_register));
 	save_item(NAME(m_base_register));
@@ -58,10 +65,10 @@ void explorer_mem_device_base::device_reset()
 	m_base_register = 0;
 	m_failure_location = 0;
 	m_test_register = 0;
-	m_failure_latch = 0;
 	m_nubus_status = 0;
 	m_ram_view.select(0);
-	m_ram_view_local_bus.select(0);
+	if (on_local_bus())
+		m_ram_view_local_bus.select(0);
 }
 
 
@@ -73,8 +80,17 @@ void explorer_mem_device_base::nubus_map(address_map &map)
 	map(0xffc008, 0xffc008).rw(FUNC(explorer_mem_device_base::base_register_r), FUNC(explorer_mem_device_base::base_register_w));
 	map(0xffc010, 0xffc010).r(FUNC(explorer_mem_device_base::failure_latch_r));
 	map(0xffc011, 0xffc011).rw(FUNC(explorer_mem_device_base::test_register_r), FUNC(explorer_mem_device_base::test_register_w));
+	// NuBus Termination Status and Error Latch Register, paragraph 4.5.4 and
+	// Figure 4-14 (book 4-34/4-35). Read-only. Bit 15 is the parity error latch
+	// and is the bit that makes the failure location latch above meaningful -
+	// see failure_latch_r(). The rest is deliberately left reading 0: bit 14
+	// NOMEM and bits 13:8 are the status of the cycle that took a NOMEM error,
+	// and bits 7:2 snapshot TM0-/TM1-/NUADR0/NUADR1 of the last NuBus cycle this
+	// board mastered. MAME models neither - this board is never a NuBus master
+	// here, and there is no NOMEM condition - so reporting anything in those
+	// fields would be invention rather than emulation.
 	map(0xffc014, 0xffc015).lr16(NAME([this] () {
-		return u16(m_nubus_status);
+		return m_nubus_status;
 	}));
 
 	map(0xffe000, 0xffefff).rom().region("memory_config", 0x1000);
@@ -95,11 +111,17 @@ void explorer_mem_device_base::config_register_w(u8 data)
 	m_config_register = data & 0x05;
 	if (BIT(m_config_register, 0))
 	{
+		// Paragraph 4.5.1: "A write operation with data bit 0 set to 1 resets the
+		// parity error and clears the NuBus terminal latch. This clears the NUERR
+		// signal." Same bit Figure 4-10 labels board reset.
+		m_nubus_status = 0;
+
 		// Board reset
 		m_test_register = 0;
 		m_base_register = 0xf4; // 0xf3 when the card is in slot 3.
 		m_ram_view.select(0);
-		m_ram_view_local_bus.select(0);
+		if (on_local_bus())
+			m_ram_view_local_bus.select(0);
 	}
 	// TODO output led status
 }
@@ -114,6 +136,14 @@ void explorer_mem_device_base::base_register_w(u8 data)
 	m_base_register = data;
 }
 
+// Paragraph 4.5.3.1: "When bit 15 of the error latch is true (>FSFFC014), this
+// word contains failure information; otherwise, these bits reflect the status of
+// the select and parity generation bits during the last board access." So the
+// byte means two different things depending on that latch, and it is the caller's
+// job to check it - which is why update_failure_location() below stops
+// overwriting the failure information once the latch is set. Both variants are
+// built the same way here (Figure 4-12: ASEL2-0 = the row, bit 4 = parity error,
+// bits 3-0 = the faulty byte, low true).
 u8 explorer_mem_device_base::failure_latch_r()
 {
 	return m_failure_location;
@@ -128,7 +158,8 @@ void explorer_mem_device_base::test_register_w(u8 data)
 {
 	m_test_register = data;
 	m_ram_view.select(BIT(m_test_register, 4));
-	m_ram_view_local_bus.select(BIT(m_test_register, 4));
+	if (on_local_bus())
+		m_ram_view_local_bus.select(BIT(m_test_register, 4));
 }
 
 
@@ -160,10 +191,30 @@ u8 explorer_mem_device_base::test_force_bit(offs_t offset) const
 
 void explorer_mem_device_base::update_failure_location(offs_t offset, bool failed)
 {
-	m_failure_location = ((offset & 0x03) << 5) | (failed ? 0x10 : 0x0f);
-
 	if (failed)
+	{
+		m_failure_location = ((offset & 0x03) << 5) | 0x10;
+
+		// Latch it. Paragraph 4.5.1: the latch is cleared by a write to the
+		// configuration register with bit 0 set, nothing else - so it holds until
+		// software acknowledges it, and the failure location has to hold with it
+		// or a later good access would erase the information while bit 15 still
+		// advertises it as valid.
+		m_nubus_status |= 0x8000;
+
+		// NUERR- on the board, which the real hardware turns into BERR- at the
+		// local bus (4.5.4). A card below FIRST_LOCAL_BUS_SLOT is not on that bus
+		// and would have to report this as a NuBus error termination instead;
+		// either way the processor sees one condition, Table 4-19's "Bus error on
+		// last transfer attempt" - see raven_cpu_device::assert_bus_error().
 		nubus().assert_bus_error();
+	}
+	else if (!BIT(m_nubus_status, 15))
+	{
+		// No failure outstanding, so the byte carries the select and parity
+		// generation status of this access instead (4.5.3.1).
+		m_failure_location = ((offset & 0x03) << 5) | 0x0f;
+	}
 }
 
 u8 explorer_mem_device_base::ram_r(offs_t offset)
