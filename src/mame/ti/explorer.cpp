@@ -17,17 +17,9 @@ Slots 3-6 are connected through a local bus but are also accessible through
 the nubus like all the other slots.
 
 TODO:
-- Mouse support. The SIB's mouse register block is mapped and documented
-  (mouse_map() in explorer_sib.cpp, f20000-f2001c), but there is no input
-  device behind it: the X and Y position registers are plain read/write
-  latches that nothing ever drives, and the Motion-And-Keyswitch register
-  reads back all ones outside diagnostic loopback, so motion and the buttons
-  are never reported. Needs an ioport with PORT_MOUSE_X/PORT_MOUSE_Y plus the
-  three keyswitches, the position registers fed from it, and the mouse
-  interrupt path - see the SIB manual's paragraph 4.4.11.4 and Figure 4-16,
-  "Interrupt Enable and Monitor Control Registers" (book 4-52/4-54). The
-  software side is already live: the band boots to the Lisp Listener and
-  draws the mouse documentation lines along the bottom of the screen.
+- Printer and RS-232C ports: both mapped in explorer_sib.cpp with no host
+  device behind them.
+- Nothing of the Ethernet board is emulated.
 
 ***************************************************************************/
 

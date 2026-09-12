@@ -28,12 +28,17 @@ class explorer_sib_device : public device_t, public device_ti_nubus_card_interfa
 public:
 	explorer_sib_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
 
+	DECLARE_INPUT_CHANGED_MEMBER(mouse_x_changed);
+	DECLARE_INPUT_CHANGED_MEMBER(mouse_y_changed);
+	DECLARE_INPUT_CHANGED_MEMBER(mouse_button_changed);
+
 protected:
 	// device_t implementation
 	virtual void device_start() override ATTR_COLD;
 	virtual void device_reset() override ATTR_COLD;
 	virtual const tiny_rom_entry *device_rom_region() const override ATTR_COLD;
 	virtual void device_add_mconfig(machine_config &config) override ATTR_COLD;
+	virtual ioport_constructor device_input_ports() const override ATTR_COLD;
 
 private:
 	void nubus_map(address_map &map) ATTR_COLD;
@@ -48,6 +53,8 @@ private:
 	void printer_map(address_map &map) ATTR_COLD;
 	void update_speaker_amplifier();
 	void mouse_map(address_map &map) ATTR_COLD;
+	u32 motion_keyswitch_r();
+	void post_mouse_motion_event();
 	void rtc_map(address_map &map) ATTR_COLD;
 	void timers_map(address_map &map) ATTR_COLD;
 	void nvram_map(address_map &map) ATTR_COLD;
@@ -90,6 +97,9 @@ private:
 	required_device<clock_device> m_usart_clock;
 	required_device<sn76496_device> m_sn76496;
 	required_device<nvram_device> m_nvram;
+	required_ioport m_mouse_buttons;
+	required_ioport m_mouse_x_axis;
+	required_ioport m_mouse_y_axis;
 	memory_share_creator<u32> m_video_ram;
 	memory_share_creator<u8> m_nv_ram;
 	u32 m_configuration_register;
@@ -128,8 +138,23 @@ private:
 	u32 m_attribute_register = 0x02;
 	u32 m_mask_register = 0;
 	u32 m_operation_register = 0;
+	// The 16-bit up/down position counters of paragraph 4.4.11.2, and the
+	// keyswitch half of the motion/keyswitch data register (Figure 4-14: LKEY
+	// 06, MKEY 05, RKEY 04). The quadrature bits 03-00 that drive the counters
+	// on real hardware are not modelled - the motion detector is, so there is
+	// nothing left for them to do, and the software "normally masks off" the
+	// raw motion data anyway.
 	u32 m_mouse_y_position = 0;
 	u32 m_mouse_x_position = 0;
+	u8 m_mouse_keyswitches = 0;
+	// KOUT, bit 07 of the same register: the serial keyboard data line the
+	// monitor sends back over the fiber-optic link, tapped ahead of the USART
+	// so that software can sample it directly. Idles high (mark).
+	int m_keyboard_txd = 1;
+	// One event per motion/keyswitch condition until the host reads the
+	// register that reports it - see post_mouse_motion_event().
+	bool m_mouse_motion_event_pending = false;
+	bool m_mouse_keyswitch_event_pending = false;
 	u32 m_interrupt_diag_control = 0;
 	u32 m_monitor_control = 0;
 	u32 m_diagnostic_data = 0;

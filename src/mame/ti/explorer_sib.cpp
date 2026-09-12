@@ -72,7 +72,61 @@ static constexpr float SN76496_GAIN = 1.0f;
 
 u8 compute_parity(u8 data) { data ^= data >> 4; data ^= data >> 2; data ^= data >> 1; return data & 1; }
 
+// A relative-axis input port accumulates modulo its own mask, so one step of
+// the mouse is the wrapped difference between two successive values.
+static constexpr int MOUSE_AXIS_BITS = 12;
+
+int mouse_axis_delta(ioport_value oldval, ioport_value newval)
+{
+	int delta = int(newval) - int(oldval);
+	if (delta >= (1 << (MOUSE_AXIS_BITS - 1)))
+		delta -= 1 << MOUSE_AXIS_BITS;
+	else if (delta <= -(1 << (MOUSE_AXIS_BITS - 1)))
+		delta += 1 << MOUSE_AXIS_BITS;
+	return delta;
+}
+
 } // anonymous namespace
+
+
+// The mouse itself is at the far end of the fiber-optic link, in the monitor;
+// what the SI board sees is quadrature motion data and three keyswitch lines
+// (paragraph 4.4.11). Emulating the quadrature would only feed a motion
+// detector whose whole job is to turn it back into counts, so the host mouse
+// drives the position counters directly.
+//
+// Directions are the ones paragraph 4.4.11.2 gives: "Mouse motion in the X
+// (horizontal) direction is positive to the right; motion in the Y (vertical)
+// direction is positive downward. The convention of positive X to the right
+// and positive Y downward corresponds to a mouse cursor with the origin at the
+// top left corner of the video display." MAME's own relative axes use the same
+// sign convention, so neither needs reversing.
+static INPUT_PORTS_START(sib)
+	// Figure 4-14 puts the three keyswitches in the motion/keyswitch data
+	// register, left to right in descending bit order, and marks only the
+	// quadrature lines as inverted - so a closed keyswitch reads as a 1.
+	PORT_START("mouse_buttons")
+	PORT_BIT(0x40, IP_ACTIVE_HIGH, IPT_BUTTON1) PORT_NAME("Mouse Left Button")   PORT_CODE(MOUSECODE_BUTTON1) PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(explorer_sib_device::mouse_button_changed), 0)
+	PORT_BIT(0x20, IP_ACTIVE_HIGH, IPT_BUTTON2) PORT_NAME("Mouse Middle Button") PORT_CODE(MOUSECODE_BUTTON3) PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(explorer_sib_device::mouse_button_changed), 0)
+	PORT_BIT(0x10, IP_ACTIVE_HIGH, IPT_BUTTON3) PORT_NAME("Mouse Right Button")  PORT_CODE(MOUSECODE_BUTTON2) PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(explorer_sib_device::mouse_button_changed), 0)
+
+	// Host motion is passed through unscaled. The band applies a gain of its
+	// own on the way to the cursor - driving the counters by a known amount and
+	// measuring the cursor in the resulting snapshot gives 0.40 screen pixels
+	// per count horizontally and 0.36 vertically (an 80 and 72 pixel move for
+	// 200 counts, measured at both 200 and 400) - so the cursor travels rather
+	// less far than the host pointer, which is how it should feel.
+	PORT_START("mouse_x")
+	PORT_BIT(0xfff, 0x000, IPT_MOUSE_X) PORT_SENSITIVITY(100) PORT_KEYDELTA(0) PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(explorer_sib_device::mouse_x_changed), 0)
+
+	PORT_START("mouse_y")
+	PORT_BIT(0xfff, 0x000, IPT_MOUSE_Y) PORT_SENSITIVITY(100) PORT_KEYDELTA(0) PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(explorer_sib_device::mouse_y_changed), 0)
+INPUT_PORTS_END
+
+ioport_constructor explorer_sib_device::device_input_ports() const
+{
+	return INPUT_PORTS_NAME(sib);
+}
 
 
 explorer_sib_device::explorer_sib_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
@@ -87,6 +141,9 @@ explorer_sib_device::explorer_sib_device(const machine_config &mconfig, const ch
 	m_usart_clock(*this, "usart_clock"),
 	m_sn76496(*this, "sn76496"),
 	m_nvram(*this, "nvram"),
+	m_mouse_buttons(*this, "mouse_buttons"),
+	m_mouse_x_axis(*this, "mouse_x"),
+	m_mouse_y_axis(*this, "mouse_y"),
 	m_video_ram(*this, "video_ram", VIDEO_RAM_SIZE * sizeof(u32), ENDIANNESS_BIG),
 	m_nv_ram(*this,"nv_ram", 0x2000, ENDIANNESS_LITTLE)
 {
@@ -113,6 +170,10 @@ void explorer_sib_device::device_start()
 	save_item(NAME(m_operation_register));
 	save_item(NAME(m_mouse_y_position));
 	save_item(NAME(m_mouse_x_position));
+	save_item(NAME(m_mouse_keyswitches));
+	save_item(NAME(m_keyboard_txd));
+	save_item(NAME(m_mouse_motion_event_pending));
+	save_item(NAME(m_mouse_keyswitch_event_pending));
 	save_item(NAME(m_interrupt_diag_control));
 	save_item(NAME(m_monitor_control));
 	save_item(NAME(m_diagnostic_data));
@@ -135,6 +196,11 @@ void explorer_sib_device::device_reset()
 	m_interrupt_diag_control = 0;
 	m_monitor_control = 0;
 	update_speaker_amplifier();
+
+	// With the interrupt enables gone there is nothing left for the interrupt
+	// handshake controller to be holding.
+	m_mouse_motion_event_pending = false;
+	m_mouse_keyswitch_event_pending = false;
 }
 
 
@@ -531,6 +597,81 @@ void explorer_sib_device::update_speaker_amplifier()
 }
 
 
+// The motion/keyswitch data register, f20008 - read-only, IDATA 07-00 (Table
+// 4-15), bit assignments in Figure 4-14.
+u32 explorer_sib_device::motion_keyswitch_r()
+{
+	if (!machine().side_effects_disabled())
+	{
+		// Reading the register is what the keyswitch event asks the host to do
+		// ("the event notifies the host processor to read the motion/keyswitch
+		// register"), and it reports motion as well, so it acknowledges both.
+		m_mouse_motion_event_pending = false;
+		m_mouse_keyswitch_event_pending = false;
+	}
+
+	// Paragraph 4.4.11.9: in internal loopback the simulated channel B stream
+	// has all its bits equal to TSTOUT, and "sampling any of the bits in the
+	// motion/keyswitch data register should produce the complement of the
+	// TSTOUT bit"; MOUSSEL instead "gates the simulated parallel data byte to
+	// replace the mouse motion, keyswitch, and keyboard data normally received
+	// from the fiber-optic interface".
+	if (diagnostic_loopback_active())
+		return diagnostic_loopback_value();
+	if (BIT(m_interrupt_diag_control, 1))
+		return m_diagnostic_data & 0xff;
+
+	return m_mouse_keyswitches | (m_keyboard_txd ? 0x80 : 0x00);
+}
+
+
+// Paragraph 4.4.11.5: the interrupt handshake controller takes "interrupt
+// initiating signals from the fiber-optic data link, mouse motion detector, and
+// mouse keyswitch detector circuits" and gates them with the matching bit of
+// the interrupt enable register (MINTENB 06, KINTENB 05 - Figure 4-16) before
+// handing them to the event generator.
+//
+// One event is posted per condition until the host reads a register that
+// reports it, which is the same shape as the CRT controller's own interrupt
+// (see crtc_int_w()): a second motion event before the first has been picked up
+// would tell the host nothing it will not already see in the counters. 4.4.11.3
+// notes that software can also ignore the event scheme entirely and poll the
+// register instead, which works either way.
+void explorer_sib_device::post_mouse_motion_event()
+{
+	if (!BIT(m_interrupt_diag_control, 6) || m_mouse_motion_event_pending)
+		return;
+
+	m_mouse_motion_event_pending = true;
+	post_event(9); // "Mouse motion", Event-Mouse-Motion at f00024
+}
+
+INPUT_CHANGED_MEMBER(explorer_sib_device::mouse_x_changed)
+{
+	m_mouse_x_position = (m_mouse_x_position + mouse_axis_delta(oldval, newval)) & 0xffff;
+	post_mouse_motion_event();
+}
+
+INPUT_CHANGED_MEMBER(explorer_sib_device::mouse_y_changed)
+{
+	m_mouse_y_position = (m_mouse_y_position + mouse_axis_delta(oldval, newval)) & 0xffff;
+	post_mouse_motion_event();
+}
+
+INPUT_CHANGED_MEMBER(explorer_sib_device::mouse_button_changed)
+{
+	// Paragraph 4.4.11.3: the keyswitch detector fires on any change of state,
+	// "when the operator presses or releases any of the keyswitches".
+	m_mouse_keyswitches = m_mouse_buttons->read() & 0x70;
+
+	if (!BIT(m_interrupt_diag_control, 5) || m_mouse_keyswitch_event_pending)
+		return;
+
+	m_mouse_keyswitch_event_pending = true;
+	post_event(10); // "Mouse keyswitch", Event-Mouse-Keyswitch at f00028
+}
+
+
 void explorer_sib_device::mouse_map(address_map &map)
 {
 	// f20000 - mouse-registers-base
@@ -543,6 +684,10 @@ void explorer_sib_device::mouse_map(address_map &map)
 	// f20014 - Mouse-Sound-Control-Register
 	// f20018 - Mouse-Speech-Register
 	// f2001c - Mouse-Voice-Register
+
+	// f20008 - motion/keyswitch data register, read-only (Figure 4-14):
+	// KOUT 07 (serial keyboard data), LKEY 06, MKEY 05, RKEY 04, then the raw
+	// quadrature mouse motion inverted - YB- 03, YA- 02, XB- 01, XA- 00.
 
 	// f2000c is two registers in one longword (Figure 4-16). The low byte is the
 	// Interrupt Enable and Diagnostic Control register: SERRENB 7, MINTENB 6,
@@ -560,23 +705,24 @@ void explorer_sib_device::mouse_map(address_map &map)
 	// df - 11011111 - 101 - tone 3 attenuation - off
 	// ff - 11111111 - 111 - noise attenuation - off
 
+	// The position registers are read/write: paragraph 4.4.11.2's counters are
+	// 16-bit up/down counters and "the host processor can preload these
+	// counters, making the mouse position relative to some fixed point".
 	map(0x00f20000, 0x00f20003).lrw32(NAME([this] {
+		if (!machine().side_effects_disabled())
+			m_mouse_motion_event_pending = false;
 		return m_mouse_y_position;
 	}), NAME([this] (u32 data) {
 		m_mouse_y_position = data & 0xffff;
 	}));
 	map(0x00f20004, 0x00f20007).lrw32(NAME([this] {
+		if (!machine().side_effects_disabled())
+			m_mouse_motion_event_pending = false;
 		return m_mouse_x_position;
 	}), NAME([this] (u32 data) {
 		m_mouse_x_position = data & 0xffff;
 	}));
-	map(0x00f20008, 0x00f2000b).lr32(NAME([this] {
-		if (diagnostic_loopback_active())
-			return diagnostic_loopback_value();
-		if (BIT(m_interrupt_diag_control, 1))
-			return m_diagnostic_data & 0xff;
-		return u32(0xffffffff);
-	}));
+	map(0x00f20008, 0x00f2000b).lr32(NAME([this] { return motion_keyswitch_r(); }));
 	map(0x00f2000c, 0x00f2000f).lrw32(NAME([this] {
 		return (m_interrupt_diag_control & 0xff) | ((m_monitor_control & 0xf) << 8);
 	}), NAME([this] (u32 data) {
@@ -748,6 +894,13 @@ void explorer_sib_device::i8251_txd_w(int state)
 
 void explorer_sib_device::keyboard_txd_w(int state)
 {
+	// KOUT, bit 07 of the motion/keyswitch data register: the same received
+	// serial line, tapped before the deglitcher so that "the serial keyboard
+	// data can also be sampled by the host processor for possible testing"
+	// (paragraph 4.4.11.2). Software normally masks it off, exactly as it does
+	// the raw motion bits beside it.
+	m_keyboard_txd = state;
+
 	// Mirrors i8251_txd_w()'s own gating in the other direction: on real
 	// hardware, diagnostic loopback mode physically disconnects the
 	// fiber-optic keyboard link from the i8251's RXD, so the keyboard's own
