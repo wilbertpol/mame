@@ -20,6 +20,7 @@
 #include "machine/nvram.h"
 #include "machine/pit8253.h"
 #include "sound/sn76496.h"
+#include "video/crt9007.h"
 
 
 class explorer_sib_device : public device_t, public device_ti_nubus_card_interface
@@ -41,6 +42,8 @@ private:
 	void video_ram_w(offs_t offset, u32 data, u32 mem_mask);
 	void video_ram_rmw_w(offs_t offset, u32 data, u32 mem_mask);
 	void event_generator_map(address_map &map) ATTR_COLD;
+	u8 crtc_r(offs_t offset);
+	void crtc_w(offs_t offset, u8 data);
 	void printer_map(address_map &map) ATTR_COLD;
 	void mouse_map(address_map &map) ATTR_COLD;
 	void rtc_map(address_map &map) ATTR_COLD;
@@ -64,11 +67,20 @@ private:
 	void post_event(int cause);
 	void pit_out2_w(int state);
 	void rtc_irq_w(int state);
-	void screen_vblank_w(int state);
+	void crtc_int_w(int state);
 	void usart_rxrdy_w(int state);
 	void usart_txrdy_w(int state);
 
 	required_device<screen_device> m_screen;
+	// "Video processor controller 9007" per Figure 1-11 of the Explorer System
+	// Field Maintenance manual - an SMC CRT9007 VPAC, which is the part Table
+	// 4-13's register list and TI's own Lisp register names both describe. Used
+	// here for what the board actually uses it for: raster timing and the
+	// vertical-retrace interrupt. Its cursor, smooth-scroll, light-pen and DMA
+	// features are dead on this board ("other CRT controller functions
+	// suggested by the register names in Table 4-13 are not functional due to
+	// hardware constraints"), which is why nothing but int_callback is wired.
+	required_device<crt9007_device> m_crt9007;
 	required_device<i8251_device> m_i8251;
 	required_device<explorer_keyboard_device> m_keyboard;
 	required_device<explorer_rtc_device> m_rtc;
@@ -123,10 +135,6 @@ private:
 	u32 m_printer_data = 0;
 	u32 m_sound_control = 0;
 	u32 m_speech_register = 0;
-	// CRT controller R1A (write) / R3A (read) at e00068 - see paragraph
-	// 4.4.10.7, "CRT Controller Initialization and Interrupts".
-	u8 m_graphics_interrupt_enable = 0;
-	bool m_graphics_interrupt_pending = false;
 	// Keyboard USART interrupt, Table 4-4 cause 6 ("Ready to transmit/receive").
 	bool m_usart_rxrdy = false;
 	bool m_usart_txrdy = false;

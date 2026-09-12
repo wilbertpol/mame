@@ -21,6 +21,42 @@ static constexpr u16 VIDEO_RAM_MASK = VIDEO_RAM_SIZE - 1;
 static constexpr u16 SCREEN_WIDTH = 1024;
 static constexpr u16 SCREEN_HEIGHT = 808;
 
+// The raster, taken from the values the system software loads into the CRT9007
+// at cold boot. Table 4-13 lists them in its "Data (Hex)" column, TI's own
+// copy of the list is SIB-CRT-Init-Sequence-List in ucode/lroy-qdev.lisp, and
+// a boot logs exactly the same 22 bytes:
+//
+//   R00 = 2A   42 characters per horizontal period, 32 pixels each = 1344
+//   R01 = 1F   32 characters per data row                          = 1024
+//   R02 = 07    7 character times of horizontal delay              =  224
+//   R07 = 64  101 visible data rows per frame ...
+//   R08 = 67   ... of 8 scan lines each                            =  808
+//   R08/R09   842 scan lines per frame
+//
+// A "character" here is one 32-bit word of the bit map, so the display is
+// 1024 x 808 - which is what Figure 4-11 shows (line 0 at FSE80000, line 807
+// at FSE99380) and what the system software believes: cold-load-stream.lisp
+// initialises the cold-load stream with :WIDTH 1024. :HEIGHT 808.
+//
+// 1344 x 842 pixels sixty times a second needs 67.89888 MHz, and the crystal
+// on the board is the 67.889 MHz oscillator labelled in Figure 1-11 of the
+// Field Maintenance manual (paragraph 4.4.10.3 calls it "the 67.8989-megahertz
+// pixel clock ... one bit every 14.72 nanoseconds"). Driven from the crystal
+// the frame comes out at 59.99 Hz, i.e. the 16.67 ms of paragraph 4.4.10.7.
+static constexpr XTAL PIXEL_CLOCK = 67.889_MHz_XTAL;
+static constexpr u16 CHARACTER_WIDTH = 32;   // one bit-map word per character
+static constexpr u16 HTOTAL = 42 * CHARACTER_WIDTH;  // R00
+static constexpr u16 HBEND = 7 * CHARACTER_WIDTH;    // R02, horizontal delay
+static constexpr u16 VTOTAL = 842;                   // R08/R09
+// Only 34 of those 842 scan lines are left once the 808 visible ones are
+// accounted for, and neither R04 (vertical sync width, 24 = 36 lines) nor R05
+// (vertical delay, 25 = 37 lines) fits inside 34 - so how those 34 lines split
+// into front and back porch is not something the documentation to hand pins
+// down, and they all go ahead of the display here. Nothing depends on where
+// they sit; the totals are what matter. (Horizontally the same arithmetic does
+// close: 7 delay + 32 displayed + 3 = 42 characters.)
+static constexpr u16 VBEND = VTOTAL - SCREEN_HEIGHT;
+
 // Real hardware bit assignments (2243145-0001A SI General Description, page 4-15,
 // Figure 4-4): bit 0 (Reset) is write-only and always reads 0 - a momentary strobe,
 // never latched into the readable register. Bit 2 (SI board test LED) and bit 10
@@ -38,6 +74,7 @@ explorer_sib_device::explorer_sib_device(const machine_config &mconfig, const ch
 	device_t(mconfig, SIB, tag, owner, clock),
 	device_ti_nubus_card_interface(mconfig, *this),
 	m_screen(*this, "screen"),
+	m_crt9007(*this, "crt9007"),
 	m_i8251(*this, "i8251"),
 	m_keyboard(*this, "keyboard"),
 	m_rtc(*this, "rtc"),
@@ -78,8 +115,6 @@ void explorer_sib_device::device_start()
 	save_item(NAME(m_printer_data));
 	save_item(NAME(m_sound_control));
 	save_item(NAME(m_speech_register));
-	save_item(NAME(m_graphics_interrupt_enable));
-	save_item(NAME(m_graphics_interrupt_pending));
 	save_item(NAME(m_usart_rxrdy));
 	save_item(NAME(m_usart_txrdy));
 }
@@ -181,106 +216,16 @@ void explorer_sib_device::graphics_bitmap_map(address_map &map)
 	// e00088 - Graphics-Alu-Register
 	// e00098 - Graphics-Video-Test-Register
 
-	map(0x00e00000, 0x00e00003).lw32(NAME([] (u32 data) {
-		printf("Graphics-Char-Per-Horiz-Period write %08x\n", data);
-	}));
-	map(0x00e00004, 0x00e00007).lw32(NAME([] (u32 data) {
-		printf("Graphics-Char-Per-Data-Row write %08x\n", data);
-	}));
-	map(0x00e00008, 0x00e0000b).lw32(NAME([] (u32 data) {
-		printf("Graphics-Horiz-Delay write %08x\n", data);
-	}));
-	map(0x00e0000c, 0x00e0000f).lw32(NAME([] (u32 data) {
-		printf("Graphics-Horiz-Sync-Width write %08x\n", data);
-	}));
-	map(0x00e00010, 0x00e00013).lw32(NAME([] (u32 data) {
-		printf("Graphics-Vertical-Sync-Width write %08x\n", data);
-	}));
-	map(0x00e00014, 0x00e00017).lw32(NAME([] (u32 data) {
-		printf("Graphics-Vertical-Delay write %08x\n", data);
-	}));
-	map(0x00e00018, 0x00e0001b).lw32(NAME([] (u32 data) {
-		printf("Graphics-Skew write %08x\n", data);
-	}));
-	map(0x00e0001c, 0x00e0001f).lw32(NAME([] (u32 data) {
-		printf("Graphics-Visible-Data-Rows-Per-Frame write %08x\n", data);
-	}));
-	map(0x00e00020, 0x00e00023).lw32(NAME([] (u32 data) {
-		printf("Graphics-Scan-Lines write %08x\n", data);
-	}));
-	map(0x00e00024, 0x00e00027).lw32(NAME([] (u32 data) {
-		printf("Graphics-Scan-Lines-Per-Frame-LS write %08x\n", data);
-	}));
-	map(0x00e00028, 0x00e0002b).lw32(NAME([] (u32 data) {
-		printf("Graphics-Dma-Control write %08x\n", data);
-	}));
-	map(0x00e0002c, 0x00e0002f).lw32(NAME([] (u32 data) {
-		printf("Graphics-Operation-Control write %08x\n", data);
-	}));
-	map(0x00e00030, 0x00e00033).lw32(NAME([] (u32 data) {
-		printf("Graphics-Table-Start-Register-LS write %08x\n", data);
-	}));
-	map(0x00e00034, 0x00e00037).lw32(NAME([] (u32 data) {
-		printf("Graphics-Table-Start-Register-MS write %08x\n", data);
-	}));
-	map(0x00e00038, 0x00e0003b).lw32(NAME([] (u32 data) {
-		printf("Graphics-Aux-Address-Register-1-LS write %08x\n", data);
-	}));
-	map(0x00e0003c, 0x00e0003f).lw32(NAME([] (u32 data) {
-		printf("Graphics-Aux-Address-Register-1-MS write %08x\n", data);
-	}));
-	map(0x00e00040, 0x00e00043).lw32(NAME([] (u32 data) {
-		printf("Graphics-Seq-Break-Register-1 write %08x\n", data);
-	}));
-	map(0x00e00044, 0x00e00047).lw32(NAME([] (u32 data) {
-		printf("Graphics-Data-Row-Start write %08x\n", data);
-	}));
-	map(0x00e00048, 0x00e0004b).lw32(NAME([] (u32 data) {
-		printf("Graphics-Data-Row-End write %08x\n", data);
-	}));
-	map(0x00e0004c, 0x00e0004f).lw32(NAME([] (u32 data) {
-		printf("Graphics-Aux-Address-Register-2-LS write %08x\n", data);
-	}));
-	map(0x00e00050, 0x00e00053).lw32(NAME([] (u32 data) {
-		printf("Graphics-Aux-Address-Register-2-MS write %08x\n", data);
-	}));
-	map(0x00e00054, 0x00e00057).lw32(NAME([] (u32 data) {
-		printf("Graphics-Start-Command write %08x\n", data);
-	}));
-	map(0x00e00058, 0x00e0005b).lw32(NAME([] (u32 data) {
-		printf("Graphics-Reset-Command write %08x\n", data);
-	}));
-	map(0x00e0005c, 0x00e0005f).lw32(NAME([] (u32 data) {
-		printf("Graphics-Offset write %08x\n", data);
-	}));
-	map(0x00e00060, 0x00e00063).lw32(NAME([] (u32 data) {
-		printf("Graphics-Cursor-Row write %08x\n", data);
-	}));
-	map(0x00e00064, 0x00e00067).lw32(NAME([] (u32 data) {
-		printf("Graphics-Cursor-Column write %08x\n", data);
-	}));
-	// R3A (read) / R1A (write), paragraph 4.4.10.7: "Reading address hexadecimal
-	// FSE00068 returns interrupt status and simultaneously clears the interrupt.
-	// Bit 7 is set if an interrupt is pending (hexadecimal C0); all bits are
-	// clear (hexadecimal 00) if no interrupt is pending." Note the documented
-	// pending value is C0, not 80 - the enable bit reads back alongside it.
-	map(0x00e00068, 0x00e0006b).lrw32(NAME([this] {
-		u32 const result = m_graphics_interrupt_pending ? 0xc0 : 0x00;
-		if (!machine().side_effects_disabled())
-			m_graphics_interrupt_pending = false;
-		return result;
-	}), NAME([this] (u32 data) {
-		m_graphics_interrupt_enable = u8(data);
-	}));
-	map(0x00e0006c, 0x00e0006f).lw32(NAME([] (u32 data) {
-		printf("Graphics-Light-Pen-Row write %08x\n", data);
-	}));
-	map(0x00e00070, 0x00e00073).lw32(NAME([] (u32 data) {
-		printf("Graphics-Light-Pen-Column write %08x\n", data);
-	}));
-	map(0x00e0007c, 0x00e0007f).lw32(NAME([] (u32 data) {
-		printf("Graphics-Char-Per-Horiz-Period write %08x\n", data);
-	}));
+	// All of these are registers of the CRT9007 video processor and controller
+	// ("video processor controller 9007", Figure 1-11 of the Field Maintenance
+	// manual), one per 32-bit slot in byte lane 0 - so the chip's register
+	// number is bits 6-2 of the address. The chip has a 6-bit register space
+	// and the board only supplies five bits of it, which is why Table 4-13
+	// documents the same addresses twice: writes land in the write bank
+	// (R00-R1F) and reads in the read bank 0x20 higher, so e00068 is R1A
+	// "Interrupt enable" written and R3A "Status" read, and e00060/e00064 are
+	// the cursor registers written (R18/R19) and read back (R38/R39).
+	map(0x00e00000, 0x00e0007f).rw(FUNC(explorer_sib_device::crtc_r), FUNC(explorer_sib_device::crtc_w)).umask32(0x000000ff);
 	// Readable as well as writable, like the adjacent mask and ALU registers.
 	// Meroko's sib.c reads it back as sib_video_attr; installed write-only here,
 	// reads fell through to the slot's unmapped handler instead.
@@ -307,6 +252,41 @@ void explorer_sib_device::graphics_bitmap_map(address_map &map)
 	map(0x00e80000, 0x00e9ffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_w));
 
 	map(0x00ec0000, 0x00edffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_rmw_w));
+}
+
+
+u8 explorer_sib_device::crtc_r(offs_t offset)
+{
+	// The map is 32 words wide, so offset is already the 0-0x1f register
+	// number. Bit 5 is not in the address at all: the chip has a six-bit
+	// register space and the board decodes five, selecting the read bank by
+	// the direction of the cycle instead. That is why Table 4-13 lists some
+	// addresses twice, and why the 0x20 has to be ORed in here - reads of
+	// e00054/e00058 would otherwise hit the chip's read-side Start and Reset
+	// commands at R15/R16.
+	//
+	// Paragraph 4.4.10.7's "bit 7 is set if an interrupt is pending
+	// (hexadecimal C0); all bits are clear (hexadecimal 00) if no interrupt is
+	// pending" reads like a two-valued register, but the C0 is just the chip
+	// describing itself: a pending vertical-retrace interrupt sets the retrace
+	// bit (0x40) alongside the interrupt-pending bit (0x80). It is only the 00
+	// that is loose, since reading clears the pending bit alone and leaves 0x40
+	// standing until the next vertical sync.
+	//
+	// Nothing minds, so the value is passed through as the device produces it.
+	// The band reads this register from its retrace handler and nowhere else -
+	// always while pending, never while idle - and TI's field spec for it is
+	// %%SIB-TV-Status-Interrupt-Pending #o0701 in ucode/lroy-qdev.lisp, one bit
+	// wide at bit 7. In practice it always reads C1: bit 0 is "frame timer
+	// occurred", which crt9007_device sets whether or not the frame-timer
+	// interrupt is enabled, and which the software masks off.
+	return m_crt9007->read(0x20 | offset);
+}
+
+
+void explorer_sib_device::crtc_w(offs_t offset, u8 data)
+{
+	m_crt9007->write(offset, data);
 }
 
 
@@ -435,23 +415,21 @@ void explorer_sib_device::rtc_irq_w(int state)
 		post_event(0); // "Real-time clock", Table 4-4
 }
 
-void explorer_sib_device::screen_vblank_w(int state)
+void explorer_sib_device::crtc_int_w(int state)
 {
-	// Paragraph 4.4.10.7: the CRT controller generates an interrupt "at the
-	// start of each vertical retrace... once every 16.67 milliseconds
-	// immediately after the CRT has completed a full video display refresh",
-	// enabled by bit 6 of the byte written to e00068. The screen is configured
-	// at 60 Hz, so its own vblank edge is that retrace.
-	if (!state || !BIT(m_graphics_interrupt_enable, 6))
-		return;
-
-	// "The interrupt must be cleared before another interrupt is generated" -
-	// a still-pending interrupt suppresses the next one rather than stacking.
-	if (m_graphics_interrupt_pending)
-		return;
-
-	m_graphics_interrupt_pending = true;
-	post_event(5);
+	// The CRT9007's INT pin. Paragraph 4.4.10.7: the controller "can generate
+	// an interrupt at the start of each vertical retrace... once every 16.67
+	// milliseconds immediately after the CRT has completed a full video display
+	// refresh", enabled by bit 6 of the byte written to e00068 (R1A), and
+	// "once the interrupt occurs, an event is generated at the address loaded
+	// into the event generator register file".
+	//
+	// Only the assertion posts an event. The line stays asserted until the
+	// status register is read, so a retrace arriving while one is still pending
+	// produces no fresh edge - which is the paragraph's "the interrupt must be
+	// cleared before another interrupt is generated".
+	if (state)
+		post_event(5); // "Graphics controller", Table 4-4 (event vector f00014)
 }
 
 // Table 4-4 gives the keyboard USART one interrupt cause, "Ready to
@@ -733,14 +711,19 @@ u32 explorer_sib_device::screen_update(screen_device &screen, bitmap_rgb32 &bitm
 	}
 	const u32 invert = BIT(m_attribute_register, 1) ? 0xffffffff : 0;
 
+	// The raster has a blanking interval in front of the display on both axes,
+	// so bit-map line 0 pixel 0 sits at the top left of the visible area rather
+	// than at (0, 0) of the screen.
+	const rectangle &visarea = screen.visible_area();
+
 	for (int y = cliprect.top(); y <= cliprect.bottom(); y++)
 	{
-		const u32 line_start = y * (SCREEN_WIDTH / 32);
+		const u32 line_start = (y - visarea.top()) * (SCREEN_WIDTH / 32);
 
 		for (int x = 0; x < (SCREEN_WIDTH / 32); x++)
 		{
 			const u32 d = m_video_ram[line_start + x] ^ invert;
-			const u32 xs = x * 32;
+			const int xs = visarea.left() + x * 32;
 
 			for (int i = 0; i < 32; i++)
 			{
@@ -754,18 +737,23 @@ u32 explorer_sib_device::screen_update(screen_device &screen, bitmap_rgb32 &bitm
 
 void explorer_sib_device::device_add_mconfig(machine_config &config)
 {
-	// System documents mention 1024x808 pixels
+	// 1024 x 808 out of a 1344 x 842 raster clocked from the board's 67.889 MHz
+	// oscillator - see the derivation beside PIXEL_CLOCK above.
 	SCREEN(config, m_screen);
-	m_screen->set_refresh_hz(60);
-	// Figure 4-11 fixes the bit-mapped display at 1024 x 808: line 0 starts at
-	// FSE80000 and line 807 at FSE99380, which is 807 * 128 bytes further on
-	// (1024 pixels = 32 words = 128 bytes per line). That also matches the CRT
-	// controller values the band programs - R07 visible data rows per frame =
-	// 0x64 (100 rows) at R08 = 8 scan lines per data row.
-	m_screen->set_size(SCREEN_WIDTH, SCREEN_HEIGHT);
-	m_screen->set_visarea(0, SCREEN_WIDTH - 1, 0, SCREEN_HEIGHT - 1);
+	m_screen->set_raw(PIXEL_CLOCK, HTOTAL, HBEND, HBEND + SCREEN_WIDTH, VTOTAL, VBEND, VBEND + SCREEN_HEIGHT);
 	m_screen->set_screen_update(FUNC(explorer_sib_device::screen_update));
-	m_screen->screen_vblank().set(FUNC(explorer_sib_device::screen_vblank_w));
+
+	// The CRT9007 is clocked by the character clock, one thirty-second of the
+	// pixel clock, since a character on this board is a 32-bit bit-map word.
+	// Only the interrupt output is wired: the board takes the chip's sync and
+	// blanking signals for the monitor and fibre-optic link, but its cursor,
+	// light-pen and row-buffer DMA outputs go nowhere ("other CRT controller
+	// functions suggested by the register names in Table 4-13 are not
+	// functional due to hardware constraints").
+	CRT9007(config, m_crt9007, PIXEL_CLOCK / CHARACTER_WIDTH);
+	m_crt9007->set_screen(m_screen);
+	m_crt9007->set_character_width(CHARACTER_WIDTH);
+	m_crt9007->int_callback().set(FUNC(explorer_sib_device::crtc_int_w));
 
 	I8251(config, m_i8251);
 	m_i8251->txd_handler().set(FUNC(explorer_sib_device::i8251_txd_w));
