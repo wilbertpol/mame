@@ -785,7 +785,7 @@ void explorer_sib_device::device_add_mconfig(machine_config &config)
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
 
 	SPEAKER(config, "speaker").front_center();
-	SN76496(config, "sn76496", 1'500'000).add_route(ALL_OUTPUTS, "speaker", 0.0); // Exact model and input frequency unknown, noise
+	SN76496(config, "sn76496", 1'500'000).add_route(ALL_OUTPUTS, "speaker", 0.3); // Exact model and input frequency unknown, noise
 }
 
 
