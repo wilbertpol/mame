@@ -435,47 +435,45 @@ void explorer_nupi_device::nubus_map(address_map &map)
 	// 00b80000 - 2 bytes - fifo-ram port?
 	// 00cc0000 - byte - nubus master status?
 
-	// 00d40000 - 2 bytes - nupi board status?
-
-	// Doc Section 4.1.1.2/5.3.2 state that the command address and configuration
-	// registers "reside in the on-board NUPI RAM" - the same 4KB RAM the MPU
-	// addresses locally at 0x180000-0x180fff (see mpu_map()). Independently
-	// confirmed via three exact bit-level matches between local RAM offsets and
-	// documented E00000-region registers: 0x180000 bit0 (ROM 0x2054) matches the
-	// Power Failure Event Address's documented "prevents processing of any new
-	// command" behavior; 0x180008 bit0 (ROM 0xB62) matches the configuration
-	// register's Reset bit, triggering the real reset-and-rerun-self-test
-	// handler at ROM 0x1822; 0x180008 bit2 (ROM 0xB6A) matches the Fault LED
-	// bit's documented "overrides the result of any self-test operation"
-	// behavior exactly. Mapped wide/first as real shared RAM so the narrower
-	// special-behavior handlers below could override their own specific bytes,
-	// same layering as everywhere else in this map - but commented out for now
-	// to test the plain-shared-RAM behavior in isolation first.
-	map(0x00e00000, 0x00e00fff).rw(FUNC(explorer_nupi_device::ram_window_r), FUNC(explorer_nupi_device::ram_window_w));
-
-	// Nothing in >Fs'E00000-E00FFF needs a register handler of its own. Every
-	// documented NuBus-facing register in Section 5.3 - Command Address
-	// (E00004), Configuration Register (E0000B), DMA-Test-Register (E0000F) -
-	// is genuinely on-board RAM, the same bytes the 68000 firmware itself
-	// reads and writes at $180000-$180FFF. For the config register that is
-	// confirmed against the ROM disassembly (System Bus Test code at
-	// $1FA4-$201E, doc Section 5.3.2), and ram_window_w() above already
-	// supplies the one real side effect the range has: the IRQ5 the doc's
-	// Section 4.5.1.5 specifies for a write to any word's most significant
-	// byte, with the dispatch value the handler expects.
-	//
-	// Two things a dedicated handler would have to model if one is ever wired
-	// back in, neither modeled today:
-	//  - Config register bit 0, Reset: resets the MPU and the SCSI bus. Today
-	//    the write just lands in RAM.
-	//  - A hardcoded-0 *read* of E0000B must NOT be reintroduced. It makes
-	//    raven see bit 3 (System Bus Test) as always-already-clear, which
-	//    masks whether NUPI's own entry-8 self-test genuinely completes
-	//    (removed 2026-09-03 for exactly that reason).
-
+	// 00d40000 - 2 bytes - nupi board status
 	map(0x00d40002, 0x00d40002).r(FUNC(explorer_nupi_device::flag_register_r));
 
-	// 00e00000 - 4kb - 68000 ram
+
+	// 00e00000 - 4kb - 68000 RAM, and with it the whole NuBus-facing register
+	// interface.
+	//
+	// Doc Section 4.1.1.2/5.3.2 state that the command address and configuration
+	// registers "reside in the on-board NUPI RAM" - the same 4KB the MPU
+	// addresses locally at 0x180000-0x180fff (see mpu_map()). So this one wide
+	// window is the entire model: every documented register in Section 5.3 -
+	// Command Address (E00004), Configuration Register (E0000B),
+	// DMA-Test-Register (E0000F) - is plain RAM, none needs a handler of its
+	// own, and the only side effect the range has is the one ram_window_w()
+	// already supplies: the IRQ5 that doc Section 4.5.1.5 specifies for a write
+	// to any word's most significant byte, carrying the dispatch value the
+	// handler expects.
+	//
+	// Confirmed independently of the doc by three exact bit-level matches
+	// between local RAM offsets and documented E00000-region register bits -
+	// each of which also shows that a register's documented *behavior* is
+	// implemented by the firmware rather than by this device:
+	//  - 0x180000 bit0 (ROM 0x2054) = the Power Failure Event Address's
+	//    documented "prevents processing of any new command".
+	//  - 0x180008 bit0 (ROM 0xB62) = the configuration register's Reset bit. The
+	//    68000's own IRQ5 handler reads it and runs the real
+	//    reset-and-rerun-self-test path at ROM 0x1822.
+	//  - 0x180008 bit2 (ROM 0xB6A) = the Fault LED bit's documented "overrides
+	//    the result of any self-test operation".
+	//
+	// That firmware path is the right level for an intelligent board: calling
+	// m_mpu->reset() from a handler on this side would bypass exactly the
+	// sequence the real board runs, so don't add one.
+	//
+	// One thing not to reintroduce either: a hardcoded-0 *read* of E0000B. It
+	// contradicts 5.3.2, and it makes raven see bit 3 (System Bus Test) as
+	// always-already-clear, so the board's own self-test result can never be
+	// observed.
+	map(0x00e00000, 0x00e00fff).rw(FUNC(explorer_nupi_device::ram_window_r), FUNC(explorer_nupi_device::ram_window_w));
 
 	map(0x00ffc000, 0x00ffffff).r(FUNC(explorer_nupi_device::rom_r));
 }
