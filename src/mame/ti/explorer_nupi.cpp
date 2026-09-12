@@ -83,7 +83,6 @@ explorer_nupi_device::explorer_nupi_device(const machine_config &mconfig, const 
 	m_ram(*this, "ram"),
 	m_firmware(*this, "firmware"),
 	m_firmware_nubus(*this, "firmware_nubus"),
-	m_command_address(0),
 	m_flag_register(0x07),
 	m_dma_address(0),
 	m_dma_count(0),
@@ -126,12 +125,10 @@ void explorer_nupi_device::device_start()
 			dest[i] = src[i ^ 2];
 	}
 
-	save_item(NAME(m_command_address));
 	save_item(NAME(m_flag_register));
 	save_item(NAME(m_dma_address));
 	save_item(NAME(m_dma_count));
 	save_item(NAME(m_page_register_802c00_shadow));
-	save_item(NAME(m_dma_test_register));
 	save_item(NAME(m_unknown_100001));
 	save_item(NAME(m_unknown_100005));
 	save_item(NAME(m_unknown_280000));
@@ -191,12 +188,10 @@ void explorer_nupi_device::device_start()
 
 void explorer_nupi_device::device_reset()
 {
-	m_command_address = 0;
 	m_flag_register = 0x07;
 	m_dma_address = 0;
 	m_dma_count = 0;
 	m_page_register_802c00_shadow = 0;
-	m_dma_test_register = 0;
 	m_unknown_100001 = 0;
 	m_unknown_100005 = 0;
 	m_unknown_280000 = 0;
@@ -457,56 +452,32 @@ void explorer_nupi_device::nubus_map(address_map &map)
 	// same layering as everywhere else in this map - but commented out for now
 	// to test the plain-shared-RAM behavior in isolation first.
 	map(0x00e00000, 0x00e00fff).rw(FUNC(explorer_nupi_device::ram_window_r), FUNC(explorer_nupi_device::ram_window_w));
-//	map(0x00e00004, 0x00e00007).rw(FUNC(explorer_nupi_device::command_address_r), FUNC(explorer_nupi_device::command_address_w));
-	// Configuration Register (>Fs'E0000B) is genuinely on-board RAM (doc Section
-	// 5.3.2), the same byte the 68000 firmware itself reads/writes at $180008 -
-	// confirmed via ROM disassembly (System Bus Test code at $1FA4-$201E). No
-	// special-cased read handler needed - falls through to the wide
-	// ram_window_r() above like any other RAM byte, same as the command
-	// address register already does. Re-applied for accurate entry-8 testing
-	// (2026-09-03): a hardcoded-0 read here makes raven see the config
-	// register's bit3 (System Bus Test) as always-already-clear, masking
-	// whether NUPI's own entry-8 self-test ever genuinely completes - not
-	// representative for investigating entry 8's real behavior.
-//	map(0x00e0000b, 0x00e0000b).w(FUNC(explorer_nupi_device::config_register_w));
-//	map(0x00e0000f, 0x00e0000f).w(FUNC(explorer_nupi_device::dma_test_register_w));
+
+	// Nothing in >Fs'E00000-E00FFF needs a register handler of its own. Every
+	// documented NuBus-facing register in Section 5.3 - Command Address
+	// (E00004), Configuration Register (E0000B), DMA-Test-Register (E0000F) -
+	// is genuinely on-board RAM, the same bytes the 68000 firmware itself
+	// reads and writes at $180000-$180FFF. For the config register that is
+	// confirmed against the ROM disassembly (System Bus Test code at
+	// $1FA4-$201E, doc Section 5.3.2), and ram_window_w() above already
+	// supplies the one real side effect the range has: the IRQ5 the doc's
+	// Section 4.5.1.5 specifies for a write to any word's most significant
+	// byte, with the dispatch value the handler expects.
+	//
+	// Two things a dedicated handler would have to model if one is ever wired
+	// back in, neither modeled today:
+	//  - Config register bit 0, Reset: resets the MPU and the SCSI bus. Today
+	//    the write just lands in RAM.
+	//  - A hardcoded-0 *read* of E0000B must NOT be reintroduced. It makes
+	//    raven see bit 3 (System Bus Test) as always-already-clear, which
+	//    masks whether NUPI's own entry-8 self-test genuinely completes
+	//    (removed 2026-09-03 for exactly that reason).
 
 	map(0x00d40002, 0x00d40002).r(FUNC(explorer_nupi_device::flag_register_r));
 
 	// 00e00000 - 4kb - 68000 ram
 
 	map(0x00ffc000, 0x00ffffff).r(FUNC(explorer_nupi_device::rom_r));
-}
-
-u32 explorer_nupi_device::command_address_r()
-{
-	return m_command_address;
-}
-
-void explorer_nupi_device::command_address_w(offs_t offset, u32 data, u32 mem_mask)
-{
-	logerror("%s: command_address_w data=%08x mask=%08x\n", machine().describe_context(), data, mem_mask);
-	COMBINE_DATA(&m_command_address);
-
-	if (mem_mask & 0xff000000)
-	{
-		m_ram[0x0004 / 2] = m_command_address >> 16;
-		m_ram[0x0006 / 2] = m_command_address & 0xffff;
-		// The IRQ5 handler's first real check (0xB3C: move.b $280000.l,D0;
-		// cmpi.b #$31,D0) expects this exact value here - unverified
-		// whether real hardware derives it automatically (e.g. an
-		// interrupt-source-identification byte) or whether the actual ack
-		// mechanism works some other way entirely; kept as scaffolding so
-		// the handler can be traced past this point, not because it's
-		// confirmed correct.
-		m_unknown_280000 = 0x31;
-
-		// Level-sensitive: held asserted until the 68000 firmware
-		// acknowledges it via some register write (not yet identified -
-		// previously this was cleared immediately here, which meant the
-		// MPU could never actually observe/service the interrupt).
-		m_mpu->set_input_line(M68K_IRQ_5, ASSERT_LINE);
-	}
 }
 
 u32 explorer_nupi_device::ram_window_r(offs_t offset)
@@ -598,28 +569,6 @@ u8 explorer_nupi_device::unknown_280001_r()
 	return data;
 }
 
-void explorer_nupi_device::config_register_w(u8 data)
-{
-	// Doc Section 4.1.1.2/5.3.2 states this register "resides in the on-board
-	// NUPI RAM", same as command_address (which really is shadowed into
-	// m_ram - see command_address_w() above). This map entry stays commented
-	// out below (nubus_map()) - real writes already fall through to the wide
-	// ram_window_w() like any other RAM byte, so this handler is currently
-	// unreachable; only the Reset bit's real side effect below would matter
-	// if it were ever wired back in.
-	logerror("%s: config_register_w data=%02x\n", machine().describe_context(), data);
-	if (BIT(data, 0))
-	{
-		m_mpu->reset();
-		m_scsibus->reset();
-	}
-}
-
-void explorer_nupi_device::dma_test_register_w(u8 data)
-{
-	m_dma_test_register = data;
-}
-
 u8 explorer_nupi_device::flag_register_r()
 {
 	logerror("%s: flag_register_r = %02x\n", machine().describe_context(), m_flag_register);
@@ -659,9 +608,9 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	// NUPI configuration register, various control and status registers,
 	// and internal control data structures for all active commands" -
 	// confirmed via trace (PC 0x446 scans 0x180000 through 0x180FFE,
-	// exactly 4096 bytes) and matches what command_address_w() below
-	// already writes the command address into via m_ram[0x0004/2] /
-	// m_ram[0x0006/2].
+	// exactly 4096 bytes) and matches the host writing the command address
+	// straight into this RAM at m_ram[0x0004/2] / m_ram[0x0006/2] through
+	// the NuBus-side window (ram_window_w()).
 	map(0x180000, 0x180fff).ram().share("ram");
 
 	// Write-only (never read back anywhere in the ROM): directly stores the masked
@@ -715,9 +664,9 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	// active-low, so real hardware must invert each latch before it reaches the
 	// NuBus-visible byte - modeled here directly as clear-bit-on-write/set-bit-on-sf.
 	// (A prior attempt at wiring these up appeared to cause a raven-side hang after
-	// "Slot 2" - root-caused via bisection to config_register_w() unexpectedly
-	// storing its written value, not to this flag register logic at all; see
-	// config_register_w()'s own comment.)
+	// "Slot 2" - root-caused by bisection to a since-removed config-register write
+	// handler unexpectedly storing its written value, not to this flag register
+	// logic at all. E0000B is plain RAM now; see nubus_map().)
 	// Fault LED?
 	map(0x0801a2, 0x0801a2).lrw8(
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801a2\n", machine().describe_context()); return 0; }),
@@ -1026,7 +975,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	// the IRQ5 handler's very first action (ROM 0xb3c) dispatches on it (#$31/#$30/
 	// #$33/otherwise). Also clears IRQ5 as a side effect of the read - unverified,
 	// but the only plausible place left for the real hardware to clear the level-5
-	// request, given command_address_w() only ever asserts it.
+	// request, given ram_window_w() only ever asserts it.
 	// Values written:
 	// <0x30: invalid, call error handler at 37ca
 	// 0x30 / 0x33: handler at b70. Some kind of ping?
@@ -1428,7 +1377,7 @@ void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
 	// window itself only exposes 17 bits locally) - but that analogy is wrong for
 	// the DMA engine: m_dma_address is loaded directly from the command block's own
 	// Buffer/Parameter List Pointer field (confirmed via the command-block logging
-	// in command_address_w() - buffer_ptr always exactly equals what $2FD2 loads
+	// in ram_window_w()'s CMDLOG - buffer_ptr always exactly equals what $2FD2 loads
 	// into m_dma_address), which is already the complete, real 32-bit target
 	// address on its own. Confirmed broken live: for buffer_ptr=0xf4080000, the old
 	// formula combined a stale m_page_register (0x3d00, i.e. bits 31-18 = 0xf4000000)

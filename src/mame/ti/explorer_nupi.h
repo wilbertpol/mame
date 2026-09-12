@@ -68,19 +68,16 @@ private:
 	void mpu_map(address_map &map) ATTR_COLD;
 	void nubus_map(address_map &map) ATTR_COLD;
 
-	// NuBus-facing (host) registers - Section 5.3 of the NUPI General Description
-	u32 m_command_address; // Command Address Register (>Fs'E00004)
-
-	u32 command_address_r();
-	void command_address_w(offs_t offset, u32 data, u32 mem_mask);
-	// Generic view of the on-board 4KB RAM (m_ram, see mpu_map()) from the 32-bit
+	// The NuBus-facing (host) registers of Section 5.3 of the NUPI General
+	// Description are all plain on-board RAM and none has a handler of its own -
+	// see nubus_map(). What the host sees is this generic view of the on-board
+	// 4KB RAM (m_ram, see mpu_map()) from the 32-bit
 	// NuBus side (>Fs'E00000-E00FFF) - see nubus_map()'s comment for the evidence
 	// this range is genuinely shared RAM, not standalone registers. m_ram is
 	// u16-wide (matching the MPU's own 16-bit bus), so a plain .ram().share()
 	// can't be used directly across the width mismatch (MAME rejects it at
-	// validation time) - these do the same big-endian word-splitting
-	// command_address_w() already did by hand, just generalized to the whole
-	// range. offset is in dwords.
+	// validation time) - these do that big-endian word-splitting by hand
+	// instead. offset is in dwords.
 	u32 ram_window_r(offs_t offset);
 	void ram_window_w(offs_t offset, u32 data, u32 mem_mask);
 	// $280001 (byte 1 of the 0x280000-0x28000f MPU-side status block). Purpose of the
@@ -144,7 +141,6 @@ private:
 	// from looping forever on a bus error. Address/size unconfirmed beyond the
 	// single byte (>Fs'200018) seen live - see ti_explorer.md.
 	u8 m_interval_timer_regs[0x40]{};
-	void config_register_w(u8 data);
 	// Flag Register (>Fs'D40002, Section 5.3.4/Figure 5-3): bits 0-2 are
 	// active-low (self-test complete / self-test passed / SCSI passed);
 	// bits 3-7 are reserved and always 0. Defaults to 0x07 (all three
@@ -153,9 +149,6 @@ private:
 	u8 m_flag_register;
 	u8 flag_register_r();
 	u8 rom_r(offs_t offset);
-	// DMA-Test-Register (>Fs'E0000F) - see nubus_map()'s comment.
-	u8 m_dma_test_register = 0;
-	void dma_test_register_w(u8 data);
 
 	void scsi_irq_w(int state);
 	void scsi_dreq_w(int state);
@@ -624,9 +617,9 @@ private:
 
 	// 0x280000's own dedicated storage - the IRQ5 handler's command dispatch byte
 	// (ROM 0xb3c: move.b $280000.l,D0 then cmpi.b #$31/#$30/#$33,D0). Written by
-	// command_address_w() as scaffolding (see there for the "not confirmed correct"
-	// caveat), read by the 0x280000 handler in mpu_map() (which also clears IRQ5 as
-	// a side effect of the read).
+	// ram_window_w() (see there for how the value is derived, and the
+	// "not confirmed" caveat on it), read by the 0x280000 handler in mpu_map()
+	// (which also clears IRQ5 as a side effect of the read).
 	u8 m_unknown_280000 = 0;
 };
 
