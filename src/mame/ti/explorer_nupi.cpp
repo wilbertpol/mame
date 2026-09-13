@@ -440,10 +440,6 @@ void explorer_nupi_device::nubus_map(address_map &map)
 {
 	map.unmap_value_high();
 
-	map(0x00000000, 0x0ffffff).lw32(NAME([](offs_t offset, u32 data) {
-		printf("Unmapped nupi write %08x: %08x\n", offset, data);
-	}));
-
 	map(0x00aa8000, 0x00aa801f).m(m_scsi, FUNC(ncr5385_device::map)).umask16(0x00ff);
 
 	// 00b80000 - 2 bytes - fifo-ram port?
@@ -1515,9 +1511,9 @@ void explorer_nupi_device::device_add_mconfig(machine_config &config)
 
 	NSCSI_BUS(config, m_scsibus);
 	NSCSI_CONNECTOR(config, "scsibus:0", nupi_scsi_devices, "formatter", false); // unit 00
-	NSCSI_CONNECTOR(config, "scsibus:1", nupi_scsi_devices, "formatter", false); // unit 08
-	NSCSI_CONNECTOR(config, "scsibus:2", nupi_scsi_devices, nullptr, false);
-	NSCSI_CONNECTOR(config, "scsibus:3", nupi_scsi_devices, "formatter", false); // unit 10
+	NSCSI_CONNECTOR(config, "scsibus:1", nupi_scsi_devices, nullptr, false); // unit 08
+	NSCSI_CONNECTOR(config, "scsibus:2", nupi_scsi_devices, "formatter", false);
+	NSCSI_CONNECTOR(config, "scsibus:3", nupi_scsi_devices, nullptr, false); // unit 10
 
 	NCR5385(config, m_scsi, 40_MHz_XTAL / 4); // clock not documented.
 	m_scsibus->set_external_device(5, m_scsi);

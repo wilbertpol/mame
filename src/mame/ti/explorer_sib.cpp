@@ -395,11 +395,8 @@ void explorer_sib_device::graphics_bitmap_map(address_map &map)
 	}), NAME([this] (offs_t offset, u32 data, u32 mem_mask) {
 		COMBINE_DATA(&m_operation_register);
 	}));
-	map(0x00e00098, 0x00e0009b).lw32(NAME([] (u32 data) {
-		printf("Graphics-Video-Test-Register write %08x\n", data);
-	}));
-	// e9ffff?
-	// e80000 - e993ff - displayed
+	// e00098 - Graphics-Video-Test-Register
+
 	map(0x00e80000, 0x00e9ffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_w));
 
 	map(0x00ec0000, 0x00edffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_rmw_w));
