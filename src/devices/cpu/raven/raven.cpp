@@ -1268,15 +1268,13 @@ bool raven_cpu_device::is_condition(u32 alu_out, u32 carry_out, u32 fixnum_overf
 
 void raven_cpu_device::push(u32 pc)
 {
-	// TODO what is set in the higher bits on the stack??
 	m_sp = (m_sp + 1) & 0x3f;
-	m_stack[m_sp] = pc;
+	m_stack[m_sp] = pc & 0xfffff;
 }
 
 
 void raven_cpu_device::pop(bool after_next)
 {
-	// TODO What to do with the other bits from the mpcs?
 	m_next_pc = m_stack[m_sp] & 0xfffff;
 	m_sp = (m_sp - 1) & 0x3f;
 	handle_popj14(after_next);

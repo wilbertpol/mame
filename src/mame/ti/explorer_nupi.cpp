@@ -28,9 +28,9 @@ interface carries several formatters and each formatter carries up to two
 devices, which the firmware selects by LUN - sent both in the IDENTIFY
 message and, redundantly, in CDB byte 1 bits 7:5. That is what
 explorer_formatter.cpp models, two LUNs per card; device_add_mconfig()
-puts one at each of SCSI IDs 0, 1 and 3, which is the arrangement the boot
-software expects to find. The board itself is initiator 5 (not 7 - see the
-own-ID compare in self-test entry 6).
+puts one at SCSI ID 0 and one at SCSI ID 2, matching the dumped disks - two
+drives behind the first formatter and one behind the second. The board
+itself is initiator 5 (not 7 - see the own-ID compare in self-test entry 6).
 
 TODO:
 - Tape devices are not emulated. A formatter's two devices may be cartridge
@@ -120,7 +120,10 @@ void explorer_nupi_device::device_start()
 	// and doesn't match this CHD's actual geometry. Interleave is a host-format
 	// property, not a drive spec - 1:1 assumed, unverified against a real NUPI
 	// formatter trace.
-	for (char const *tag : { "scsibus:0:formatter", "scsibus:1:formatter", "scsibus:3:formatter" })
+	// Every connector, not just the ones populated by default: subdevice()
+	// returns nullptr for an empty slot, and a formatter that misses this call
+	// silently keeps m_seek_model false and seeks instantly.
+	for (char const *tag : { "scsibus:0:formatter", "scsibus:1:formatter", "scsibus:2:formatter", "scsibus:3:formatter" })
 	{
 		if (auto *fmt = dynamic_cast<explorer_formatter_device *>(subdevice(tag)))
 			fmt->set_seek_timing(4000, 26000, 43000, 3600, 1);
@@ -1510,10 +1513,12 @@ void explorer_nupi_device::device_add_mconfig(machine_config &config)
 	m_mpu->set_addrmap(AS_PROGRAM, &explorer_nupi_device::mpu_map);
 
 	NSCSI_BUS(config, m_scsibus);
-	NSCSI_CONNECTOR(config, "scsibus:0", nupi_scsi_devices, "formatter", false); // unit 00
-	NSCSI_CONNECTOR(config, "scsibus:1", nupi_scsi_devices, nullptr, false); // unit 08
-	NSCSI_CONNECTOR(config, "scsibus:2", nupi_scsi_devices, "formatter", false);
-	NSCSI_CONNECTOR(config, "scsibus:3", nupi_scsi_devices, nullptr, false); // unit 10
+	// The unit byte in command word 0 is (formatter << 3) | device, so a
+	// formatter's SCSI ID picks the unit numbers the software has to ask for.
+	NSCSI_CONNECTOR(config, "scsibus:0", nupi_scsi_devices, "formatter", false); // units 00, 01
+	NSCSI_CONNECTOR(config, "scsibus:1", nupi_scsi_devices, nullptr, false);     // units 08, 09
+	NSCSI_CONNECTOR(config, "scsibus:2", nupi_scsi_devices, "formatter", false); // units 10, 11
+	NSCSI_CONNECTOR(config, "scsibus:3", nupi_scsi_devices, nullptr, false);     // units 18, 19
 
 	NCR5385(config, m_scsi, 40_MHz_XTAL / 4); // clock not documented.
 	m_scsibus->set_external_device(5, m_scsi);
