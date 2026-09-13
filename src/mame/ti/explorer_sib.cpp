@@ -63,6 +63,16 @@ static constexpr u16 SCREEN_HEIGHT = 808;
 //   R08 = 67   ... of 8 scan lines each                            =  808
 //   R08/R09   842 scan lines per frame
 //
+// The frame total is the one value that is not simply a register, because R08
+// carries two unrelated fields at once (crt9007.cpp's SCAN_LINES_PER_FRAME is
+// ((reg[8] << 3) & 0x0700) | reg[9]). R08 = 0x67 = 0110_0111 splits as
+//
+//   bits 4:0 = 00111  scan lines per data row, plus one        =   8
+//   bits 7:5 =   011  the top three bits of the frame total    = 768
+//
+// and R09 = 0x4A = 74 supplies the low eight, so 768 + 74 = 842. Reading R08
+// as "8 scan lines per row" alone leaves the 842 looking unsourced.
+//
 // A "character" here is one 32-bit word of the bit map, so the display is
 // 1024 x 808 - which is what Figure 4-11 shows (line 0 at FSE80000, line 807
 // at FSE99380) and what the system software believes: cold-load-stream.lisp
@@ -79,12 +89,22 @@ static constexpr u16 HTOTAL = 42 * CHARACTER_WIDTH;  // R00
 static constexpr u16 HBEND = 7 * CHARACTER_WIDTH;    // R02, horizontal delay
 static constexpr u16 VTOTAL = 842;                   // R08/R09
 // Only 34 of those 842 scan lines are left once the 808 visible ones are
-// accounted for, and neither R04 (vertical sync width, 24 = 36 lines) nor R05
-// (vertical delay, 25 = 37 lines) fits inside 34 - so how those 34 lines split
-// into front and back porch is not something the documentation to hand pins
-// down, and they all go ahead of the display here. Nothing depends on where
-// they sit; the totals are what matter. (Horizontally the same arithmetic does
-// close: 7 delay + 32 displayed + 3 = 42 characters.)
+// accounted for, and the vertical numbers TI programs do not fit in them - not
+// merely "the split is undocumented", but the arithmetic does not close at all:
+//
+//   R05 = 25, vertical delay. crt9007.cpp counts this in scan lines ahead of
+//   the display (VERTICAL_DELAY is reg[5] - 1 = 36, used as the top of the
+//   display in m_vlt_bottom), so 36 + 808 = 844, two lines past the 842 the
+//   frame is supposed to have.
+//
+//   R04 = 24, vertical sync width = 36 lines, which also exceeds 34 on its own.
+//
+// Horizontally the same sum does close - 7 delay + 32 displayed + 3 = 42
+// characters - so this is specific to the vertical axis. Either the 9007's
+// vertical delay is not in plain scan lines on this part, or the real board's
+// vertical timing was slack enough that a two-line overrun did not matter.
+// Until that is settled all 34 lines go ahead of the display here. Nothing in
+// the driver depends on where they sit; the totals are what drive set_raw().
 static constexpr u16 VBEND = VTOTAL - SCREEN_HEIGHT;
 
 // Real hardware bit assignments (2243145-0001A SI General Description, page 4-15,

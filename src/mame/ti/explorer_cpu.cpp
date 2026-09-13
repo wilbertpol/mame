@@ -5,6 +5,7 @@
     TI Explorer CPU board.
 
 Board references found:
+- 2243144
 - 2243881
 - 2243895
 
@@ -31,21 +32,12 @@ void explorer_cpu_device::device_start()
 {
 	nubus().install_map(*this, &explorer_cpu_device::nubus_map);
 
-	// The bus-error line is this board's, so claim it - see
-	// ti_nubus_device::assert_bus_error().
 	nubus().set_bus_error_card(*this);
 
-	// The static boot microcode is dumped as seven separate PROMs, one 8-bit
-	// slice of each 56-bit microinstruction per file, loaded interleaved with
-	// ROM_SKIP(7) so that each group of 8 bytes is one microinstruction (the
-	// eighth byte is unused - the control store is 56 bits wide in a 64-bit
-	// container). The PROMs are addressed in the opposite order to the control
-	// store, so the whole thing is reversed a microinstruction at a time into
-	// the region the raven executes from (program_map()'s m_inst_view[0] binds
-	// .rom() to it implicitly, by this board's own CPU subdevice tag).
 	u8 const *const source = m_microcode_proms->base();
 	u8 *const dest = m_control_store->base();
 
+	// The address signals to the PROMs are inverted.
 	for (int i = 0; i < 0x4000; i += 8)
 	{
 		for (int j = 0; j < 7; j++)
@@ -54,20 +46,12 @@ void explorer_cpu_device::device_start()
 }
 
 
-// A NuBus cycle that found nothing at its target address. The status bit the
-// microcode reads back for it lives in the raven (see its m_nubus_error and
-// "bus error on last transfer"), which is why this board, and not the
-// backplane, is the one that knows what to do with it.
 void explorer_cpu_device::assert_bus_error()
 {
 	m_cpu->assert_bus_error();
 }
 
 
-// This board's NuBus slot window. Addresses are slot-relative - the driver puts
-// the board in slot 6, so these appear at >Fs'F6C00000 etc., which is where the
-// band's own microcode and the SIB's event vectors expect them (an event vector
-// of f6e00008 is a write into irq_w below).
 void explorer_cpu_device::nubus_map(address_map &map)
 {
 	map(0xc00000, 0xc00003).r(m_cpu, FUNC(raven_cpu_device::nubus_flag_r));
@@ -78,8 +62,6 @@ void explorer_cpu_device::nubus_map(address_map &map)
 
 
 ROM_START(explorer_cpu)
-	// Written by device_start() from microcode_proms below; also the region
-	// raven's own program_map() binds its boot-PROM view to.
 	ROM_REGION64_BE(0x4000, "maincpu", ROMREGION_ERASE00)
 
 	ROM_REGION(0x4000, "microcode_proms", ROMREGION_ERASE00)
@@ -91,14 +73,10 @@ ROM_START(explorer_cpu)
 	ROMX_LOAD("2236485-03_microcode.bin", 0x0005, 0x0800, CRC(aebd8fd0) SHA1(8507d581cf81c45089a16257711d824c44ae50fa), ROM_SKIP(7))
 	ROMX_LOAD("2236486-03_microcode.bin", 0x0006, 0x0800, CRC(8a953a12) SHA1(f10ce4f53a65da5d133489d4f43b1c7f4ec5726d), ROM_SKIP(7))
 
-	// board part number "2243895-0001", board type "CPU", vendor "TIAU"
-	// 2026-08-20: bytes at file offset 0xB8 and 0xBB corrected from 0xD0 to 0xE0 (bad
-	// dump?) - confirmed against both the Meroko reference emulator's independently
-	// dumped copy of this ROM and the Explorer I processor board documentation
-	// (2243144-0001A_Ex1proc_Oct85.pdf), which both give 0xE0 at these offsets.
 	ROM_REGION32_LE(0x400, "cpu_config", ROMREGION_ERASE00)
 	ROMX_LOAD("cpu_config.bin", 0x000, 0x100, CRC(4f4b10c1) SHA1(7e33f843af8c3152475847c3cabadb835097f189), ROM_SKIP(3))
 ROM_END
+
 
 const tiny_rom_entry *explorer_cpu_device::device_rom_region() const
 {
@@ -108,10 +86,5 @@ const tiny_rom_entry *explorer_cpu_device::device_rom_region() const
 
 void explorer_cpu_device::device_add_mconfig(machine_config &config)
 {
-	// The NuBus and the local bus are this CPU's AS_DATA and AS_LOCAL_BUS. The
-	// board supplies no map for either: nothing on those buses answers by
-	// default, and the processor's own space configuration already handles a
-	// cycle nothing answers (see raven.cpp's data_map()/local_bus_map()). Cards,
-	// this board's nubus_map() included, install their slot windows at runtime.
 	RAVEN(config, m_cpu, 28_MHz_XTAL);
 }
