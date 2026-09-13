@@ -37,15 +37,13 @@ the winchester disks.
 #include "bus/nscsi/hd.h"
 #include "explorer_formatter.h"
 
-// Set by ram_window_w()'s CMDLOG tracing below when it logs command #1's /
-// command #24's trigger - kept per user direction alongside CMDLOG itself.
-bool g_trace_after_cmd24 = false;
-bool g_trace_cmd1 = false;
-
 #define LOG_MISC (1U << 1)
 #define LOG_DMA (1U << 2)
+#define LOG_CMD (1U << 3)
+#define LOG_NUBUS (1U << 4)
 
-#define VERBOSE (LOG_MISC | LOG_DMA)
+//#define VERBOSE (0)
+#define VERBOSE (LOG_MISC | LOG_DMA | LOG_CMD)
 #include "logmacro.h"
 
 
@@ -492,40 +490,6 @@ void explorer_nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
 	m_ram[offset * 2] = val >> 16;
 	m_ram[offset * 2 + 1] = val & 0xffff;
 
-	// TEMP/TESTING: see ti_explorer.md, unit-select investigation. On a
-	// command_address (E00004) write, read the command block straight back
-	// out of NuBus memory - matches Meroko's own CMDLOG format for direct
-	// comparison.
-	if (offset * 4 == 4 && (mem_mask & 0xff000000))
-	{
-		static int hits = 0;
-		if (hits < 2000)
-		{
-			u32 const cmd_addr = val;
-			u32 const word0 = nubus().space().read_dword(cmd_addr);
-			u32 const buffer_ptr = nubus().space().read_dword(cmd_addr + 0x08);
-			u32 const word_count = nubus().space().read_dword(cmd_addr + 0x0c);
-			u32 const block_addr = nubus().space().read_dword(cmd_addr + 0x10);
-			u32 const event_addr = nubus().space().read_dword(cmd_addr + 0x14);
-			logerror("CMDLOG cmd_addr=%08X word0=%08X cmd=%02X unit=%02X (fmt=%d dev=%d) nupi_dst_bit=%d formatter_bit=%d buffer_ptr=%08X word_count=%08X block_addr=%08X event_addr=%08X\n",
-				cmd_addr, word0, (word0 >> 24) & 0x3f, word0 & 0xff, (word0 >> 3) & 0x7, word0 & 0x1,
-				BIT(word0, 31), BIT(word0, 30),
-				buffer_ptr, word_count, block_addr, event_addr);
-			printf("CMDLOG cmd_addr=%08X word0=%08X cmd=%02X unit=%02X (fmt=%d dev=%d) nupi_dst_bit=%d formatter_bit=%d buffer_ptr=%08X word_count=%08X block_addr=%08X event_addr=%08X\n",
-				cmd_addr, word0, (word0 >> 24) & 0x3f, word0 & 0xff, (word0 >> 3) & 0x7, word0 & 0x1,
-				BIT(word0, 31), BIT(word0, 30),
-				buffer_ptr, word_count, block_addr, event_addr);
-
-			// TEMP/TESTING: see ti_explorer.md - trace 68000 execution after
-			// command #24 (the 0-indexed 23rd) specifically, per direction.
-			if (hits == 23)
-				g_trace_after_cmd24 = true;
-			if (hits == 0 && word_count == 0x5c)
-				g_trace_cmd1 = true;
-			hits++;
-		}
-	}
-
 	// Doc Section 4.5.1.5, MPU Interrupt Logic, Level 5 (NUINT1-): "generates
 	// this interrupt to indicate that a write operation has occurred to the
 	// most significant byte (bits 24 through 31) of a 32-bit word" - verified
@@ -555,6 +519,20 @@ void explorer_nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
 	// register write (not yet identified).
 	if (mem_mask & 0xff000000)
 	{
+		if ((VERBOSE & LOG_CMD) && offset == 1)
+		{
+			u32 const cmd_addr = val;
+			u32 const word0 = nubus().space().read_dword(cmd_addr);
+			u32 const buffer_ptr = nubus().space().read_dword(cmd_addr + 0x08);
+			u32 const word_count = nubus().space().read_dword(cmd_addr + 0x0c);
+			u32 const block_addr = nubus().space().read_dword(cmd_addr + 0x10);
+			u32 const event_addr = nubus().space().read_dword(cmd_addr + 0x14);
+			LOGMASKED(LOG_CMD, "CMDLOG cmd_addr=%08X word0=%08X cmd=%02X unit=%02X (fmt=%d dev=%d) nupi_dst_bit=%d formatter_bit=%d buffer_ptr=%08X word_count=%08X block_addr=%08X event_addr=%08X\n",
+				cmd_addr, word0, (word0 >> 24) & 0x3f, word0 & 0xff, (word0 >> 3) & 0x7, word0 & 0x1,
+				BIT(word0, 31), BIT(word0, 30),
+				buffer_ptr, word_count, block_addr, event_addr);
+		}
+
 		m_unknown_280000 = 0x30 | (offset & 3);
 		m_mpu->set_input_line(M68K_IRQ_5, ASSERT_LINE);
 	}
@@ -1267,18 +1245,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	map(0x81adaa, 0x81adab).lr16(NAME([]() { return u16(0xada9); }));
 	map(0x806e56, 0x806e57).lr16(NAME([]() { return u16(0x6e55); }));
 
-	// Real NuBus access window - see m_page_register/nubus_window_r/w in nupi.h.
-	//
-	// The window is a full page: the page register supplies NuBus address bits
-	// 31-18, so the window itself has to supply all 18 low bits, i.e. 0x40000
-	// bytes. It was 0x880000-0x89ffff (half that) and that truncation was live: the
-	// band's Request NUPI Status for command block F427404C set page_register=FD09
-	// (page bits = 0x3d09 -> F4240000) and the firmware then read local 0x8B404C,
-	// which fell outside the window, came back as unmapped 0xFFFF, and was decoded
-	// as a malformed command block. The NUPI duly reported "illegal command"
-	// (status word 0 bit 4, Figure 5-15) in the following status request, the band
-	// saw a status word without bit 31 set and called its microcode error handler
-	// at $0039, which halts in the $0051-$0057 loop.
+	// NuBus access window
 	map(0x880000, 0x8bffff).rw(FUNC(explorer_nupi_device::nubus_window_r), FUNC(explorer_nupi_device::nubus_window_w));
 }
 
@@ -1299,34 +1266,16 @@ void explorer_nupi_device::page_register_w(u16 data)
 
 u16 explorer_nupi_device::nubus_window_r(offs_t offset, u16 mem_mask)
 {
-	// See m_page_register in nupi.h: bits 31-18 from the page register,
-	// bits 16-0 from the accessed offset within this window; bit 17 is
-	// not supplied by either and defaults to 0 here (unverified). offset
-	// is word-indexed (16-bit MPU bus), so <<1 gives the NuBus byte address.
-	//
-	// offset^1: nubus().space() is the raven's own AS_DATA space, declared
-	// ENDIANNESS_LITTLE (see explorer.cpp's m_nubus->set_space(m_maincpu,
-	// AS_DATA) and raven.cpp's m_data_config) - but the NUPI 68000 issuing a
-	// longword access (e.g. move.l) assumes standard big-endian NuBus word
-	// order (lower address = high half). Confirmed via a real command word 0
-	// fetch (NUPI manual Figure 5-5): the raw reads at offset N/N+1 came back
-	// as the low/high halves of the little-endian value, word-swapped
-	// relative to what the 68000 needs to assemble the documented value
-	// (>82 = Request NUPI Status, bit 31 set) - so real hardware must swap
-	// the two halves at exactly this boundary to present NuBus's standard
-	// big-endian view. offset^1 swaps which raven-side address each half of
-	// a longword access targets, matching that.
 	u32 const nubus_addr = (u32(m_page_register) << 18) | ((offset ^ 1) << 1);
 	u16 const data = nubus().space().read_word(nubus_addr, mem_mask);
-	LOGMASKED(LOG_DMA, "%s: nubus_window_r offset=%05x -> nubus_addr=%08x data=%04x\n", machine().describe_context(), offset, nubus_addr, data);
+	LOGMASKED(LOG_NUBUS, "%s: nubus_window_r offset=%05x -> nubus_addr=%08x data=%04x\n", machine().describe_context(), offset, nubus_addr, data);
 	return data;
 }
 
 void explorer_nupi_device::nubus_window_w(offs_t offset, u16 data, u16 mem_mask)
 {
-	// See nubus_window_r() above for the offset^1 endianness-swap rationale.
 	u32 const nubus_addr = (u32(m_page_register) << 18) | ((offset ^ 1) << 1);
-	LOGMASKED(LOG_DMA, "%s: nubus_window_w offset=%05x -> nubus_addr=%08x data=%04x\n", machine().describe_context(), offset, nubus_addr, data);
+	LOGMASKED(LOG_NUBUS, "%s: nubus_window_w offset=%05x -> nubus_addr=%08x data=%04x\n", machine().describe_context(), offset, nubus_addr, data);
 	nubus().space().write_word(nubus_addr, data, mem_mask);
 }
 
@@ -1545,7 +1494,7 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 
 void explorer_nupi_device::device_add_mconfig(machine_config &config)
 {
-	M68000(config, m_mpu, 10_MHz_XTAL); // "controlled by an MC68000 ... running at a frequency of 10 megahertz" (1.2)
+	M68000(config, m_mpu, 40_MHz_XTAL / 4); // Image of board has a 40MHz crystal, documents mention 68000 at 10MHz.
 	m_mpu->set_addrmap(AS_PROGRAM, &explorer_nupi_device::mpu_map);
 
 	NSCSI_BUS(config, m_scsibus);
@@ -1554,11 +1503,7 @@ void explorer_nupi_device::device_add_mconfig(machine_config &config)
 	NSCSI_CONNECTOR(config, "scsibus:2", nupi_scsi_devices, nullptr, false);
 	NSCSI_CONNECTOR(config, "scsibus:3", nupi_scsi_devices, "formatter", false); // unit 10
 
-	NCR5385(config, m_scsi, 10_MHz_XTAL); // clock not documented
-	// Confirmed via entry 6's own self-test (ROM 0x298 dispatcher, 0x74e: cmpi.b #$5,
-	// reading the NCR5385's own-ID register) - the board's real initiator ID is 5, not
-	// the previous placeholder guess of 7 (leaves 0-3 free for up to 4 drive bays in the
-	// enclosure).
+	NCR5385(config, m_scsi, 40_MHz_XTAL / 4); // clock not documented.
 	m_scsibus->set_external_device(5, m_scsi);
 	m_scsi->set_own_id(5);
 	m_scsi->irq().set(FUNC(explorer_nupi_device::scsi_irq_w));

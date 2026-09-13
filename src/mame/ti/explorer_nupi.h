@@ -553,14 +553,6 @@ private:
 	u16 page_register_r();
 	void page_register_w(u16 data);
 
-	// The 68000's local "NuBus window" (0x880000-0x89ffff, 128KB - derived from firmware
-	// disassembly at 0x2ee0-0x2efe: the local address it builds splits at bit 17 into a
-	// fixed 0x44/0x880000 select field and the low 17 bits of the target NuBus address).
-	// Accesses here are translated to real NuBus addresses using m_page_register for the
-	// upper bits and the accessed offset for the lower bits, then forwarded to the real
-	// nubus() address space - this is the actual command-block-fetch mechanism.
-	// Word-wide, matching the MPU's own 16-bit data bus - a real move.l here
-	// naturally becomes two word bus cycles; offset is word-indexed.
 	u16 nubus_window_r(offs_t offset, u16 mem_mask);
 	void nubus_window_w(offs_t offset, u16 data, u16 mem_mask);
 
