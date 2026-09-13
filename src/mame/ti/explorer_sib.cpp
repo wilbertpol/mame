@@ -18,7 +18,6 @@ these chips:
 	with an 8253.
 - sn76496: No direct mention of this chip but the registers and bits
     mentioned in the documentation are a 1-on-1 mapping with an sn76496.
-- mm58167
 
 **********************************************************************/
 
@@ -159,7 +158,7 @@ explorer_sib_device::explorer_sib_device(const machine_config &mconfig, const ch
 	m_crt9007(*this, "crt9007"),
 	m_i8251(*this, "i8251"),
 	m_keyboard(*this, "keyboard"),
-	m_rtc(*this, "rtc"),
+	m_mm58167(*this, "mm58167"),
 	m_pit(*this, "pit"),
 	m_usart_clock(*this, "usart_clock"),
 	m_sn76496(*this, "sn76496"),
@@ -523,11 +522,11 @@ void explorer_sib_device::pit_out2_w(int state)
 
 void explorer_sib_device::rtc_irq_w(int state)
 {
-	// explorer_rtc_device raises this only on the rising edge of an
-	// otherwise-clear interrupt-status register (any of its eight sources -
-	// Table 4-7), matching pit_out2_w() above - this device just didn't
-	// have anything wired to the event generator before, so none of its own
-	// interrupts (including D0 Compare) ever reached the CPU.
+	// The MM58167 asserts this for any of its eight interrupt sources (Table
+	// 4-7) and clears it when the interrupt status register is read, matching
+	// pit_out2_w() above. Nothing was wired to the event generator here at all
+	// before, so none of the RTC's interrupts (including D0 Compare) ever
+	// reached the CPU.
 	if (state)
 		post_event(0); // "Real-time clock", Table 4-4
 }
@@ -884,7 +883,15 @@ void explorer_sib_device::rtc_map(address_map &map)
 	// f80058 - Rtclock-Standby-Interrupt
 	// f8005c - Rtclock-Test-Mode
 
-	map(0x00f80000, 0x00f8005f).m(m_rtc, FUNC(explorer_rtc_device::map));
+	// The MM58167 core is byte-wide, but every register here is word-spaced on
+	// NuBus (register N at f80000 + 4N, Table 4-5) and raven issues masked dword
+	// writes - so wrap it rather than installing an 8-bit handler. The dword
+	// offset IS the register number.
+	map(0x00f80000, 0x00f8005f).lrw32(NAME([this] (offs_t offset) {
+		return u32(m_mm58167->read(offset));
+	}), NAME([this] (offs_t offset, u32 data) {
+		m_mm58167->write(offset, u8(data));
+	}));
 }
 
 
@@ -1080,8 +1087,11 @@ void explorer_sib_device::device_add_mconfig(machine_config &config)
 	EXPLORER_KEYBOARD(config, m_keyboard);
 	m_keyboard->txd_handler().set(FUNC(explorer_sib_device::keyboard_txd_w));
 
-	EXPLORER_RTC(config, m_rtc);
-	m_rtc->irq_handler().set(FUNC(explorer_sib_device::rtc_irq_w));
+	// "The time base for the real-time clock is a 32 768-hertz crystal
+	// oscillator" (4.4.7). The core divides clock() by 32.768 to get its
+	// internal 1 kHz millisecond tick.
+	MM58167(config, m_mm58167, 32.768_kHz_XTAL);
+	m_mm58167->irq().set(FUNC(explorer_sib_device::rtc_irq_w));
 
 	// Counters 0/1 driven by "a 1-megahertz clock derived from the NuBus
 	// clock" (section 4.4.8, 10MHz NuBus CLK- per section 4.4.1.2 - the
