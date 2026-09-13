@@ -160,6 +160,7 @@ private:
 	void nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask);
 	u32 local_bus_miss_r(offs_t offset, u32 mem_mask);
 	void local_bus_miss_w(offs_t offset, u32 data, u32 mem_mask);
+	bool memory_cycle_enabled();
 	void read();
 	void write();
 	void read_unmapped();

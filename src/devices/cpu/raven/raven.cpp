@@ -13,15 +13,18 @@
 
 namespace {
 
+// Machine control register bit positions, high to low. Only the bits the
+// emulation actually consults are named here, so the numbering has gaps.
 static constexpr u8 MCR_SELF_TEST_FLAG_BIT = 27;
 static constexpr u8 MCR_MACROINSTRUCTION_CHAINING_ENABLE_BIT = 26;
-static constexpr u8 MCR_LOOP_ON_SELF_TEST_BIT = 23;
 // The two MISCOP-decode group enables gating the IBUF instruction-decode
 // dispatch (see execute_dispatch()); 2243144-0001A paragraph 4.5.9 notes only
 // that "MISCOP detection can be disabled under the control of two bits in the
-// MCR" without naming them - these positions are Meroko's MCR_Misc_Op_Group_0.
-static constexpr u8 MCR_MISC_OP_GROUP_0_BIT = 24;
+// MCR" without naming them - these positions are Meroko's MCR_Misc_Op_Group_0
+// and _1.
 static constexpr u8 MCR_MISC_OP_GROUP_1_BIT = 25;
+static constexpr u8 MCR_MISC_OP_GROUP_0_BIT = 24;
+static constexpr u8 MCR_LOOP_ON_SELF_TEST_BIT = 23;
 static constexpr u8 MCR_NEED_FETCH_BIT = 22;
 static constexpr u8 MCR_LOCAL_RESET_BIT = 20;
 static constexpr u8 MCR_INT_ENABLE_BIT = 15;
@@ -30,10 +33,11 @@ static constexpr u8 MCR_INT_ENABLE_BIT = 15;
 // to the writable control-store RAM (see m_inst_view/program_map()), letting
 // freshly-downloaded microcode (e.g. a microload read from disk) actually execute.
 static constexpr u8 MCR_PROM_DISABLE_BIT = 11;
-static constexpr u8 MCR_MEMORY_CYCLE_ENABLE_BIT = 8;
 // 2243144-0001A Table 4-16, MCR M(09): "Forced access request". Pairs with the
 // level-2 map control's own M(10) "Forced access bit" - see vm_resolve_address().
 static constexpr u8 MCR_FORCED_ACCESS_REQUEST_BIT = 9;
+// Suppresses the bus cycle entirely when clear - see memory_cycle_enabled().
+static constexpr u8 MCR_MEMORY_CYCLE_ENABLE_BIT = 8;
 static constexpr u8 MCR_SUB_SYSTEM_FLAG_BIT = 7;
 static constexpr u8 MCR_TEST_FAIL_FLAG_BIT = 6;
 
@@ -268,22 +272,48 @@ void raven_cpu_device::config_register_w(offs_t offset, u32 data, u32 mem_mask)
 }
 
 
+// MCR M(08), "Memory cycle enable". With the bit clear the processor issues no
+// bus cycle at all: nothing is driven onto either bus, MD is left alone, and
+// memory never reports busy. Every cycle starter below is gated on it, which is
+// where Meroko puts the same test - the early return at the top of its single
+// lcbus_io_request().
+//
+// The boot PROM's map self-test depends on precisely this. $01F5 starts an
+// unmapped read, and $01F6 - the very next instruction - is
+//
+//     (M-0c) SETM MICROSTACK-POINTER IF-MEMORY-BUSY AND-CALL-ILLOP
+//
+// so it traps unless that cycle has already finished one instruction later,
+// which no real cycle can do against the two-instruction read latency. It passes
+// because memory cycles are still *disabled* there and the read never happens:
+// $0201's (M-04,MCR) DPB (BYTE-FIELD 1 8) M-03 A-004 is what first sets this
+// bit, and only then, at $0203, does the PROM start a cycle it expects to
+// complete. Before this was modelled, that single instruction was special-cased
+// by matching the address the test happens to compute (0x3db00000 - a value from
+// the test pattern in M-06, not a device address at all).
+bool raven_cpu_device::memory_cycle_enabled()
+{
+	if (BIT(m_mcr, MCR_MEMORY_CYCLE_ENABLE_BIT))
+		return true;
+
+	m_memory_busy_counter = 0;
+	m_read_pending = false;
+	return false;
+}
+
+
 void raven_cpu_device::read()
 {
 	m_bus_error = false;
 	u32 address = vm_resolve_address<MEM_READ>();
 
-	if (!m_page_fault)
+	// A page fault leaves any cycle already in progress alone, so the enable is
+	// only consulted once the access is actually going to be attempted.
+	if (!m_page_fault && memory_cycle_enabled())
 	{
 		m_read_data = m_data.read_dword(address);
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 		m_read_pending = true;
-		if (m_vma == 0xf6c00000)
-		{
-			m_memory_busy_counter = 0;
-			m_read_pending = false;
-			m_md = m_read_data;
-		}
 	}
 }
 
@@ -293,15 +323,11 @@ void raven_cpu_device::write()
 	m_bus_error = false;
 	u32 address = vm_resolve_address<MEM_WRITE>();
 
-	if (!m_page_fault)
+	if (!m_page_fault && memory_cycle_enabled())
 	{
 		m_data.write_dword(address, m_md);
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 		m_read_pending = false;
-		if (m_vma == 0xf6c00000)
-		{
-			m_memory_busy_counter = 0;
-		}
 	}
 }
 
@@ -309,7 +335,12 @@ void raven_cpu_device::write()
 void raven_cpu_device::read_unmapped()
 {
 	m_bus_error = false;
+	// VMA is the physical address here and no translation happens, so there is
+	// nothing that could fault.
 	m_page_fault = false;
+	if (!memory_cycle_enabled())
+		return;
+
 	m_local_bus_miss = false;
 	m_read_data = m_local_bus.read_dword(m_vma);
 	if (m_local_bus_miss)
@@ -322,13 +353,6 @@ void raven_cpu_device::read_unmapped()
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 	}
 	m_read_pending = true;
-	// TODO Get rid of this hack
-	if (/*m_vma == 0xf6c00000 ||*/ m_vma == 0x3db00000)
-	{
-		m_memory_busy_counter = 0;
-		m_read_pending = false;
-		m_md = m_read_data;
-	}
 }
 
 
@@ -336,6 +360,9 @@ void raven_cpu_device::write_unmapped()
 {
 	m_bus_error = false;
 	m_page_fault = false;
+	if (!memory_cycle_enabled())
+		return;
+
 	m_local_bus_miss = false;
 	m_local_bus.write_dword(m_vma, m_md);
 	if (m_local_bus_miss)
@@ -355,6 +382,9 @@ void raven_cpu_device::read_unmapped_byte()
 {
 	m_bus_error = false;
 	m_page_fault = false;
+	if (!memory_cycle_enabled())
+		return;
+
 	u32 const shift = 8 * (m_vma & 3);
 	u32 const mask = 0xff << shift;
 	m_local_bus_miss = false;
@@ -377,6 +407,9 @@ void raven_cpu_device::write_unmapped_byte()
 {
 	m_bus_error = false;
 	m_page_fault = false;
+	if (!memory_cycle_enabled())
+		return;
+
 	u32 const shift = 8 * (m_vma & 3);
 	u32 const mask = 0xff << shift;
 	u8 const byte_value = u8(m_md >> (8 * (m_vma & 3)));
@@ -562,7 +595,6 @@ u32 raven_cpu_device::get_m_source()
 {
 	if (BIT(m_ir, 48))
 	{
-		// TODO
 		switch ((m_ir >> 42) & 0x3f)
 		{
 		case 0x00: // VMA
