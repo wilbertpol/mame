@@ -4,6 +4,11 @@
 
     TI Explorer NuBus Peripheral Interface (NUPI) board.
 
+Board references found:
+- 2238040
+- 2243146
+
+
 The 68000 code structure, concretely:
 
 Interrupts:

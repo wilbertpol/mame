@@ -4,6 +4,10 @@
 
     TI Explorer CPU board.
 
+Board references found:
+- 2243881
+- 2243895
+
 **********************************************************************/
 
 #include "emu.h"

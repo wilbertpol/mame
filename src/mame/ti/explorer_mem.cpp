@@ -4,6 +4,10 @@
 
     TI Explorer NuBus memory board.
 
+Board references found:
+- 2236415 (early board)
+- 2243910
+
 **********************************************************************/
 
 #include "emu.h"

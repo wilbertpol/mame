@@ -4,11 +4,34 @@
 
     TI Explorer System Interface Board (SIB).
 
+Board references found:
+- 2236590 (early board)
+- 2236645
+- 2243145
+
+
+There is no schematic or detailed parts list known of the SIB board,
+so some chips in the device map are guessed from software accessing
+these chips:
+- pit8253: There is only a "programmable interval time" mentioned in the
+    documentation; the registers and bits mentioned are a 1-on-1 mapping
+	with an 8253.
+- sn76496: No direct mention of this chip but the registers and bits
+    mentioned in the documentation are a 1-on-1 mapping with an sn76496.
+- mm58167
+
 **********************************************************************/
 
 #include "emu.h"
 #include "explorer_sib.h"
 #include "speaker.h"
+
+#define LOG_EVENT (1U << 1)
+#define LOG_NVRAM (1U << 2)
+
+//#define VERBOSE (0)
+#define VERBOSE (LOG_EVENT | LOG_NVRAM)
+#include "logmacro.h"
 
 
 DEFINE_DEVICE_TYPE(SIB, explorer_sib_device, "explorer_sib", "TI Explorer System Interface Board (2243145-0001A)")
@@ -164,8 +187,9 @@ void explorer_sib_device::device_start()
 	// onward).
 	m_i8251->write_dsr(1);
 
-	save_item(NAME(m_configuration_register));
 	m_configuration_register = 0;
+
+	save_item(NAME(m_configuration_register));
 	save_item(NAME(m_event_vector));
 	save_item(NAME(m_attribute_register));
 	save_item(NAME(m_mask_register));
@@ -224,47 +248,31 @@ void explorer_sib_device::nubus_map(address_map &map)
 {
 	map.unmap_value_high();
 
-	// 0xfa0030 - read
-	// 0xe00058 - write 00 - interrupts?
-	// 0xf00040 - read
-	// 0xf2000c - write fe00
-	// 0xf2000c - read
-	// 0xf20014 - write 9f, bf, df, ff
-	// 0xf80044 - write 00
-	// 0xf80044 - read
-	// 0xf9000c - write 30 / b0
-	//
 	// e00000 - graphics-and-bit-map-control-base
-	// f00000 - event-generator-base
-	// f10000 - printer-port-base
-	// f20000 - mouse-registers-base
-	// f80000 - real-time-clock-base
-	// f90000 - timers-base
-	// fa0000 - non-volatile-ram-base
-	// fb0000 - rs232c-port-base
-	// fc0000 - keyboard-base
-	// fe0000 - configuration-rom-base
-	//
-	map(0x00000000, 0x00ffffff).lrw32(NAME([this] (offs_t offset) {
-		if (!machine().side_effects_disabled())
-		{
-			printf("SIB unmapped read offset %08x / %08x\n", offset, offset << 2);
-//			machine().debug_break();
-		}
-		return u32(0xffffffff);
-	}), NAME([] (offs_t offset, u32 data) {
-		printf("SIB unmapped write offset %08x / %08x, data %08x\n", offset, offset << 2, data);
-//		machine().debug_break();
-	}));
-
 	graphics_bitmap_map(map);
+
+	// f00000 - event-generator-base
 	event_generator_map(map);
+
+	// f10000 - printer-port-base
 	printer_map(map);
+
+	// f20000 - mouse-registers-base
 	mouse_map(map);
+
+	// f80000 - real-time-clock-base
 	rtc_map(map);
+
+	// f90000 - timers-base
 	timers_map(map);
+
+	// fa0000 - non-volatile-ram-base
 	nvram_map(map);
+
+	// fb0000 - rs232c-port-base
 	rs232c_map(map);
+
+	// fc0000 - keyboard-base
 	map(0x00fc0000, 0x00fc0007).lrw32(NAME([this] (offs_t offset) {
 		if (offset == 1 && BIT(m_interrupt_diag_control, 2) && !BIT(m_interrupt_diag_control, 3))
 			return diagnostic_loopback_value();
@@ -273,6 +281,7 @@ void explorer_sib_device::nubus_map(address_map &map)
 		m_i8251->write(offset ^ 1, u8(data));
 	}));
 
+	// fe0000 - configuration-rom-base
 	configuration_rom_map(map);
 }
 
@@ -473,14 +482,12 @@ void explorer_sib_device::event_generator_map(address_map &map)
 
 	map(0x00f00040, 0x00f00043).lrw32(NAME([this] {
 		if (!machine().side_effects_disabled())
-			printf("Configuration-Register read\n");
+			LOGMASKED(LOG_NVRAM, "Configuration-Register read\n");
 		return m_configuration_register;
 	}), NAME([this] (u32 data) {
-		printf("Configuration-Register write %08x\n", data);
+		LOGMASKED(LOG_NVRAM, "Configuration-Register write %08x\n", data);
 		m_configuration_register = data & CONFIGURATION_REGISTER_WRITABLE_MASK;
 	}));
-
-	// TODO
 }
 
 u32 explorer_sib_device::event_vector_r(offs_t offset)
@@ -935,14 +942,13 @@ void explorer_sib_device::timers_map(address_map &map)
 
 void explorer_sib_device::nvram_map(address_map &map)
 {
-	// fa0000 - non-volatile-ram-base
 	map(0x00fa0000, 0x00fa1fff).lrw32(NAME([this] (offs_t offset) {
 		if (!machine().side_effects_disabled())
-			printf("NVRam read %08x\n", offset);
+			LOGMASKED(LOG_NVRAM, "NVRam read %08x\n", offset);
 		return u32(m_nv_ram[offset]);
 	}), NAME([this] (offs_t offset, u32 data) {
 		m_nv_ram[offset] = data & 0xff;
-		printf("NVRam write %08x, %08x\n", offset, data);
+		LOGMASKED(LOG_NVRAM, "NVRam write %08x, %08x\n", offset, data);
 	}));
 }
 
