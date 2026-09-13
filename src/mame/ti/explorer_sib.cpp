@@ -141,6 +141,8 @@ explorer_sib_device::explorer_sib_device(const machine_config &mconfig, const ch
 	m_usart_clock(*this, "usart_clock"),
 	m_sn76496(*this, "sn76496"),
 	m_nvram(*this, "nvram"),
+	m_centronics(*this, "centronics"),
+	m_centronics_data_out(*this, "centronics_data_out"),
 	m_mouse_buttons(*this, "mouse_buttons"),
 	m_mouse_x_axis(*this, "mouse_x"),
 	m_mouse_y_axis(*this, "mouse_y"),
@@ -179,6 +181,12 @@ void explorer_sib_device::device_start()
 	save_item(NAME(m_diagnostic_data));
 	save_item(NAME(m_voice_data_register));
 	save_item(NAME(m_printer_data));
+	save_item(NAME(m_printer_control));
+	save_item(NAME(m_centronics_busy));
+	save_item(NAME(m_centronics_perror));
+	save_item(NAME(m_centronics_select));
+	save_item(NAME(m_centronics_fault));
+	save_item(NAME(m_centronics_ack));
 	save_item(NAME(m_sound_control));
 	save_item(NAME(m_speech_register));
 	save_item(NAME(m_usart_rxrdy));
@@ -201,6 +209,14 @@ void explorer_sib_device::device_reset()
 	// handshake controller to be holding.
 	m_mouse_motion_event_pending = false;
 	m_mouse_keyswitch_event_pending = false;
+
+	// The printer port's control register is an output register holding three
+	// levels, so drive them out along with it rather than only remembering
+	// them. Without this the peripheral never sees the first DATSTRB- edge:
+	// MAME's centronics printer starts out believing the strobe is already
+	// low, so the first "write 05" of 4.4.9.2's send sequence is not an edge
+	// and the first character of a job is dropped.
+	printer_control_w(0x07);
 }
 
 
@@ -551,6 +567,27 @@ void explorer_sib_device::usart_txrdy_w(int state)
 }
 
 
+// The parallel printer port, paragraph 4.4.9. "For programming purposes, the
+// parallel printer port can be considered to be two 8-bit read/write registers"
+// (4.4.9.2): register 0 the data register at f10000, register 1 the control and
+// status register at f10004, whose read and write halves are unrelated to each
+// other. Register 0 is also the loopback data register of 4.4.9, which is why
+// reading it gives back what was last written rather than the state of the
+// cable.
+//
+// Table 4-11's two halves, both confirmed by TI's own field definitions in
+// kernel/micro-time.lisp (Printer-Status-Fields / Printer-Control-Fields, ppss
+// in octal - #o0301 is bit 3, one bit wide):
+//
+//   bit   read                     write
+//   0     Busy                     AUTOF-  automatic feed (active low)
+//   1     Paper out error          DATSTRB- data strobe (active low)
+//   2     Select (online)          INIT-   initialize (active low)
+//   3     Fault (active low)       interrupt enable
+//
+// So the three control bits are the pin levels themselves and go straight to
+// the Centronics lines. 4.4.9.2's polled send is: check the status, write the
+// byte, write 05 to drop DATSTRB-, write 07 to raise it again, then poll Busy.
 void explorer_sib_device::printer_map(address_map &map)
 {
 	// f10000 - printer-port-base
@@ -562,12 +599,69 @@ void explorer_sib_device::printer_map(address_map &map)
 		return m_printer_data;
 	}), NAME([this] (u32 data) {
 		m_printer_data = data & 0xff;
+		m_centronics_data_out->write(m_printer_data);
 	}));
-	map(0x00f10004, 0x00f10007).lrw32(NAME([] {
-		return u32(0x0c);
-	}), NAME([] (u32 data) {
-		(void)data;
-	}));
+	map(0x00f10004, 0x00f10007).rw(FUNC(explorer_sib_device::printer_status_r), FUNC(explorer_sib_device::printer_control_w));
+}
+
+
+u32 explorer_sib_device::printer_status_r()
+{
+	return (m_centronics_busy   ? 0x01 : 0x00)
+		 | (m_centronics_perror ? 0x02 : 0x00)
+		 | (m_centronics_select ? 0x04 : 0x00)
+		 | (m_centronics_fault  ? 0x08 : 0x00);
+}
+
+
+void explorer_sib_device::printer_control_w(u32 data)
+{
+	m_printer_control = data & 0xff;
+
+	m_centronics->write_autofd(BIT(m_printer_control, 0));
+	m_centronics->write_strobe(BIT(m_printer_control, 1));
+	m_centronics->write_init(BIT(m_printer_control, 2));
+}
+
+
+void explorer_sib_device::centronics_busy_w(int state)
+{
+	m_centronics_busy = state ? 1 : 0;
+}
+
+
+void explorer_sib_device::centronics_perror_w(int state)
+{
+	m_centronics_perror = state ? 1 : 0;
+}
+
+
+void explorer_sib_device::centronics_select_w(int state)
+{
+	m_centronics_select = state ? 1 : 0;
+}
+
+
+void explorer_sib_device::centronics_fault_w(int state)
+{
+	m_centronics_fault = state ? 1 : 0;
+}
+
+
+// PACK-, Table 4-9: "acknowledge pulse returned by the printer to indicate that
+// the last character has been received and that the next character can be sent.
+// The pulse is also returned each time the printer goes from the offline to the
+// online state." That is the condition the port's event exists to report - the
+// interrupt-mode sequence of 4.4.9.2 arms Table 4-4 cause 4 (event vector
+// f00010, TI's own %SIB-Parallel-Event-Address) with bit 3 of the control
+// register and then just sends, leaving the handler to notice the acknowledge.
+// Posted on the falling edge, which is where the pulse says the character was
+// taken.
+void explorer_sib_device::centronics_ack_w(int state)
+{
+	if (!state && m_centronics_ack && BIT(m_printer_control, 3))
+		post_event(4);
+	m_centronics_ack = state ? 1 : 0;
 }
 
 
@@ -1000,6 +1094,18 @@ void explorer_sib_device::device_add_mconfig(machine_config &config)
 	m_usart_clock->signal_handler().append(m_i8251, FUNC(i8251_device::write_txc));
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
+
+	// The parallel printer port of paragraph 4.4.9 - see printer_map(). Only
+	// the four status inputs of Table 4-9 are taken; DAT<8:1>, DATSTRB-, AUTOF-
+	// and INIT- are all outputs from this end.
+	CENTRONICS(config, m_centronics, centronics_devices, "printer");
+	m_centronics->busy_handler().set(FUNC(explorer_sib_device::centronics_busy_w));
+	m_centronics->perror_handler().set(FUNC(explorer_sib_device::centronics_perror_w));
+	m_centronics->select_handler().set(FUNC(explorer_sib_device::centronics_select_w));
+	m_centronics->fault_handler().set(FUNC(explorer_sib_device::centronics_fault_w));
+	m_centronics->ack_handler().set(FUNC(explorer_sib_device::centronics_ack_w));
+	OUTPUT_LATCH(config, m_centronics_data_out);
+	m_centronics->set_output_latch(*m_centronics_data_out);
 
 	SPEAKER(config, "speaker").front_center();
 	SN76496(config, "sn76496", 1'500'000).add_route(ALL_OUTPUTS, "speaker", SN76496_GAIN); // Exact model and input frequency unknown, noise

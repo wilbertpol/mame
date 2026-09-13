@@ -17,8 +17,7 @@ Slots 3-6 are connected through a local bus but are also accessible through
 the nubus like all the other slots.
 
 TODO:
-- Printer and RS-232C ports: both mapped in explorer_sib.cpp with no host
-  device behind them.
+- The RS-232C port is mapped in explorer_sib.cpp with no host device behind it.
 - Nothing of the Ethernet board is emulated.
 
 ***************************************************************************/

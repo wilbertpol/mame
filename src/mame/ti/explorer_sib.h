@@ -15,6 +15,7 @@
 #include "explorer_kbd.h"
 #include "explorer_rtc.h"
 #include "screen.h"
+#include "bus/centronics/ctronics.h"
 #include "machine/clock.h"
 #include "machine/i8251.h"
 #include "machine/nvram.h"
@@ -51,6 +52,13 @@ private:
 	u8 crtc_r(offs_t offset);
 	void crtc_w(offs_t offset, u8 data);
 	void printer_map(address_map &map) ATTR_COLD;
+	u32 printer_status_r();
+	void printer_control_w(u32 data);
+	void centronics_busy_w(int state);
+	void centronics_perror_w(int state);
+	void centronics_select_w(int state);
+	void centronics_fault_w(int state);
+	void centronics_ack_w(int state);
 	void update_speaker_amplifier();
 	void mouse_map(address_map &map) ATTR_COLD;
 	u32 motion_keyswitch_r();
@@ -97,6 +105,15 @@ private:
 	required_device<clock_device> m_usart_clock;
 	required_device<sn76496_device> m_sn76496;
 	required_device<nvram_device> m_nvram;
+	// Paragraph 4.4.9: "an SI board interface that transmits 8-bit parallel data
+	// and handles control and handshake signals between the SI board and a
+	// Centronics-compatible external device (usually a printer)". Table 4-9's
+	// signal list is the Centronics one line for line. The connector is not on
+	// this board - the signals go to P3 and the fibre-optic board adapts them to
+	// the DIN connector at the back of the enclosure (4.4.9.1), which is the
+	// "connector for parallel cable" of Figure F-5 in the System Introduction.
+	required_device<centronics_device> m_centronics;
+	required_device<output_latch_device> m_centronics_data_out;
 	required_ioport m_mouse_buttons;
 	required_ioport m_mouse_x_axis;
 	required_ioport m_mouse_y_axis;
@@ -159,7 +176,24 @@ private:
 	u32 m_monitor_control = 0;
 	u32 m_diagnostic_data = 0;
 	u32 m_voice_data_register = 0;
+	// Register 0 of the printer port, and the write half of register 1
+	// (Table 4-10 / Table 4-11). The control register starts with every active-
+	// low output deasserted and interrupts off - the state the polled and
+	// interrupt sequences of 4.4.9.2 both start from - rather than at zero,
+	// which would sit on INIT- and DATSTRB- and hold the printer in reset until
+	// software first wrote the register.
 	u32 m_printer_data = 0;
+	u32 m_printer_control = 0x07;
+	// The four handshake inputs of Table 4-9, latched as the peripheral drives
+	// them, and read back through the status half of register 1. They start at
+	// their idle levels so that a slot with no peripheral in it still reads as
+	// the ready printer the board's own diagnostic expects (busy and paper-out
+	// deasserted, SELECT asserted, FAULT- deasserted = 0x0c).
+	u8 m_centronics_busy = 0;
+	u8 m_centronics_perror = 0;
+	u8 m_centronics_select = 1;
+	u8 m_centronics_fault = 1;
+	u8 m_centronics_ack = 1;
 	u32 m_sound_control = 0;
 	u32 m_speech_register = 0;
 	// Keyboard USART interrupt, Table 4-4 cause 6 ("Ready to transmit/receive").
