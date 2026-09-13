@@ -13,7 +13,7 @@
 
 #include "ti_nubus.h"
 #include "explorer_kbd.h"
-#include "explorer_rtc.h"
+#include "machine/mm58167.h"
 #include "screen.h"
 #include "bus/centronics/ctronics.h"
 #include "machine/clock.h"
@@ -100,7 +100,7 @@ private:
 	required_device<crt9007_device> m_crt9007;
 	required_device<i8251_device> m_i8251;
 	required_device<explorer_keyboard_device> m_keyboard;
-	required_device<explorer_rtc_device> m_rtc;
+	required_device<mm58167_device> m_mm58167;
 	required_device<pit8253_device> m_pit;
 	required_device<clock_device> m_usart_clock;
 	required_device<sn76496_device> m_sn76496;
