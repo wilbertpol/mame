@@ -80,10 +80,12 @@ private:
 	// Event Generator (section 4.4.5): on a monitored interrupt condition, becomes
 	// NuBus master and writes a plain 0xFF byte to the preprogrammed address stored
 	// in m_event_vector[cause] (Table 4-4 gives the cause->index mapping) - not a
-	// real CPU interrupt line, software just polls that memory location. Only
-	// wired to the long-term interval timer's own completion (cause 2) for now;
-	// the other 15 causes aren't hooked up yet.
+	// real CPU interrupt line, software just polls that memory location. The cause
+	// is one of the EVENT_* constants in explorer_sib.cpp, which carry Table 4-4's
+	// names; nine of the sixteen are wired, and the comments beside the remaining
+	// registers say why each of the rest is not.
 	void post_event(int cause);
+	void post_voice_sample(u8 data);
 	void pit_out2_w(int state);
 	void rtc_irq_w(int state);
 	void scc_int_w(int state);
@@ -192,7 +194,13 @@ private:
 	u32 m_interrupt_diag_control = 0;
 	u32 m_monitor_control = 0;
 	u32 m_diagnostic_data = 0;
+	// The voice register of paragraph 4.4.11.8: VO<07:00> plus VO08, the
+	// data-present bit. VO08 is not stored data - it is the state of the voice
+	// interrupt itself, set when the interrupt controller loads a sample and
+	// cleared by the read that takes the sample off the I bus, which is the only
+	// acknowledge the hardware has. See post_voice_sample().
 	u32 m_voice_data_register = 0;
+	bool m_voice_data_present = false;
 	// Register 0 of the printer port, and the write half of register 1
 	// (Table 4-10 / Table 4-11). The control register starts with every active-
 	// low output deasserted and interrupts off - the state the polled and

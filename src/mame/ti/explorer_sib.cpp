@@ -16,8 +16,16 @@ these chips:
 - pit8253: There is only a "programmable interval time" mentioned in the
     documentation; the registers and bits mentioned are a 1-on-1 mapping
 	with an 8253.
-- sn76496: No direct mention of this chip but the registers and bits
-    mentioned in the documentation are a 1-on-1 mapping with an sn76496.
+- sn76496: No direct mention of this chip, but two manuals describe it without
+    naming it and both descriptions are a 1-on-1 mapping with an sn76496. The
+    SI manual gives the programming side (4.4.11.6 and Figure 4-17, the sound
+    control register). The generator itself is in the monitor rather than on
+    this board, so it is the Explorer Display Unit General Description that
+    describes the part, in paragraph 4.6: "three separate tone generators, each
+    with a programmable frequency divider and a programmable output
+    attenuator", a programmable 10-stage register per tone, a noise generator
+    producing white or periodic noise, an internal summing junction, and the
+    2.048-MHz clock used in device_add_mconfig().
 
 **********************************************************************/
 
@@ -86,6 +94,38 @@ static constexpr u16 VBEND = VTOTAL - SCREEN_HEIGHT;
 // them have no effect. Only bits 1/3 (NuBus master enable, NuBus test) and 8/9
 // (monitor/chassis self-test LEDs) and the reserved-but-R/W bits 4-7 are storable.
 static constexpr u32 CONFIGURATION_REGISTER_WRITABLE_MASK = 0x3fa;
+
+// Table 4-4, "Event Causes and Register File Storage Locations" (book 4-17): the
+// sixteen conditions the event generator polls, in the order it indexes them off
+// f00000 in steps of 4. Names follow TI's own Device and Cause columns.
+//
+// Index 13 is where this board differs from its predecessor, and the table's
+// footnote is the reason TI's kernel/micro-time.lisp disagrees with this list:
+// "The fiber-optic link warning is only available on part number 2236645-0001.
+// On earlier SI boards, such as part number 2236590-0001, there are three
+// power-failure warning interrupts and no fiber-optic link warning." The Lisp
+// table has Event-Power-Failure at 13 and stops there, i.e. it describes the
+// earlier board; 2236645-0001 is the one modelled here (see the board references
+// at the top of this file), so 13 is the fiber-optic warning.
+enum : int
+{
+	EVENT_REAL_TIME_CLOCK = 0,              // Time interrupt
+	EVENT_INTERVAL_TIMER_SHORT = 1,         // Interval elapsed
+	EVENT_INTERVAL_TIMER_LONG = 2,          // Interval elapsed
+	EVENT_RS232C_PORT = 3,                  // Status interrupt
+	EVENT_PRINTER_PORT = 4,                 // Printer acknowledge
+	EVENT_GRAPHICS_CONTROLLER = 5,          // Command acknowledge
+	EVENT_KEYBOARD_USART = 6,               // Ready to transmit/receive
+	EVENT_POWER_SUPPLY_OVERTEMPERATURE = 7, // Overtemperature
+	EVENT_KEYBOARD_CHORD_RESET = 8,         // Operator entry
+	EVENT_MOUSE_MOTION = 9,                 // Mouse motion detected
+	EVENT_MOUSE_KEYSWITCH = 10,             // Mouse keyswitch change
+	EVENT_VOICE_DATA_PRESENT = 11,          // Voice data present
+	EVENT_SOUND_PARITY_ERROR = 12,          // Sound parity error
+	EVENT_FIBER_OPTIC_LINK_WARNING = 13,    // Fiber-optic link warning
+	EVENT_POWER_FAILURE_WARNING = 14,       // Power failure warning
+	EVENT_POWER_FAILURE_WARNING_2 = 15      // Power failure warning, a second entry
+};
 
 // The monitor's speaker amplifier, in both the places that set its level: the
 // sound chip's route into the speaker, and the MOSENB mute in
@@ -205,6 +245,7 @@ void explorer_sib_device::device_start()
 	save_item(NAME(m_monitor_control));
 	save_item(NAME(m_diagnostic_data));
 	save_item(NAME(m_voice_data_register));
+	save_item(NAME(m_voice_data_present));
 	save_item(NAME(m_printer_data));
 	save_item(NAME(m_printer_control));
 	save_item(NAME(m_centronics_busy));
@@ -460,24 +501,13 @@ void explorer_sib_device::video_ram_rmw_w(offs_t offset, u32 data, u32 mem_mask)
 
 void explorer_sib_device::event_generator_map(address_map &map)
 {
-	//
-	// f00000 - Event-Real-Time-Clock
-	// f00004 - Event-Short-Interval-Timer
-	// f00008 - Event-Long-Interval-Timer
-	// f0000c - Event-RS232C-Port
-	// f00010 - Event-Printer-Port
-	// f00014 - Event-Graphics-Controller
-	// f00018 - Event-Keyboard
-	// f0001c - Event-Power-Supply
-	// f00020 - Event-Keyboard-Special-Chord-Reset
-	// f00024 - Event-Mouse-Motion
-	// f00028 - Event-Mouse-Keyswitch
-	// f0002c - Event-Voice-Data
-	// f00030 - Event-Sound-Data
-	// f00034 - fiber optic data link warning
-	// f00038 - Event-Power-Failure
-	// f0003c - Event-Power-Failure
-	// f00040 - configuration register
+	// f00000-f0003c - the 16-location event generator register file, one 32-bit
+	//                 vector address per cause. Paragraph 4.4.5.1: the address is
+	//                 where the FF byte gets posted when that cause fires, and it
+	//                 may be written as four bytes, two halfwords or one word -
+	//                 hence COMBINE_DATA in event_vector_w(). The cause that
+	//                 selects each location is the EVENT_* enum above.
+	// f00040         - configuration register
 
 	map(0x00f00000, 0x00f0003f).rw(FUNC(explorer_sib_device::event_vector_r), FUNC(explorer_sib_device::event_vector_w));
 
@@ -513,13 +543,39 @@ void explorer_sib_device::post_event(int cause)
 	nubus().space().write_byte(m_event_vector[cause], 0xff);
 }
 
+void explorer_sib_device::post_voice_sample(u8 data)
+{
+	// Paragraph 4.4.11.8: "If the data-present bit is set, there is no voice
+	// register read operation in progress, and the voice interrupt is enabled;
+	// then the voice interrupt controller triggers an event and loads the voice
+	// register with voice data bits VO<07:00>."
+	//
+	// Read literally that makes all three conditions gate the load as well as the
+	// event, but the board's own diagnostic proves otherwise: the "Voice loopback
+	// circuitry" subtest of the extended self-test writes a simulated sample with
+	// VOICSEL set and **VINTENB clear**, then reads it straight back and fails if
+	// it does not get it. Gating the load on VINTENB turns that subtest into
+	// ">> ERROR" (verified both ways). So the interrupt enable gates only the
+	// event; the register loads regardless.
+	//
+	// The remaining term, "no voice register read operation in progress", is a bus
+	// interlock against loading the register out from under a read that is part
+	// way through. A read here is a single atomic access, so there is no such
+	// window to guard.
+	m_voice_data_register = data;
+	m_voice_data_present = true;
+
+	if (BIT(m_interrupt_diag_control, 4))
+		post_event(EVENT_VOICE_DATA_PRESENT);
+}
+
 void explorer_sib_device::pit_out2_w(int state)
 {
 	// Mode 0 (interrupt on terminal count): the output is forced low the instant
 	// the control word is written, then goes high (and stays high) once the count
 	// reaches zero - only that rising edge is the real "interval elapsed" event.
 	if (state)
-		post_event(2); // "Interval timer (long)", Table 4-4
+		post_event(EVENT_INTERVAL_TIMER_LONG);
 }
 
 void explorer_sib_device::rtc_irq_w(int state)
@@ -530,7 +586,7 @@ void explorer_sib_device::rtc_irq_w(int state)
 	// before, so none of the RTC's interrupts (including D0 Compare) ever
 	// reached the CPU.
 	if (state)
-		post_event(0); // "Real-time clock", Table 4-4
+		post_event(EVENT_REAL_TIME_CLOCK);
 }
 
 
@@ -541,7 +597,7 @@ void explorer_sib_device::scc_int_w(int state)
 	// interrupt line of its own either, so like every other condition on this
 	// card it reaches the processor as an event-generator write.
 	if (state)
-		post_event(3); // "RS232C port", Table 4-4
+		post_event(EVENT_RS232C_PORT);
 }
 
 void explorer_sib_device::crtc_int_w(int state)
@@ -558,7 +614,7 @@ void explorer_sib_device::crtc_int_w(int state)
 	// produces no fresh edge - which is the paragraph's "the interrupt must be
 	// cleared before another interrupt is generated".
 	if (state)
-		post_event(5); // "Graphics controller", Table 4-4 (event vector f00014)
+		post_event(EVENT_GRAPHICS_CONTROLLER);
 }
 
 // Table 4-4 gives the keyboard USART one interrupt cause, "Ready to
@@ -573,7 +629,7 @@ void explorer_sib_device::usart_rxrdy_w(int state)
 {
 	bool const asserted = bool(state);
 	if (asserted && !m_usart_rxrdy)
-		post_event(6); // "Keyboard USART", Table 4-4 (event vector f00018)
+		post_event(EVENT_KEYBOARD_USART);
 	m_usart_rxrdy = asserted;
 }
 
@@ -581,7 +637,7 @@ void explorer_sib_device::usart_txrdy_w(int state)
 {
 	bool const asserted = bool(state);
 	if (asserted && !m_usart_txrdy)
-		post_event(6);
+		post_event(EVENT_KEYBOARD_USART);
 	m_usart_txrdy = asserted;
 }
 
@@ -679,7 +735,7 @@ void explorer_sib_device::centronics_fault_w(int state)
 void explorer_sib_device::centronics_ack_w(int state)
 {
 	if (!state && m_centronics_ack && BIT(m_printer_control, 3))
-		post_event(4);
+		post_event(EVENT_PRINTER_PORT);
 	m_centronics_ack = state ? 1 : 0;
 }
 
@@ -756,7 +812,7 @@ void explorer_sib_device::post_mouse_motion_event()
 		return;
 
 	m_mouse_motion_event_pending = true;
-	post_event(9); // "Mouse motion", Event-Mouse-Motion at f00024
+	post_event(EVENT_MOUSE_MOTION);
 }
 
 INPUT_CHANGED_MEMBER(explorer_sib_device::mouse_x_changed)
@@ -781,7 +837,7 @@ INPUT_CHANGED_MEMBER(explorer_sib_device::mouse_button_changed)
 		return;
 
 	m_mouse_keyswitch_event_pending = true;
-	post_event(10); // "Mouse keyswitch", Event-Mouse-Keyswitch at f00028
+	post_event(EVENT_MOUSE_KEYSWITCH);
 }
 
 
@@ -809,6 +865,26 @@ void explorer_sib_device::mouse_map(address_map &map)
 	// at f2000d: MOSENB 8, HIGAIN 9 (3.2x microphone gain), ALOPBAK 10 (analog
 	// loopback through the monitor's codec), PARCHK 11 (force bad sound parity);
 	// 12-15 are no connection.
+
+	// SERRENB and PARCHK are storage only, deliberately. Between them they
+	// describe a complete diagnostic loop that no TI software ever runs.
+	// 4.4.11.4 and 4.4.11.6: PARCHK "forces bad (even) parity on the sound
+	// control output to the monitor", the monitor recomputes parity over the
+	// byte, disagrees, and "returns a sound error bit (SONDERR) to the SI board";
+	// if SERRENB is set that raises event cause 12 ("Sound data", f00030), which
+	// the event generator then clears with its sound interrupt acknowledge - an
+	// explicit ack, unlike the voice interrupt's clear-on-read.
+	//
+	// Nothing drives it, so there is nothing to model and nothing that could
+	// notice if it were modelled wrongly. Verified by logging every write to this
+	// register and to the sound control register, across both the extended
+	// self-test and a band boot: all 40 sound bytes go out with PARCHK and
+	// SERRENB clear. The two bits are only ever set as part of a walking-bit and
+	// checkerboard sweep of this register - low byte 00 01 02 08 0f 33 55 aa cc
+	// f0 ff, high byte 100 300 500 a00 c00 f00 - and every sweep ends by writing
+	// zero before the first sound byte goes out, which makes it a register
+	// storage test rather than a parity test. The band settles on 0100, MOSENB
+	// alone. The slot 5 extended self-test has no sound subtest either.
 
 	// f20014 - sound control register, an 8-bit value plus generated odd parity
 	// (Figure 4-17) shipped to the sound generator in the monitor. The self-test
@@ -847,8 +923,21 @@ void explorer_sib_device::mouse_map(address_map &map)
 		return (m_diagnostic_data & 0xff) | (u32(compute_parity(m_diagnostic_data & 0xff)) << 8);
 	}), NAME([this] (u32 data) {
 		m_diagnostic_data = data & 0x1ff;
+		// 4.4.11.9: "The voice select bit (VOICSEL) gates the simulated parallel
+		// data byte to the voice register. The TSTOUT bit serves as the
+		// voice-data-present bit. TSTOUT must be set to trigger a voice interrupt
+		// and to load the voice register." This is the board's only source of
+		// voice data here - the real one is a codec on the monitor interface
+		// board at the far end of the fiber-optic link, and nothing models the
+		// monitor.
+		//
+		// Not modelled, from the same paragraph: "After the video has been
+		// established, setting VOICSEL to a logic 1 causes the video to blank."
+		// Left alone deliberately. Nothing reads voice data, so the only effect
+		// of implementing it would be to blank the display for any diagnostic
+		// that sets VOICSEL - and the manual does not say what unblanks it again.
 		if (BIT(m_interrupt_diag_control, 0) && BIT(data, 8))
-			m_voice_data_register = data & 0xff;
+			post_voice_sample(data & 0xff);
 	}));
 	map(0x00f20014, 0x00f20017).lrw32(NAME([this] {
 		return (m_sound_control & 0xff) | (u32(compute_parity(m_sound_control & 0xff) ^ 1) << 8);
@@ -856,13 +945,45 @@ void explorer_sib_device::mouse_map(address_map &map)
 		m_sound_control = data & 0xff;
 		m_sn76496->write(u8(data));
 	}));
+	// Paragraph 4.4.11.7 and Figure 4-18: a 9-bit register holding a byte of
+	// speech synthesis data plus a generated odd parity bit, shipped over the
+	// fiber-optic link to a speech synthesizer in the monitor at a fixed 8 kHz
+	// rate. Nothing comes back - "there is no path to read data back from the
+	// speech synthesizer in the monitor" - so a read returns this register's own
+	// contents through the same diagnostic three-state drivers the sound control
+	// register uses, which is what the handler below does. That is the whole SI
+	// board side of speech, and it is complete.
+	//
+	// There is nothing further to implement, despite 4.4.11.7 deferring the
+	// programming format to the Explorer Display Unit General Description: that
+	// manual has no speech section, and its only two mentions of speech are a
+	// microphone and headset "that can be used for future speech operations"
+	// (1.2) and a connector "for a handheld microphone for future speech
+	// operations" (2.3.1). The capability was never shipped and nothing ever
+	// drove it - "speech" appears nowhere in the System Software Design Notes,
+	// and in TI's Lisp sources only as an unused field declaration in
+	// kernel/micro-time.lisp.
 	map(0x00f20018, 0x00f2001b).lrw32(NAME([this] {
 		return (m_speech_register & 0xff) | (u32(compute_parity(m_speech_register & 0xff) ^ 1) << 8);
 	}), NAME([this] (u32 data) {
 		m_speech_register = data & 0xff;
 	}));
+	// Paragraph 4.4.11.8 and Figure 4-19: VO<07:00> is a digitized voice sample
+	// travelling the other way, from the monitor to the SI board, and VO08 is the
+	// data-present bit. That bit exists because the two ends disagree about rate:
+	// the fiber-optic link can read samples at the 50.52 kHz horizontal scan rate
+	// but the monitor's codec only produces them at a fixed 8 kHz, asynchronously
+	// to the scan timing, so VO08 is what distinguishes a new sample from the
+	// same one read again.
+	//
+	// Read-only, and the read is the acknowledge: "the voice interrupt is cleared
+	// when the contents of the voice register is read onto the I bus. There is no
+	// explicit interrupt acknowledge signal."
 	map(0x00f2001c, 0x00f2001f).lr32(NAME([this] {
-		return m_voice_data_register & 0xff;
+		const u32 data = (m_voice_data_register & 0xff) | (m_voice_data_present ? 0x100 : 0);
+		if (!machine().side_effects_disabled())
+			m_voice_data_present = false;
+		return data;
 	}));
 }
 
@@ -1208,7 +1329,12 @@ void explorer_sib_device::device_add_mconfig(machine_config &config)
 	m_centronics->set_output_latch(*m_centronics_data_out);
 
 	SPEAKER(config, "speaker").front_center();
-	SN76496(config, "sn76496", 1'500'000).add_route(ALL_OUTPUTS, "speaker", SN76496_GAIN); // Exact model and input frequency unknown, noise
+	// "The sound generator operates on a clock frequency of 2.048 megahertz" -
+	// Explorer Display Unit General Description, paragraph 4.6. The frequency was
+	// a guess (1.5 MHz) until that paragraph was found, and it sets the pitch of
+	// every tone the machine plays, so it is not a detail. The exact part is
+	// still not named in any manual - see the file header.
+	SN76496(config, "sn76496", 2'048'000).add_route(ALL_OUTPUTS, "speaker", SN76496_GAIN);
 }
 
 
