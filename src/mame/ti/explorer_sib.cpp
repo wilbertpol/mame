@@ -160,6 +160,8 @@ explorer_sib_device::explorer_sib_device(const machine_config &mconfig, const ch
 	m_keyboard(*this, "keyboard"),
 	m_mm58167(*this, "mm58167"),
 	m_pit(*this, "pit"),
+	m_z85030ps(*this, "z85030ps"),
+	m_rs232(*this, "rs232"),
 	m_usart_clock(*this, "usart_clock"),
 	m_sn76496(*this, "sn76496"),
 	m_nvram(*this, "nvram"),
@@ -529,6 +531,17 @@ void explorer_sib_device::rtc_irq_w(int state)
 	// reached the CPU.
 	if (state)
 		post_event(0); // "Real-time clock", Table 4-4
+}
+
+
+void explorer_sib_device::scc_int_w(int state)
+{
+	// The Z8530's single INT- output, whichever channel and whichever of its
+	// receive/transmit/external-status sources raised it. The board has no
+	// interrupt line of its own either, so like every other condition on this
+	// card it reaches the processor as an event-generator write.
+	if (state)
+		post_event(3); // "RS232C port", Table 4-4
 }
 
 void explorer_sib_device::crtc_int_w(int state)
@@ -962,14 +975,48 @@ void explorer_sib_device::nvram_map(address_map &map)
 
 void explorer_sib_device::rs232c_map(address_map &map)
 {
-	// fb0000 - rs232c-port-base
+	// fb0000 - rs232c-port-base, Table 4-21:
 	//
-	// fb0000 - RS232C-Channel-B-Status / RS232C-Channel-B-Pointer
-	// fb0008 - RS232C-Channel-A-Status / RS232C-Channel-A-Pointer
-	// fb000c - RS232C-Channel-A-Receive-Buffer / RS232C-Channel-A-Transmit-Buffer
-	// fb0010 - RS232C-Interrupt-Acknowledge-Address
+	// fb0000 - Channel B buffer status and external status (RR0)
+	//          Channel B pointer register, control data (WR0)
+	// fb0004 - Channel A buffer status and external status (RR0)
+	//          Channel A pointer register, control data (WR0)
+	// fb0008 - Channel B receive/transmit data - unused, channel B is not a
+	//          communications channel
+	// fb000c - Channel A receive data buffer (RR8)
+	//          Channel A transmit data buffer (WR8)
+	// fb0010 - Interrupt acknowledge address
+	//
+	// So IADDR03 selects the channel and IADDR02 selects data or control, which
+	// is the Z8530's D/C- and A/B- inputs in the order MAME's dc_ab_*() decodes
+	// them. The dword offset is the register index directly.
+	//
+	// TI's own kernel sources disagree here: kernel/micro-time.lisp puts
+	// RS232C-Channel-A-Status at offset 8 rather than 4, citing a page number
+	// from a different revision of this manual. Table 4-21 is followed instead,
+	// because paragraph 4.4.15.2's IADDR03/IADDR02 description independently
+	// produces exactly the addresses above - and because nothing in the Lisp
+	// sources ever reads those constants, so they were never exercised.
+	//
+	// Byte-wide core on a bus that issues masked dword writes, so wrap it.
+	map(0x00fb0000, 0x00fb000f).lrw32(NAME([this] (offs_t offset) {
+		return u32(m_z85030ps->dc_ab_r(offset));
+	}), NAME([this] (offs_t offset, u32 data) {
+		m_z85030ps->dc_ab_w(offset, u8(data));
+	}));
 
-	// TODO
+	// "A read or write operation to the Z8530 with address bit IADDR04 high
+	// acknowledges an interrupt. This is ordinarily a read operation directed
+	// to read register 2 of channel B, which includes interrupt status bits and
+	// an unused interrupt vector." Table 4-21 calls the address write-only and
+	// says the status is to be had by the ordinary multistep register reads, so
+	// the returned vector is of no use to this board - what the cycle is for is
+	// the side effect of setting the interrupt-under-service bit.
+	map(0x00fb0010, 0x00fb0013).lrw32(NAME([this] () {
+		return u32(m_z85030ps->m1_r());
+	}), NAME([this] (u32 data) {
+		m_z85030ps->m1_r();
+	}));
 }
 
 
@@ -1104,6 +1151,43 @@ void explorer_sib_device::device_add_mconfig(machine_config &config)
 	m_pit->set_clk<1>(1000000.0);
 	m_pit->out_handler<1>().set(m_pit, FUNC(pit8253_device::write_clk2));
 	m_pit->out_handler<2>().set(FUNC(explorer_sib_device::pit_out2_w));
+
+	// The RS-232C port of paragraph 4.4.15 - see rs232c_map(). 2.4576 MHz is
+	// "the master clock frequency" the baud rate generator counts down
+	// (time constant = 1228800 / baud - 2, giving 50 to 19 200 baud), and it
+	// has to arrive as PCLK rather than on RTxC: Figure 4-33 wires RTxCA- and
+	// TRxCA- to the RXCLK and TXCLK pins of P2, which are the receive and
+	// transmit clocks a *synchronous* modem sends back, not an on-board
+	// oscillator. Hence configure_channels() is left alone and those two
+	// inputs come from the rs232 port instead.
+	// z85030ps on sib image
+	SCC8530(config, m_z85030ps, 2.4576_MHz_XTAL);
+	m_z85030ps->out_int_callback().set(FUNC(explorer_sib_device::scc_int_w));
+
+	// Figure 4-33, pin for pin. Channel A carries the data and the three
+	// signals the Z8530 has channel A pins for; the remaining EIA signals are
+	// hung off channel B, which is why the manual says channel B is wired for
+	// "auxiliary control line input/output" only.
+	m_z85030ps->out_txda_callback().set(m_rs232, FUNC(rs232_port_device::write_txd));   // pin 15 -> XMTD-
+	m_z85030ps->out_rtsa_callback().set(m_rs232, FUNC(rs232_port_device::write_rts));   // pin 17 -> RTS
+	m_z85030ps->out_dtra_callback().set(m_rs232, FUNC(rs232_port_device::write_dtr));   // pin 16 -> DTR
+	// Three channel B outputs are left unwired. TRxCB drives BAUDOUT at P3 66,
+	// "transmit clock to drive the transmitter section of a synchronous modem"
+	// (Table 4-18) - that is DB25 pin 24, V.24 circuit 113, i.e. write_etc(),
+	// but the SCC core does not expose the TRxC pin as an output. RTSB- drives
+	// SRTS (secondary request to send, P3 70) and DTRB- drives AL (analog
+	// loopback, "can be asserted by the CPU", P3 65); neither is an
+	// rs232_port_device line. All three only matter to a synchronous modem.
+
+	RS232_PORT(config, m_rs232, default_rs232_devices, nullptr);
+	m_rs232->rxd_handler().set(m_z85030ps, FUNC(scc8530_device::rxa_w));    // RCVD- -> pin 13 RXDA
+	m_rs232->cts_handler().set(m_z85030ps, FUNC(scc8530_device::ctsa_w));   // CTS   -> pin 18 CTSA-
+	m_rs232->dcd_handler().set(m_z85030ps, FUNC(scc8530_device::dcda_w));   // DCD   -> pin 19 DCDA-
+	m_rs232->ri_handler().set(m_z85030ps, FUNC(scc8530_device::ctsb_w));    // RI    -> pin 22 CTSB-
+	m_rs232->dsr_handler().set(m_z85030ps, FUNC(scc8530_device::dcdb_w));   // DSR   -> pin 21 DCDB-
+	m_rs232->si_handler().set(m_z85030ps, FUNC(scc8530_device::syncb_w));   // SI    -> pin 29 SYNCB-
+	m_rs232->rxc_handler().set(m_z85030ps, FUNC(scc8530_device::rxca_w));   // RXCLK -> pin 12 RTxCA-
+	m_rs232->txc_handler().set(m_z85030ps, FUNC(scc8530_device::txca_w));   // TXCLK -> pin 14 TRxCA-
 
 	CLOCK(config, m_usart_clock, 153600);
 	m_usart_clock->signal_handler().set(m_i8251, FUNC(i8251_device::write_rxc));

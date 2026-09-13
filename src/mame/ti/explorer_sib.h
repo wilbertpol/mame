@@ -16,10 +16,12 @@
 #include "machine/mm58167.h"
 #include "screen.h"
 #include "bus/centronics/ctronics.h"
+#include "bus/rs232/rs232.h"
 #include "machine/clock.h"
 #include "machine/i8251.h"
 #include "machine/nvram.h"
 #include "machine/pit8253.h"
+#include "machine/z80scc.h"
 #include "sound/sn76496.h"
 #include "video/crt9007.h"
 
@@ -84,6 +86,7 @@ private:
 	void post_event(int cause);
 	void pit_out2_w(int state);
 	void rtc_irq_w(int state);
+	void scc_int_w(int state);
 	void crtc_int_w(int state);
 	void usart_rxrdy_w(int state);
 	void usart_txrdy_w(int state);
@@ -102,6 +105,20 @@ private:
 	required_device<explorer_keyboard_device> m_keyboard;
 	required_device<mm58167_device> m_mm58167;
 	required_device<pit8253_device> m_pit;
+	// "The RS-232C serial data port uses a fully programmable Zilog Z8530
+	// serial communications controller" (4.4.15) - one of the two chips TI
+	// names outright, the other being the CRT9007. Figure 1-11 of the Field
+	// Maintenance manual shows it on the board as a Z0853004PSC ("Z85030PS" as
+	// the ordering code reads on the package), and 4.4.15.2 cites the
+	// Z8030/Z8530 SCC Technical Manual.
+	//
+	// Only channel A is a communications channel. Channel B "is wired only to
+	// provide some auxiliary control line input/output and is never used as a
+	// communications channel" - its receive and transmit data buffers are
+	// unused, and its modem-control pins carry the EIA signals the Z8530 has no
+	// channel A pin for (Figure 4-33). See device_add_mconfig().
+	required_device<scc8530_device> m_z85030ps;
+	required_device<rs232_port_device> m_rs232;
 	required_device<clock_device> m_usart_clock;
 	required_device<sn76496_device> m_sn76496;
 	required_device<nvram_device> m_nvram;
