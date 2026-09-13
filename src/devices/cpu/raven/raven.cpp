@@ -1016,8 +1016,16 @@ void raven_cpu_device::store_o_bus()
 			m_cached_lvl1 = m_vma; // the map put out what was just written to it
 			break;
 		case 0x12: // VMA write map level 2 control
+			// Table 4-17: "the map is addressed from MD and LVL1 and written from
+			// VMA(12:00)" - thirteen bits, not sixteen. What the write does not
+			// reach is Table 4-16's M(15:13), "Last TM0" / "Last TM1" / "Last
+			// locked", which are hardware status for the cycle just performed in
+			// the same way the LVL1 read's M(15:12) are (see the cycle-status
+			// write-back in vm_resolve_address()). Nothing produces them yet, so
+			// today the mask only stops software depositing stray VMA bits into a
+			// field that is not its to write.
 			m_vma = m_o_bus;
-			m_vma_lvl2_control[map2_addr()] = m_vma & 0xffff;
+			m_vma_lvl2_control[map2_addr()] = m_vma & 0x1fff;
 			break;
 		case 0x13: // VMA write map level 2
 			m_vma = m_o_bus;
@@ -1051,7 +1059,7 @@ void raven_cpu_device::store_o_bus()
 		case 0x1a: // MD write map level 2 control
 			m_md = m_o_bus;
 			update_cached_lvl1_from_md();
-			m_vma_lvl2_control[map2_addr()] = m_vma & 0xffff;
+			m_vma_lvl2_control[map2_addr()] = m_vma & 0x1fff; // VMA(12:00) - see 0x12
 			break;
 		case 0x1b: // MD write map level 2
 			m_md = m_o_bus;
