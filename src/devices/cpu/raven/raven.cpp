@@ -332,6 +332,45 @@ void raven_cpu_device::write()
 }
 
 
+// The width of an unmapped - that is, NuBus - access is not in the
+// microinstruction. It is carried the way the NuBus itself carries it, in the
+// two low address bits together with TM1, which is what picks between the two
+// flavours of unmapped destination: the plain one (ravfmt.lisp's
+// %MBD-VMA-Start-Write-Unmapped and friends) drives TM1 high and reaches this
+// function, and the "-NU" one drives it low and reaches the byte functions
+// below. With TM1 high the NuBus transfer table reads
+//
+//   A1 A0 = 00   word
+//   A1 A0 = 01   half-word 0, bytes 0 and 1
+//   A1 A0 = 11   half-word 1, bytes 2 and 3
+//   A1 A0 = 10   block transfer
+//
+// so the same destination that writes a full word writes a half-word when the
+// microcode sets A0. Either half is already in its own lane of MD, and a read
+// leaves it in its own lane too, so the only thing the width decides is which
+// byte lanes take part in the bus cycle.
+//
+// Ignoring it and always transferring the full word costs the other half of
+// every half-word written. It is not a rare access: TI's own code uses it for
+// every 16-bit field in a data structure a device shares with the processor,
+// and writing the second field of such a pair then erases the first. That is
+// what made the Ethernet board's "82586 int lpbk" subtest fail - see
+// explorer_enet.cpp - where it wiped out the coprocessor's receive frame area
+// pointer, the last two bytes of a destination address and a transmit buffer
+// descriptor's count.
+//
+// Block transfer is not implemented; nothing in this machine has asked for one.
+u32 raven_cpu_device::unmapped_mem_mask() const
+{
+	switch (m_vma & 3)
+	{
+	case 1: return 0x0000ffff;
+	case 3: return 0xffff0000;
+	default: return 0xffffffff;
+	}
+}
+
+
 void raven_cpu_device::read_unmapped()
 {
 	m_bus_error = false;
@@ -341,11 +380,13 @@ void raven_cpu_device::read_unmapped()
 	if (!memory_cycle_enabled())
 		return;
 
+	u32 const mask = unmapped_mem_mask();
+
 	m_local_bus_miss = false;
-	m_read_data = m_local_bus.read_dword(m_vma);
+	m_read_data = m_local_bus.read_dword(m_vma & ~3, mask);
 	if (m_local_bus_miss)
 	{
-		m_read_data = m_data.read_dword(m_vma);
+		m_read_data = m_data.read_dword(m_vma & ~3, mask);
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 	}
 	else
@@ -363,11 +404,13 @@ void raven_cpu_device::write_unmapped()
 	if (!memory_cycle_enabled())
 		return;
 
+	u32 const mask = unmapped_mem_mask();
+
 	m_local_bus_miss = false;
-	m_local_bus.write_dword(m_vma, m_md);
+	m_local_bus.write_dword(m_vma & ~3, m_md, mask);
 	if (m_local_bus_miss)
 	{
-		m_data.write_dword(m_vma, m_md);
+		m_data.write_dword(m_vma & ~3, m_md, mask);
 		m_memory_busy_counter = MEMORY_CYCLE_BUSY_CYCLES;
 	}
 	else

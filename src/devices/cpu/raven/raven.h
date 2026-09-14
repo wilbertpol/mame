@@ -163,6 +163,7 @@ private:
 	bool memory_cycle_enabled();
 	void read();
 	void write();
+	u32 unmapped_mem_mask() const;
 	void read_unmapped();
 	void write_unmapped();
 	void read_unmapped_byte();
