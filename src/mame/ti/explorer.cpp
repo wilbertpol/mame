@@ -17,7 +17,7 @@ Slots 3-6 are connected through a local bus but are also accessible through
 the nubus like all the other slots.
 
 TODO:
-- Nothing of the Ethernet board is emulated.
+- The Ethernet board talks to no network - see explorer_enet.cpp.
 
 ***************************************************************************/
 
@@ -25,6 +25,7 @@ TODO:
 #include "cpu/raven/raven.h"
 #include "ti_nubus.h"
 #include "explorer_cpu.h"
+#include "explorer_enet.h"
 #include "explorer_nupi.h"
 #include "explorer_mem.h"
 #include "explorer_sib.h"
@@ -34,6 +35,7 @@ namespace {
 
 void tiexplorer_nubus_cards(device_slot_interface &device)
 {
+	device.option_add("enet", EXPLORER_ENET);
 	device.option_add("nupi", NUPI);
 	device.option_add("mem8mb", EXPLORER_MEM8MB);
 	device.option_add("mem2mb", EXPLORER_MEM2MB);
@@ -83,6 +85,11 @@ void tiexplorer_state::tiexplorer(machine_config &config)
 
 	// Other cards
 	TI_NUBUS_SLOT(config, "nb2", "nubus", 2, tiexplorer_nubus_cards, "nupi");
+
+	// The Ethernet board passes its power-up self-test and all nine of its
+	// extended subtests, and the system boots with it fitted. See
+	// explorer_enet.cpp for what it does and does not do.
+	TI_NUBUS_SLOT(config, "nb1", "nubus", 1, tiexplorer_nubus_cards, "enet");
 
 	// The backplane has no address spaces of its own: the NuBus and the local
 	// bus are the CPU board's AS_DATA and AS_LOCAL_BUS, so point it at the
