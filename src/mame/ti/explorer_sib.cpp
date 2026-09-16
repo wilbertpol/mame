@@ -83,7 +83,7 @@ static constexpr u16 SCREEN_HEIGHT = 808;
 // Field Maintenance manual (paragraph 4.4.10.3 calls it "the 67.8989-megahertz
 // pixel clock ... one bit every 14.72 nanoseconds"). Driven from the crystal
 // the frame comes out at 59.99 Hz, i.e. the 16.67 ms of paragraph 4.4.10.7.
-static constexpr XTAL PIXEL_CLOCK = 67.889_MHz_XTAL;
+static constexpr u32 PIXEL_CLOCK = 67'889'000;
 static constexpr u16 CHARACTER_WIDTH = 32;   // one bit-map word per character
 static constexpr u16 HTOTAL = 42 * CHARACTER_WIDTH;  // R00
 static constexpr u16 HBEND = 7 * CHARACTER_WIDTH;    // R02, horizontal delay
