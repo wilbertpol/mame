@@ -2,32 +2,33 @@
 // copyright-holders:Wilbert Pol
 /**********************************************************************
 
-    TI Explorer NUPI disk formatter.
+    TI Explorer NUPI mass storage unit.
 
-    Per the NUPI's 68000 firmware (see nupi.cpp), each SCSI target on the
-    formatter bus is a formatter card, not a drive: the firmware selects a
-    target by SCSI ID and then addresses one of up to two attached drives
-    via the LUN (sent both in the IDENTIFY message and, redundantly, in
-    CDB byte 1 bits 7:5, per SCSI-1 convention). This device models one
-    formatter and always exposes both LUNs, so a real 2-drive formatter
-    can be wired up by simply mounting a CHD in the second image slot.
+    Per the NUPI's 68000 firmware (see explorer_nupi.cpp), each SCSI target
+    is a mass storage unit, not a drive: the firmware selects a target by
+    SCSI ID and then addresses one of up to two attached drives via the LUN
+    (sent both in the IDENTIFY message and, redundantly, in CDB byte 1 bits
+    7:5, per SCSI-1 convention). This device models one unit and always
+    exposes both LUNs, so a real 2-drive unit can be wired up by simply
+    mounting a CHD in the second image slot.
 
 **********************************************************************/
 
-#ifndef MAME_TI_EXPLORER_FORMATTER_H
-#define MAME_TI_EXPLORER_FORMATTER_H
+#ifndef MAME_TI_EXPLORER_MSU_H
+#define MAME_TI_EXPLORER_MSU_H
 
 #pragma once
 
 #include "machine/nscsi_hle.h"
 #include "imagedev/harddriv.h"
 
-class explorer_formatter_device : public nscsi_full_device
+class explorer_msu_device : public nscsi_full_device
 {
 public:
-	explorer_formatter_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
+	explorer_msu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
 
-	// See nscsi_harddisk_device::set_seek_timing() (bus/nscsi/hd.h) for the
+	// Overrides the drive timing the constructor sets up. See
+	// nscsi_harddisk_device::set_seek_timing() (bus/nscsi/hd.h) for the
 	// parameter meanings; applies identically to both LUNs.
 	void set_seek_timing(uint32_t track_us, uint32_t average_us, uint32_t full_us, uint32_t rpm, uint8_t interleave);
 
@@ -71,6 +72,6 @@ private:
 	double   m_seek_exp = 1.0;
 };
 
-DECLARE_DEVICE_TYPE(NUPI_FORMATTER, explorer_formatter_device)
+DECLARE_DEVICE_TYPE(NUPI_MSU, explorer_msu_device)
 
-#endif // MAME_TI_EXPLORER_FORMATTER_H
+#endif // MAME_TI_EXPLORER_MSU_H

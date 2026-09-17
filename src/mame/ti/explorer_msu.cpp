@@ -2,13 +2,13 @@
 // copyright-holders:Wilbert Pol
 /**********************************************************************
 
-    TI Explorer NUPI disk formatter.
+    TI Explorer NUPI mass storage unit.
+
+A mass storage unit can have a disk formatters interfacing 2 disks, or a
+disk formatter interfacing 1 disk and a tape formatter interfacing a
+cartridge tape.
 
 TODO:
-- Rename to 'mass storage unit'?
-  A mass storage unit can have 2 disk formatter interfacing 2 disks, or
-  a disk formatter interfacing 1 disk and a tape formatter interfacing a
-  cartridge tape.
 - Tape support
 
 
@@ -37,7 +37,7 @@ From board overview:
 The disk drive formatter converts SCSI signals to the ST506 interface
 used by the disk drives.
 
-    See nupi_formatter.h. Command handling below is adapted from
+    See explorer_msu.h. Command handling below is adapted from
     bus/nscsi/hd.cpp (SCSI Hard Disk), generalized to two independently
     mounted LUNs instead of one; see that file for the commands' own
     history/rationale. Deliberately not sharing code with hd.cpp itself.
@@ -45,7 +45,7 @@ used by the disk drives.
 **********************************************************************/
 
 #include "emu.h"
-#include "explorer_formatter.h"
+#include "explorer_msu.h"
 
 #include "multibyte.h"
 
@@ -59,10 +59,10 @@ used by the disk drives.
 
 #include "logmacro.h"
 
-DEFINE_DEVICE_TYPE(NUPI_FORMATTER, explorer_formatter_device, "explorer_nupi_formatter", "TI Explorer NUPI Disk Formatter")
+DEFINE_DEVICE_TYPE(NUPI_MSU, explorer_msu_device, "explorer_nupi_msu", "TI Explorer NUPI Mass Storage Unit")
 
-explorer_formatter_device::explorer_formatter_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
-	nscsi_full_device(mconfig, NUPI_FORMATTER, tag, owner, clock),
+explorer_msu_device::explorer_msu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
+	nscsi_full_device(mconfig, NUPI_MSU, tag, owner, clock),
 	m_image(*this, "image%u", 0U),
 	m_active_lun(0)
 {
@@ -70,9 +70,13 @@ explorer_formatter_device::explorer_formatter_device(const machine_config &mconf
 		" SEAGATE"
 		"          ST225N"
 		"1.00";
+
+	// These are timings for the Maxtor XT-1140, they oughta be characteristics of the
+	// drive and not thise device.
+	set_seek_timing(4000, 26000, 43000, 3600, 1);
 }
 
-void explorer_formatter_device::device_start()
+void explorer_msu_device::device_start()
 {
 	nscsi_full_device::device_start();
 	for (unsigned i = 0; i < LUN_COUNT; i++)
@@ -85,7 +89,7 @@ void explorer_formatter_device::device_start()
 	}
 }
 
-void explorer_formatter_device::device_reset()
+void explorer_msu_device::device_reset()
 {
 	nscsi_full_device::device_reset();
 
@@ -108,12 +112,12 @@ void explorer_formatter_device::device_reset()
 		l.last_cylinder = -1;
 	}
 
-	// no drive mounted on either LUN: the formatter itself doesn't respond on the bus
+	// no drive mounted on either LUN: the unit itself doesn't respond on the bus
 	if (!any_exists)
 		m_scsi_id = -1;
 }
 
-void explorer_formatter_device::set_seek_timing(uint32_t track_us, uint32_t average_us, uint32_t full_us, uint32_t rpm, uint8_t interleave)
+void explorer_msu_device::set_seek_timing(uint32_t track_us, uint32_t average_us, uint32_t full_us, uint32_t rpm, uint8_t interleave)
 {
 	m_seek_track_us = track_us;
 	m_seek_range_us = (full_us > track_us) ? (full_us - track_us) : 0;
@@ -125,7 +129,7 @@ void explorer_formatter_device::set_seek_timing(uint32_t track_us, uint32_t aver
 	m_seek_model = true;
 }
 
-attotime explorer_formatter_device::seek_time(lun_state &l, uint32_t lba)
+attotime explorer_msu_device::seek_time(lun_state &l, uint32_t lba)
 {
 	uint32_t spt = 1, spc = 1, ncyl = 1;
 	int const idx = int(&l - &m_lun[0]);
@@ -152,7 +156,7 @@ attotime explorer_formatter_device::seek_time(lun_state &l, uint32_t lba)
 	return attotime::from_usec(us);
 }
 
-attotime explorer_formatter_device::scsi_data_command_delay()
+attotime explorer_msu_device::scsi_data_command_delay()
 {
 	if (!m_seek_model)
 		return attotime::zero;
@@ -196,18 +200,18 @@ attotime explorer_formatter_device::scsi_data_command_delay()
 // to the 5385's documented 1.5MB/s maximum: the NUPI's own FIFO/DMA path
 // cannot sustain that. Measured boot depth by rate - 500k/625k/750k/1M/1.25M
 // all reach CMDLOG 39; 1.5MB/s drops to 36; 2MB/s breaks the boot outright (6).
-attotime explorer_formatter_device::scsi_data_byte_period()
+attotime explorer_msu_device::scsi_data_byte_period()
 {
 	return attotime::from_ticks(1, 1'250'000);
 }
 
-void explorer_formatter_device::device_add_mconfig(machine_config &config)
+void explorer_msu_device::device_add_mconfig(machine_config &config)
 {
 	for (unsigned i = 0; i < LUN_COUNT; i++)
 		HARDDISK(config, m_image[i]).set_interface("scsi_hdd,hdd");
 }
 
-uint8_t explorer_formatter_device::scsi_get_data(int id, int pos)
+uint8_t explorer_msu_device::scsi_get_data(int id, int pos)
 {
 	uint8_t data = 0;
 	if (id != 2)
@@ -229,13 +233,13 @@ uint8_t explorer_formatter_device::scsi_get_data(int id, int pos)
 		}
 		data = l.block[pos % l.bytes_per_sector];
 	}
-	LOGMASKED(LOG_DATA, "nupi_formatter: scsi_get_data, id:%d pos:%d data:%02x %c\n", id, pos, data, data >= 0x20 && data < 0x7f ? (char)data : ' ');
+	LOGMASKED(LOG_DATA, "nupi_msu: scsi_get_data, id:%d pos:%d data:%02x %c\n", id, pos, data, data >= 0x20 && data < 0x7f ? (char)data : ' ');
 	return data;
 }
 
-void explorer_formatter_device::scsi_put_data(int id, int pos, uint8_t data)
+void explorer_msu_device::scsi_put_data(int id, int pos, uint8_t data)
 {
-	LOGMASKED(LOG_DATA, "nupi_formatter: scsi_put_data, id:%d pos:%d data:%02x %c\n", id, pos, data, data >= 0x20 && data < 0x7f ? (char)data : ' ');
+	LOGMASKED(LOG_DATA, "nupi_msu: scsi_put_data, id:%d pos:%d data:%02x %c\n", id, pos, data, data >= 0x20 && data < 0x7f ? (char)data : ' ');
 	if (id != 2)
 	{
 		nscsi_full_device::scsi_put_data(id, pos, data);
@@ -253,7 +257,7 @@ void explorer_formatter_device::scsi_put_data(int id, int pos, uint8_t data)
 	}
 }
 
-void explorer_formatter_device::scsi_command()
+void explorer_msu_device::scsi_command()
 {
 	m_active_lun = get_lun(m_scsi_cmdbuf[1] >> 5);
 	bool const lun_ok = m_active_lun >= 0 && m_active_lun < int(LUN_COUNT) && m_image[m_active_lun]->exists();
