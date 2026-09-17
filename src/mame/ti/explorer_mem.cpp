@@ -71,10 +71,27 @@ void explorer_mem_device_base::device_start()
 void explorer_mem_device_base::device_reset()
 {
 	m_config_register = 0;
-	m_base_register = 0;
 	m_failure_location = 0;
+	board_reset();
+}
+
+
+// The NuBus board reset signal, which paragraph 4.5.2 pairs with the board reset
+// the configuration register generates - so both go through here.
+void explorer_mem_device_base::board_reset()
+{
 	m_test_register = 0;
+
+	// The base register "contains the data memory starting address" (4.5.2,
+	// Figure 4-11): the board's own slot space base address, bits 31-24, so 0xf4
+	// in slot 4 and 0xf3 in slot 3.
+	m_base_register = get_slotspace() >> 24;
+
+	// Paragraph 4.5.1: "A write operation with data bit 0 set to 1 resets the
+	// parity error and clears the NuBus terminal latch. This clears the NUERR
+	// signal." Same bit Figure 4-10 labels board reset.
 	m_nubus_status = 0;
+
 	m_ram_view.select(0);
 	if (on_local_bus())
 		m_ram_view_local_bus.select(0);
@@ -119,19 +136,7 @@ void explorer_mem_device_base::config_register_w(u8 data)
 {
 	m_config_register = data & 0x05;
 	if (BIT(m_config_register, 0))
-	{
-		// Paragraph 4.5.1: "A write operation with data bit 0 set to 1 resets the
-		// parity error and clears the NuBus terminal latch. This clears the NUERR
-		// signal." Same bit Figure 4-10 labels board reset.
-		m_nubus_status = 0;
-
-		// Board reset
-		m_test_register = 0;
-		m_base_register = 0xf4; // 0xf3 when the card is in slot 3.
-		m_ram_view.select(0);
-		if (on_local_bus())
-			m_ram_view_local_bus.select(0);
-	}
+		board_reset();
 	// TODO output led status
 }
 

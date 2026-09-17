@@ -1247,7 +1247,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	// 0xadaa-1, 0x806e56's 0x6e56-1), i.e. a real floating-bus artifact where the data
 	// bus reflects the address lines that drove it. Modeled as fixed constants rather
 	// than a general rule, since these are the only two addresses this ROM is known to
-	// probe this way.
+	// probe this way. Or address & 0xfffd?
 	map(0x81adaa, 0x81adab).lr16(NAME([]() { return u16(0xada9); }));
 	map(0x806e56, 0x806e57).lr16(NAME([]() { return u16(0x6e55); }));
 

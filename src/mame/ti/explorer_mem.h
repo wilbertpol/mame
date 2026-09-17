@@ -26,6 +26,8 @@ protected:
 private:
 	void nubus_map(address_map &map) ATTR_COLD;
 
+	void board_reset();
+
 	u8 config_register_r();
 	void config_register_w(u8 data);
 	u8 base_register_r();
