@@ -19,6 +19,7 @@ the nubus like all the other slots.
 TODO:
 - The Ethernet board talks to no network - see explorer_enet.cpp.
 - Mass Storage Controller, interfacing SMD or SCSI (no schematics or dumps).
+- Odyssey Coprocessor (no schematics or dumps).
 
 ***************************************************************************/
 
