@@ -18,6 +18,7 @@ the nubus like all the other slots.
 
 TODO:
 - The Ethernet board talks to no network - see explorer_enet.cpp.
+- Mass Storage Controller, interfacing SMD or SCSI (no schematics or dumps).
 
 ***************************************************************************/
 
@@ -33,13 +34,17 @@ TODO:
 
 namespace {
 
+void tiexplorer_nubus_local_bus_cards(device_slot_interface &device)
+{
+	device.option_add("mem8mb", EXPLORER_MEM8MB);
+	device.option_add("mem2mb", EXPLORER_MEM2MB);
+	device.option_add("sib", SIB);
+}
+
 void tiexplorer_nubus_cards(device_slot_interface &device)
 {
 	device.option_add("enet", EXPLORER_ENET);
 	device.option_add("nupi", NUPI);
-	device.option_add("mem8mb", EXPLORER_MEM8MB);
-	device.option_add("mem2mb", EXPLORER_MEM2MB);
-	device.option_add("sib", SIB);
 }
 
 // Slot 6 only ever holds the CPU board - the machine has no processor without
@@ -77,19 +82,20 @@ void tiexplorer_state::tiexplorer(machine_config &config)
 {
 	TI_NUBUS(config, m_nubus);
 
-	// Reserved card slots
+	// Reserved / local bus card slots
 	TI_NUBUS_SLOT(config, "nb6", "nubus", 6, tiexplorer_cpu_cards, "cpu");
-	TI_NUBUS_SLOT(config, "nb5", "nubus", 5, tiexplorer_nubus_cards, "sib");
-	TI_NUBUS_SLOT(config, "nb4", "nubus", 4, tiexplorer_nubus_cards, "mem8mb");
-//	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_cards, "mem8mb");
+	TI_NUBUS_SLOT(config, "nb5", "nubus", 5, tiexplorer_nubus_local_bus_cards, "sib");
+	TI_NUBUS_SLOT(config, "nb4", "nubus", 4, tiexplorer_nubus_local_bus_cards, "mem8mb");
+	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_local_bus_cards, nullptr);
 
 	// Other cards
 	TI_NUBUS_SLOT(config, "nb2", "nubus", 2, tiexplorer_nubus_cards, "nupi");
+	TI_NUBUS_SLOT(config, "nb1", "nubus", 1, tiexplorer_nubus_cards, nullptr);
 
 	// The Ethernet board passes its power-up self-test and all nine of its
 	// extended subtests, and the system boots with it fitted. See
 	// explorer_enet.cpp for what it does and does not do.
-	TI_NUBUS_SLOT(config, "nb1", "nubus", 1, tiexplorer_nubus_cards, "enet");
+	TI_NUBUS_SLOT(config, "nb0", "nubus", 0, tiexplorer_nubus_cards, "enet");
 
 	// The backplane has no address spaces of its own: the NuBus and the local
 	// bus are the CPU board's AS_DATA and AS_LOCAL_BUS, so point it at the

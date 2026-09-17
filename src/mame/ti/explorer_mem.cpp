@@ -5,8 +5,13 @@
     TI Explorer NuBus memory board.
 
 Board references found:
-- 2236415 (early board)
-- 2243910
+- 2236415-0001 (early board), 2MB
+- 2243910-0001, 2MB
+- 2243910-0004, 4MB
+- 2243910-0003, 8MB
+
+TODO:
+- Leds: self-test fault led (red)
 
 **********************************************************************/
 

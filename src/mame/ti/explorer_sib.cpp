@@ -9,6 +9,9 @@ Board references found:
 - 2236645
 - 2243145
 
+TODO:
+- Leds: self-test fault led (red), monitor fault led (yellow).
+
 
 There is no schematic or detailed parts list known of the SIB board,
 so some chips in the device map are guessed from software accessing

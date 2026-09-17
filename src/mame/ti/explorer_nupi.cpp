@@ -8,6 +8,15 @@ Board references found:
 - 2238040
 - 2243146
 
+There were three types of enclosures housing the actual disk/tape drives:
+- Mass Storage Unit (MSU) - 2 disks, or 1 disk and 1 1/4 inch tape
+- 1/2 inch tape enclosure.
+- Trimline disk cabinet for large SMD disks. Requires MSC?
+
+TODO:
+- Leds: self-test fault led (red), SCSI bus fault lad (yellow).
+
+
 
 The 68000 code structure, concretely:
 

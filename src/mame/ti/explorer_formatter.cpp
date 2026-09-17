@@ -4,6 +4,39 @@
 
     TI Explorer NUPI disk formatter.
 
+TODO:
+- Rename to 'mass storage unit'?
+  A mass storage unit can have 2 disk formatter interfacing 2 disks, or
+  a disk formatter interfacing 1 disk and a tape formatter interfacing a
+  cartridge tape.
+- Tape support
+
+
+In the documentation the following information about the disk
+formatter was found (ExplFieldMaint, page CM 2-32, 2.4.11):
+- 8085 microprocessor
+- 27218 EPROM, 32Kx8
+- 8156 local RAM, 2048 bit.
+- 6116 working RAM, 2Kx8
+- Adaptec AIC-010 SERDES
+- Adaptec AIC-300 buffer controller
+
+Mass Storage Unit II (SCSI/ESDI formatter, likely for Explorer LX systems)
+From board overview:
+- 20MHz crystal
+- 2x 16Kx8 EPROM
+- 2x 32Kx8 RAM
+- 8096 microcontroller
+- 5050 disk drive data sequencer
+- 2Kx8 format PARAM register
+- 2x 5060 4-channel DMA controller
+- 2x 16Kx9 RAM buffer
+- 5080 SCSI bus interface controller
+
+
+The disk drive formatter converts SCSI signals to the ST506 interface
+used by the disk drives.
+
     See nupi_formatter.h. Command handling below is adapted from
     bus/nscsi/hd.cpp (SCSI Hard Disk), generalized to two independently
     mounted LUNs instead of one; see that file for the commands' own

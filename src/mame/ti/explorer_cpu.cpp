@@ -9,6 +9,9 @@ Board references found:
 - 2243881
 - 2243895
 
+TODO:
+- Leds: self-test fault led (red), 8 self-test leds (yellow).
+
 **********************************************************************/
 
 #include "emu.h"

@@ -8,6 +8,15 @@ Board references found:
 - 2236400 (the part number in the board's own configuration ROM)
 - 2236430 (the EPROM)
 
+TODO:
+- Leds:
+  - self-test fault led (red)
+  - HOLD, 82586 active (green)
+  - RTS, transmit active (green)
+  - CRS, carrier sended (green)
+  - CDT, collision detected (green)
+
+
 Documented by 2243161-0001A, "Explorer NuBus Ethernet Controller General
 Description", January 1987. Paragraph references below are to that manual
 unless another one is named.
