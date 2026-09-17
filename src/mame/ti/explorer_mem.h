@@ -52,6 +52,9 @@ private:
 	std::unique_ptr<u8[]> m_parity;
 	memory_view m_ram_view;
 	memory_view m_ram_view_local_bus;
+	// The red self-test fault LED at the lower front edge of the board
+	// (Figures 3-1 and 4-1), driven from bit 2 of the configuration register.
+	output_finder<> m_fault_led;
 
 	u8 m_config_register = 0;
 	u8 m_base_register = 0;

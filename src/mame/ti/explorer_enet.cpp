@@ -9,12 +9,17 @@ Board references found:
 - 2236430 (the EPROM)
 
 TODO:
-- Leds:
-  - self-test fault led (red)
-  - HOLD, 82586 active (green)
-  - RTS, transmit active (green)
-  - CRS, carrier sended (green)
-  - CDT, collision detected (green)
+- The four green leds - HOLD (82586 active), RTS (transmit active), CRS (carrier
+  sensed) and CDT (collision detected). Unlike the red fault led, which is a
+  configuration register bit software writes, these four are live board status
+  that the flag register only reports (Figure 5-23), so there is nothing to
+  latch and nothing to write: each one needs the condition itself. CRS and CDT
+  are transceiver signals and wait on the same missing serial interface as the
+  network TODO below. HOLD and RTS are coprocessor conditions, and i82586.cpp
+  exposes neither - its only line out is the interrupt - so wiring them up means
+  adding callbacks to a device shared with every other 82586 and 82596 driver,
+  for two lamps that would flicker at bus-cycle rate. Hence no outputs for them
+  rather than four that are always dark.
 
 
 Documented by 2243161-0001A, "Explorer NuBus Ethernet Controller General
@@ -97,7 +102,8 @@ explorer_enet_device::explorer_enet_device(const machine_config &mconfig, const 
 	device_t(mconfig, EXPLORER_ENET, tag, owner, clock),
 	device_ti_nubus_card_interface(mconfig, *this),
 	m_i82586(*this, "i82586"),
-	m_buffer_ram(*this, "buffer_ram")
+	m_buffer_ram(*this, "buffer_ram"),
+	m_fault_led(*this, "fault_led")
 {
 }
 
@@ -145,8 +151,13 @@ void explorer_enet_device::device_reset()
 	// Figure 5-21's legend for the fault LED bit: "LED on at power-up". The
 	// board lights it while its self-test runs and the system turns it off once
 	// the board reports good, so powering up with it already lit is the
-	// documented state, not a placeholder.
+	// documented state, not a placeholder. Field Maintenance Table 1-1 has both
+	// halves of that from the outside: step 1 "All fault LEDs go on", then step 6
+	// "Ethernet controller green LEDs blink and red LED goes off" as SLOT 0
+	// PASSED appears.
 	m_config_register = CONFIG_W_FAULT_LED;
+	update_leds();
+
 	m_event_address = 0;
 	m_lcc_irq = false;
 }
@@ -347,6 +358,18 @@ void explorer_enet_device::config_flag_w(offs_t offset, u32 data, u32 mem_mask)
 	}
 
 	m_config_register = value & ~CONFIG_W_RESET;
+	update_leds();
+}
+
+
+// The board's red self-test fault LED (Field Maintenance Figure 1-13 shows it at
+// the lower front edge with the other boards'). The self-test drives it directly
+// from the configuration register - observed over a boot, it is lit at power-up,
+// pulsed on and off a few times through the slot 0 subtests, and left off once
+// the board reports good.
+void explorer_enet_device::update_leds()
+{
+	m_fault_led = bool(m_config_register & CONFIG_W_FAULT_LED);
 }
 
 

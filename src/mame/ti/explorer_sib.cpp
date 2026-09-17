@@ -9,9 +9,6 @@ Board references found:
 - 2236645
 - 2243145
 
-TODO:
-- Leds: self-test fault led (red), monitor fault led (yellow).
-
 
 There is no schematic or detailed parts list known of the SIB board,
 so some chips in the device map are guessed from software accessing
@@ -110,13 +107,44 @@ static constexpr u16 VTOTAL = 842;                   // R08/R09
 // the driver depends on where they sit; the totals are what drive set_raw().
 static constexpr u16 VBEND = VTOTAL - SCREEN_HEIGHT;
 
-// Real hardware bit assignments (2243145-0001A SI General Description, page 4-15,
-// Figure 4-4): bit 0 (Reset) is write-only and always reads 0 - a momentary strobe,
-// never latched into the readable register. Bit 2 (SI board test LED) and bit 10
-// (PSU overtemperature warning) are read-only, hardware-driven - software writes to
-// them have no effect. Only bits 1/3 (NuBus master enable, NuBus test) and 8/9
-// (monitor/chassis self-test LEDs) and the reserved-but-R/W bits 4-7 are storable.
-static constexpr u32 CONFIGURATION_REGISTER_WRITABLE_MASK = 0x3fa;
+// Configuration register bit assignments (2243145-0001A SI General Description,
+// page 4-15, Figure 4-4). Bits 4-7 are "reserved (read/write)" and bits 11-15 are
+// not assigned and always read 0.
+static constexpr u32 CONFIG_NUBUS_MASTER_ENABLE = 0x0002;
+static constexpr u32 CONFIG_SI_BOARD_TEST_LED = 0x0004;   // the board's own red self-test fault LED
+static constexpr u32 CONFIG_NUBUS_TEST = 0x0008;          // "not used on SI board"
+static constexpr u32 CONFIG_RESERVED = 0x00f0;            // bits 4-7, read/write, no function
+static constexpr u32 CONFIG_MONITOR_TEST_LED = 0x0100;    // the yellow monitor fault LED
+static constexpr u32 CONFIG_CHASSIS_TEST_LED = 0x0200;    // front panel fault indicator, see below
+
+// Two bits are deliberately not storable. Bit 0 is a momentary strobe -
+// "Writing a 1 to this bit resets the entire board except for the NuBus
+// interface" - and is never latched into the readable register; that board reset
+// is not modelled. Bit 10, power supply overtemperature, is read-only and driven
+// by the supply, and there is no supply here to overheat.
+//
+// Bit 2 is the one place Figure 4-4 has to be overruled: the figure labels it
+// "(read only)", but paragraph 4.4.4 on the very next page says "The host
+// processor must control configuration register bits 02, 08, and 09 because the SI
+// board does not have processing capability for independent self-test and
+// light-emitting diode (LED) test lamp control", and the firmware does exactly
+// that - it writes bit 2 set when the slot 5 self-test starts and clear when the
+// board passes. A read-only bit 2 would make the red LED unextinguishable.
+static constexpr u32 CONFIGURATION_REGISTER_WRITABLE_MASK =
+		CONFIG_NUBUS_MASTER_ENABLE | CONFIG_SI_BOARD_TEST_LED | CONFIG_NUBUS_TEST |
+		CONFIG_RESERVED | CONFIG_MONITOR_TEST_LED | CONFIG_CHASSIS_TEST_LED;
+
+// Paragraph 4.4.4, of bits 02, 08 and 09: "All of these LED indicators light at
+// power-up, and the processor must extinguish each of these LEDs at the successful
+// completion of the applicable self-test." Field Maintenance Table 1-1 shows the
+// same thing from the outside - step 1 "All fault LEDs go on", step 10 "System
+// interface red and yellow LEDs go off" as SLOT 5 PASSED appears.
+//
+// The chassis LED is left out of that: the same paragraph says "The chassis test
+// LED is not implemented in the 7-slot chassis" and "current versions of the
+// Explorer do not have a front panel fault indicator", so there is no lamp of it
+// to light here - and, consistent with that, the firmware never writes bit 9 set.
+static constexpr u32 CONFIGURATION_REGISTER_POWER_UP = CONFIG_SI_BOARD_TEST_LED | CONFIG_MONITOR_TEST_LED;
 
 // Table 4-4, "Event Causes and Register File Storage Locations" (book 4-17): the
 // sixteen conditions the event generator polls, in the order it indexes them off
@@ -234,7 +262,9 @@ explorer_sib_device::explorer_sib_device(const machine_config &mconfig, const ch
 	m_mouse_x_axis(*this, "mouse_x"),
 	m_mouse_y_axis(*this, "mouse_y"),
 	m_video_ram(*this, "video_ram", VIDEO_RAM_SIZE * sizeof(u32), ENDIANNESS_BIG),
-	m_nv_ram(*this,"nv_ram", 0x2000, ENDIANNESS_LITTLE)
+	m_nv_ram(*this,"nv_ram", 0x2000, ENDIANNESS_LITTLE),
+	m_fault_led(*this, "fault_led"),
+	m_monitor_led(*this, "monitor_led")
 {
 }
 
@@ -250,8 +280,6 @@ void explorer_sib_device::device_start()
 	// i8251_txd_w(), which keeps DSR wired to TXD from the first transition
 	// onward).
 	m_i8251->write_dsr(1);
-
-	m_configuration_register = 0;
 
 	save_item(NAME(m_configuration_register));
 	save_item(NAME(m_event_vector));
@@ -285,6 +313,11 @@ void explorer_sib_device::device_start()
 
 void explorer_sib_device::device_reset()
 {
+	// Both fault LEDs come up lit, and the event generator comes up disabled -
+	// see CONFIGURATION_REGISTER_POWER_UP.
+	m_configuration_register = CONFIGURATION_REGISTER_POWER_UP;
+	update_leds();
+
 	// Paragraph 4.4.11.4: both halves of f2000c clear "on power-up or SI board
 	// reset" - the interrupt enables because "the programmer must set the
 	// appropriate interrupt enables as part of the board initialization
@@ -538,6 +571,7 @@ void explorer_sib_device::event_generator_map(address_map &map)
 	}), NAME([this] (u32 data) {
 		LOGMASKED(LOG_NVRAM, "Configuration-Register write %08x\n", data);
 		m_configuration_register = data & CONFIGURATION_REGISTER_WRITABLE_MASK;
+		update_leds();
 	}));
 }
 
@@ -551,13 +585,23 @@ void explorer_sib_device::event_vector_w(offs_t offset, u32 data, u32 mem_mask)
 	COMBINE_DATA(&m_event_vector[offset]);
 }
 
+// The two fault LEDs the board carries, both at its lower front edge where the
+// enclosure's viewing slots show them - Field Maintenance Figure 1-13 is where
+// their colours come from. The chassis self-test bit drives no lamp in this
+// enclosure, so it stays plain storage with no output behind it.
+void explorer_sib_device::update_leds()
+{
+	m_fault_led = bool(m_configuration_register & CONFIG_SI_BOARD_TEST_LED);
+	m_monitor_led = bool(m_configuration_register & CONFIG_MONITOR_TEST_LED);
+}
+
 void explorer_sib_device::post_event(int cause)
 {
 	// Configuration register bit 1, "NuBus master enable" (Figure 4-4) - the doc
 	// is explicit that the event generator must not act until this is set, since
 	// it should only be enabled once the host has finished programming the event
 	// addresses (section 4.4.4/4.4.5.2's own init-order requirement).
-	if (!BIT(m_configuration_register, 1))
+	if (!(m_configuration_register & CONFIG_NUBUS_MASTER_ENABLE))
 		return;
 
 	nubus().space().write_byte(m_event_vector[cause], 0xff);

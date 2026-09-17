@@ -39,7 +39,13 @@ static constexpr u8 MCR_FORCED_ACCESS_REQUEST_BIT = 9;
 // Suppresses the bus cycle entirely when clear - see memory_cycle_enabled().
 static constexpr u8 MCR_MEMORY_CYCLE_ENABLE_BIT = 8;
 static constexpr u8 MCR_SUB_SYSTEM_FLAG_BIT = 7;
+// Table 4-17: "NuBus flag register self-test fail indicator (O bus(06),
+// 0 = failed, 1 = passed. Also fault LED control.)" - so this bit both answers
+// the flag register and lights the board's red lamp, see update_leds().
 static constexpr u8 MCR_TEST_FAIL_FLAG_BIT = 6;
+// Table 4-17: "Fault LEDs (O bus(05:00)) (0 = turn on LED)", the six yellow
+// state lamps.
+static constexpr u32 MCR_FAULT_LEDS_MASK = 0x3f;
 
 // Real memory read latency, in instructions, before requested data becomes visible
 // in MD. Was 6 - confirmed wrong: the microcode's own read-then-use pattern
@@ -101,6 +107,8 @@ raven_cpu_device::raven_cpu_device(const machine_config &mconfig, const char *ta
 	, m_program_config("program", ENDIANNESS_BIG, 64/*56*/, ADDRESS_BITS, -3, address_map_constructor(FUNC(raven_cpu_device::program_map), this))
 	, m_data_config("data", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS, 0, address_map_constructor(FUNC(raven_cpu_device::data_map), this))
 	, m_local_bus_config("local_bus", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS, 0, address_map_constructor(FUNC(raven_cpu_device::local_bus_map), this))
+	, m_state_leds(*this)
+	, m_fault_led(*this)
 	, m_inst_view(*this, "inst_view")
 	, m_control_store(*this, "control_store")
 {
@@ -212,6 +220,10 @@ void raven_cpu_device::device_reset()
 	m_bus_error = false;
 	m_local_bus_miss = false;
 	m_inst_view.select(0);
+
+	// MCR(06:00) are all zero, which lights every lamp - see update_leds().
+	m_config_register = 0;
+	update_leds();
 }
 
 
@@ -269,6 +281,38 @@ u32 raven_cpu_device::config_register_r()
 void raven_cpu_device::config_register_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	m_config_register = data & 0xff;
+	update_leds();
+}
+
+
+// The nine lamps along the front edge of the CPU board (Field Maintenance
+// Figure 1-13, "System Enclosure Indicators and Test Points"), all of which this
+// register pair drives - so they are signalled out of here and the board turns
+// them into outputs.
+//
+// The six amber "internal states" lamps are MCR(05:00), and Table 4-17 spells
+// out the polarity: "Fault LEDs (O bus(05:00)) (0 = turn on LED)". TI's own
+// microcode field names agree and are the only low-true entries in the whole MCR
+// list - %%MCR-LED-5- down to %%MCR-LED-0- in ucode/ravfmt.lisp. Reset leaves
+// them all 0, so all six come up lit, which is Field Maintenance Table 1-1 step
+// 1, "All fault LEDs go on". They are the low six bits of the fault code a
+// service engineer reads off the board - see explorer_cpu.cpp, which is also
+// where the two amber lamps this processor cannot drive are accounted for.
+//
+// The red fault LED has two sources, and paragraph 4.3.9.3 gives both at once:
+// "Bit two of the register is used to force the fault LED on when set to one.
+// However, setting this bit to zero may not turn off the LED, because the
+// processor may have failed self-test, which causes the fault LED to be lit."
+// The second source is MCR(06), which Table 4-17 lists as "NuBus flag register
+// self-test fail indicator (O bus(06), 0 = failed, 1 = passed. Also fault LED
+// control.)" - so the lamp is lit while that bit reads failed, and the
+// configuration register bit can only force it on, never off. Reset leaves
+// MCR(06) at 0, so this one comes up lit as well, and the self-test microcode
+// extinguishes it and the six yellow lamps in the same MCR store.
+void raven_cpu_device::update_leds()
+{
+	m_state_leds(~m_mcr & MCR_FAULT_LEDS_MASK);
+	m_fault_led((BIT(m_config_register, 2) || !BIT(m_mcr, MCR_TEST_FAIL_FLAG_BIT)) ? 1 : 0);
 }
 
 
@@ -1042,6 +1086,7 @@ void raven_cpu_device::store_o_bus()
 			break;
 		case 0x02: // MCR
 			m_mcr = (m_mcr & (0xf08f0000 | (1 << MCR_NEED_FETCH_BIT))) | (m_o_bus & (0x0f70ffff & ~(1 << MCR_NEED_FETCH_BIT)));
+			update_leds();
 			// The boot-PROM overlay follows the PROM-disable bit's current *level*, not
 			// its 0->1 edge. After the loaded microcode is live the microcode clears this
 			// bit again to run PROM-resident code (the $001E-$0023 entry sequence), and

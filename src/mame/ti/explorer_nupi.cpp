@@ -13,9 +13,56 @@ There were three types of enclosures housing the actual disk/tape drives:
 - 1/2 inch tape enclosure.
 - Trimline disk cabinet for large SMD disks. Requires MSC?
 
-TODO:
-- Leds: self-test fault led (red), SCSI bus fault lad (yellow).
+The two fault LEDs, and why they are the flag register:
 
+Documentation section 3.2 and appendix C: "The NUPI has red and yellow LEDs.
+The red LED indicates a NUPI board fault; the yellow LED indicates a SCSI bus
+fault." Both are lit at power-up, which section 3.3 turns into a service
+instruction - "check that the red LED on each of the circuit boards in the
+enclosure is on to indicate that the self-test for that board is operating".
+
+Unlike every other board in this machine, nothing on the NuBus side drives
+them: appendix C is a list of the conditions under which *the NUPI firmware*
+sets them, and each one of its causes is a write by the 68000 to one of the
+three flag latches at $801a2/$801ac/$801ae (see mpu_map()). So the LEDs are
+modelled as two bits of the NuBus-visible flag register, and the existing
+latch handlers are the whole implementation:
+
+  red    = flag register bit 1, "self-test passed", 0 = passed
+  yellow = flag register bit 2, "SCSI passed", 0 = passed
+
+That the lamp and the flag bit are one and the same latch is an inference, but
+a well-cornered one: there are exactly three latch addresses for exactly three
+flag bits, the two conditions the lamps report are two of those bits, and every
+firmware site writes its latch alone, never paired with a second address a
+separate lamp register would need.
+
+Appendix C's causes map onto firmware sites one for one, and all of them
+therefore already work. Red: self-test failure ($801a2 at ROM 0x1da, a seq
+per dispatcher entry), bus test failure (0x200e), 68000 hardware error trap
+(0x375e/0x37a2/0x37b8 - the bus-error, address-error and illegal-instruction
+vectors, all funnelling into the error reporter at 0x37d6 whose last act is
+sf $801a2), software error trap (same reporter), and the operating system
+setting configuration register bit 2. Yellow: the SCSI self-test ($801ac at
+0x6fc and 0x7d6) and the NCR5385 interrupt paths. The catastrophic-failure
+halt at 0x264 sf's both latches and then stop #$2500, which is the "remains
+on, replace the board" case of section 3.3.
+
+Configuration register bit 2 reaches the red LED through the firmware, not
+through hardware: the IRQ5 handler reads the register at ROM 0xb58 and does
+seq $801a2 on bit 2 (0xb6a), so setting the bit lights the lamp and clearing
+it releases the lamp to whatever the seq now computes. Section 5.3.2 documents
+exactly that - "a configuration register update operation sets (or resets)
+this bit to reflect the condition of the configuration register's fault LED
+bit" - and it is what Field Maintenance table 1-1 step 7 sees as the red LED
+blinking on and off during the NuBus test.
+
+TODO:
+- Section 3.2: "either a self-test failure or an active test-LED bit in the
+  configuration register prohibits the NUPI from processing any commands",
+  subject to the configuration register's failure override bit (bit 8). The
+  firmware presumably enforces this from the same latch state; nothing here
+  models it, and no boot path exercises it.
 
 
 The 68000 code structure, concretely:
@@ -94,6 +141,15 @@ u16 rol2(u16 data)
 // See m_unknown_800c04_toggle in nupi.h.
 constexpr u16 UNKNOWN_800C04_SEQUENCE[] = { 0xeb34, 0xeb38 };
 
+// Flag register (>Fs'D40002), doc section 5.3.4 and figure 5-3. Every bit is
+// documented "active (low)", so a set bit is the bad case in each of the three,
+// and all three come up set - see device_reset(). Bits 3-7 are reserved and
+// always read 0.
+constexpr u8 FLAG_SELF_TEST_COMPLETE = 0x01;
+constexpr u8 FLAG_SELF_TEST_PASSED = 0x02; // also the red board fault LED
+constexpr u8 FLAG_SCSI_PASSED = 0x04;      // also the yellow SCSI bus fault LED
+constexpr u8 FLAG_POWER_UP = FLAG_SELF_TEST_COMPLETE | FLAG_SELF_TEST_PASSED | FLAG_SCSI_PASSED;
+
 } // anonymous namespace
 
 
@@ -106,7 +162,9 @@ explorer_nupi_device::explorer_nupi_device(const machine_config &mconfig, const 
 	m_ram(*this, "ram"),
 	m_firmware(*this, "firmware"),
 	m_firmware_nubus(*this, "firmware_nubus"),
-	m_flag_register(0x07),
+	m_fault_led(*this, "fault_led"),
+	m_scsi_led(*this, "scsi_led"),
+	m_flag_register(FLAG_POWER_UP),
 	m_dma_address(0),
 	m_dma_count(0),
 	m_timer(nullptr),
@@ -196,7 +254,11 @@ void explorer_nupi_device::device_start()
 
 void explorer_nupi_device::device_reset()
 {
-	m_flag_register = 0x07;
+	// Both fault LEDs come up lit, which is the flag register's own power-up
+	// value: no condition has been reported good yet.
+	m_flag_register = FLAG_POWER_UP;
+	update_leds();
+
 	m_dma_address = 0;
 	m_dma_count = 0;
 	m_page_register_802c00_shadow = 0;
@@ -557,6 +619,17 @@ u8 explorer_nupi_device::flag_register_r()
 	return m_flag_register;
 }
 
+// The red board fault LED and the yellow SCSI bus fault LED are the "passed"
+// bits of the flag register, inverted: the bit is active low, the lamp is lit
+// while the condition has not been reported good. See the LED block in this
+// file's header for why the lamp and the flag bit are the same latch, and
+// mpu_map()'s $801a2/$801ac handlers for the firmware writes that move them.
+void explorer_nupi_device::update_leds()
+{
+	m_fault_led = bool(m_flag_register & FLAG_SELF_TEST_PASSED);
+	m_scsi_led = bool(m_flag_register & FLAG_SCSI_PASSED);
+}
+
 u8 explorer_nupi_device::rom_r(offs_t offset)
 {
 	return m_firmware_nubus->base()[offset & 0x3fff];
@@ -649,12 +722,14 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	// "Slot 2" - root-caused by bisection to a since-removed config-register write
 	// handler unexpectedly storing its written value, not to this flag register
 	// logic at all. E0000B is plain RAM now; see nubus_map().)
-	// Fault LED?
+	// This latch is also the red board fault LED - see the LED block in this
+	// file's header.
 	map(0x0801a2, 0x0801a2).lrw8(
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801a2\n", machine().describe_context()); return 0; }),
 			NAME([this](u8 data) {
 				LOGMASKED(LOG_MISC, "%s: WR 801a2 = %02x\n", machine().describe_context(), data);
-				if (data) m_flag_register &= ~0x02; else m_flag_register |= 0x02;
+				if (data) m_flag_register &= ~FLAG_SELF_TEST_PASSED; else m_flag_register |= FLAG_SELF_TEST_PASSED;
+				update_leds();
 			}));
 	// Also drives $280001 bits 1-2's toggle (see m_unknown_280001_bits12_toggle in
 	// nupi.h): moved here from unknown_280001_r() itself - the toggle firing on every
@@ -838,13 +913,16 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801ac\n", machine().describe_context()); return 0; }),
 			NAME([this](u8 data) {
 				LOGMASKED(LOG_MISC, "%s: WR 801ac = %02x\n", machine().describe_context(), data);
-				if (data) m_flag_register &= ~0x04; else m_flag_register |= 0x04;
+				// Also the yellow SCSI bus fault LED.
+				if (data) m_flag_register &= ~FLAG_SCSI_PASSED; else m_flag_register |= FLAG_SCSI_PASSED;
+				update_leds();
 			}));
 	map(0x0801ae, 0x0801ae).lrw8(
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 801ae\n", machine().describe_context()); return 0; }),
 			NAME([this](u8 data) {
 				LOGMASKED(LOG_MISC, "%s: WR 801ae = %02x\n", machine().describe_context(), data);
-				if (data) m_flag_register &= ~0x01; else m_flag_register |= 0x01;
+				// No lamp on this one - the board has only two.
+				if (data) m_flag_register &= ~FLAG_SELF_TEST_COMPLETE; else m_flag_register |= FLAG_SELF_TEST_COMPLETE;
 			}));
 	map(0x0801b0, 0x0801b1).lrw16(
 			NAME([this]() { return page_register_r(); }),

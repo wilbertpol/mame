@@ -10,9 +10,6 @@ Board references found:
 - 2243910-0004, 4MB
 - 2243910-0003, 8MB
 
-TODO:
-- Leds: self-test fault led (red)
-
 **********************************************************************/
 
 #include "emu.h"
@@ -23,12 +20,23 @@ DEFINE_DEVICE_TYPE(EXPLORER_MEM8MB, explorer_mem8mb_device, "explorer_mem8mb", "
 DEFINE_DEVICE_TYPE(EXPLORER_MEM2MB, explorer_mem2mb_device, "explorer_mem2mb", "TI Explorer 2MB Memory Board (2243910-0001)")
 
 
+namespace {
+
+// Configuration register, paragraph 4.5.1 and Figure 4-10. The figure names
+// only these two bits and marks the rest "X equals irrelevant".
+constexpr u8 CONFIG_BOARD_RESET = 0x01; // also "resets the parity error and clears the NuBus terminal latch"
+constexpr u8 CONFIG_TEST_LED = 0x04;    // the red self-test fault LED, 1 = on
+
+} // anonymous namespace
+
+
 explorer_mem_device_base::explorer_mem_device_base(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, u32 clock, u32 ram_size) :
 	device_t(mconfig, type, tag, owner, clock),
 	device_ti_nubus_card_interface(mconfig, *this),
 	m_ram_size(ram_size),
 	m_ram_view(*this, "ram_view"),
-	m_ram_view_local_bus(*this, "ram_view_local_bus")
+	m_ram_view_local_bus(*this, "ram_view_local_bus"),
+	m_fault_led(*this, "fault_led")
 {
 }
 
@@ -70,7 +78,25 @@ void explorer_mem_device_base::device_start()
 
 void explorer_mem_device_base::device_reset()
 {
-	m_config_register = 0;
+	// The red fault LED comes up lit. Section 3.2 describes it from the other
+	// end - "If the red fault LED on a memory board goes out, the memory board
+	// is good", and "If the red fault LED on a memory board remains on after the
+	// self-test, the board is probably faulty" - and Field Maintenance Table 1-1,
+	// "Power-Up Sequence of LED and Video Display Actions", opens with step 1,
+	// "All fault LEDs go on", while the video display is still blank. The board
+	// manual's Figure 4-10 does not say so for this register the way the Ethernet
+	// board's Figure 5-21 does ("LED on at power-up"), but the indicator only
+	// works if a board that is never tested at all still shows a fault, so the
+	// lit state cannot depend on anything having run first.
+	//
+	// The processor does light it again itself at the start of each memory test
+	// (observed: a write of 0x04 before the test, then 0x00 once the board
+	// reports good), so this is not what makes the driver's LED come on in
+	// practice - it is what the LED reads as in the seconds before the
+	// self-test microcode gets to this board.
+	m_config_register = CONFIG_TEST_LED;
+	m_fault_led = 1;
+
 	m_failure_location = 0;
 	board_reset();
 }
@@ -124,9 +150,6 @@ void explorer_mem_device_base::nubus_map(address_map &map)
 }
 
 
-// 76543-1- - unused
-// -----2-- - test LED
-// -------0 - board reset
 u8 explorer_mem_device_base::config_register_r()
 {
 	return m_config_register;
@@ -134,10 +157,15 @@ u8 explorer_mem_device_base::config_register_r()
 
 void explorer_mem_device_base::config_register_w(u8 data)
 {
-	m_config_register = data & 0x05;
-	if (BIT(m_config_register, 0))
+	m_config_register = data & (CONFIG_BOARD_RESET | CONFIG_TEST_LED);
+
+	// The self-test drives the LED straight from this bit: it writes it set
+	// before testing the board and clear once the board reports good, which is
+	// the "goes out, the board is good" of section 3.2 seen from the bus side.
+	m_fault_led = bool(m_config_register & CONFIG_TEST_LED);
+
+	if (m_config_register & CONFIG_BOARD_RESET)
 		board_reset();
-	// TODO output led status
 }
 
 u8 explorer_mem_device_base::base_register_r()

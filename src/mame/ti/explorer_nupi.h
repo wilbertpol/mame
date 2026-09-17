@@ -141,13 +141,20 @@ private:
 	// from looping forever on a bus error. Address/size unconfirmed beyond the
 	// single byte (>Fs'200018) seen live - see ti_explorer.md.
 	u8 m_interval_timer_regs[0x40]{};
+	// The board's two fault LEDs at its lower front edge (doc Figure 3-1),
+	// both lit at power-up. They are two bits of the flag register below and
+	// are driven entirely by the on-board 68000 - see the LED block in
+	// explorer_nupi.cpp's header.
+	output_finder<> m_fault_led; // red, board fault
+	output_finder<> m_scsi_led;  // yellow, SCSI bus fault
 	// Flag Register (>Fs'D40002, Section 5.3.4/Figure 5-3): bits 0-2 are
 	// active-low (self-test complete / self-test passed / SCSI passed);
-	// bits 3-7 are reserved and always 0. Defaults to 0x07 (all three
+	// bits 3-7 are reserved and always 0. Defaults to FLAG_POWER_UP (all three
 	// conditions inactive) until the 801a2/801ac/801ae writes in mpu_map()
 	// clear the corresponding bits as each condition becomes true.
 	u8 m_flag_register;
 	u8 flag_register_r();
+	void update_leds();
 	u8 rom_r(offs_t offset);
 
 	void scsi_irq_w(int state);

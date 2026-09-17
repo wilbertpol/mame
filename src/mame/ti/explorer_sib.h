@@ -77,6 +77,7 @@ private:
 	u32 diagnostic_loopback_value() const { return BIT(m_diagnostic_data, 8) ? 0x00 : 0xff; }
 	u32 event_vector_r(offs_t offset);
 	void event_vector_w(offs_t offset, u32 data, u32 mem_mask);
+	void update_leds();
 	// Event Generator (section 4.4.5): on a monitored interrupt condition, becomes
 	// NuBus master and writes a plain 0xFF byte to the preprogrammed address stored
 	// in m_event_vector[cause] (Table 4-4 gives the cause->index mapping) - not a
@@ -138,7 +139,11 @@ private:
 	required_ioport m_mouse_y_axis;
 	memory_share_creator<u32> m_video_ram;
 	memory_share_creator<u8> m_nv_ram;
-	u32 m_configuration_register;
+	// The board's two fault indicators, driven from configuration register bits
+	// 2 and 8: the red self-test fault LED and the yellow monitor fault LED.
+	output_finder<> m_fault_led;
+	output_finder<> m_monitor_led;
+	u32 m_configuration_register = 0;
 	u32 m_event_vector[16]{};
 	// Reverse video (bit 1) but *not* blanked, which is a deliberate deviation
 	// from one manual in favour of another - the two disagree, see below.

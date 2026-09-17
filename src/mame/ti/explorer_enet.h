@@ -39,6 +39,7 @@ private:
 	u32 config_flag_r();
 	void config_flag_w(offs_t offset, u32 data, u32 mem_mask = ~0);
 	void lcc_irq_w(int state);
+	void update_leds();
 
 	// The LAN coprocessor. Named after the part rather than after the manual's
 	// "LCC", which is a role and not a chip - see paragraph 5.1, whose System
@@ -53,6 +54,10 @@ private:
 	// register's memory-size bit says so. The 8-kilobyte variant the same bit
 	// can report is recorded there as "not available".
 	required_shared_ptr<u16> m_buffer_ram;
+
+	// The red self-test fault LED, configuration register bit 2. The board's
+	// four green LEDs are not here - see the TODO at the top of the source.
+	output_finder<> m_fault_led;
 
 	u16 m_config_register = 0;
 	u32 m_event_address = 0;

@@ -23,6 +23,14 @@ public:
 	u32 config_register_r();
 	void config_register_w(offs_t offset, u32 data, u32 mem_mask);
 
+	// The CPU board's lamps. Both the six-lamp state code and the fault LED are
+	// driven from registers that live in here (the MCR and the NuBus
+	// configuration register), so the processor signals them out and the board
+	// owns the lamps - see update_leds(). The state code is active high by the
+	// time it gets here; the MCR's own bits are low true.
+	auto out_state_leds_cb() { return m_state_leds.bind(); }
+	auto out_fault_led_cb() { return m_fault_led.bind(); }
+
 	static constexpr int AS_LOCAL_BUS = AS_OPCODES + 1;
 
 	// Table 4-19's condition 01011, "Bus error on last transfer attempt". One
@@ -54,9 +62,13 @@ private:
 	static constexpr u8 ADDRESS_BITS = 14;
 	static constexpr u8 EXTERNAL_ADDRESS_BITS = 32;
 
+	void update_leds();
+
 	address_space_config m_program_config;
 	address_space_config m_data_config;
 	address_space_config m_local_bus_config;
+	devcb_write8 m_state_leds;
+	devcb_write_line m_fault_led;
 	memory_view m_inst_view;
 	memory_access<ADDRESS_BITS, 3, -3, ENDIANNESS_BIG>::specific m_program;
 	memory_access<EXTERNAL_ADDRESS_BITS, 2, 0, ENDIANNESS_LITTLE>::specific m_data;

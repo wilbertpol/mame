@@ -43,8 +43,18 @@ private:
 	required_device<raven_cpu_device> m_cpu;
 	required_memory_region m_microcode_proms;
 	required_memory_region m_control_store;
+	// The lamps along the front edge of the board, numbered as Field
+	// Maintenance Figure 1-13 numbers them. Lamps 1-6 are the yellow
+	// "internal states" code the microcode writes into MCR(05:00); 7 and 8 are
+	// yellow too but are hardware conditions, see the TODO in the source. The
+	// red fault LED is the one below the column.
+	output_finder<6> m_state_led;
+	output_finder<> m_fault_led;
 
 	void nubus_map(address_map &map) ATTR_COLD;
+
+	void state_leds_w(u8 data);
+	void fault_led_w(int state);
 };
 
 DECLARE_DEVICE_TYPE(EXPLORER_CPU, explorer_cpu_device)
