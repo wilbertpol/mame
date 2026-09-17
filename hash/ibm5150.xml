@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
 <!--
 license:CC0-1.0
@@ -8545,6 +8545,18 @@ Corrupt files
 		<part name="flop1" interface="floppy_3_5">
 			<dataarea name="flop" size = "737280">
 				<rom name="sysgration mouse driver 7.03.img" size="737280" crc="7f3cce79" sha1="13221acdb74e5d8f24ec567ce60e1e69268010da"/>
+			</dataarea>
+		</part>
+	</software>
+
+	<software name="ega350">
+		<description>Paradise AutoSwitch EGA 350 Special Features Utility v2.1</description>
+		<year>1987</year>
+		<publisher>Paradise</publisher>
+
+		<part name="flop1" interface="floppy_5_25">
+			<dataarea name="flop" size="184320">
+				<rom name="ega350.img" size="184320" crc="0ca6892c" sha1="5dff66e683abf5d57df5674bc8620abace70ca7c"/>
 			</dataarea>
 		</part>
 	</software>

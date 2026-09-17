@@ -14,7 +14,8 @@ NOTES:
   https://github.com/trapexit/portfolio_os/blob/bee7b0c8e4287083c73cb5497b658880c9e7af8e/utils/discdata.h#L52
 
 TODO:
-- Enough to load a few sectors and nothing else;
+- Port status handling from cr511b;
+- Implement flush command (starts triggering with above);
 - Find common points with other MKE drives, generate a streamlined interface;
 
 **************************************************************************************************/
@@ -366,6 +367,8 @@ uint8_t cr560b_device::read()
 				}
 			}
 		}
+		else
+			popmessage("cr560b.cpp: read data while not ready");
 	}
 
 	return data;
@@ -416,7 +419,7 @@ void cr560b_device::write(uint8_t data)
 		case 0x0e: cmd_play_msf(); break;
 		case 0x0f: cmd_play_track(); break;
 		case 0x10: cmd_read(); break;
-		//case 0x11: cmd_read_subq(); break;
+		//case 0x11: cmd_subchannel_info(); break;
 
 		case 0x80: cmd_data_path_check(); break;
 		//case 0x81: cmd_read_status(); break;
@@ -436,6 +439,7 @@ void cr560b_device::write(uint8_t data)
 
 		default:
 		{
+			popmessage("cr560b.cpp: unknown command %02x", m_input_fifo[0]);
 			LOG("Unknown command: %02x\n", m_input_fifo[0]);
 			// answer with an error so that callers waiting for a status byte don't hang
 			m_output_fifo[0] = m_input_fifo[0];
