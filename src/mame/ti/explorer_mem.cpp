@@ -248,7 +248,7 @@ void explorer_mem_device_base::update_failure_location(offs_t offset, bool faile
 		// local bus (4.5.4). A card below FIRST_LOCAL_BUS_SLOT is not on that bus
 		// and would have to report this as a NuBus error termination instead;
 		// either way the processor sees one condition, Table 4-19's "Bus error on
-		// last transfer attempt" - see raven_cpu_device::assert_bus_error().
+		// last transfer attempt" - see exp1proc_cpu_device::assert_bus_error().
 		nubus().assert_bus_error();
 	}
 	else if (!BIT(m_nubus_status, 15))

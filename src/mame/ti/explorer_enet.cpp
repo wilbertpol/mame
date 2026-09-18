@@ -173,7 +173,7 @@ void explorer_enet_device::nubus_map(address_map &map)
 	// NuBus byte addresses within the card's own >FS000000 slot space, and only
 	// the windows the table draws are decoded - everything else, including the
 	// two large "DO NOT ADDRESS THIS AREA" gaps, falls through to the
-	// processor's bus-cycle timeout (see raven.cpp's data_map). The manual's
+	// processor's bus-cycle timeout (see exp1proc.cpp's data_map). The manual's
 	// CAUTION in 5.2.2.7 says diagnostics deliberately probe unimplemented
 	// memory to check the NuBus response, so those gaps have to keep erroring.
 	//

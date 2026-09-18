@@ -158,7 +158,6 @@ using util::BIT;
 #include "cpu/pps4/pps4dasm.h"
 #include "cpu/pps41/pps41d.h"
 #include "cpu/psx/psxdasm.h"
-#include "cpu/raven/raven_dasm.h"
 #include "cpu/rii/riidasm.h"
 #include "cpu/romp/rompdasm.h"
 #include "cpu/rsp/rsp_dasm.h"
@@ -185,6 +184,7 @@ using util::BIT;
 #include "cpu/st9/st9dasm.h"
 #include "cpu/superfx/sfx_dasm.h"
 #include "cpu/t11/t11dasm.h"
+#include "cpu/tiexp/exp1proc_dasm.h"
 #include "cpu/tlcs870/tlcs870d.h"
 #include "cpu/tlcs90/tlcs90d.h"
 #include "cpu/tlcs900/dasm900.h"
@@ -472,6 +472,7 @@ static const dasm_table_entry dasm_table[] =
 	{ "epg3231",         le, -1, []() -> util::disasm_interface * { return new epg3231_disassembler; } },
 //  { "es5510",          be,  0, []() -> util::disasm_interface * { return new es5510_disassembler; } }, // Currently does nothing
 	{ "esrip",           be,  0, []() -> util::disasm_interface * { return new esrip_disassembler; } },
+	{ "exp1proc",        be, -3, []() -> util::disasm_interface * { return new exp1proc_disassembler; } },
 	{ "f2mc16",          le,  0, []() -> util::disasm_interface * { return new f2mc16_disassembler; } },
 	{ "f8",              be,  0, []() -> util::disasm_interface * { return new f8_disassembler; } },
 	{ "fr",              be,  0, []() -> util::disasm_interface * { return new fr_disassembler; } },
@@ -618,7 +619,6 @@ static const dasm_table_entry dasm_table[] =
 	{ "r65c02",          le,  0, []() -> util::disasm_interface * { return new r65c02_disassembler; } },
 	{ "r65c19",          le,  0, []() -> util::disasm_interface * { return new r65c19_disassembler; } },
 	{ "r800",            le,  0, []() -> util::disasm_interface * { return new r800_disassembler; } },
-	{ "raven",           be, -3, []() -> util::disasm_interface * { return new raven_disassembler; } },
 	{ "roland_lsp",      be, -2, []() -> util::disasm_interface * { return new roland_lsp_disassembler; } },
 	{ "roland_xp",       be, -2, []() -> util::disasm_interface * { return new roland_xp_disassembler; } },
 	{ "romp",            be,  0, []() -> util::disasm_interface * { return new romp_disassembler; } },

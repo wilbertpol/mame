@@ -245,8 +245,8 @@ private:
 	// go-strobes - confirmed necessary, not just defensive: without it, its drain
 	// performed real NuBus writes using whatever page_register happened to be left
 	// over from an earlier, unrelated self-test (0x3fff), landing on unmapped space
-	// and setting the main raven CPU's own m_nubus_error flag (see
-	// cpu/raven/raven.cpp) on every word, corrupting its "bus error on last transfer"
+	// and setting the main exp1proc CPU's own m_nubus_error flag (see
+	// cpu/tiexp/exp1proc.cpp) on every word, corrupting its "bus error on last transfer"
 	// status for later, completely unrelated bus activity. m_dma_write_to_nubus
 	// snapshots this at go-strobe time (see mpu_map()) for push_fifo_word_to_nubus()
 	// to consult for the whole transfer, since m_dma_target_configured itself may be

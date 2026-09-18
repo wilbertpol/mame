@@ -2,13 +2,13 @@
 // copyright-holders:Wilbert Pol
 /******************************************************************************
 
-    TI Explorer I Raven cpu core emulation.
+    TI Explorer I processor core emulation.
 
 ******************************************************************************/
 
 #include "emu.h"
-#include "raven.h"
-#include "raven_dasm.h"
+#include "exp1proc.h"
+#include "exp1proc_dasm.h"
 
 
 namespace {
@@ -84,7 +84,7 @@ static const u32 shift_mask_right[32] =
 } // anonymous namespace
 
 
-DEFINE_DEVICE_TYPE(RAVEN, raven_cpu_device, "raven", "TI Raven")
+DEFINE_DEVICE_TYPE(EXP1PROC, exp1proc_cpu_device, "exp1proc", "TI Explorer I Processor")
 
 
 enum
@@ -102,11 +102,11 @@ enum
 };
 
 
-raven_cpu_device::raven_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock)
-	: cpu_device(mconfig, RAVEN, tag, owner, clock)
-	, m_program_config("program", ENDIANNESS_BIG, 64/*56*/, ADDRESS_BITS, -3, address_map_constructor(FUNC(raven_cpu_device::program_map), this))
-	, m_data_config("data", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS, 0, address_map_constructor(FUNC(raven_cpu_device::data_map), this))
-	, m_local_bus_config("local_bus", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS, 0, address_map_constructor(FUNC(raven_cpu_device::local_bus_map), this))
+exp1proc_cpu_device::exp1proc_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock)
+	: cpu_device(mconfig, EXP1PROC, tag, owner, clock)
+	, m_program_config("program", ENDIANNESS_BIG, 64/*56*/, ADDRESS_BITS, -3, address_map_constructor(FUNC(exp1proc_cpu_device::program_map), this))
+	, m_data_config("data", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS, 0, address_map_constructor(FUNC(exp1proc_cpu_device::data_map), this))
+	, m_local_bus_config("local_bus", ENDIANNESS_LITTLE, 32, EXTERNAL_ADDRESS_BITS, 0, address_map_constructor(FUNC(exp1proc_cpu_device::local_bus_map), this))
 	, m_state_leds(*this)
 	, m_fault_led(*this)
 	, m_inst_view(*this, "inst_view")
@@ -115,7 +115,7 @@ raven_cpu_device::raven_cpu_device(const machine_config &mconfig, const char *ta
 }
 
 
-raven_cpu_device::space_config_vector raven_cpu_device::memory_space_config() const
+exp1proc_cpu_device::space_config_vector exp1proc_cpu_device::memory_space_config() const
 {
 	return space_config_vector {
 		std::make_pair(AS_PROGRAM,    &m_program_config),
@@ -126,13 +126,13 @@ raven_cpu_device::space_config_vector raven_cpu_device::memory_space_config() co
 
 
 
-std::unique_ptr<util::disasm_interface> raven_cpu_device::create_disassembler()
+std::unique_ptr<util::disasm_interface> exp1proc_cpu_device::create_disassembler()
 {
-	return std::make_unique<raven_disassembler>();
+	return std::make_unique<exp1proc_disassembler>();
 }
 
 
-void raven_cpu_device::device_start()
+void exp1proc_cpu_device::device_start()
 {
 	space(AS_PROGRAM).specific(m_program);
 	space(AS_DATA).specific(m_data);
@@ -200,7 +200,7 @@ void raven_cpu_device::device_start()
 
 
 
-void raven_cpu_device::device_reset()
+void exp1proc_cpu_device::device_reset()
 {
 	m_pc = 0;
 	m_prev_pc = 0;
@@ -227,7 +227,7 @@ void raven_cpu_device::device_reset()
 }
 
 
-void raven_cpu_device::program_map(address_map &map)
+void exp1proc_cpu_device::program_map(address_map &map)
 {
 	map(0, 0x3fff).ram().share(m_control_store);
 	map(0, 0x7ff).view(m_inst_view);
@@ -243,23 +243,23 @@ void raven_cpu_device::program_map(address_map &map)
 // internal maps (see memory_space_config()), which means any board this CPU is
 // placed on gets the behavior for free and cannot forget to wire it up; the
 // cards on the bus then install their own slot windows over the top at runtime.
-void raven_cpu_device::data_map(address_map &map)
+void exp1proc_cpu_device::data_map(address_map &map)
 {
 	map.unmap_value_high();
 
-	map(0x00000000, 0xffffffff).rw(FUNC(raven_cpu_device::nubus_unmapped_r), FUNC(raven_cpu_device::nubus_unmapped_w));
+	map(0x00000000, 0xffffffff).rw(FUNC(exp1proc_cpu_device::nubus_unmapped_r), FUNC(exp1proc_cpu_device::nubus_unmapped_w));
 }
 
 
-void raven_cpu_device::local_bus_map(address_map &map)
+void exp1proc_cpu_device::local_bus_map(address_map &map)
 {
 	map.unmap_value_high();
 
-	map(0x00000000, 0xffffffff).rw(FUNC(raven_cpu_device::local_bus_miss_r), FUNC(raven_cpu_device::local_bus_miss_w));
+	map(0x00000000, 0xffffffff).rw(FUNC(exp1proc_cpu_device::local_bus_miss_r), FUNC(exp1proc_cpu_device::local_bus_miss_w));
 }
 
 
-u32 raven_cpu_device::nubus_flag_r()
+u32 exp1proc_cpu_device::nubus_flag_r()
 {
 	u32 data = 0;
 	if (!BIT(m_mcr, MCR_SUB_SYSTEM_FLAG_BIT))
@@ -272,13 +272,13 @@ u32 raven_cpu_device::nubus_flag_r()
 }
 
 
-u32 raven_cpu_device::config_register_r()
+u32 exp1proc_cpu_device::config_register_r()
 {
 	return m_config_register;
 }
 
 
-void raven_cpu_device::config_register_w(offs_t offset, u32 data, u32 mem_mask)
+void exp1proc_cpu_device::config_register_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	m_config_register = data & 0xff;
 	update_leds();
@@ -309,7 +309,7 @@ void raven_cpu_device::config_register_w(offs_t offset, u32 data, u32 mem_mask)
 // configuration register bit can only force it on, never off. Reset leaves
 // MCR(06) at 0, so this one comes up lit as well, and the self-test microcode
 // extinguishes it and the six yellow lamps in the same MCR store.
-void raven_cpu_device::update_leds()
+void exp1proc_cpu_device::update_leds()
 {
 	m_state_leds(~m_mcr & MCR_FAULT_LEDS_MASK);
 	m_fault_led((BIT(m_config_register, 2) || !BIT(m_mcr, MCR_TEST_FAIL_FLAG_BIT)) ? 1 : 0);
@@ -335,7 +335,7 @@ void raven_cpu_device::update_leds()
 // complete. Before this was modelled, that single instruction was special-cased
 // by matching the address the test happens to compute (0x3db00000 - a value from
 // the test pattern in M-06, not a device address at all).
-bool raven_cpu_device::memory_cycle_enabled()
+bool exp1proc_cpu_device::memory_cycle_enabled()
 {
 	if (BIT(m_mcr, MCR_MEMORY_CYCLE_ENABLE_BIT))
 		return true;
@@ -346,7 +346,7 @@ bool raven_cpu_device::memory_cycle_enabled()
 }
 
 
-void raven_cpu_device::read()
+void exp1proc_cpu_device::read()
 {
 	m_bus_error = false;
 	u32 address = vm_resolve_address<MEM_READ>();
@@ -362,7 +362,7 @@ void raven_cpu_device::read()
 }
 
 
-void raven_cpu_device::write()
+void exp1proc_cpu_device::write()
 {
 	m_bus_error = false;
 	u32 address = vm_resolve_address<MEM_WRITE>();
@@ -404,7 +404,7 @@ void raven_cpu_device::write()
 // descriptor's count.
 //
 // Block transfer is not implemented; nothing in this machine has asked for one.
-u32 raven_cpu_device::unmapped_mem_mask() const
+u32 exp1proc_cpu_device::unmapped_mem_mask() const
 {
 	switch (m_vma & 3)
 	{
@@ -415,7 +415,7 @@ u32 raven_cpu_device::unmapped_mem_mask() const
 }
 
 
-void raven_cpu_device::read_unmapped()
+void exp1proc_cpu_device::read_unmapped()
 {
 	m_bus_error = false;
 	// VMA is the physical address here and no translation happens, so there is
@@ -441,7 +441,7 @@ void raven_cpu_device::read_unmapped()
 }
 
 
-void raven_cpu_device::write_unmapped()
+void exp1proc_cpu_device::write_unmapped()
 {
 	m_bus_error = false;
 	m_page_fault = false;
@@ -465,7 +465,7 @@ void raven_cpu_device::write_unmapped()
 }
 
 
-void raven_cpu_device::read_unmapped_byte()
+void exp1proc_cpu_device::read_unmapped_byte()
 {
 	m_bus_error = false;
 	m_page_fault = false;
@@ -490,7 +490,7 @@ void raven_cpu_device::read_unmapped_byte()
 	m_read_pending = true;
 }
 
-void raven_cpu_device::write_unmapped_byte()
+void exp1proc_cpu_device::write_unmapped_byte()
 {
 	m_bus_error = false;
 	m_page_fault = false;
@@ -515,33 +515,33 @@ void raven_cpu_device::write_unmapped_byte()
 }
 
 
-u32 raven_cpu_device::nubus_unmapped_r(offs_t offset, u32 mem_mask)
+u32 exp1proc_cpu_device::nubus_unmapped_r(offs_t offset, u32 mem_mask)
 {
 	m_bus_error = true;
 	return 0xffffffff;
 }
 
 
-void raven_cpu_device::nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask)
+void exp1proc_cpu_device::nubus_unmapped_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	m_bus_error = true;
 }
 
 
-u32 raven_cpu_device::local_bus_miss_r(offs_t offset, u32 mem_mask)
+u32 exp1proc_cpu_device::local_bus_miss_r(offs_t offset, u32 mem_mask)
 {
 	m_local_bus_miss = true;
 	return 0xffffffff;
 }
 
 
-void raven_cpu_device::local_bus_miss_w(offs_t offset, u32 data, u32 mem_mask)
+void exp1proc_cpu_device::local_bus_miss_w(offs_t offset, u32 data, u32 mem_mask)
 {
 	m_local_bus_miss = true;
 }
 
 
-void raven_cpu_device::irq_w(offs_t offset, u32 data)
+void exp1proc_cpu_device::irq_w(offs_t offset, u32 data)
 {
 	int irq_level = offset & 0x0f;
 	if (data)
@@ -572,14 +572,14 @@ void raven_cpu_device::irq_w(offs_t offset, u32 data)
 }
 
 
-bool raven_cpu_device::active_int() const
+bool exp1proc_cpu_device::active_int() const
 {
 	return ((m_pending_interrupts & 0xfffc) != 0) && BIT(m_mcr, MCR_INT_ENABLE_BIT);
 }
 
 
 template <int Action>
-u32 raven_cpu_device::vm_resolve_address()
+u32 exp1proc_cpu_device::vm_resolve_address()
 {
 	u32 address = m_vma;
 	u32 vpage_block = (m_vma >> 13) & 0xfff;
@@ -662,13 +662,13 @@ u32 raven_cpu_device::vm_resolve_address()
 // get_m_source(). The map is addressed by MD whenever MD is loaded, so refresh
 // the latch from the MD-indexed entry there; vm_resolve_address() refreshes it
 // from the VMA-indexed entry it just translated.
-void raven_cpu_device::update_cached_lvl1_from_md()
+void exp1proc_cpu_device::update_cached_lvl1_from_md()
 {
 	m_cached_lvl1 = m_vma_lvl1_map[(m_md >> 13) & 0xfff];
 }
 
 
-u16 raven_cpu_device::map2_addr()
+u16 exp1proc_cpu_device::map2_addr()
 {
 	const u32 map1_addr = (m_md >> 13) & 0xfff;
 	const u16 map1_data = m_vma_lvl1_map[map1_addr];
@@ -678,7 +678,7 @@ u16 raven_cpu_device::map2_addr()
 }
 
 
-u32 raven_cpu_device::get_m_source()
+u32 exp1proc_cpu_device::get_m_source()
 {
 	if (BIT(m_ir, 48))
 	{
@@ -806,7 +806,7 @@ u32 raven_cpu_device::get_m_source()
 // bit 23 of a 24-bit field, which is a different quantity entirely and made
 // TYPED-DATA SUB at microcode PC $0305 report an overflow the real machine does
 // not - see ti_explorer.md.) Matches Meroko's ALU_Fixnum_Oflow.
-void raven_cpu_device::add32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_out, u32 &fixnum_overflow)
+void exp1proc_cpu_device::add32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_out, u32 &fixnum_overflow)
 {
 	const u64 result = u64(a) + u64(m) + carry_in;
 	res = u32(result);
@@ -816,7 +816,7 @@ void raven_cpu_device::add32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_ou
 
 
 
-void raven_cpu_device::sub32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_out, u32 &fixnum_overflow)
+void exp1proc_cpu_device::sub32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_out, u32 &fixnum_overflow)
 {
 	const u64 result = u64(m) - u64(a) - (carry_in ? 0 : 1);
 	res = u32(result);
@@ -825,7 +825,7 @@ void raven_cpu_device::sub32(u32 a, u32 m, u32 carry_in, u32 &res, u32 &carry_ou
 }
 
 
-void raven_cpu_device::alu_operation(u32 &result, u32 &carry_out, u32 &fixnum_overflow)
+void exp1proc_cpu_device::alu_operation(u32 &result, u32 &carry_out, u32 &fixnum_overflow)
 {
 	switch ((m_ir >> 3) & 0x1f)
 	{
@@ -995,7 +995,7 @@ void raven_cpu_device::alu_operation(u32 &result, u32 &carry_out, u32 &fixnum_ov
 }
 
 
-void raven_cpu_device::set_o_bus(u32 alu_out, u32 carry_out)
+void exp1proc_cpu_device::set_o_bus(u32 alu_out, u32 carry_out)
 {
 	u32 o_bus_input = alu_out;
 
@@ -1065,7 +1065,7 @@ void raven_cpu_device::set_o_bus(u32 alu_out, u32 carry_out)
 }
 
 
-void raven_cpu_device::store_o_bus()
+void exp1proc_cpu_device::store_o_bus()
 {
 	if (BIT(m_ir, 31))
 	{
@@ -1249,7 +1249,7 @@ void raven_cpu_device::store_o_bus()
 }
 
 
-u32 raven_cpu_device::shifter(bool rotate_r, bool rotate_mask, int rot_count)
+u32 exp1proc_cpu_device::shifter(bool rotate_r, bool rotate_mask, int rot_count)
 {
 	u32 r = m_m;
 
@@ -1281,7 +1281,7 @@ u32 raven_cpu_device::shifter(bool rotate_r, bool rotate_mask, int rot_count)
 }
 
 
-bool raven_cpu_device::is_condition(u32 alu_out, u32 carry_out, u32 fixnum_overflow)
+bool exp1proc_cpu_device::is_condition(u32 alu_out, u32 carry_out, u32 fixnum_overflow)
 {
 	u8 condition = (m_ir >> 10) & 0x0f;
 	bool result;
@@ -1354,14 +1354,14 @@ bool raven_cpu_device::is_condition(u32 alu_out, u32 carry_out, u32 fixnum_overf
 }
 
 
-void raven_cpu_device::push(u32 pc)
+void exp1proc_cpu_device::push(u32 pc)
 {
 	m_sp = (m_sp + 1) & 0x3f;
 	m_stack[m_sp] = pc & 0xfffff;
 }
 
 
-void raven_cpu_device::pop(bool after_next)
+void exp1proc_cpu_device::pop(bool after_next)
 {
 	m_next_pc = m_stack[m_sp] & 0xfffff;
 	m_sp = (m_sp - 1) & 0x3f;
@@ -1374,7 +1374,7 @@ void raven_cpu_device::pop(bool after_next)
 // microinstructions later - so the delay-slot instruction of a POPJ-XCT-next
 // still sees the VMA the *previous* memory cycle left behind. See
 // handle_popj14() for the evidence.
-void raven_cpu_device::service_pj14_fetch()
+void exp1proc_cpu_device::service_pj14_fetch()
 {
 	if (!m_pj14_fetch_pending)
 		return;
@@ -1394,7 +1394,7 @@ void raven_cpu_device::service_pj14_fetch()
 }
 
 
-void raven_cpu_device::handle_popj14(bool after_next)
+void exp1proc_cpu_device::handle_popj14(bool after_next)
 {
 	if (!BIT(m_next_pc, 14))
 		return;
@@ -1462,7 +1462,7 @@ void raven_cpu_device::handle_popj14(bool after_next)
 }
 
 
-void raven_cpu_device::perform_abj()
+void exp1proc_cpu_device::perform_abj()
 {
 	switch ((m_ir >> 51) & 0x07)
 	{
@@ -1504,7 +1504,7 @@ void raven_cpu_device::perform_abj()
 }
 
 
-void raven_cpu_device::execute_alu()
+void exp1proc_cpu_device::execute_alu()
 {
 	u32 alu_out = 0;
 	u32 carry_out = 0;
@@ -1562,7 +1562,7 @@ void raven_cpu_device::execute_alu()
 }
 
 
-void raven_cpu_device::execute_byte()
+void exp1proc_cpu_device::execute_byte()
 {
 	u64 alu_out = m_m - m_a - 1;
 	// The condition and sense field is common to the ALU, byte and jump formats
@@ -1611,7 +1611,7 @@ void raven_cpu_device::execute_byte()
 }
 
 
-void raven_cpu_device::execute_jump()
+void exp1proc_cpu_device::execute_jump()
 {
 	if (BIT(m_ir, 8))
 	{
@@ -1732,7 +1732,7 @@ void raven_cpu_device::execute_jump()
 }
 
 
-void raven_cpu_device::execute_dispatch()
+void exp1proc_cpu_device::execute_dispatch()
 {
 	u32 dispatch_source = 0;
 
@@ -1948,7 +1948,7 @@ void raven_cpu_device::execute_dispatch()
 }
 
 
-void raven_cpu_device::execute_run()
+void exp1proc_cpu_device::execute_run()
 {
 	do {
 		// A queued macroinstruction-chaining prefetch takes effect here, at the
@@ -2021,7 +2021,7 @@ void raven_cpu_device::execute_run()
 }
 
 
-void raven_cpu_device::state_string_export(const device_state_entry &entry, std::string &str) const
+void exp1proc_cpu_device::state_string_export(const device_state_entry &entry, std::string &str) const
 {
 	switch (entry.index())
 	{
@@ -2032,6 +2032,6 @@ void raven_cpu_device::state_string_export(const device_state_entry &entry, std:
 }
 
 
-void raven_cpu_device::execute_set_input(int inputnum, int state)
+void exp1proc_cpu_device::execute_set_input(int inputnum, int state)
 {
 }

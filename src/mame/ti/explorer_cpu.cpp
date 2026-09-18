@@ -10,7 +10,7 @@ Board references found:
 - 2243895
 
 The nine lamps along the front edge are the six amber state lamps plus the red
-fault LED, both driven out of the raven (see raven_cpu_device::update_leds()),
+fault LED, both driven out of the exp1proc (see exp1proc_cpu_device::update_leds()),
 and two amber lamps that are not modelled - see the TODO.
 
 The eight amber lamps are not just individual indicators: Figure A-1 of the
@@ -94,7 +94,7 @@ void explorer_cpu_device::assert_bus_error()
 
 
 // Lamps 1-6, the yellow "internal states" code. Already active high here - the
-// MCR bits behind it are low true, see raven_cpu_device::update_leds().
+// MCR bits behind it are low true, see exp1proc_cpu_device::update_leds().
 void explorer_cpu_device::state_leds_w(u8 data)
 {
 	for (int i = 0; i < 6; i++)
@@ -110,9 +110,9 @@ void explorer_cpu_device::fault_led_w(int state)
 
 void explorer_cpu_device::nubus_map(address_map &map)
 {
-	map(0xc00000, 0xc00003).r(m_cpu, FUNC(raven_cpu_device::nubus_flag_r));
-	map(0xd00000, 0xd00003).rw(m_cpu, FUNC(raven_cpu_device::config_register_r), FUNC(raven_cpu_device::config_register_w));
-	map(0xe00000, 0xe0003f).w(m_cpu, FUNC(raven_cpu_device::irq_w));
+	map(0xc00000, 0xc00003).r(m_cpu, FUNC(exp1proc_cpu_device::nubus_flag_r));
+	map(0xd00000, 0xd00003).rw(m_cpu, FUNC(exp1proc_cpu_device::config_register_r), FUNC(exp1proc_cpu_device::config_register_w));
+	map(0xe00000, 0xe0003f).w(m_cpu, FUNC(exp1proc_cpu_device::irq_w));
 	map(0xfffc00, 0xffffff).rom().region("cpu_config", 0);
 }
 
@@ -142,7 +142,7 @@ const tiny_rom_entry *explorer_cpu_device::device_rom_region() const
 
 void explorer_cpu_device::device_add_mconfig(machine_config &config)
 {
-	RAVEN(config, m_cpu, 28_MHz_XTAL);
+	EXP1PROC(config, m_cpu, 28_MHz_XTAL);
 	m_cpu->out_state_leds_cb().set(FUNC(explorer_cpu_device::state_leds_w));
 	m_cpu->out_fault_led_cb().set(FUNC(explorer_cpu_device::fault_led_w));
 }

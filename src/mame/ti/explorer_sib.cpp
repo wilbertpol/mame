@@ -1082,7 +1082,7 @@ void explorer_sib_device::rtc_map(address_map &map)
 	// f8005c - Rtclock-Test-Mode
 
 	// The MM58167 core is byte-wide, but every register here is word-spaced on
-	// NuBus (register N at f80000 + 4N, Table 4-5) and raven issues masked dword
+	// NuBus (register N at f80000 + 4N, Table 4-5) and the exp1proc issues masked dword
 	// writes - so wrap it rather than installing an 8-bit handler. The dword
 	// offset IS the register number.
 	map(0x00f80000, 0x00f8005f).lrw32(NAME([this] (offs_t offset) {
@@ -1118,7 +1118,7 @@ void explorer_sib_device::timers_map(address_map &map)
 	// raw byte offset needs dividing by 4 first (same reason the i8251 wiring
 	// above uses an explicit wrapper rather than installing it directly).
 	// Installed as a dword-wide (.lrw32) handler, not byte-wide - matching the
-	// i8251 wiring above. raven_cpu_device::write_unmapped_byte() issues a
+	// i8251 wiring above. exp1proc_cpu_device::write_unmapped_byte() issues a
 	// masked DWORD write, not a true standalone byte access; a byte-wide
 	// (.lrw8) install doesn't respect that mask and gets called once per byte
 	// lane in the dword regardless, feeding three spurious 0x00 writes for

@@ -395,7 +395,7 @@ TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_drain_timer_expired)
 //   nscsi_harddisk_device::scsi_data_byte_period() in bus/nscsi/hd.cpp). NOT because
 //   a large command-block word_count (e.g. 0x10000 for the microload) risks
 //   overrunning the FIFO in one unbroken burst - confirmed it doesn't: the 68000
-//   firmware splits a large raven-requested transfer into separate, sector-sized
+//   firmware splits a large exp1proc-requested transfer into separate, sector-sized
 //   SCSI reads, each comfortably within the FIFO's 2048-halfword/4KB capacity. Kept
 //   at 1us anyway as a more realistic approximation of real arrival pacing than 4us,
 //   but this is no longer believed to explain the "BAD MICROCODE FORMAT"/"MICROLOAD
@@ -536,7 +536,7 @@ void explorer_nupi_device::nubus_map(address_map &map)
 	// sequence the real board runs, so don't add one.
 	//
 	// One thing not to reintroduce either: a hardcoded-0 *read* of E0000B. It
-	// contradicts 5.3.2, and it makes raven see bit 3 (System Bus Test) as
+	// contradicts 5.3.2, and it makes the exp1proc see bit 3 (System Bus Test) as
 	// always-already-clear, so the board's own self-test result can never be
 	// observed.
 	map(0x00e00000, 0x00e00fff).rw(FUNC(explorer_nupi_device::ram_window_r), FUNC(explorer_nupi_device::ram_window_w));
@@ -563,7 +563,7 @@ void explorer_nupi_device::ram_window_w(offs_t offset, u32 data, u32 mem_mask)
 	// most significant byte (bits 24 through 31) of a 32-bit word" - verified
 	// directly against the manual text (PDF page 37/38, book page 4-14/4-15).
 	// mem_mask&0xff000000 is exactly that condition on this handler's own
-	// 32-bit-word-relative mem_mask, regardless of any raven-side/AS_DATA
+	// 32-bit-word-relative mem_mask, regardless of any exp1proc-side/AS_DATA
 	// endianness question - that question is about which RAM byte a given
 	// write lands in (ram_window_r/w's own splitting above, already confirmed
 	// correct), not about which mem_mask bits this handler receives for a
@@ -688,7 +688,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 				// nupi.h (true for every self-test path, which never touches it; false
 				// once scsi_dreq_w() has landed this transfer's first real byte). Real
 				// SCSI data can already be streaming into the FIFO before the firmware
-				// reaches this register (confirmed live: raven's own boot-sector read
+				// reaches this register (confirmed live: the exp1proc's own boot-sector read
 				// already had 12 real halfwords filled in from the disk by the time
 				// this fired) - resetting the write cursor out from under an in-flight
 				// fill orphaned everything already received and redirected the rest of
@@ -718,7 +718,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	// side (st = 0xff = true) but the flag register's bits are documented
 	// active-low, so real hardware must invert each latch before it reaches the
 	// NuBus-visible byte - modeled here directly as clear-bit-on-write/set-bit-on-sf.
-	// (A prior attempt at wiring these up appeared to cause a raven-side hang after
+	// (A prior attempt at wiring these up appeared to cause an exp1proc-side hang after
 	// "Slot 2" - root-caused by bisection to a since-removed config-register write
 	// handler unexpectedly storing its written value, not to this flag register
 	// logic at all. E0000B is plain RAM now; see nubus_map().)
@@ -800,7 +800,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 					// here too: without this, self-test's drain wrote real NuBus longwords
 					// using whatever page_register happened to be left over from an
 					// earlier, unrelated self-test (0x3fff), landing on unmapped space and
-					// setting the main raven CPU's own m_nubus_error flag on every single
+					// setting the main exp1proc CPU's own m_nubus_error flag on every single
 					// word, corrupting its "bus error on last transfer" status for
 					// completely unrelated later bus activity. Consumed here (reset to
 					// false) so the NEXT go-strobe needs its own fresh configuration.

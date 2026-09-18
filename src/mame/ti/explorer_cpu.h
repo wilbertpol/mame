@@ -8,7 +8,7 @@
 
     It is a NuBus card like every other board in the machine. What
 	makes it unusual is that the NuBus and the local bus *are* this
-	board's own address spaces: the raven's AS_DATA is the NuBus and
+	board's own address spaces: the exp1proc's AS_DATA is the NuBus and
 	AS_LOCAL_BUS is the local bus, which is why the backplane
 	(ti_nubus_device) is pointed at this board's CPU rather than the
 	other way round.
@@ -22,7 +22,7 @@
 
 #include "ti_nubus.h"
 
-#include "cpu/raven/raven.h"
+#include "cpu/tiexp/exp1proc.h"
 
 
 class explorer_cpu_device : public device_t, public device_ti_nubus_card_interface
@@ -40,7 +40,7 @@ protected:
 	virtual void assert_bus_error() override;
 
 private:
-	required_device<raven_cpu_device> m_cpu;
+	required_device<exp1proc_cpu_device> m_cpu;
 	required_memory_region m_microcode_proms;
 	required_memory_region m_control_store;
 	// The lamps along the front edge of the board, numbered as Field

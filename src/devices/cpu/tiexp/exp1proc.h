@@ -2,20 +2,20 @@
 // copyright-holders:Wilbert Pol
 /**********************************************************************
 
-    Raven CPU (TI Explorer I cpu)
+    TI Explorer I processor (TI's own name for it is the Raven)
 
 **********************************************************************/
 
-#ifndef MAME_CPU_RAVEN_RAVEN_H
-#define MAME_CPU_RAVEN_RAVEN_H
+#ifndef MAME_CPU_TIEXP_EXP1PROC_H
+#define MAME_CPU_TIEXP_EXP1PROC_H
 
 #pragma once
 
 
-class raven_cpu_device : public cpu_device
+class exp1proc_cpu_device : public cpu_device
 {
 public:
-	raven_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
+	exp1proc_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock);
 
 	u32 nubus_flag_r();
 	void irq_w(offs_t offset, u32 data);
@@ -204,7 +204,7 @@ private:
 };
 
 
-DECLARE_DEVICE_TYPE(RAVEN, raven_cpu_device);
+DECLARE_DEVICE_TYPE(EXP1PROC, exp1proc_cpu_device);
 
 
 #endif

@@ -24,7 +24,7 @@ TODO:
 ***************************************************************************/
 
 #include "emu.h"
-#include "cpu/raven/raven.h"
+#include "cpu/tiexp/exp1proc.h"
 #include "ti_nubus.h"
 #include "explorer_cpu.h"
 #include "explorer_enet.h"
@@ -70,7 +70,7 @@ private:
 	// The CPU lives on the board in slot 6 (see explorer_cpu.h), so the driver
 	// reaches it through the slot. This is here only to hand the backplane the
 	// two address spaces that board provides - see tiexplorer() below.
-	required_device<raven_cpu_device> m_maincpu;
+	required_device<exp1proc_cpu_device> m_maincpu;
 	required_device<ti_nubus_device> m_nubus;
 };
 
@@ -103,7 +103,7 @@ void tiexplorer_state::tiexplorer(machine_config &config)
 	// processor in slot 6. Every card then installs its own slot window into
 	// those spaces from its device_start().
 	m_nubus->set_space(m_maincpu, AS_DATA);
-	m_nubus->set_local_bus_space(m_maincpu, raven_cpu_device::AS_LOCAL_BUS);
+	m_nubus->set_local_bus_space(m_maincpu, exp1proc_cpu_device::AS_LOCAL_BUS);
 }
 
 

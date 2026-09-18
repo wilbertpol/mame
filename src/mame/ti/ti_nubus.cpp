@@ -59,9 +59,9 @@ void ti_nubus_device::add_ti_nubus_card(device_ti_nubus_card_interface &card)
 void ti_nubus_device::assert_bus_error()
 {
 	// Straight to the board that owns the line. This used to reach into
-	// m_space->device() and downcast it to raven_cpu_device, which baked two
+	// m_space->device() and downcast it to exp1proc_cpu_device, which baked two
 	// assumptions into the backplane: that the bus master is whatever device
-	// happens to own AS_DATA, and that it is a raven. Both belong to the CPU
+	// happens to own AS_DATA, and that it is an exp1proc. Both belong to the CPU
 	// board (see explorer_cpu.cpp), which nominates itself here at start-up.
 	//
 	// Nothing to do if no card claimed the line: a machine with no CPU board

@@ -2,7 +2,7 @@
 // copyright-holders:Wilbert Pol
 /******************************************************************************
 
-    TI Explorer I Raven cpu disassembler.
+    TI Explorer I processor disassembler.
 
 TODO:
 - Review DISPATCH disassembly
@@ -10,7 +10,7 @@ TODO:
 ******************************************************************************/
 
 #include "emu.h"
-#include "raven_dasm.h"
+#include "exp1proc_dasm.h"
 
 
 namespace {
@@ -356,13 +356,13 @@ static const char *const dispatch_op[4] =
 } // anonymous namespace
 
 
-u32 raven_disassembler::opcode_alignment() const
+u32 exp1proc_disassembler::opcode_alignment() const
 {
 	return 1;
 }
 
 
-void raven_disassembler::destination(std::ostream &stream, u64 op)
+void exp1proc_disassembler::destination(std::ostream &stream, u64 op)
 {
 	if (BIT(op, 31))
 	{
@@ -385,7 +385,7 @@ void raven_disassembler::destination(std::ostream &stream, u64 op)
 }
 
 
-void raven_disassembler::sources(std::ostream &stream, u64 op)
+void exp1proc_disassembler::sources(std::ostream &stream, u64 op)
 {
 	if (BIT(op, 48))
 		util::stream_format(stream, "%s", m_mf_source[(op >> 42) & 0x3f]);
@@ -395,7 +395,7 @@ void raven_disassembler::sources(std::ostream &stream, u64 op)
 }
 
 
-void raven_disassembler::conditional(std::ostream &stream, u64 op)
+void exp1proc_disassembler::conditional(std::ostream &stream, u64 op)
 {
 	const u8 cond = (op >> 10) & 0x3f;
 	if (cond != 0x07)
@@ -416,7 +416,7 @@ void raven_disassembler::conditional(std::ostream &stream, u64 op)
 }
 
 
-void raven_disassembler::disassemble_alu(std::ostream &stream, u64 op)
+void exp1proc_disassembler::disassemble_alu(std::ostream &stream, u64 op)
 {
 	// Destination
 	destination(stream, op);
@@ -518,7 +518,7 @@ void raven_disassembler::disassemble_alu(std::ostream &stream, u64 op)
 }
 
 
-void raven_disassembler::disassemble_byte(std::ostream &stream, u64 op)
+void exp1proc_disassembler::disassemble_byte(std::ostream &stream, u64 op)
 {
 	// Destination
 	destination(stream, op);
@@ -536,7 +536,7 @@ void raven_disassembler::disassemble_byte(std::ostream &stream, u64 op)
 }
 
 
-void raven_disassembler::disassemble_jump(std::ostream &stream, u64 op)
+void exp1proc_disassembler::disassemble_jump(std::ostream &stream, u64 op)
 {
 	// Operation and new PC
 	if (((op >> 5) & 0x07) != 0x04 && ((op >> 5) & 0x07) != 0x05)
@@ -554,7 +554,7 @@ void raven_disassembler::disassemble_jump(std::ostream &stream, u64 op)
 }
 
 
-void raven_disassembler::disassemble_dispatch(std::ostream &stream, u64 op)
+void exp1proc_disassembler::disassemble_dispatch(std::ostream &stream, u64 op)
 {
 	util::stream_format(stream, "DISPATCH ");
 
@@ -587,7 +587,7 @@ void raven_disassembler::disassemble_dispatch(std::ostream &stream, u64 op)
 }
 
 
-offs_t raven_disassembler::disassemble(std::ostream &stream, offs_t pc, const data_buffer &opcodes, const data_buffer &params)
+offs_t exp1proc_disassembler::disassemble(std::ostream &stream, offs_t pc, const data_buffer &opcodes, const data_buffer &params)
 {
 	u32 dasmflags = 0;
 	u64 op = opcodes.r64(pc);

@@ -401,23 +401,6 @@ if opt_tool(CPUS, "CADR") then
 end
 
 --------------------------------------------------
--- TI Raven cpu (TI Explorer I cpu)
---@src/devices/cpu/raven/raven.h,CPUS["RAVEN"] = true
---------------------------------------------------
-
-if CPUS["RAVEN"] then
-	files {
-		MAME_DIR .. "src/devices/cpu/raven/raven.cpp",
-		MAME_DIR .. "src/devices/cpu/raven/raven.h",
-	}
-end
-
-if opt_tool(CPUS, "RAVEN") then
-	table.insert(disasm_files , MAME_DIR .. "src/devices/cpu/raven/raven_dasm.cpp")
-	table.insert(disasm_files , MAME_DIR .. "src/devices/cpu/raven/raven_dasm.h")
-end
-
---------------------------------------------------
 -- Simutrek Cube Quest bit-sliced CPUs
 --@src/devices/cpu/cubeqcpu/cubeqcpu.h,CPUS["CUBEQCPU"] = true
 --------------------------------------------------
@@ -620,6 +603,23 @@ end
 if opt_tool(CPUS, "PDP8") then
 	table.insert(disasm_files , MAME_DIR .. "src/devices/cpu/pdp8/pdp8dasm.cpp")
 	table.insert(disasm_files , MAME_DIR .. "src/devices/cpu/pdp8/pdp8dasm.h")
+end
+
+--------------------------------------------------
+-- TI Explorer I processor
+--@src/devices/cpu/tiexp/exp1proc.h,CPUS["EXP1PROC"] = true
+--------------------------------------------------
+
+if CPUS["EXP1PROC"] then
+	files {
+		MAME_DIR .. "src/devices/cpu/tiexp/exp1proc.cpp",
+		MAME_DIR .. "src/devices/cpu/tiexp/exp1proc.h",
+	}
+end
+
+if opt_tool(CPUS, "EXP1PROC") then
+	table.insert(disasm_files , MAME_DIR .. "src/devices/cpu/tiexp/exp1proc_dasm.cpp")
+	table.insert(disasm_files , MAME_DIR .. "src/devices/cpu/tiexp/exp1proc_dasm.h")
 end
 
 --------------------------------------------------
