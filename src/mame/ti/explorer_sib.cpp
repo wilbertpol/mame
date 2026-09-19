@@ -452,6 +452,7 @@ void explorer_sib_device::graphics_bitmap_map(address_map &map)
 		COMBINE_DATA(&m_operation_register);
 	}));
 	// e00098 - Graphics-Video-Test-Register
+	map(0x00e00098, 0x00e0009b).lr32(NAME([this] () { return video_test_register(); }));
 
 	map(0x00e80000, 0x00e9ffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_w));
 
@@ -508,6 +509,77 @@ void explorer_sib_device::local_bus_map(address_map &map)
 {
 	map(0x00e80000, 0x00e9ffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_w));
 	map(0x00ec0000, 0x00edffff).rw(FUNC(explorer_sib_device::video_ram_r), FUNC(explorer_sib_device::video_ram_rmw_w));
+}
+
+
+// Paragraph 4.4.10.6 and Figure 4-13: "a 4-bit video test register records the
+// video transitions in each scan line using 2 bits for the negative transitions
+// and 2 bits for the positive transitions ... This register updates after each
+// horizontal scan and remains valid until the end of the next line scanned".
+// D0 is set for an odd number of negative (high to low) transitions in that
+// line and D1 for an even number, D2 and D3 the same for the positive ones -
+// i.e. each pair is a two-bit count of that line's transitions, D0/D2 the low
+// bit and D1/D3 the high one.
+//
+// The register is computed from the bit map on read rather than accumulated by
+// the renderer, because the line it must describe is the one the CRT has just
+// finished scanning, which screen_update() has no relationship to.
+//
+// "The video test register always reflects an extra pair of transitions ...
+// because the TSTOUT bit falls at the end of the Manchester encoded data on
+// channel A", so one positive and one negative transition are always added.
+// The manual's own worked examples are the test for this: an all-zero bit map
+// with normal video reads 5 (one of each, from that extra pair alone), and in
+// reverse video A (two of each - the line itself now starts and ends with a
+// transition against the blanking level). "A working SI board generates the
+// values 0, 5, A and F."
+//
+// TSTOUT itself is not modelled: the manual requires it to be cleared at
+// f20010 before reading this register, but since the extra pair is there
+// unconditionally there is nothing for the bit to change.
+u32 explorer_sib_device::video_test_register()
+{
+	// The line just scanned, in bit-map coordinates.
+	int const line = m_screen->vpos() - 1 - VBEND;
+
+	u32 const invert = BIT(m_attribute_register, 1) ? 0xffffffff : 0;
+	unsigned positive = 1, negative = 1;
+
+	// Video sits at the blanking level either side of the displayed line, so a
+	// line that does not start and end at zero has a transition at each edge.
+	int previous = 0;
+
+	if (!BIT(m_attribute_register, 0) && line >= 0 && line < SCREEN_HEIGHT)
+	{
+		u32 const line_start = line * (SCREEN_WIDTH / 32);
+
+		for (int x = 0; x < (SCREEN_WIDTH / 32); x++)
+		{
+			// Same order the shift registers use and screen_update() draws:
+			// the serial stream leaves the word least significant bit first.
+			u32 const d = m_video_ram[(line_start + x) & VIDEO_RAM_MASK] ^ invert;
+
+			for (int i = 0; i < 32; i++)
+			{
+				int const bit = BIT(d, i);
+
+				if (bit != previous)
+				{
+					if (bit)
+						positive++;
+					else
+						negative++;
+				}
+
+				previous = bit;
+			}
+		}
+	}
+
+	if (previous)
+		negative++;
+
+	return (negative & 3) | ((positive & 3) << 2);
 }
 
 
@@ -631,6 +703,23 @@ void explorer_sib_device::post_voice_sample(u8 data)
 
 	if (BIT(m_interrupt_diag_control, 4))
 		post_event(EVENT_VOICE_DATA_PRESENT);
+}
+
+void explorer_sib_device::pit_out0_w(int state)
+{
+	// Counter 0 is the short-term interval timer (4.4.8), and Table 4-4 gives it
+	// event cause 1, "Interval elapsed". Same shape as counter 2 below: only the
+	// rising edge out of mode 0 is the event.
+	//
+	// The Lisp band never sees this one - it programs counter 0 for mode 0 and
+	// then only ever issues the latch command and reads the counter back, never
+	// loading a count, so the counter never reaches terminal count (see the
+	// comment on timers_map()). The GDOS System Interface Board diagnostic's
+	// test 31 does use it, and without this reports error SIB0315,
+	// "Short-term interval timer did not generate an event within the time
+	// specified by the test".
+	if (state)
+		post_event(EVENT_INTERVAL_TIMER_SHORT);
 }
 
 void explorer_sib_device::pit_out2_w(int state)
@@ -1334,6 +1423,7 @@ void explorer_sib_device::device_add_mconfig(machine_config &config)
 	PIT8253(config, m_pit);
 	m_pit->set_clk<0>(1000000.0);
 	m_pit->set_clk<1>(1000000.0);
+	m_pit->out_handler<0>().set(FUNC(explorer_sib_device::pit_out0_w));
 	m_pit->out_handler<1>().set(m_pit, FUNC(pit8253_device::write_clk2));
 	m_pit->out_handler<2>().set(FUNC(explorer_sib_device::pit_out2_w));
 

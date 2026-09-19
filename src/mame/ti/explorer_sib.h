@@ -47,6 +47,7 @@ private:
 	void nubus_map(address_map &map) ATTR_COLD;
 	void graphics_bitmap_map(address_map &map) ATTR_COLD;
 	void local_bus_map(address_map &map) ATTR_COLD;
+	u32 video_test_register();
 	u32 video_ram_r(offs_t offset);
 	void video_ram_w(offs_t offset, u32 data, u32 mem_mask);
 	void video_ram_rmw_w(offs_t offset, u32 data, u32 mem_mask);
@@ -87,6 +88,7 @@ private:
 	// registers say why each of the rest is not.
 	void post_event(int cause);
 	void post_voice_sample(u8 data);
+	void pit_out0_w(int state);
 	void pit_out2_w(int state);
 	void rtc_irq_w(int state);
 	void scc_int_w(int state);
