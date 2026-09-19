@@ -45,7 +45,7 @@ public:
 	// bus-error line is not the backplane's - it lives on the board that
 	// provides the bus's address spaces, i.e. the CPU board, which is the only
 	// card that implements this and registers itself as the target via
-	// ti_nubus_device::set_bus_error_card().
+	// ti_nubus_device::set_bus_master_card().
 	virtual void assert_bus_error() { }
 
 protected:
@@ -101,15 +101,27 @@ class ti_nubus_device : public device_t
 public:
 	ti_nubus_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock = 0);
 
-	template <typename T> void set_space(T &&tag, int spacenum) { m_space.set_tag(std::forward<T>(tag), spacenum); }
-	template <typename T> void set_local_bus_space(T &&tag, int spacenum) { m_local_bus_space.set_tag(std::forward<T>(tag), spacenum); }
-
 	void add_ti_nubus_card(device_ti_nubus_card_interface &card);
 
-	// Nominate the card that owns the bus-error line - see
-	// device_ti_nubus_card_interface::assert_bus_error(). The CPU board calls
-	// this from its own device_start().
-	void set_bus_error_card(device_ti_nubus_card_interface &card) { m_bus_error_card = &card; }
+	// Nominate the card that drives the bus. The backplane has no address
+	// spaces of its own - the NuBus and the local bus are the bus master's,
+	// which on this machine means the CPU board's processor - and the
+	// bus-error line is that board's too, see
+	// device_ti_nubus_card_interface::assert_bus_error().
+	//
+	// The card calls this from its own device_resolve_objects(), which is late
+	// enough for the address spaces to exist and early enough that every card's
+	// device_start() can install into them. Doing it this way rather than
+	// through an address-space finder is what keeps the driver out of it: a
+	// finder would need its tag set at machine-configuration time, so the
+	// driver would have to know which slot holds the bus master and what its
+	// processor is called.
+	void set_bus_master_card(device_ti_nubus_card_interface &card, address_space &space, address_space &local_bus_space)
+	{
+		m_bus_master_card = &card;
+		m_space = &space;
+		m_local_bus_space = &local_bus_space;
+	}
 
 	template <typename T>
 	void install_map(T &device, void (T::*map)(address_map &map))
@@ -145,11 +157,11 @@ protected:
 	// device_t implementation
 	virtual void device_start() override ATTR_COLD;
 
-	required_address_space m_space;
-	required_address_space m_local_bus_space;
+	address_space *m_space;
+	address_space *m_local_bus_space;
 
 	std::vector<std::reference_wrapper<device_ti_nubus_card_interface>> m_device_list;
-	device_ti_nubus_card_interface *m_bus_error_card;
+	device_ti_nubus_card_interface *m_bus_master_card;
 };
 
 DECLARE_DEVICE_TYPE(TI_NUBUS, ti_nubus_device)

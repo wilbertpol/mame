@@ -41,14 +41,21 @@ DEFINE_DEVICE_TYPE(TI_NUBUS, ti_nubus_device, "ti_nubus", "TI Explorer NuBus")
 
 ti_nubus_device::ti_nubus_device(const machine_config &mconfig, const char *tag, device_t *owner, u32 clock) :
 	device_t(mconfig, TI_NUBUS, tag, owner, clock),
-	m_space(*this, finder_base::DUMMY_TAG, -1),
-	m_local_bus_space(*this, finder_base::DUMMY_TAG, -1),
-	m_bus_error_card(nullptr)
+	m_space(nullptr),
+	m_local_bus_space(nullptr),
+	m_bus_master_card(nullptr)
 {
 }
 
 void ti_nubus_device::device_start()
 {
+	// Some card has to drive the buses, and on this machine that is always the
+	// CPU board in slot 6 - without it there is no processor either. The
+	// backplane is configured before any slot, so it starts first and can say
+	// so plainly here, rather than letting the first card to install a map
+	// crash on a null space.
+	if (!m_space || !m_local_bus_space)
+		fatalerror("No card has claimed the TI Explorer NuBus - slot 6 needs the CPU board\n");
 }
 
 void ti_nubus_device::add_ti_nubus_card(device_ti_nubus_card_interface &card)
@@ -62,12 +69,12 @@ void ti_nubus_device::assert_bus_error()
 	// m_space->device() and downcast it to exp1proc_cpu_device, which baked two
 	// assumptions into the backplane: that the bus master is whatever device
 	// happens to own AS_DATA, and that it is an exp1proc. Both belong to the CPU
-	// board (see explorer_cpu.cpp), which nominates itself here at start-up.
+	// board (see explorer_cpu.cpp), which nominates itself as bus master.
 	//
 	// Nothing to do if no card claimed the line: a machine with no CPU board
 	// has no bus cycles to fail in the first place.
-	if (m_bus_error_card)
-		m_bus_error_card->assert_bus_error();
+	if (m_bus_master_card)
+		m_bus_master_card->assert_bus_error();
 }
 
 

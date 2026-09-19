@@ -9,9 +9,9 @@
     It is a NuBus card like every other board in the machine. What
 	makes it unusual is that the NuBus and the local bus *are* this
 	board's own address spaces: the exp1proc's AS_DATA is the NuBus and
-	AS_LOCAL_BUS is the local bus, which is why the backplane
-	(ti_nubus_device) is pointed at this board's CPU rather than the
-	other way round.
+	AS_LOCAL_BUS is the local bus. So this board hands them to the
+	backplane (ti_nubus_device) rather than the other way round - see
+	device_resolve_objects().
 
 **********************************************************************/
 
@@ -32,6 +32,7 @@ public:
 
 protected:
 	// device_t implementation
+	virtual void device_resolve_objects() override ATTR_COLD;
 	virtual void device_start() override ATTR_COLD;
 	virtual const tiny_rom_entry *device_rom_region() const override ATTR_COLD;
 	virtual void device_add_mconfig(machine_config &config) override ATTR_COLD;

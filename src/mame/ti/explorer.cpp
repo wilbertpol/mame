@@ -24,7 +24,6 @@ TODO:
 ***************************************************************************/
 
 #include "emu.h"
-#include "cpu/tiexp/exp1proc.h"
 #include "ti_nubus.h"
 #include "explorer_cpu.h"
 #include "explorer_enet.h"
@@ -55,23 +54,18 @@ void tiexplorer_cpu_cards(device_slot_interface &device)
 	device.option_add("cpu", EXPLORER_CPU);
 }
 
+// The machine is nothing but a backplane and the boards plugged into it: the
+// processor is on the card in slot 6, and the NuBus and local bus are that
+// board's own address spaces, which it hands to the backplane itself (see
+// explorer_cpu.cpp). So the driver holds no devices at all.
 class tiexplorer_state : public driver_device
 {
 public:
 	tiexplorer_state(const machine_config &mconfig, device_type type, const char *tag) :
-		driver_device(mconfig, type, tag),
-		m_maincpu(*this, "nb6:cpu:maincpu"),
-		m_nubus(*this, "nubus")
+		driver_device(mconfig, type, tag)
 	{ }
 
 	void tiexplorer(machine_config &config);
-
-private:
-	// The CPU lives on the board in slot 6 (see explorer_cpu.h), so the driver
-	// reaches it through the slot. This is here only to hand the backplane the
-	// two address spaces that board provides - see tiexplorer() below.
-	required_device<exp1proc_cpu_device> m_maincpu;
-	required_device<ti_nubus_device> m_nubus;
 };
 
 
@@ -81,7 +75,7 @@ INPUT_PORTS_END
 
 void tiexplorer_state::tiexplorer(machine_config &config)
 {
-	TI_NUBUS(config, m_nubus);
+	TI_NUBUS(config, "nubus");
 
 	// Reserved / local bus card slots
 	TI_NUBUS_SLOT(config, "nb6", "nubus", 6, tiexplorer_cpu_cards, "cpu");
@@ -97,13 +91,6 @@ void tiexplorer_state::tiexplorer(machine_config &config)
 	// extended subtests, and the system boots with it fitted. See
 	// explorer_enet.cpp for what it does and does not do.
 	TI_NUBUS_SLOT(config, "nb0", "nubus", 0, tiexplorer_nubus_cards, "enet");
-
-	// The backplane has no address spaces of its own: the NuBus and the local
-	// bus are the CPU board's AS_DATA and AS_LOCAL_BUS, so point it at the
-	// processor in slot 6. Every card then installs its own slot window into
-	// those spaces from its device_start().
-	m_nubus->set_space(m_maincpu, AS_DATA);
-	m_nubus->set_local_bus_space(m_maincpu, exp1proc_cpu_device::AS_LOCAL_BUS);
 }
 
 

@@ -69,11 +69,22 @@ explorer_cpu_device::explorer_cpu_device(const machine_config &mconfig, const ch
 }
 
 
+// The NuBus and the local bus are this board's processor's own address spaces,
+// and the bus-error line is this board's too, so hand all three to the
+// backplane here. This has to happen before any card installs itself into those
+// spaces, and it does: MAME calls device_resolve_objects() for every device -
+// after the address spaces have been created - before it starts the first one.
+void explorer_cpu_device::device_resolve_objects()
+{
+	nubus().set_bus_master_card(*this,
+			m_cpu->space(AS_DATA),
+			m_cpu->space(exp1proc_cpu_device::AS_LOCAL_BUS));
+}
+
+
 void explorer_cpu_device::device_start()
 {
 	nubus().install_map(*this, &explorer_cpu_device::nubus_map);
-
-	nubus().set_bus_error_card(*this);
 
 	u8 const *const source = m_microcode_proms->base();
 	u8 *const dest = m_control_store->base();
