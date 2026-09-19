@@ -23,32 +23,111 @@ explorer_keyboard_device::explorer_keyboard_device(const machine_config &mconfig
 {
 }
 
-// Letters, digits, punctuation, shift, enter, backspace, tab, esc, space and
-// the arrows. Every position below is the real scan code, taken from the
-// kernel source's own table (keyboard-chars.lisp, DEFCONSTANT SCAN-CODE-* and
-// the big character table keyed by octal scan code) - key_make() sends
-// 0x80 | (row << 4) | column, so a key's matrix position *is* its scan code
-// and the two have to agree exactly. The octal code is quoted against each
-// key added from that table so it can be rechecked without re-deriving it.
+// Every key on the keyboard, and nothing that is not on it. The positions come
+// from the kernel source's own table (keyboard-chars.lisp, DEFCONSTANT
+// SCAN-CODE-* and the big character table keyed by octal scan code) -
+// key_make() sends 0x80 | (row << 4) | column, so a key's matrix position *is*
+// its scan code and the two have to agree exactly. The octal code is quoted
+// against each key so it can be rechecked without re-deriving it, and the
+// gaps are the table's own "not used" entries.
 //
-// Two things there that are not the PC layout, and are deliberate:
+// The 112 keys below are the whole keyboard, checked against the photograph of
+// it - Figure 3-4, "Explorer Keyboard", in Introduction to the Explorer System
+// (book 3-4). That figure has 113 key positions, of which 111 carry a legend:
+//   - the unlabelled cap in the middle of the arrow cross is HOME (136), which
+//     sits between the left and right arrows in the matrix as well as on the
+//     keyboard, and has no character in the kernel table either;
+//   - the unlabelled cap in the left-hand column, between ABORT and
+//     HYPER/SUPER, is a blank - no scan code anywhere, so nothing here.
+// Key names follow that figure's keycaps rather than the kernel's constant
+// names where the two differ (TERM, LINE FEED, ITALIC LOCK).
+//
+// Keys with no obvious host equivalent are present but carry no PORT_CODE, so
+// they read as unassigned in the input configuration and can be bound by hand
+// (IPT_KEYBOARD's default sequence is empty). That is the whole keypad, the
+// Symbol/Greek shifts, the lock keys, and the Lisp keys - LINE FEED, ABORT,
+// BREAK, RESUME, HELP, UNDO, END, HOME, Hyper, the SYSTEM/NETWORK/STATUS/TERM
+// bank and the LEFT/MIDDLE/RIGHT keys that stand in for the mouse buttons.
+//
+// Three things that are not the PC layout, and are deliberate:
 //   - Parentheses are UNSHIFTED and brackets are shifted (codes 103/104) -
 //     it is a Lisp machine keyboard.
 //   - Shift-backquote is '{' and there is a separate tilde key whose shift is
 //     '}' (codes 060/061).
-// Still unmapped: the keypad, the Greek/Symbol shifts, and the Lisp-specific
-// keys (LINE, ABORT, BREAK, RESUME, HYPER, RUBOUT-as-distinct-from-backspace),
-// none of which have an obvious host binding.
+//   - There is no Backspace key. The host's is bound to RUBOUT (code 117),
+//     which is the nearest thing the keyboard has.
+//
+// Only the keys that were needed carry PORT_CHAR, because a character may be
+// claimed once per keyboard - in particular the keypad digits must not claim
+// the digits the main row already has.
 static INPUT_PORTS_START( explorer_kbd )
 	PORT_START("ROW0")
-	PORT_BIT(0xffff, IP_ACTIVE_HIGH, IPT_UNUSED)
+	PORT_BIT(0x0001, IP_ACTIVE_HIGH, IPT_UNUSED) // 000 not used
+	PORT_BIT(0x0002, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("HELP") // 001
+	PORT_BIT(0x0004, IP_ACTIVE_HIGH, IPT_UNUSED) // 002 not used
+	// The four lock keys. They send make/break like any other key and the band
+	// keeps the state in LOCK-BITS; at least MODE LOCK has a lamp in the keycap
+	// ("the light on the MODE LOCK key is lit", MODE-LOCK-MAPPING-ALIST), which
+	// nothing here drives - the lamps are on the far side of the undumped
+	// keyboard microcontroller (see explorer_kbd.h).
+	PORT_BIT(0x0008, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("CAPS LOCK") // 003
+	PORT_BIT(0x0010, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("BOLD LOCK") // 004
+	PORT_BIT(0x0020, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("ITALIC LOCK") // 005
+	PORT_BIT(0x0040, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("MODE LOCK") // 006
+	PORT_BIT(0x0080, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("LEFT HYPER") // 007
+	PORT_BIT(0x0100, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("SYSTEM") // 010
+	PORT_BIT(0x0200, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("NETWORK") // 011
+	PORT_BIT(0x0400, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("STATUS") // 012
+	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("TERM") // 013
+	PORT_BIT(0x1000, IP_ACTIVE_HIGH, IPT_UNUSED) // 014 not used
+	PORT_BIT(0x2000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("CLEAR SCREEN") // 015
+	PORT_BIT(0x4000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("CLEAR INPUT") // 016
+	PORT_BIT(0x8000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("UNDO") // 017
 
 	PORT_START("ROW1")
-	PORT_BIT(0xffff, IP_ACTIVE_HIGH, IPT_UNUSED)
+	PORT_BIT(0x0001, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("END") // 020
+	// Keyboard keys that produce mouse button characters (#\MOUSE-L-1 and so
+	// on) - the band turns them into button events, they are not wired to the
+	// SIB's own mouse port.
+	PORT_BIT(0x0002, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("LEFT") // 021
+	PORT_BIT(0x0004, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("MIDDLE") // 022
+	PORT_BIT(0x0008, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RIGHT") // 023
+	// The keyboard has exactly four function keys, codes 024-027. GDOS's key
+	// function summary uses all of them as alternatives to its control chords
+	// (F2 exits GDOS, F4 changes operational parameters, F8 in that table is a
+	// shifted F-key rather than a fifth one).
+	//
+	// MAME's own defaults put UI actions on F1-F4, but they do not shadow
+	// these: ui.cpp starts with UI controls inactive for any machine that has
+	// an emulated keyboard, so the keystrokes reach the machine and Scroll
+	// Lock is what toggles between the two.
+	PORT_BIT(0x0010, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("F1") PORT_CODE(KEYCODE_F1) // 024
+	PORT_BIT(0x0020, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("F2") PORT_CODE(KEYCODE_F2) // 025
+	PORT_BIT(0x0040, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("F3") PORT_CODE(KEYCODE_F3) // 026
+	PORT_BIT(0x0080, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("F4") PORT_CODE(KEYCODE_F4) // 027
+	PORT_BIT(0x0300, IP_ACTIVE_HIGH, IPT_UNUSED) // 030/031 not used
+	// The Lisp modifier bank, codes 032-037. Like the shift keys these are
+	// ordinary keys that send their own make/break codes - the band holds the
+	// state (keyboard-chars.lisp gives them bit-15 soft characters, #o100004
+	// for Left Control and so on, which KBD-BIT-15-ON folds into
+	// KBD-LEFT-SHIFTS/KBD-RIGHT-SHIFTS rather than delivering as input).
+	// Without them nothing above the plain character set is reachable: GDOS's
+	// own status line offers Control-T to exit and Control-F for the next
+	// screen, and neither can be typed.
+	// Hyper (007 and 040) is still unmapped along with the keypad and the
+	// other Lisp keys - there is no host key left that suggests itself.
+	PORT_BIT(0x0400, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("LEFT SUPER") PORT_CODE(KEYCODE_LWIN) // 032
+	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("LEFT META") PORT_CODE(KEYCODE_LALT) // 033
+	PORT_BIT(0x1000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("LEFT CONTROL") PORT_CODE(KEYCODE_LCONTROL) // 034
+	PORT_BIT(0x2000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RIGHT CONTROL") PORT_CODE(KEYCODE_RCONTROL) // 035
+	PORT_BIT(0x4000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RIGHT META") PORT_CODE(KEYCODE_RALT) // 036
+	PORT_BIT(0x8000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RIGHT SUPER") PORT_CODE(KEYCODE_RWIN) // 037
 
 	PORT_START("ROW2")
-	PORT_BIT(0x0007, IP_ACTIVE_HIGH, IPT_UNUSED)
-	PORT_BIT(0x0008, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("ESC") PORT_CODE(KEYCODE_ESC) PORT_CHAR(27)
+	PORT_BIT(0x0001, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RIGHT HYPER") // 040
+	PORT_BIT(0x0002, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RESUME") // 041
+	PORT_BIT(0x0004, IP_ACTIVE_HIGH, IPT_UNUSED) // 042 not used
+	PORT_BIT(0x0008, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("ESC") PORT_CODE(KEYCODE_ESC) PORT_CHAR(27) // 043
 	// Shifted digits from the same table, codes 44-55. Nine and zero shift to
 	// "(" and ")" there as well, but those already have dedicated keys of their
 	// own (codes 103/104) and a character may only be claimed once, so they are
@@ -70,8 +149,14 @@ static INPUT_PORTS_START( explorer_kbd )
 	PORT_START("ROW3")
 	PORT_BIT(0x0001, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_TILDE) PORT_CHAR('`') PORT_CHAR('{') // 060
 	PORT_BIT(0x0002, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("~  }") PORT_CHAR('~') PORT_CHAR('}') // 061
-	PORT_BIT(0x00fc, IP_ACTIVE_HIGH, IPT_UNUSED)
-	PORT_BIT(0x0100, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("TAB") PORT_CODE(KEYCODE_TAB) PORT_CHAR('\t')
+	PORT_BIT(0x0004, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD =") // 062
+	PORT_BIT(0x0008, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD +") // 063
+	PORT_BIT(0x0010, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD SPACE") // 064
+	// Not the Tab key - that is 070. Meroko has these two the wrong way round.
+	PORT_BIT(0x0020, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD TAB") // 065
+	PORT_BIT(0x0040, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("BREAK") // 066
+	PORT_BIT(0x0080, IP_ACTIVE_HIGH, IPT_UNUSED) // 067 not used
+	PORT_BIT(0x0100, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("TAB") PORT_CODE(KEYCODE_TAB) PORT_CHAR('\t') // 070
 	PORT_BIT(0x0200, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_Q) PORT_CHAR('q') PORT_CHAR('Q')
 	PORT_BIT(0x0400, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_W) PORT_CHAR('w') PORT_CHAR('W')
 	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_E) PORT_CHAR('e') PORT_CHAR('E')
@@ -88,9 +173,16 @@ static INPUT_PORTS_START( explorer_kbd )
 	PORT_BIT(0x0010, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_CLOSEBRACE) PORT_CHAR(')') PORT_CHAR(']') // 104
 	PORT_BIT(0x0020, IP_ACTIVE_HIGH, IPT_UNUSED) // 105 not used
 	PORT_BIT(0x0040, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_BACKSLASH) PORT_CHAR('\\') PORT_CHAR('|') // 106
-	PORT_BIT(0x0080, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME(u8"↑") PORT_CODE(KEYCODE_UP) PORT_CHAR(UCHAR_MAMEKEY(UP))
-	PORT_BIT(0x7f00, IP_ACTIVE_HIGH, IPT_UNUSED)
-	PORT_BIT(0x8000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("BACKSPACE") PORT_CODE(KEYCODE_BACKSPACE) PORT_CHAR(8)
+	PORT_BIT(0x0080, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME(u8"↑") PORT_CODE(KEYCODE_UP) PORT_CHAR(UCHAR_MAMEKEY(UP)) // 107
+	PORT_BIT(0x0100, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 7") // 110
+	PORT_BIT(0x0200, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 8") // 111
+	PORT_BIT(0x0400, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 9") // 112
+	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD -") // 113
+	PORT_BIT(0x1000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("ABORT") // 114
+	PORT_BIT(0x6000, IP_ACTIVE_HIGH, IPT_UNUSED) // 115/116 not used
+	// The keyboard has no Backspace key; RUBOUT is the nearest thing, so the
+	// host's Backspace is bound here.
+	PORT_BIT(0x8000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RUBOUT") PORT_CODE(KEYCODE_BACKSPACE) PORT_CHAR(8) // 117
 
 	PORT_START("ROW5")
 	PORT_BIT(0x0001, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_A) PORT_CHAR('a') PORT_CHAR('A')
@@ -104,14 +196,23 @@ static INPUT_PORTS_START( explorer_kbd )
 	PORT_BIT(0x0100, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_L) PORT_CHAR('l') PORT_CHAR('L')
 	PORT_BIT(0x0200, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_COLON) PORT_CHAR(';') PORT_CHAR(':') // 131
 	PORT_BIT(0x0400, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_QUOTE) PORT_CHAR('\'') PORT_CHAR('"') // 132
-	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("ENTER") PORT_CODE(KEYCODE_ENTER) PORT_CHAR(13)
-	PORT_BIT(0x1000, IP_ACTIVE_HIGH, IPT_UNUSED)
-	PORT_BIT(0x2000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME(u8"←") PORT_CODE(KEYCODE_LEFT) PORT_CHAR(UCHAR_MAMEKEY(LEFT))
-	PORT_BIT(0x4000, IP_ACTIVE_HIGH, IPT_UNUSED)
-	PORT_BIT(0x8000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME(u8"→") PORT_CODE(KEYCODE_RIGHT) PORT_CHAR(UCHAR_MAMEKEY(RIGHT))
+	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RETURN") PORT_CODE(KEYCODE_ENTER) PORT_CHAR(13) // 133
+	PORT_BIT(0x1000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("LINE FEED") // 134
+	PORT_BIT(0x2000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME(u8"←") PORT_CODE(KEYCODE_LEFT) PORT_CHAR(UCHAR_MAMEKEY(LEFT)) // 135
+	// The blank cap in the middle of the arrow cross on Figure 3-4.
+	PORT_BIT(0x4000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("HOME") // 136
+	PORT_BIT(0x8000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME(u8"→") PORT_CODE(KEYCODE_RIGHT) PORT_CHAR(UCHAR_MAMEKEY(RIGHT)) // 137
 
 	PORT_START("ROW6")
-	PORT_BIT(0x007f, IP_ACTIVE_HIGH, IPT_UNUSED)
+	PORT_BIT(0x0001, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 4") // 140
+	PORT_BIT(0x0002, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 5") // 141
+	PORT_BIT(0x0004, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 6") // 142
+	PORT_BIT(0x0008, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD ,") // 143
+	PORT_BIT(0x0030, IP_ACTIVE_HIGH, IPT_UNUSED) // 144/145 not used
+	// SYMBOL, which the kernel table calls "Left Greek (Symb)": it selects the
+	// third column of every key's entry on its own, and the fourth - the Greek
+	// letters - together with SHIFT.
+	PORT_BIT(0x0040, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("LEFT SYMBOL") // 146
 	// The shift keys send their own make/break codes like any other key - the
 	// band tracks the state itself. UCHAR_SHIFT_1 is what lets MAME's natural
 	// keyboard reach every second PORT_CHAR above, uppercase letters included.
@@ -129,11 +230,18 @@ static INPUT_PORTS_START( explorer_kbd )
 	PORT_BIT(0x0001, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_STOP) PORT_CHAR('.') PORT_CHAR('>') // 160
 	PORT_BIT(0x0002, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_CODE(KEYCODE_SLASH) PORT_CHAR('/') PORT_CHAR('?') // 161
 	PORT_BIT(0x0004, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RIGHT SHIFT") PORT_CODE(KEYCODE_RSHIFT) PORT_CHAR(UCHAR_SHIFT_1) // 162
-	PORT_BIT(0x0018, IP_ACTIVE_HIGH, IPT_UNUSED)
-	PORT_BIT(0x0020, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME(u8"↓") PORT_CODE(KEYCODE_DOWN) PORT_CHAR(UCHAR_MAMEKEY(DOWN))
-	PORT_BIT(0x07c0, IP_ACTIVE_HIGH, IPT_UNUSED)
-	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("SPACE") PORT_CODE(KEYCODE_SPACE) PORT_CHAR(' ')
-	PORT_BIT(0xf000, IP_ACTIVE_HIGH, IPT_UNUSED)
+	PORT_BIT(0x0008, IP_ACTIVE_HIGH, IPT_UNUSED) // 163 not used
+	PORT_BIT(0x0010, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("RIGHT SYMBOL") // 164
+	PORT_BIT(0x0020, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME(u8"↓") PORT_CODE(KEYCODE_DOWN) PORT_CHAR(UCHAR_MAMEKEY(DOWN)) // 165
+	PORT_BIT(0x0040, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 1") // 166
+	PORT_BIT(0x0080, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 2") // 167
+	PORT_BIT(0x0100, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 3") // 170
+	PORT_BIT(0x0600, IP_ACTIVE_HIGH, IPT_UNUSED) // 171/172 not used
+	PORT_BIT(0x0800, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("SPACE") PORT_CODE(KEYCODE_SPACE) PORT_CHAR(' ') // 173
+	PORT_BIT(0x1000, IP_ACTIVE_HIGH, IPT_UNUSED) // 174 not used
+	PORT_BIT(0x2000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD 0") // 175
+	PORT_BIT(0x4000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD .") // 176
+	PORT_BIT(0x8000, IP_ACTIVE_HIGH, IPT_KEYBOARD) PORT_NAME("KEYPAD ENTER") // 177
 INPUT_PORTS_END
 
 ioport_constructor explorer_keyboard_device::device_input_ports() const
