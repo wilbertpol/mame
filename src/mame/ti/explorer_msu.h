@@ -72,6 +72,6 @@ private:
 	double   m_seek_exp = 1.0;
 };
 
-DECLARE_DEVICE_TYPE(NUPI_MSU, explorer_msu_device)
+DECLARE_DEVICE_TYPE(EXPLORER_MSU, explorer_msu_device)
 
 #endif // MAME_TI_EXPLORER_MSU_H

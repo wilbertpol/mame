@@ -8,10 +8,17 @@ Board references found:
 - 2238040
 - 2243146
 
-There were three types of enclosures housing the actual disk/tape drives:
-- Mass Storage Unit (MSU) - 2 disks, or 1 disk and 1 1/4 inch tape
-- 1/2 inch tape enclosure.
-- Trimline disk cabinet for large SMD disks. Requires MSC?
+
+The NUPI interfaced with storage units through SCSI. There were three
+types of enclosures housing the actual disk/tape drives:
+- Mass Storage Unit holding 2 disks or 1 disk and a 1/4-inch tape drive.
+  The 1/4-inch tape drive is a unit consisting of a tape formatter (Emulex
+  MT01 / MT0151001) and a tape drive (Cipher Data Products series 540 or
+  Archive Viper 2060S/2125S).
+- 1/2-inch tape enclosure (Cipher Data MT3201 / CacheTape).
+- Trimline disk cabinet for large SMD disks. Unknown if this could
+  communicate with the NUPI or whether it required a SMC.
+
 
 The two fault LEDs, and why they are the flag register:
 
@@ -89,9 +96,12 @@ one behind the second. The board itself is initiator 5 (not 7 - see the
 own-ID compare in self-test entry 6).
 
 TODO:
-- Tape devices are not emulated. A unit's two devices may be cartridge
-  tapes rather than Winchesters, and explorer_msu.cpp implements the
-  disk command set only.
+- Cartridge tape devices are not emulated. A unit's two devices may be
+  1/4 inch cartridge tapes behind an Emulex MT01 Tape Controller rather
+  than Winchesters, and explorer_msu.cpp implements the disk command set
+  only.
+  The 1/2 inch tape enclosure is a separate SCSI target and is emulated,
+  see mt3201.cpp.
 
 - Whether an Adaptec SCSI interface sits between the formatter and the
   Winchester drives is unconfirmed; the only evidence is that the
@@ -107,7 +117,7 @@ TODO:
 #include "explorer_nupi.h"
 
 #include "explorer_msu.h"
-#include "explorer_tape.h"
+#include "mt3201.h"
 
 #define LOG_MISC (1U << 1)
 #define LOG_DMA (1U << 2)
@@ -126,7 +136,7 @@ namespace {
 void nupi_scsi_devices(device_slot_interface &device)
 {
 	device.option_add("msu", NUPI_MSU);
-	device.option_add("tape", NUPI_TAPE);
+	device.option_add("mt3201", MT3201);
 }
 
 // Used by the ROM 0x298 self-test dispatcher's DMA-path loopback check (see the
@@ -1587,7 +1597,7 @@ void explorer_nupi_device::device_add_mconfig(machine_config &config)
 	NSCSI_CONNECTOR(config, "scsibus:0", nupi_scsi_devices, "msu", false);   // units 00, 01
 	NSCSI_CONNECTOR(config, "scsibus:1", nupi_scsi_devices, nullptr, false); // units 08, 09
 	NSCSI_CONNECTOR(config, "scsibus:2", nupi_scsi_devices, "msu", false);   // units 10, 11
-	NSCSI_CONNECTOR(config, "scsibus:3", nupi_scsi_devices, "tape", false);  // units 18, 19
+	NSCSI_CONNECTOR(config, "scsibus:3", nupi_scsi_devices, "mt3201", false); // units 18, 19
 
 	NCR5385(config, m_scsi, 40_MHz_XTAL / 4); // clock not documented.
 	m_scsibus->set_external_device(5, m_scsi);

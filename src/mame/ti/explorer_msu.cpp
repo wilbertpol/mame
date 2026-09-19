@@ -2,14 +2,23 @@
 // copyright-holders:Wilbert Pol
 /**********************************************************************
 
-    TI Explorer NUPI mass storage unit.
+    TI Explorer Mass Storage Unit
 
-A mass storage unit can have a disk formatters interfacing 2 disks, or a
+A mass storage unit can have a disk formatter interfacing 2 disks, or a
 disk formatter interfacing 1 disk and a tape formatter interfacing a
-cartridge tape.
+1/4 inch cartridge tape. The vendor publications listed in Introduction to
+the Explorer System identify all three: the tape formatter is an Emulex
+MT01 Tape Controller (Emulex part number MT0151001), and the cartridge
+drives behind it are a Cipher Data Products Series 540 and an Archive
+Viper 2060S/2125S. The 1/2 inch drive is a separate enclosure and a
+different vendor again, see mt3201.cpp.
+
+For disks the following disks are named:
+- Maxtor XT-1140
+- Maxtor XT-1000
 
 TODO:
-- Tape support
+- Cartridge tape support (the MT01 and its drive)
 
 
 In the documentation the following information about the disk
@@ -55,23 +64,23 @@ used by the disk drives.
 #define LOG_DATA        (1U << 2)
 #define LOG_UNSUPPORTED (1U << 3)
 
-//#define VERBOSE 3
+//#define VERBOSE (LOG_COMMAND | LOG_DATA | LOG_UNSUPPORTED)
 
 #include "logmacro.h"
 
-DEFINE_DEVICE_TYPE(NUPI_MSU, explorer_msu_device, "explorer_nupi_msu", "TI Explorer NUPI Mass Storage Unit")
+DEFINE_DEVICE_TYPE(EXPLORER_MSU, explorer_msu_device, "explorer_msu", "TI Explorer Mass Storage Unit")
 
 explorer_msu_device::explorer_msu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
-	nscsi_full_device(mconfig, NUPI_MSU, tag, owner, clock),
+	nscsi_full_device(mconfig, EXPLORER_MSU, tag, owner, clock),
 	m_image(*this, "image%u", 0U),
 	m_active_lun(0)
 {
 	m_default_model_name =
-		" SEAGATE"
-		"          ST225N"
+		" TI     "
+		"             MSU"
 		"1.00";
 
-	// These are timings for the Maxtor XT-1140, they oughta be characteristics of the
+	// These are timings for the Maxtor XT-1140, they ought to be characteristics of the
 	// drive and not thise device.
 	set_seek_timing(4000, 26000, 43000, 3600, 1);
 }
