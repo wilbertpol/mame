@@ -4,33 +4,6 @@
 
     TI Explorer keyboard.
 
-    The real keyboard contains its own scan/communication microcomputer
-    (2243145-0001A SI General Description, section 4.4.13 "Special Chord
-    Detector": "It forces a local scan/communication microcomputer
-    located at the keyboard..."). That microcontroller's ROM has not
-    been dumped, so this device is a high-level stand-in: it only
-    emulates the byte-level serial protocol behavior needed to satisfy
-    the SIB firmware, not the real key-matrix scanning or the documented
-    special-chord escape sequences. Once a ROM dump of the real keyboard
-    microcontroller becomes available, this should be replaced with a
-    low-level emulation of that microcontroller instead.
-
-    Known protocol byte(s), reverse-engineered rather than documented in
-    the SI General Description manual:
-    - 0x00 sent by the SIB is a keyboard initialization/reset code. The
-      keyboard is expected to reply with 0x70 to acknowledge it. The SIB
-      firmware's boot-time self-test polls the USART receive-ready status
-      waiting for this reply; without it the poll never completes.
-    - Key transmission: a key-down sends its scancode with the high bit
-      set (scancode | 0x80); a key-up sends the bare scancode. Scancode
-      values below match the SCAN-CODE-* constants in the real TI kernel
-      source (keyboard-chars.lisp, KBD-MAKE-TI-TABLE) - authoritative,
-      not reverse-engineered. Cross-checked against Meroko's own
-      independently reverse-engineered map (svn/sib.c,
-      init_sdl_to_keysym_map()): every key both sides define agrees,
-      except Meroko's Tab (0x35), which the kernel source shows is
-      actually Keypad-Tab - the real Tab is 0x38.
-
 **********************************************************************/
 
 #ifndef MAME_TI_EXPLORER_KBD_H
