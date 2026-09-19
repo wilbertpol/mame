@@ -54,18 +54,25 @@ void tiexplorer_cpu_cards(device_slot_interface &device)
 	device.option_add("cpu", EXPLORER_CPU);
 }
 
-// The machine is nothing but a backplane and the boards plugged into it: the
-// processor is on the card in slot 6, and the NuBus and local bus are that
-// board's own address spaces, which it hands to the backplane itself (see
-// explorer_cpu.cpp). So the driver holds no devices at all.
+// The machine is nothing but a backplane and the boards plugged into it. Note
+// what is *not* here: the processor is on the card in slot 6, and the NuBus and
+// the local bus are that board's own address spaces, which it hands to the
+// backplane itself (see explorer_cpu.cpp), so the driver never has to reach
+// into a slot.
 class tiexplorer_state : public driver_device
 {
 public:
 	tiexplorer_state(const machine_config &mconfig, device_type type, const char *tag) :
-		driver_device(mconfig, type, tag)
+		driver_device(mconfig, type, tag),
+		m_nubus(*this, "nubus")
 	{ }
 
 	void tiexplorer(machine_config &config);
+
+private:
+	// Held only so the slots below can be given the backplane itself rather
+	// than its tag spelled out seven times.
+	required_device<ti_nubus_device> m_nubus;
 };
 
 
@@ -75,22 +82,22 @@ INPUT_PORTS_END
 
 void tiexplorer_state::tiexplorer(machine_config &config)
 {
-	TI_NUBUS(config, "nubus");
+	TI_NUBUS(config, m_nubus);
 
 	// Reserved / local bus card slots
-	TI_NUBUS_SLOT(config, "nb6", "nubus", 6, tiexplorer_cpu_cards, "cpu");
-	TI_NUBUS_SLOT(config, "nb5", "nubus", 5, tiexplorer_nubus_local_bus_cards, "sib");
-	TI_NUBUS_SLOT(config, "nb4", "nubus", 4, tiexplorer_nubus_local_bus_cards, "mem8mb");
-	TI_NUBUS_SLOT(config, "nb3", "nubus", 3, tiexplorer_nubus_local_bus_cards, nullptr);
+	TI_NUBUS_SLOT(config, "nb6", m_nubus, 6, tiexplorer_cpu_cards, "cpu");
+	TI_NUBUS_SLOT(config, "nb5", m_nubus, 5, tiexplorer_nubus_local_bus_cards, "sib");
+	TI_NUBUS_SLOT(config, "nb4", m_nubus, 4, tiexplorer_nubus_local_bus_cards, "mem8mb");
+	TI_NUBUS_SLOT(config, "nb3", m_nubus, 3, tiexplorer_nubus_local_bus_cards, nullptr);
 
 	// Other cards
-	TI_NUBUS_SLOT(config, "nb2", "nubus", 2, tiexplorer_nubus_cards, "nupi");
-	TI_NUBUS_SLOT(config, "nb1", "nubus", 1, tiexplorer_nubus_cards, nullptr);
+	TI_NUBUS_SLOT(config, "nb2", m_nubus, 2, tiexplorer_nubus_cards, "nupi");
+	TI_NUBUS_SLOT(config, "nb1", m_nubus, 1, tiexplorer_nubus_cards, nullptr);
 
 	// The Ethernet board passes its power-up self-test and all nine of its
 	// extended subtests, and the system boots with it fitted. See
 	// explorer_enet.cpp for what it does and does not do.
-	TI_NUBUS_SLOT(config, "nb0", "nubus", 0, tiexplorer_nubus_cards, "enet");
+	TI_NUBUS_SLOT(config, "nb0", m_nubus, 0, tiexplorer_nubus_cards, "enet");
 }
 
 
