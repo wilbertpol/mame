@@ -56,6 +56,39 @@ static constexpr u32 MCR_FAULT_LEDS_MASK = 0x3f;
 static constexpr u8 MEMORY_CYCLE_BUSY_CYCLES = 2; // was 6
 
 
+// A microinstruction takes four periods of the 28 MHz master clock - 142.86 ns,
+// which is 2243144-0001A paragraph 4.3.8's "7-megahertz microinstruction clock"
+// and the "142-nanosecond microinstruction cycle" the same manual's feature list
+// quotes. Cycles here are therefore master clocks, not microinstructions, which
+// is what makes the long clock below expressible: paragraph 4.3.8's "long clock
+// function ... allows the clock to be held in the low state for (multiple)
+// additional quarter-clock period(s) ... to complete execution of the current
+// operation ... when a long logic path is selected", and a quarter-clock period
+// is exactly one master clock.
+static constexpr int MICROINSTRUCTION_CLOCKS = 4;
+
+// "The hardware supports only the provision of 35.71 or 71.43 nanoseconds of
+// additional time in response to long clock requests" (4.3.8), i.e. one or two
+// extra master clocks, and "long clock requests can only be invoked by the
+// hardware" - the microinstruction has no bit to ask for one, unlike the MIT
+// CADR this processor descends from, whose IR<45> ILONG bit selected a slow
+// clock per instruction. So which operations take a long clock is a property of
+// the hardware that no manual, none of TI's own microcode sources (ravfmt.lisp
+// lists every microinstruction field and has nothing for it) and no other
+// emulator records, and it has to be inferred from behaviour.
+//
+// What pins it down is the SIB diagnostic in GDOS, test 31, which times the
+// real-time clock's 300 ms comparator interrupt against a microcode delay loop -
+// so it measures processor speed against the RTC crystal directly. It brackets
+// the average cycle of its own four-instruction loop (a byte-field extract, two
+// jumps and an ALU decrement) between 149.8 ns and 174.8 ns, i.e. the loop needs
+// at least one long clock but not four: with none the clock reports "too slow"
+// (error SIB0312) and with one on every instruction, "too fast" (SIB0311). The
+// byte instruction is the one charged here because the barrel shifter is the
+// longest logic path of the four.
+static constexpr int LONG_CLOCK_CLOCKS = 1;
+
+
 static const u32 shift_mask_left[32] =
 {
 	0x00000001, 0x00000003, 0x00000007, 0x0000000f,
@@ -1977,7 +2010,7 @@ void exp1proc_cpu_device::execute_run()
 			bool const dest_hazard = !BIT(m_ir, 31) && ((m_ir >> 25) & 0x3f) >= 0x10 && ((m_ir >> 25) & 0x3f) <= 0x1f;
 			if (dest_hazard)
 			{
-				m_icount -= m_memory_busy_counter;
+				m_icount -= m_memory_busy_counter * MICROINSTRUCTION_CLOCKS;
 				if (m_read_pending)
 				{
 					m_md = m_read_data;
@@ -1996,6 +2029,8 @@ void exp1proc_cpu_device::execute_run()
 		m_pc = m_next_pc;
 		u64 next_op = m_program.read_qword(m_next_pc++);
 
+		int cycles = MICROINSTRUCTION_CLOCKS;
+
 		if (!m_n)
 		{
 			m_a = m_a_mem[(m_ir >> 32) & 0x3ff];
@@ -2004,7 +2039,14 @@ void exp1proc_cpu_device::execute_run()
 			switch (m_ir & (u64(3) << 54))
 			{
 			case u64(0) << 54: execute_alu(); break;
-			case u64(1) << 54: execute_byte(); break;
+			case u64(1) << 54:
+				// The byte format's IR(18:17) selects the shifter's job: 1 is LDB,
+				// which rotates the source through the barrel shifter (2 is
+				// Selective-Deposit and 3 DPB, which rotate the mask as well).
+				if (((m_ir >> 17) & 3) == 1)
+					cycles += LONG_CLOCK_CLOCKS;
+				execute_byte();
+				break;
 			case u64(2) << 54: execute_jump(); break;
 			case u64(3) << 54: execute_dispatch(); break;
 			}
@@ -2016,7 +2058,7 @@ void exp1proc_cpu_device::execute_run()
 
 		m_ir = next_op;
 
-		m_icount--;
+		m_icount -= cycles;
 	} while (m_icount > 0);
 }
 

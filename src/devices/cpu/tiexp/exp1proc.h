@@ -45,10 +45,13 @@ protected:
 	virtual void device_start() override ATTR_COLD;
 	virtual void device_reset() override ATTR_COLD;
 
-	virtual u64 execute_clocks_to_cycles(u64 clocks) const noexcept override { return (clocks + 4 - 1) / 4; }
-	virtual u64 execute_cycles_to_clocks(u64 cycles) const noexcept override { return (cycles * 4); }
-	virtual u32 execute_min_cycles() const noexcept override { return 1; } // TODO
-	virtual u32 execute_max_cycles() const noexcept override { return 2; } // TODO
+	// A cycle here is one period of the 28 MHz master clock, not a
+	// microinstruction - see MICROINSTRUCTION_CLOCKS in exp1proc.cpp. So the
+	// default one-cycle-per-clock conversion is what is wanted, and the extremes
+	// are a plain microinstruction and one that both takes a long clock and
+	// stalls for a full memory cycle.
+	virtual u32 execute_min_cycles() const noexcept override { return 4; }
+	virtual u32 execute_max_cycles() const noexcept override { return 13; }
 	virtual void execute_run() override;
 	virtual void execute_set_input(int linenum, int state) override;
 
