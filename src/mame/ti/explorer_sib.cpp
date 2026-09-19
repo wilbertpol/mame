@@ -183,6 +183,16 @@ enum : int
 // update_speaker_amplifier(). MAME multiplies the two, so they have to agree.
 static constexpr float SN76496_GAIN = 1.0f;
 
+// The parity bit the three 9-bit transmit registers (diagnostic data, sound
+// control, speech) append to their byte. The manual calls it "an odd parity
+// bit", which reads as the bit that makes the nine-bit word's parity odd - it
+// is not. GDOS's SIB diagnostic test 71 writes FF to the sound control register
+// and fails with "Expected Data: 00FF / Actual Data: 01FF" unless the bit is 0,
+// and FF has an even number of ones. So the board's parity generator is wired
+// the other way round, as a 74LS280-style sum-of-ones output: the bit is 1 when
+// the byte itself has an odd number of ones. The same test walks all three
+// registers through FF F0 CC AA 55 33 0F 00 and then the odd-parity set DF BC
+// 79 58 46 25 13 01, so every case is covered both ways.
 u8 compute_parity(u8 data) { data ^= data >> 4; data ^= data >> 2; data ^= data >> 1; return data & 1; }
 
 // A relative-axis input port accumulates modulo its own mask, so one step of
@@ -919,6 +929,18 @@ void explorer_sib_device::update_speaker_amplifier()
 }
 
 
+// SC08, the bit the sound control register appends to its byte. 4.4.11.6 puts
+// PARCHK on the parity generator as "a parity check bit input to the sound
+// control register", so it inverts what the byte generates - the point being
+// that a real monitor then disagrees and answers SONDERR. Figure 4-17 makes
+// SC08 readable ("read direct"), so the inversion shows up here too; no TI
+// software reads it back with PARCHK set, so that half is unproven.
+u8 explorer_sib_device::sound_control_parity()
+{
+	return compute_parity(m_sound_control & 0xff) ^ BIT(m_monitor_control, 3);
+}
+
+
 // The motion/keyswitch data register, f20008 - read-only, IDATA 07-00 (Table
 // 4-15), bit assignments in Figure 4-14.
 u32 explorer_sib_device::motion_keyswitch_r()
@@ -1019,27 +1041,25 @@ void explorer_sib_device::mouse_map(address_map &map)
 	// loopback through the monitor's codec), PARCHK 11 (force bad sound parity);
 	// 12-15 are no connection.
 
-	// SERRENB and PARCHK are storage only, deliberately. Between them they
-	// describe a complete diagnostic loop that no TI software ever runs.
-	// 4.4.11.4 and 4.4.11.6: PARCHK "forces bad (even) parity on the sound
-	// control output to the monitor", the monitor recomputes parity over the
-	// byte, disagrees, and "returns a sound error bit (SONDERR) to the SI board";
-	// if SERRENB is set that raises event cause 12 ("Sound data", f00030), which
-	// the event generator then clears with its sound interrupt acknowledge - an
-	// explicit ack, unlike the voice interrupt's clear-on-read.
+	// SERRENB and PARCHK together describe the board's one diagnostic loop that
+	// reaches off-board. 4.4.11.4 and 4.4.11.6: PARCHK "forces bad (even) parity
+	// on the sound control output to the monitor", the monitor recomputes parity
+	// over the byte, disagrees, and "returns a sound error bit (SONDERR) to the SI
+	// board"; if SERRENB is set that raises event cause 12 ("Sound data",
+	// f00030), which the event generator then clears with its sound interrupt
+	// acknowledge - an explicit ack, unlike the voice interrupt's clear-on-read.
 	//
-	// Nothing drives it, so there is nothing to model and nothing that could
-	// notice if it were modelled wrongly. Verified by logging every write to this
-	// register and to the sound control register, across both the extended
-	// self-test and a band boot: all 40 sound bytes go out with PARCHK and
-	// SERRENB clear. The two bits are only ever set as part of a walking-bit and
-	// checkerboard sweep of this register - low byte 00 01 02 08 0f 33 55 aa cc
-	// f0 ff, high byte 100 300 500 a00 c00 f00 - and every sweep ends by writing
-	// zero before the first sound byte goes out, which makes it a register
-	// storage test rather than a parity test. The band settles on 0100, MOSENB
-	// alone. The slot 5 extended self-test has no sound subtest either.
+	// Neither the Lisp band nor the boot self-test ever runs it - both write all
+	// their sound bytes with PARCHK and SERRENB clear - but the GDOS System
+	// Interface Board diagnostic's test 71 does, and stops on
+	// "SIB0715 ... Sound interrupt generator failed to post an event at address
+	// F5F00030" if it is not modelled. It sets f2000c to 0980 (PARCHK + MOSENB +
+	// SERRENB), writes one sound byte, and waits for the event. Since there is no
+	// monitor at the far end of the fiber-optic link, the write handler below
+	// stands in for it: a byte sent with deliberately bad parity is one the
+	// monitor would reject, so it posts the event directly.
 
-	// f20014 - sound control register, an 8-bit value plus generated odd parity
+	// f20014 - sound control register, an 8-bit value plus a generated parity bit
 	// (Figure 4-17) shipped to the sound generator in the monitor. The self-test
 	// writes the four "channel off" bytes:
 	// 9f - 10011111 - 001 - tone 1 attenuation - off
@@ -1093,13 +1113,19 @@ void explorer_sib_device::mouse_map(address_map &map)
 			post_voice_sample(data & 0xff);
 	}));
 	map(0x00f20014, 0x00f20017).lrw32(NAME([this] {
-		return (m_sound_control & 0xff) | (u32(compute_parity(m_sound_control & 0xff) ^ 1) << 8);
+		return (m_sound_control & 0xff) | (u32(sound_control_parity()) << 8);
 	}), NAME([this] (u32 data) {
 		m_sound_control = data & 0xff;
 		m_sn76496->write(u8(data));
+		// The monitor recomputes the parity of the byte it receives and returns
+		// SONDERR if it disagrees with the transmitted bit, which is exactly the
+		// case PARCHK manufactures. Nothing models the monitor, so this is where
+		// its answer comes from.
+		if (BIT(m_monitor_control, 3) && BIT(m_interrupt_diag_control, 7))
+			post_event(EVENT_SOUND_PARITY_ERROR);
 	}));
 	// Paragraph 4.4.11.7 and Figure 4-18: a 9-bit register holding a byte of
-	// speech synthesis data plus a generated odd parity bit, shipped over the
+	// speech synthesis data plus a generated parity bit, shipped over the
 	// fiber-optic link to a speech synthesizer in the monitor at a fixed 8 kHz
 	// rate. Nothing comes back - "there is no path to read data back from the
 	// speech synthesizer in the monitor" - so a read returns this register's own
@@ -1117,7 +1143,7 @@ void explorer_sib_device::mouse_map(address_map &map)
 	// and in TI's Lisp sources only as an unused field declaration in
 	// kernel/micro-time.lisp.
 	map(0x00f20018, 0x00f2001b).lrw32(NAME([this] {
-		return (m_speech_register & 0xff) | (u32(compute_parity(m_speech_register & 0xff) ^ 1) << 8);
+		return (m_speech_register & 0xff) | (u32(compute_parity(m_speech_register & 0xff)) << 8);
 	}), NAME([this] (u32 data) {
 		m_speech_register = data & 0xff;
 	}));

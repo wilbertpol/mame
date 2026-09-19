@@ -63,6 +63,7 @@ private:
 	void centronics_fault_w(int state);
 	void centronics_ack_w(int state);
 	void update_speaker_amplifier();
+	u8 sound_control_parity();
 	void mouse_map(address_map &map) ATTR_COLD;
 	u32 motion_keyswitch_r();
 	void post_mouse_motion_event();
