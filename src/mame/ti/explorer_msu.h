@@ -4,14 +4,6 @@
 
     TI Explorer NUPI mass storage unit.
 
-    Per the NUPI's 68000 firmware (see explorer_nupi.cpp), each SCSI target
-    is a mass storage unit, not a drive: the firmware selects a target by
-    SCSI ID and then addresses one of up to two attached drives via the LUN
-    (sent both in the IDENTIFY message and, redundantly, in CDB byte 1 bits
-    7:5, per SCSI-1 convention). This device models one unit and always
-    exposes both LUNs, so a real 2-drive unit can be wired up by simply
-    mounting a CHD in the second image slot.
-
 **********************************************************************/
 
 #ifndef MAME_TI_EXPLORER_MSU_H
@@ -27,9 +19,6 @@ class explorer_msu_device : public nscsi_full_device
 public:
 	explorer_msu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
 
-	// Overrides the drive timing the constructor sets up. See
-	// nscsi_harddisk_device::set_seek_timing() (bus/nscsi/hd.h) for the
-	// parameter meanings; applies identically to both LUNs.
 	void set_seek_timing(uint32_t track_us, uint32_t average_us, uint32_t full_us, uint32_t rpm, uint8_t interleave);
 
 protected:

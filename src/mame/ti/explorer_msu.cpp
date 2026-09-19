@@ -17,39 +17,27 @@ For disks the following disks are named:
 - Maxtor XT-1140
 - Maxtor XT-1000
 
-TODO:
-- Cartridge tape support (the MT01 and its drive)
-
-
-In the documentation the following information about the disk
-formatter was found (ExplFieldMaint, page CM 2-32, 2.4.11):
-- 8085 microprocessor
-- 27218 EPROM, 32Kx8
-- 8156 local RAM, 2048 bit.
-- 6116 working RAM, 2Kx8
-- Adaptec AIC-010 SERDES
-- Adaptec AIC-300 buffer controller
-
-Mass Storage Unit II (SCSI/ESDI formatter, likely for Explorer LX systems)
-From board overview:
-- 20MHz crystal
-- 2x 16Kx8 EPROM
-- 2x 32Kx8 RAM
-- 8096 microcontroller
-- 5050 disk drive data sequencer
-- 2Kx8 format PARAM register
-- 2x 5060 4-channel DMA controller
-- 2x 16Kx9 RAM buffer
-- 5080 SCSI bus interface controller
-
-
 The disk drive formatter converts SCSI signals to the ST506 interface
 used by the disk drives.
 
-    See explorer_msu.h. Command handling below is adapted from
-    bus/nscsi/hd.cpp (SCSI Hard Disk), generalized to two independently
-    mounted LUNs instead of one; see that file for the commands' own
-    history/rationale. Deliberately not sharing code with hd.cpp itself.
+Lacking low level emulation the command handling is copied from
+bus/nscsi/hd.cpp, generalized to two independently mounted LUNs
+instead of one.
+
+
+TODO:
+- Cartridge tape support (the MT01 and its drive)
+- There is no detailed documentation or schematic for the Mass
+  Storage Unit or the formatters.
+  A high level overview of the disk formatter mentions the following
+  hardware in the disk formatter:
+  - 8085 microprocessor
+  - 27218 EPROM, 32Kx8
+  - 8156 local RAM, 2048 bit.
+  - 6116 working RAM, 2Kx8
+  - Adaptec AIC-010 SERDES
+  - Adaptec AIC-300 buffer controller
+
 
 **********************************************************************/
 
@@ -65,7 +53,6 @@ used by the disk drives.
 #define LOG_UNSUPPORTED (1U << 3)
 
 //#define VERBOSE (LOG_COMMAND | LOG_DATA | LOG_UNSUPPORTED)
-
 #include "logmacro.h"
 
 DEFINE_DEVICE_TYPE(EXPLORER_MSU, explorer_msu_device, "explorer_msu", "TI Explorer Mass Storage Unit")
@@ -191,27 +178,10 @@ attotime explorer_msu_device::scsi_data_command_delay()
 	}
 }
 
-// Byte transfer rate: a fixed 1.25MB/s, rather than a period derived from
-// platter geometry. A geometry-derived period made the firmware's SCSI
-// interrupt land either side of a wait loop's exit depending on run-to-run
-// timing, so the slot 2 self-test only passed intermittently; a fixed rate is
-// stable (verified 16/16 identical runs).
-//
-// Reference points: the NCR 5385E data sheet (May 1985, section 1) lists
-// "asynchronous data transfers to 1.5 MBPS" as the controller's maximum, and
-// the drives actually fitted to an Explorer report 0.625MB/s. 0.625MB/s works
-// identically here (also 16/16 identical, same boot depth) and would be the
-// more faithful choice; 1.25MB/s is used because it runs the emulation faster
-// and nothing in the firmware's timing depends on the difference.
-//
-// The 1.25MB/s figure is empirical, not derived from either data sheet - it is
-// simply the fastest rate that does not regress the disk boot. Do NOT raise it
-// to the 5385's documented 1.5MB/s maximum: the NUPI's own FIFO/DMA path
-// cannot sustain that. Measured boot depth by rate - 500k/625k/750k/1M/1.25M
-// all reach CMDLOG 39; 1.5MB/s drops to 36; 2MB/s breaks the boot outright (6).
+// Max transfer speed for a Maxtor XT-1140, 0.625MB/s.
 attotime explorer_msu_device::scsi_data_byte_period()
 {
-	return attotime::from_ticks(1, 1'250'000);
+	return attotime::from_ticks(1, 625'000);
 }
 
 void explorer_msu_device::device_add_mconfig(machine_config &config)

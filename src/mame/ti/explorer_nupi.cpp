@@ -135,7 +135,7 @@ namespace {
 
 void nupi_scsi_devices(device_slot_interface &device)
 {
-	device.option_add("msu", NUPI_MSU);
+	device.option_add("msu", EXPLORER_MSU);
 	device.option_add("mt3201", MT3201);
 }
 
