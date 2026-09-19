@@ -316,30 +316,16 @@ void nscsi_tape_device::continue_handling_mode_select_6()
 		const u32 blocks_num = get_u24be(&m_pl_buf[5]); // number of blocks
 		const u32 block_len = get_u24be(&m_pl_buf[9]); // block length
 		LOG("    density_code=0x%02x blocks_num=%d block_len=%d\n", density_code, blocks_num, block_len);
+		if (density_code) // error: we don't support changing density
+			return report_bad_pl_field();
+
 		if (blocks_num) // error: we don't support changing block length for only some amount of blocks
 			return report_bad_pl_field();
 
-		// density_code is ignored: the SIMH container has no notion of density
-		// (simh_tape_file::get_density_code() returns 0 with that very comment),
-		// so there is nothing here that a density can be wrong for. Rejecting it
-		// turned away real initiators - TI Explorer's NUPI firmware asks for 0x02
-		// as a matter of course. Real drives accept their own set of codes and
-		// nothing else: the Cipher Series 540, for one, takes 00H/05H (QIC-24)
-		// and 04H/84H (QIC-11), so there is no universal value to check against
-		// either.
-		//
-		// block_len == 0 leaves the fixed-length block length alone. SCSI-2
-		// 9.3.3 reads it as "variable", but a drive that only does fixed-length
-		// blocks answers it with its own default instead, and that is the
-		// convention initiators of this era use: TI Explorer's NUPI firmware
-		// sends 0 here and then rejects the drive outright, with "device has
-		// undefined block length", if MODE SENSE answers 0 back. The drive side
-		// of that convention is spelled out in the Cipher Series 540 SCSI
-		// manual (799906-001), which says of MODE SELECT that Block Size "is
-		// not supported by the drive and must be set to zero" - and answers
-		// 0200H to MODE SENSE. Same for Number of Blocks, rejected above.
-		if (block_len)
-			m_fixed_block_len = block_len;
+		if (block_len == 0) // error: requested block length is bad
+			return report_bad_pl_field();
+
+		m_fixed_block_len = block_len;
 		if (m_fixed_block_len > m_rw_buf_size) {
 			m_rw_buf_size = m_fixed_block_len;
 			m_rw_buf = std::make_unique<u8[]>(m_rw_buf_size);
