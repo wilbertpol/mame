@@ -4,10 +4,10 @@
 
   Texas Instruments Explorer
 
-The Explorer uses a NuBus backplane combined with a local bus.
+The Explorer uses a NuBus backplane combined with a local bus for slots 3-6.
 The boards that could be connected to the local bus are:
 - CPU board
-- System interface controller boad (monitor, keyboard, mouse, printer, rs232c)
+- System interface controller board (monitor, keyboard, mouse, printer, rs232c)
 - Memory board(s)
 
 Slot 6 is reserved for the CPU board.
