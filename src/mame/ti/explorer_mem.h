@@ -36,7 +36,6 @@ private:
 	u8 test_register_r();
 	void test_register_w(u8 data);
 
-	static u8 calculate_parity(u8 data);
 	u8 get_parity(offs_t offset) const;
 	void store_parity_bit(offs_t offset, u8 bit);
 	u8 test_force_bit(offs_t offset) const;

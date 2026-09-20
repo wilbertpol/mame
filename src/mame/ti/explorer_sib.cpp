@@ -193,7 +193,7 @@ static constexpr float SN76496_GAIN = 1.0f;
 // the byte itself has an odd number of ones. The same test walks all three
 // registers through FF F0 CC AA 55 33 0F 00 and then the odd-parity set DF BC
 // 79 58 46 25 13 01, so every case is covered both ways.
-u8 compute_parity(u8 data) { data ^= data >> 4; data ^= data >> 2; data ^= data >> 1; return data & 1; }
+u8 calculate_parity(u8 data) { data ^= data >> 4; data ^= data >> 2; data ^= data >> 1; return data & 1; }
 
 // A relative-axis input port accumulates modulo its own mask, so one step of
 // the mouse is the wrapped difference between two successive values.
@@ -937,7 +937,7 @@ void explorer_sib_device::update_speaker_amplifier()
 // software reads it back with PARCHK set, so that half is unproven.
 u8 explorer_sib_device::sound_control_parity()
 {
-	return compute_parity(m_sound_control & 0xff) ^ BIT(m_monitor_control, 3);
+	return calculate_parity(m_sound_control & 0xff) ^ BIT(m_monitor_control, 3);
 }
 
 
@@ -1093,7 +1093,7 @@ void explorer_sib_device::mouse_map(address_map &map)
 		update_speaker_amplifier();
 	}));
 	map(0x00f20010, 0x00f20013).lrw32(NAME([this] {
-		return (m_diagnostic_data & 0xff) | (u32(compute_parity(m_diagnostic_data & 0xff)) << 8);
+		return (m_diagnostic_data & 0xff) | (u32(calculate_parity(m_diagnostic_data & 0xff)) << 8);
 	}), NAME([this] (u32 data) {
 		m_diagnostic_data = data & 0x1ff;
 		// 4.4.11.9: "The voice select bit (VOICSEL) gates the simulated parallel
@@ -1143,7 +1143,7 @@ void explorer_sib_device::mouse_map(address_map &map)
 	// and in TI's Lisp sources only as an unused field declaration in
 	// kernel/micro-time.lisp.
 	map(0x00f20018, 0x00f2001b).lrw32(NAME([this] {
-		return (m_speech_register & 0xff) | (u32(compute_parity(m_speech_register & 0xff)) << 8);
+		return (m_speech_register & 0xff) | (u32(calculate_parity(m_speech_register & 0xff)) << 8);
 	}), NAME([this] (u32 data) {
 		m_speech_register = data & 0xff;
 	}));

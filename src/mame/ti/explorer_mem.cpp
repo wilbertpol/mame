@@ -25,6 +25,14 @@ namespace {
 constexpr u8 CONFIG_BOARD_RESET = 0x01;
 constexpr u8 CONFIG_TEST_LED = 0x04;
 
+u8 calculate_parity(u8 data)
+{
+	data ^= data >> 4;
+	data ^= data >> 2;
+	data ^= data >> 1;
+	return data & 1;
+}
+
 } // anonymous namespace
 
 
@@ -154,14 +162,6 @@ void explorer_mem_device_base::test_register_w(u8 data)
 		m_ram_view_local_bus.select(BIT(m_test_register, 4));
 }
 
-
-u8 explorer_mem_device_base::calculate_parity(u8 data)
-{
-	data ^= data >> 4;
-	data ^= data >> 2;
-	data ^= data >> 1;
-	return data & 1;
-}
 
 u8 explorer_mem_device_base::get_parity(offs_t offset) const
 {
