@@ -228,8 +228,7 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_address_lo_raw));
 	save_item(NAME(m_dma_address_hi_raw));
 	save_item(NAME(m_dma_address_loaded));
-	save_item(NAME(m_selftest_dma_active));
-	save_item(NAME(m_selftest_dma_credits));
+	save_item(NAME(m_onboard_dma_credits));
 	save_item(NAME(m_dma_direction));
 	save_item(NAME(m_fifo_out_pos));
 	save_item(NAME(m_dma_irq5_armed));
@@ -247,12 +246,10 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_scsi_fifo_have_pending_byte));
 	save_item(NAME(m_scsi_fifo_pending_word));
 	save_item(NAME(m_scsi_fifo_have_pending_word));
-	save_item(NAME(m_dma_active));
+	save_item(NAME(m_dma_mode));
 	save_item(NAME(m_fifo_drain_pos));
 	save_item(NAME(m_dma_target_configured));
 	save_item(NAME(m_dma_in_flight));
-	save_item(NAME(m_dma_write_to_nubus));
-	save_item(NAME(m_dma_out_to_scsi));
 	save_item(NAME(m_dma_out_byte_phase));
 	save_item(NAME(m_dma_fire_irq));
 	save_item(NAME(m_dma_transfer_start_pos));
@@ -289,8 +286,7 @@ void explorer_nupi_device::device_reset()
 	m_dma_address_lo_raw = 0;
 	m_dma_address_hi_raw = 0;
 	m_dma_address_loaded = false;
-	m_selftest_dma_active = false;
-	m_selftest_dma_credits = 0;
+	m_onboard_dma_credits = 0;
 	m_dma_direction = 0;
 	m_fifo_out_pos = 0;
 	m_dma_irq5_armed = false;
@@ -308,12 +304,10 @@ void explorer_nupi_device::device_reset()
 	m_scsi_fifo_have_pending_byte = false;
 	m_scsi_fifo_pending_word = 0;
 	m_scsi_fifo_have_pending_word = false;
-	m_dma_active = false;
+	m_dma_mode = DMA_IDLE;
 	m_fifo_drain_pos = 0;
 	m_dma_target_configured = false;
 	m_dma_in_flight = false;
-	m_dma_write_to_nubus = false;
-	m_dma_out_to_scsi = false;
 	m_dma_out_byte_phase = 0;
 	m_dma_fire_irq = true;
 	m_dma_transfer_start_pos = 0;
@@ -336,7 +330,7 @@ TIMER_CALLBACK_MEMBER(explorer_nupi_device::interval_timer_expired)
 
 TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_drain_timer_expired)
 {
-	if (m_dma_write_to_nubus && m_fifo_drain_pos == m_unknown_450000_pos)
+	if (m_dma_mode == DMA_FIFO_TO_NUBUS && m_fifo_drain_pos == m_unknown_450000_pos)
 		return;
 
 	u16 const word = m_unknown_450000_fifo[m_fifo_drain_pos];
@@ -348,19 +342,19 @@ TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_drain_timer_expired)
 
 void explorer_nupi_device::dma_drain_kick()
 {
-	if (m_dma_active && !m_dma_drain_timer->enabled())
-		m_dma_drain_timer->adjust(m_dma_write_to_nubus ? attotime::from_usec(1) : attotime::from_usec(4));
+	if (dma_draining() && !m_dma_drain_timer->enabled())
+		m_dma_drain_timer->adjust(m_dma_mode == DMA_FIFO_TO_NUBUS ? attotime::from_usec(1) : attotime::from_usec(4));
 }
 
 
-u16 explorer_nupi_device::selftest_dma_read16(u32 addr)
+u16 explorer_nupi_device::onboard_read16(u32 addr)
 {
 	u32 const local = (addr & 0x20000) ? (0x040000 | (addr & 0x3fff)) : (0x180000 | (addr & 0x0fff));
 	return m_mpu->space(AS_PROGRAM).read_word(local);
 }
 
 
-void explorer_nupi_device::selftest_dma_write16(u32 addr, u16 data)
+void explorer_nupi_device::onboard_write16(u32 addr, u16 data)
 {
 	if (addr & 0x20000)
 		return; // ROM - a transfer into it moves nothing
@@ -368,9 +362,9 @@ void explorer_nupi_device::selftest_dma_write16(u32 addr, u16 data)
 }
 
 
-void explorer_nupi_device::selftest_dma_run()
+void explorer_nupi_device::onboard_dma_run()
 {
-	if (!m_selftest_dma_active)
+	if (m_dma_mode != DMA_ONBOARD)
 		return;
 
 	// Direction ($801a8) and width ($801d0 bit 15) are read live; the transfer walks the
@@ -382,16 +376,16 @@ void explorer_nupi_device::selftest_dma_run()
 	{
 		if (!to_fifo && is_16bit)
 		{
-			if (!m_selftest_dma_credits)
+			if (!m_onboard_dma_credits)
 				return;
-			m_selftest_dma_credits--;
+			m_onboard_dma_credits--;
 		}
 
 		u32 const addr = u32(m_dma_address_lo_raw) << 2;
 		if (to_fifo)
 		{
-			u16 const first = selftest_dma_read16(addr + 2);
-			u16 const second = selftest_dma_read16(addr);
+			u16 const first = onboard_read16(addr + 2);
+			u16 const second = onboard_read16(addr);
 			// 16-bit: only the halfword at +0 is real, and it fills both halves of the
 			// FIFO group (nothing else is driving the other half).
 			m_unknown_450000_fifo[m_unknown_450000_pos] = is_16bit ? second : first;
@@ -407,15 +401,15 @@ void explorer_nupi_device::selftest_dma_run()
 			if (is_16bit)
 			{
 				// The host port takes the group's other half.
-				selftest_dma_write16(addr, first);
+				onboard_write16(addr, first);
 				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 1) & 0x0fff;
 			}
 			else
 			{
 				u16 const second = m_unknown_450000_fifo[m_fifo_out_pos];
 				m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
-				selftest_dma_write16(addr + 2, first);
-				selftest_dma_write16(addr, second);
+				onboard_write16(addr + 2, first);
+				onboard_write16(addr, second);
 				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
 			}
 		}
@@ -424,7 +418,6 @@ void explorer_nupi_device::selftest_dma_run()
 		m_dma_count--;
 	}
 
-	m_selftest_dma_active = false;
 	// Completion also raises IRQ5 when $3801ea armed it.
 	if (m_dma_irq5_armed)
 	{
@@ -440,7 +433,7 @@ void explorer_nupi_device::dma_transfer_complete()
 	if (m_dma_fire_irq)
 		m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
 
-	m_dma_active = false;
+	m_dma_mode = DMA_IDLE;
 
 	m_unknown_100001 = 0;
 
@@ -603,34 +596,33 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		if (data == 0xff && m_dma_count)
 		{
 			m_dma_in_flight = true;
-
-			m_dma_out_to_scsi = m_dma_target_configured && (m_dma_direction != 0);
 			m_dma_out_byte_phase = 0;
 
-			m_dma_write_to_nubus = m_dma_target_configured && !m_dma_out_to_scsi;
 			bool const real_transfer = m_dma_target_configured;
 			m_dma_target_configured = false;
 
+			// One engine, sharing the address and count registers, so the strobe picks a
+			// single transfer for them to drive.
+			if (real_transfer)
+				m_dma_mode = (m_dma_direction != 0) ? DMA_NUBUS_TO_SCSI : DMA_FIFO_TO_NUBUS;
+			else
+				m_dma_mode = m_dma_address_loaded ? DMA_ONBOARD : DMA_FIFO_DISCARD;
+
 			m_dma_fire_irq = real_transfer || (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos);
 
-			// An on-board transfer and the FIFO->NuBus drain are the same engine, sharing
-			// the address and count registers, so only one of them runs.
-			m_selftest_dma_active = m_dma_address_loaded && !real_transfer;
-			m_dma_active = !m_dma_out_to_scsi && !m_selftest_dma_active;
-
-			if (m_dma_active)
+			if (dma_draining())
 			{
 				m_fifo_drain_pos = m_dma_transfer_start_pos;
 				dma_drain_kick();
 			}
 
-			if (m_selftest_dma_active)
+			if (m_dma_mode == DMA_ONBOARD)
 			{
-				m_selftest_dma_credits = 0;
+				m_onboard_dma_credits = 0;
 				LOGMASKED(LOG_DMA, "%s: on-board dma armed addr=%05x %s %u-bit count=%u\n", machine().describe_context(),
 						u32(m_dma_address_lo_raw) << 2, m_dma_direction ? "mem->fifo" : "fifo->mem",
 						BIT(m_dma_address_hi_raw, 15) ? 16 : 32, m_dma_count);
-				selftest_dma_run();
+				onboard_dma_run();
 			}
 			else
 			{
@@ -818,8 +810,8 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		if (m_unknown_450000_byte_phase == 0)
 		{
 			m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
-			m_selftest_dma_credits++;
-			selftest_dma_run();
+			m_onboard_dma_credits++;
+			onboard_dma_run();
 		}
 		return result;
 	}));
@@ -996,7 +988,7 @@ void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
 
 	u32 const longword = swapendian_int32((u32(m_scsi_fifo_pending_word) << 16) | word);
 	u32 const real_addr = m_dma_address;
-	if (m_dma_write_to_nubus)
+	if (m_dma_mode == DMA_FIFO_TO_NUBUS)
 	{
 		LOGMASKED(LOG_DMA, "%s: dma -> nubus[%08x] = %08x\n", machine().describe_context(), real_addr, longword);
 		nubus().space().write_dword(real_addr, longword);
@@ -1055,7 +1047,7 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 		m_scsi->dma_w(nubus().space().read_byte(m_dma_address));
 		m_dma_address++;
 
-		if (m_dma_out_to_scsi && ++m_dma_out_byte_phase == 4)
+		if (m_dma_mode == DMA_NUBUS_TO_SCSI && ++m_dma_out_byte_phase == 4)
 		{
 			m_dma_out_byte_phase = 0;
 			m_dma_count--;
@@ -1065,7 +1057,7 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 				if (m_dma_fire_irq)
 					m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
 
-				m_dma_out_to_scsi = false;
+				m_dma_mode = DMA_IDLE;
 				m_unknown_100001 = 0;
 			}
 		}

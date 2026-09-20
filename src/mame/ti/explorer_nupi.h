@@ -36,6 +36,18 @@ protected:
 	virtual const tiny_rom_entry *device_rom_region() const override ATTR_COLD;
 
 private:
+	// A go-strobe ($801aa) starts exactly one kind of transfer, selected by whether a
+	// NuBus target ($801c0/$801d0 without an intervening $100001) and a direction
+	// ($801a8) were programmed.
+	enum : u8
+	{
+		DMA_IDLE,
+		DMA_FIFO_TO_NUBUS,
+		DMA_FIFO_DISCARD,  // no target programmed - the transfer runs but lands nowhere
+		DMA_NUBUS_TO_SCSI,
+		DMA_ONBOARD        // FIFO <-> the board's own RAM/ROM
+	};
+
 	void mpu_map(address_map &map) ATTR_COLD;
 	void nubus_map(address_map &map) ATTR_COLD;
 	u32 ram_window_r(offs_t offset);
@@ -50,9 +62,10 @@ private:
 	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
 	void dma_drain_kick();
 	void dma_transfer_complete();
-	void selftest_dma_run();
-	u16 selftest_dma_read16(u32 addr);
-	void selftest_dma_write16(u32 addr, u16 data);
+	bool dma_draining() const { return m_dma_mode == DMA_FIFO_TO_NUBUS || m_dma_mode == DMA_FIFO_DISCARD; }
+	void onboard_dma_run();
+	u16 onboard_read16(u32 addr);
+	void onboard_write16(u32 addr, u16 data);
 	u16 page_register_r();
 	void page_register_w(u16 data);
 	u16 nubus_window_r(offs_t offset, u16 mem_mask);
@@ -85,13 +98,11 @@ private:
 	bool m_scsi_fifo_have_pending_byte = false;
 	u16 m_scsi_fifo_pending_word = 0;
 	bool m_scsi_fifo_have_pending_word = false;
-	bool m_dma_active = false;
+	u8 m_dma_mode = DMA_IDLE;
 	u32 m_fifo_drain_pos = 0;
 	u32 m_dma_transfer_start_pos = 0;
 	bool m_dma_transfer_start_pending = true;
 	bool m_dma_target_configured = false;
-	bool m_dma_write_to_nubus = false;
-	bool m_dma_out_to_scsi = false;
 	u8 m_dma_out_byte_phase = 0;
 	bool m_dma_fire_irq = true;
 	u8 m_dma_count_pending_byte = 0;
@@ -101,8 +112,7 @@ private:
 	u16 m_dma_address_lo_raw = 0;
 	u16 m_dma_address_hi_raw = 0;
 	bool m_dma_address_loaded = false;
-	bool m_selftest_dma_active = false;
-	u32 m_selftest_dma_credits = 0;
+	u32 m_onboard_dma_credits = 0;
 	u8 m_dma_direction = 0;
 	bool m_dma_irq5_armed = false;
 	u8 m_unknown_800c04_toggle = 0;
