@@ -350,7 +350,7 @@ TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_drain_timer_expired)
 		return;
 
 	u16 const word = m_unknown_450000_fifo[m_fifo_drain_pos];
-	m_fifo_drain_pos = (m_fifo_drain_pos + 1) % 2048;
+	m_fifo_drain_pos = (m_fifo_drain_pos + 1) & 0x7ff;
 	push_fifo_word_to_nubus(word);
 
 	dma_drain_kick();
@@ -396,15 +396,15 @@ void explorer_nupi_device::selftest_dma_run()
 			// 16-bit: only the halfword at +0 is real, and it fills both halves of the
 			// FIFO group (nothing else is driving the other half).
 			m_unknown_450000_fifo[m_unknown_450000_pos] = m_selftest_dma_16bit ? second : first;
-			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+			m_unknown_450000_pos = (m_unknown_450000_pos + 1) & 0x7ff;
 			m_unknown_450000_fifo[m_unknown_450000_pos] = second;
-			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+			m_unknown_450000_pos = (m_unknown_450000_pos + 1) & 0x7ff;
 			m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
 		}
 		else
 		{
 			u16 const first = m_unknown_450000_fifo[m_fifo_out_pos];
-			m_fifo_out_pos = (m_fifo_out_pos + 1) % 2048;
+			m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
 			if (m_selftest_dma_16bit)
 			{
 				// The host port takes the group's other half - see nupi.h.
@@ -414,7 +414,7 @@ void explorer_nupi_device::selftest_dma_run()
 			else
 			{
 				u16 const second = m_unknown_450000_fifo[m_fifo_out_pos];
-				m_fifo_out_pos = (m_fifo_out_pos + 1) % 2048;
+				m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
 				selftest_dma_write16(m_selftest_dma_addr + 2, first);
 				selftest_dma_write16(m_selftest_dma_addr, second);
 				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
@@ -789,9 +789,9 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	map(0x440000, 0x440001).lrw16(NAME([this]() {
 		return (u16(m_unknown_450000_holding[0]) << 8) | m_unknown_450000_holding[1];
 	}), NAME([this](u16 data) {
-		m_dma_test_fifo[m_dma_test_fifo_write_pos++ % 16] = data;
+		m_dma_test_fifo[m_dma_test_fifo_write_pos++ & 0x0f] = data;
 		m_unknown_450000_fifo[m_unknown_450000_pos] = data;
-		m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+		m_unknown_450000_pos = (m_unknown_450000_pos + 1) & 0x7ff;
 	}));
 	map(0x450000, 0x450007).lr8(NAME([this]() {
 		m_unknown_300001 &= 0xf0;
@@ -800,7 +800,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		m_unknown_450000_byte_phase = (m_unknown_450000_byte_phase + 1) & 3;
 		if (m_unknown_450000_byte_phase == 0)
 		{
-			m_fifo_out_pos = (m_fifo_out_pos + 1) % 2048;
+			m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
 			m_selftest_dma_credits++;
 			selftest_dma_run();
 		}
@@ -811,7 +811,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		if (offset == 1)
 		{
 			m_unknown_450000_fifo[m_unknown_450000_pos] = (u16(m_unknown_450000_holding[0]) << 8) | m_unknown_450000_holding[1];
-			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+			m_unknown_450000_pos = (m_unknown_450000_pos + 1) & 0x7ff;
 		}
 	}));
 
@@ -851,7 +851,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 
 	map(0x801c00, 0x801c01).lr16(NAME([this]() {
 		if (m_dma_test_fifo_read_pos != m_dma_test_fifo_write_pos) {
-			u16 const data = m_dma_test_fifo[m_dma_test_fifo_read_pos++ % 16];
+			u16 const data = m_dma_test_fifo[m_dma_test_fifo_read_pos++ & 0x0f];
 			if (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos)
 				m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
 			return data;
@@ -860,7 +860,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 	map(0x801c02, 0x801c03).lr16(NAME([this]() {
 		if (m_dma_test_fifo_read_pos != m_dma_test_fifo_write_pos) {
-			u16 const data = m_dma_test_fifo[m_dma_test_fifo_read_pos++ % 16];
+			u16 const data = m_dma_test_fifo[m_dma_test_fifo_read_pos++ & 0x0f];
 			if (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos)
 				m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
 			return data;
@@ -1039,7 +1039,7 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 			u16 const word = (u16(m_scsi_fifo_pending_byte) << 8) | data;
 			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_unknown_450000_pos, word);
 			m_unknown_450000_fifo[m_unknown_450000_pos] = word;
-			m_unknown_450000_pos = (m_unknown_450000_pos + 1) % 2048;
+			m_unknown_450000_pos = (m_unknown_450000_pos + 1) & 0x7ff;
 			m_scsi_fifo_have_pending_byte = false;
 
 			dma_drain_kick();
