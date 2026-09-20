@@ -742,7 +742,6 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		return m_unknown_300001;
 	}));
 
-	// Interval Timer - see m_interval_timer_regs in nupi.h.
 	map(0x200000, 0x20003f).lrw8(NAME([this](offs_t offset) {
 		LOGMASKED(LOG_MISC, "%s: RD 200000+%02x = %02x\n", machine().describe_context(), offset, m_interval_timer_regs[offset]);
 		return m_interval_timer_regs[offset];
