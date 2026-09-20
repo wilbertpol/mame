@@ -22,10 +22,8 @@ DEFINE_DEVICE_TYPE(EXPLORER_MEM2MB, explorer_mem2mb_device, "explorer_mem2mb", "
 
 namespace {
 
-// Configuration register, paragraph 4.5.1 and Figure 4-10. The figure names
-// only these two bits and marks the rest "X equals irrelevant".
-constexpr u8 CONFIG_BOARD_RESET = 0x01; // also "resets the parity error and clears the NuBus terminal latch"
-constexpr u8 CONFIG_TEST_LED = 0x04;    // the red self-test fault LED, 1 = on
+constexpr u8 CONFIG_BOARD_RESET = 0x01;
+constexpr u8 CONFIG_TEST_LED = 0x04;
 
 } // anonymous namespace
 
@@ -57,10 +55,6 @@ void explorer_mem_device_base::device_start()
 
 	nubus().install_map(*this, &explorer_mem_device_base::nubus_map);
 
-	// ...and on the local bus as well, but only from a slot that is actually
-	// wired to it (see device_ti_nubus_card_interface::on_local_bus()). The
-	// board is perfectly usable in a lower slot - it is then reachable over the
-	// NuBus alone, which is also the only way it could report an error.
 	if (on_local_bus())
 	{
 		nubus().local_bus_space().install_view(base, base + m_ram_size - 1, m_ram_view_local_bus);
@@ -78,22 +72,6 @@ void explorer_mem_device_base::device_start()
 
 void explorer_mem_device_base::device_reset()
 {
-	// The red fault LED comes up lit. Section 3.2 describes it from the other
-	// end - "If the red fault LED on a memory board goes out, the memory board
-	// is good", and "If the red fault LED on a memory board remains on after the
-	// self-test, the board is probably faulty" - and Field Maintenance Table 1-1,
-	// "Power-Up Sequence of LED and Video Display Actions", opens with step 1,
-	// "All fault LEDs go on", while the video display is still blank. The board
-	// manual's Figure 4-10 does not say so for this register the way the Ethernet
-	// board's Figure 5-21 does ("LED on at power-up"), but the indicator only
-	// works if a board that is never tested at all still shows a fault, so the
-	// lit state cannot depend on anything having run first.
-	//
-	// The processor does light it again itself at the start of each memory test
-	// (observed: a write of 0x04 before the test, then 0x00 once the board
-	// reports good), so this is not what makes the driver's LED come on in
-	// practice - it is what the LED reads as in the seconds before the
-	// self-test microcode gets to this board.
 	m_config_register = CONFIG_TEST_LED;
 	m_fault_led = 1;
 
@@ -102,20 +80,12 @@ void explorer_mem_device_base::device_reset()
 }
 
 
-// The NuBus board reset signal, which paragraph 4.5.2 pairs with the board reset
-// the configuration register generates - so both go through here.
 void explorer_mem_device_base::board_reset()
 {
 	m_test_register = 0;
 
-	// The base register "contains the data memory starting address" (4.5.2,
-	// Figure 4-11): the board's own slot space base address, bits 31-24, so 0xf4
-	// in slot 4 and 0xf3 in slot 3.
 	m_base_register = get_slotspace() >> 24;
 
-	// Paragraph 4.5.1: "A write operation with data bit 0 set to 1 resets the
-	// parity error and clears the NuBus terminal latch. This clears the NUERR
-	// signal." Same bit Figure 4-10 labels board reset.
 	m_nubus_status = 0;
 
 	m_ram_view.select(0);
@@ -132,15 +102,6 @@ void explorer_mem_device_base::nubus_map(address_map &map)
 	map(0xffc008, 0xffc008).rw(FUNC(explorer_mem_device_base::base_register_r), FUNC(explorer_mem_device_base::base_register_w));
 	map(0xffc010, 0xffc010).r(FUNC(explorer_mem_device_base::failure_latch_r));
 	map(0xffc011, 0xffc011).rw(FUNC(explorer_mem_device_base::test_register_r), FUNC(explorer_mem_device_base::test_register_w));
-	// NuBus Termination Status and Error Latch Register, paragraph 4.5.4 and
-	// Figure 4-14 (book 4-34/4-35). Read-only. Bit 15 is the parity error latch
-	// and is the bit that makes the failure location latch above meaningful -
-	// see failure_latch_r(). The rest is deliberately left reading 0: bit 14
-	// NOMEM and bits 13:8 are the status of the cycle that took a NOMEM error,
-	// and bits 7:2 snapshot TM0-/TM1-/NUADR0/NUADR1 of the last NuBus cycle this
-	// board mastered. MAME models neither - this board is never a NuBus master
-	// here, and there is no NOMEM condition - so reporting anything in those
-	// fields would be invention rather than emulation.
 	map(0xffc014, 0xffc015).lr16(NAME([this] () {
 		return m_nubus_status;
 	}));
@@ -159,9 +120,6 @@ void explorer_mem_device_base::config_register_w(u8 data)
 {
 	m_config_register = data & (CONFIG_BOARD_RESET | CONFIG_TEST_LED);
 
-	// The self-test drives the LED straight from this bit: it writes it set
-	// before testing the board and clear once the board reports good, which is
-	// the "goes out, the board is good" of section 3.2 seen from the bus side.
 	m_fault_led = bool(m_config_register & CONFIG_TEST_LED);
 
 	if (m_config_register & CONFIG_BOARD_RESET)
@@ -178,14 +136,6 @@ void explorer_mem_device_base::base_register_w(u8 data)
 	m_base_register = data;
 }
 
-// Paragraph 4.5.3.1: "When bit 15 of the error latch is true (>FSFFC014), this
-// word contains failure information; otherwise, these bits reflect the status of
-// the select and parity generation bits during the last board access." So the
-// byte means two different things depending on that latch, and it is the caller's
-// job to check it - which is why update_failure_location() below stops
-// overwriting the failure information once the latch is set. Both variants are
-// built the same way here (Figure 4-12: ASEL2-0 = the row, bit 4 = parity error,
-// bits 3-0 = the faulty byte, low true).
 u8 explorer_mem_device_base::failure_latch_r()
 {
 	return m_failure_location;
@@ -237,24 +187,12 @@ void explorer_mem_device_base::update_failure_location(offs_t offset, bool faile
 	{
 		m_failure_location = ((offset & 0x03) << 5) | 0x10;
 
-		// Latch it. Paragraph 4.5.1: the latch is cleared by a write to the
-		// configuration register with bit 0 set, nothing else - so it holds until
-		// software acknowledges it, and the failure location has to hold with it
-		// or a later good access would erase the information while bit 15 still
-		// advertises it as valid.
 		m_nubus_status |= 0x8000;
 
-		// NUERR- on the board, which the real hardware turns into BERR- at the
-		// local bus (4.5.4). A card below FIRST_LOCAL_BUS_SLOT is not on that bus
-		// and would have to report this as a NuBus error termination instead;
-		// either way the processor sees one condition, Table 4-19's "Bus error on
-		// last transfer attempt" - see exp1proc_cpu_device::assert_bus_error().
 		nubus().assert_bus_error();
 	}
 	else if (!BIT(m_nubus_status, 15))
 	{
-		// No failure outstanding, so the byte carries the select and parity
-		// generation status of this access instead (4.5.3.1).
 		m_failure_location = ((offset & 0x03) << 5) | 0x0f;
 	}
 }

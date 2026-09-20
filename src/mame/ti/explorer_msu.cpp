@@ -10,8 +10,7 @@ disk formatter interfacing 1 disk and a tape formatter interfacing a
 the Explorer System identify all three: the tape formatter is an Emulex
 MT01 Tape Controller (Emulex part number MT0151001), and the cartridge
 drives behind it are a Cipher Data Products Series 540 and an Archive
-Viper 2060S/2125S. The 1/2 inch drive is a separate enclosure and a
-different vendor again, see mt3201.cpp.
+Viper 2060S/2125S.
 
 For disks the following disks are named:
 - Maxtor XT-1140
