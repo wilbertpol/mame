@@ -128,7 +128,7 @@ private:
 	u8 m_dma_test_fifo_read_pos = 0;
 	u16 m_unknown_dma_803c00 = 0;
 	u16 m_unknown_450000_fifo[2048] = {};
-	u8 m_unknown_450000_holding[2] = { 0, 0 };
+	u16 m_unknown_450000_holding = 0;
 	u16 m_unknown_450000_pos = 0;
 	u8 m_unknown_450000_byte_phase = 0;
 	u16 m_fifo_out_pos = 0;

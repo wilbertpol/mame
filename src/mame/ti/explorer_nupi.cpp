@@ -297,8 +297,7 @@ void explorer_nupi_device::device_reset()
 	m_unknown_300001 = 0x0c;
 	for (u16 &entry : m_unknown_450000_fifo)
 		entry = 0;
-	m_unknown_450000_holding[0] = 0;
-	m_unknown_450000_holding[1] = 0;
+	m_unknown_450000_holding = 0;
 	m_unknown_450000_pos = 0;
 	m_scsi_fifo_pending_byte = 0;
 	m_scsi_fifo_have_pending_byte = false;
@@ -437,8 +436,7 @@ void explorer_nupi_device::dma_transfer_complete()
 
 	m_unknown_100001 = 0;
 
-	m_unknown_450000_holding[0] = m_unknown_dma_803c00 >> 8;
-	m_unknown_450000_holding[1] = m_unknown_dma_803c00 & 0xff;
+	m_unknown_450000_holding = m_unknown_dma_803c00;
 
 	m_dma_transfer_start_pending = true;
 }
@@ -795,7 +793,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 
 	map(0x440000, 0x440001).lrw16(NAME([this]() {
-		return (u16(m_unknown_450000_holding[0]) << 8) | m_unknown_450000_holding[1];
+		return m_unknown_450000_holding;
 	}), NAME([this](u16 data) {
 		m_dma_test_fifo[m_dma_test_fifo_write_pos++ & 0x0f] = data;
 		m_unknown_450000_fifo[m_unknown_450000_pos] = data;
@@ -815,11 +813,16 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		return result;
 	}));
 	map(0x450000, 0x450001).lw8(NAME([this](offs_t offset, u8 data) {
-		m_unknown_450000_holding[offset] = data;
-		if (offset == 1)
+		// The odd lane is the low byte, and writing it pushes the assembled word.
+		if (offset)
 		{
-			m_unknown_450000_fifo[m_unknown_450000_pos] = (u16(m_unknown_450000_holding[0]) << 8) | m_unknown_450000_holding[1];
+			m_unknown_450000_holding = (m_unknown_450000_holding & 0xff00) | data;
+			m_unknown_450000_fifo[m_unknown_450000_pos] = m_unknown_450000_holding;
 			m_unknown_450000_pos = (m_unknown_450000_pos + 1) & 0x7ff;
+		}
+		else
+		{
+			m_unknown_450000_holding = (m_unknown_450000_holding & 0x00ff) | (u16(data) << 8);
 		}
 	}));
 
