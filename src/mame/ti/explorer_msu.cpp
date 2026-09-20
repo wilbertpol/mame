@@ -177,10 +177,13 @@ attotime explorer_msu_device::scsi_data_command_delay()
 	}
 }
 
-// Max transfer speed for a Maxtor XT-1140, 0.625MB/s.
+// Max transfer speed for a Maxtor XT-1140 is 0.625MB/s, but the file system
+// boot times out at that rate. Possibly because the formatter's data buffering
+// is not emulated.
 attotime explorer_msu_device::scsi_data_byte_period()
 {
-	return attotime::from_ticks(1, 625'000);
+	//return attotime::from_ticks(1, 625'000);
+	return attotime::from_ticks(1, 1'250'000);
 }
 
 void explorer_msu_device::device_add_mconfig(machine_config &config)
