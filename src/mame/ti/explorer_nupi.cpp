@@ -229,15 +229,10 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_address_hi_raw));
 	save_item(NAME(m_dma_address_loaded));
 	save_item(NAME(m_selftest_dma_active));
-	save_item(NAME(m_selftest_dma_to_fifo));
-	save_item(NAME(m_selftest_dma_16bit));
-	save_item(NAME(m_selftest_dma_addr));
-	save_item(NAME(m_selftest_dma_left));
 	save_item(NAME(m_selftest_dma_credits));
 	save_item(NAME(m_dma_direction));
 	save_item(NAME(m_fifo_out_pos));
 	save_item(NAME(m_dma_irq5_armed));
-	save_item(NAME(m_selftest_dma_irq5));
 	save_item(NAME(m_unknown_800c04_toggle));
 	save_item(NAME(m_unknown_280001));
 	save_item(NAME(m_unknown_280001_bits12_toggle));
@@ -295,15 +290,10 @@ void explorer_nupi_device::device_reset()
 	m_dma_address_hi_raw = 0;
 	m_dma_address_loaded = false;
 	m_selftest_dma_active = false;
-	m_selftest_dma_to_fifo = false;
-	m_selftest_dma_16bit = false;
-	m_selftest_dma_addr = 0;
-	m_selftest_dma_left = 0;
 	m_selftest_dma_credits = 0;
 	m_dma_direction = 0;
 	m_fifo_out_pos = 0;
 	m_dma_irq5_armed = false;
-	m_selftest_dma_irq5 = false;
 	m_unknown_800c04_toggle = 0;
 	m_unknown_280001 = 0x01;
 	m_unknown_280001_bits12_toggle = false;
@@ -380,22 +370,31 @@ void explorer_nupi_device::selftest_dma_write16(u32 addr, u16 data)
 
 void explorer_nupi_device::selftest_dma_run()
 {
-	while (m_selftest_dma_active && m_selftest_dma_left)
+	if (!m_selftest_dma_active)
+		return;
+
+	// Direction ($801a8) and width ($801d0 bit 15) are read live; the transfer walks the
+	// address ($801c0, bits 17:2) and the count down as it goes.
+	bool const to_fifo = m_dma_direction != 0;
+	bool const is_16bit = BIT(m_dma_address_hi_raw, 15);
+
+	while (m_dma_count)
 	{
-		if (!m_selftest_dma_to_fifo && m_selftest_dma_16bit)
+		if (!to_fifo && is_16bit)
 		{
 			if (!m_selftest_dma_credits)
 				return;
 			m_selftest_dma_credits--;
 		}
 
-		if (m_selftest_dma_to_fifo)
+		u32 const addr = u32(m_dma_address_lo_raw) << 2;
+		if (to_fifo)
 		{
-			u16 const first = selftest_dma_read16(m_selftest_dma_addr + 2);
-			u16 const second = selftest_dma_read16(m_selftest_dma_addr);
+			u16 const first = selftest_dma_read16(addr + 2);
+			u16 const second = selftest_dma_read16(addr);
 			// 16-bit: only the halfword at +0 is real, and it fills both halves of the
 			// FIFO group (nothing else is driving the other half).
-			m_unknown_450000_fifo[m_unknown_450000_pos] = m_selftest_dma_16bit ? second : first;
+			m_unknown_450000_fifo[m_unknown_450000_pos] = is_16bit ? second : first;
 			m_unknown_450000_pos = (m_unknown_450000_pos + 1) & 0x7ff;
 			m_unknown_450000_fifo[m_unknown_450000_pos] = second;
 			m_unknown_450000_pos = (m_unknown_450000_pos + 1) & 0x7ff;
@@ -405,37 +404,50 @@ void explorer_nupi_device::selftest_dma_run()
 		{
 			u16 const first = m_unknown_450000_fifo[m_fifo_out_pos];
 			m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
-			if (m_selftest_dma_16bit)
+			if (is_16bit)
 			{
-				// The host port takes the group's other half - see nupi.h.
-				selftest_dma_write16(m_selftest_dma_addr, first);
+				// The host port takes the group's other half.
+				selftest_dma_write16(addr, first);
 				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 1) & 0x0fff;
 			}
 			else
 			{
 				u16 const second = m_unknown_450000_fifo[m_fifo_out_pos];
 				m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
-				selftest_dma_write16(m_selftest_dma_addr + 2, first);
-				selftest_dma_write16(m_selftest_dma_addr, second);
+				selftest_dma_write16(addr + 2, first);
+				selftest_dma_write16(addr, second);
 				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
 			}
 		}
 
-		m_selftest_dma_addr += 4;
-		m_selftest_dma_left--;
+		m_dma_address_lo_raw++;
+		m_dma_count--;
 	}
 
-	if (!m_selftest_dma_left)
+	m_selftest_dma_active = false;
+	// Completion also raises IRQ5 when $3801ea armed it.
+	if (m_dma_irq5_armed)
 	{
-		m_selftest_dma_active = false;
-		// An on-board transfer's completion also raises IRQ5, if $3801ea armed it - see
-		// m_dma_irq5_armed in nupi.h.
-		if (m_selftest_dma_irq5)
-		{
-			m_selftest_dma_irq5 = false;
-			m_mpu->set_input_line(M68K_IRQ_5, ASSERT_LINE);
-		}
+		m_dma_irq5_armed = false;
+		m_mpu->set_input_line(M68K_IRQ_5, ASSERT_LINE);
 	}
+	dma_transfer_complete();
+}
+
+
+void explorer_nupi_device::dma_transfer_complete()
+{
+	if (m_dma_fire_irq)
+		m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
+
+	m_dma_active = false;
+
+	m_unknown_100001 = 0;
+
+	m_unknown_450000_holding[0] = m_unknown_dma_803c00 >> 8;
+	m_unknown_450000_holding[1] = m_unknown_dma_803c00 & 0xff;
+
+	m_dma_transfer_start_pending = true;
 }
 
 
@@ -593,7 +605,6 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			m_dma_in_flight = true;
 
 			m_dma_out_to_scsi = m_dma_target_configured && (m_dma_direction != 0);
-			m_dma_active = !m_dma_out_to_scsi;
 			m_dma_out_byte_phase = 0;
 
 			m_dma_write_to_nubus = m_dma_target_configured && !m_dma_out_to_scsi;
@@ -602,29 +613,35 @@ void explorer_nupi_device::mpu_map(address_map &map)
 
 			m_dma_fire_irq = real_transfer || (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos);
 
-			if (!m_dma_out_to_scsi)
+			// An on-board transfer and the FIFO->NuBus drain are the same engine, sharing
+			// the address and count registers, so only one of them runs.
+			m_selftest_dma_active = m_dma_address_loaded && !real_transfer;
+			m_dma_active = !m_dma_out_to_scsi && !m_selftest_dma_active;
+
+			if (m_dma_active)
 			{
 				m_fifo_drain_pos = m_dma_transfer_start_pos;
 				dma_drain_kick();
 			}
 
-			if (m_dma_address_loaded && !real_transfer)
+			if (m_selftest_dma_active)
 			{
-				m_selftest_dma_active = true;
-				m_selftest_dma_addr = u32(m_dma_address_lo_raw) << 2;
-				m_selftest_dma_to_fifo = m_dma_direction != 0;
-				m_selftest_dma_16bit = BIT(m_dma_address_hi_raw, 15);
-				m_selftest_dma_left = m_dma_count;
 				m_selftest_dma_credits = 0;
-				m_selftest_dma_irq5 = m_dma_irq5_armed;
 				LOGMASKED(LOG_DMA, "%s: on-board dma armed addr=%05x %s %u-bit count=%u\n", machine().describe_context(),
-						m_selftest_dma_addr, m_selftest_dma_to_fifo ? "mem->fifo" : "fifo->mem",
-						m_selftest_dma_16bit ? 16 : 32, m_selftest_dma_left);
+						u32(m_dma_address_lo_raw) << 2, m_dma_direction ? "mem->fifo" : "fifo->mem",
+						BIT(m_dma_address_hi_raw, 15) ? 16 : 32, m_dma_count);
 				selftest_dma_run();
 			}
+			else
+			{
+				m_dma_irq5_armed = false;
+			}
+		}
+		else
+		{
+			m_dma_irq5_armed = false;
 		}
 		m_dma_address_loaded = false;
-		m_dma_irq5_armed = false;
 	}));
 	// Unknown
 	map(0x0801ab, 0x0801ab).lrw8(NAME([this]() {
@@ -994,19 +1011,7 @@ void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
 	m_dma_count--;
 
 	if (!m_dma_count)
-	{
-		if (m_dma_fire_irq)
-			m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
-
-		m_dma_active = false;
-
-		m_unknown_100001 = 0;
-
-		m_unknown_450000_holding[0] = m_unknown_dma_803c00 >> 8;
-		m_unknown_450000_holding[1] = m_unknown_dma_803c00 & 0xff;
-
-		m_dma_transfer_start_pending = true;
-	}
+		dma_transfer_complete();
 }
 
 void explorer_nupi_device::scsi_dreq_w(int state)

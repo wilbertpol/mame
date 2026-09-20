@@ -49,6 +49,7 @@ private:
 	void push_fifo_word_to_nubus(u16 word);
 	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
 	void dma_drain_kick();
+	void dma_transfer_complete();
 	void selftest_dma_run();
 	u16 selftest_dma_read16(u32 addr);
 	void selftest_dma_write16(u32 addr, u16 data);
@@ -101,14 +102,9 @@ private:
 	u16 m_dma_address_hi_raw = 0;
 	bool m_dma_address_loaded = false;
 	bool m_selftest_dma_active = false;
-	bool m_selftest_dma_to_fifo = false;
-	bool m_selftest_dma_16bit = false;
-	u32 m_selftest_dma_addr = 0;
-	u32 m_selftest_dma_left = 0;
 	u32 m_selftest_dma_credits = 0;
 	u8 m_dma_direction = 0;
 	bool m_dma_irq5_armed = false;
-	bool m_selftest_dma_irq5 = false;
 	u8 m_unknown_800c04_toggle = 0;
 	u16 m_unknown_508000 = 0;
 	u16 m_unknown_508000_live = 0;
