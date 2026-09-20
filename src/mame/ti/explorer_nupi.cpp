@@ -179,12 +179,12 @@ explorer_nupi_device::explorer_nupi_device(const machine_config &mconfig, const 
 	m_firmware_nubus(*this, "firmware_nubus"),
 	m_fault_led(*this, "fault_led"),
 	m_scsi_led(*this, "scsi_led"),
-	m_flag_register(FLAG_POWER_UP),
-	m_dma_address(0),
-	m_dma_count(0),
 	m_timer(nullptr),
 	m_interval_timer(nullptr),
-	m_dma_drain_timer(nullptr)
+	m_dma_drain_timer(nullptr),
+	m_flag_register(FLAG_POWER_UP),
+	m_dma_address(0),
+	m_dma_count(0)
 {
 }
 
