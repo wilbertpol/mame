@@ -203,12 +203,37 @@ void explorer_sib_device::device_reset()
 	m_configuration_register = CONFIGURATION_REGISTER_POWER_UP;
 	update_leds();
 
+	std::fill(std::begin(m_event_vector), std::end(m_event_vector), 0);
+	m_attribute_register = 0x02;
+	m_mask_register = 0;
+	m_operation_register = 0;
+
+	m_mouse_y_position = 0;
+	m_mouse_x_position = 0;
+	m_mouse_keyswitches = 0;
+	m_keyboard_txd = 1;
+	m_mouse_motion_event_pending = false;
+	m_mouse_keyswitch_event_pending = false;
+
 	m_interrupt_diag_control = 0;
 	m_monitor_control = 0;
 	update_speaker_amplifier();
 
-	m_mouse_motion_event_pending = false;
-	m_mouse_keyswitch_event_pending = false;
+	m_diagnostic_data = 0;
+	m_voice_data_register = 0;
+	m_voice_data_present = false;
+	m_sound_control = 0;
+	m_speech_register = 0;
+
+	m_printer_data = 0;
+	m_centronics_busy = 0;
+	m_centronics_perror = 0;
+	m_centronics_select = 1;
+	m_centronics_fault = 1;
+	m_centronics_ack = 1;
+
+	m_usart_rxrdy = false;
+	m_usart_txrdy = false;
 
 	printer_control_w(0x07);
 }
