@@ -124,6 +124,7 @@ u8 explorer_mem_device_base::config_register_r()
 	return m_config_register;
 }
 
+
 void explorer_mem_device_base::config_register_w(u8 data)
 {
 	m_config_register = data & (CONFIG_BOARD_RESET | CONFIG_TEST_LED);
@@ -134,25 +135,30 @@ void explorer_mem_device_base::config_register_w(u8 data)
 		board_reset();
 }
 
+
 u8 explorer_mem_device_base::base_register_r()
 {
 	return m_base_register;
 }
+
 
 void explorer_mem_device_base::base_register_w(u8 data)
 {
 	m_base_register = data;
 }
 
+
 u8 explorer_mem_device_base::failure_latch_r()
 {
 	return m_failure_location;
 }
 
+
 u8 explorer_mem_device_base::test_register_r()
 {
 	return m_test_register;
 }
+
 
 void explorer_mem_device_base::test_register_w(u8 data)
 {
@@ -168,6 +174,7 @@ u8 explorer_mem_device_base::get_parity(offs_t offset) const
 	return BIT(m_parity[offset >> 3], offset & 7);
 }
 
+
 void explorer_mem_device_base::store_parity_bit(offs_t offset, u8 bit)
 {
 	if (bit)
@@ -176,10 +183,12 @@ void explorer_mem_device_base::store_parity_bit(offs_t offset, u8 bit)
 		m_parity[offset >> 3] &= ~(1 << (offset & 7));
 }
 
+
 u8 explorer_mem_device_base::test_force_bit(offs_t offset) const
 {
 	return BIT(m_test_register, offset & 3) ^ 1;
 }
+
 
 void explorer_mem_device_base::update_failure_location(offs_t offset, bool failed)
 {
@@ -197,6 +206,7 @@ void explorer_mem_device_base::update_failure_location(offs_t offset, bool faile
 	}
 }
 
+
 u8 explorer_mem_device_base::ram_r(offs_t offset)
 {
 	u8 const data = m_ram[offset];
@@ -204,11 +214,13 @@ u8 explorer_mem_device_base::ram_r(offs_t offset)
 	return data;
 }
 
+
 void explorer_mem_device_base::ram_w(offs_t offset, u8 data)
 {
 	m_ram[offset] = data;
 	store_parity_bit(offset, calculate_parity(data));
 }
+
 
 u8 explorer_mem_device_base::ram_test_r(offs_t offset)
 {
@@ -216,6 +228,7 @@ u8 explorer_mem_device_base::ram_test_r(offs_t offset)
 	update_failure_location(offset, test_force_bit(offset) != calculate_parity(data));
 	return data;
 }
+
 
 void explorer_mem_device_base::ram_test_w(offs_t offset, u8 data)
 {
@@ -233,11 +246,13 @@ explorer_mem8mb_device::explorer_mem8mb_device(const machine_config &mconfig, co
 {
 }
 
+
 ROM_START(explorer_mem8mb)
 	ROM_REGION32_BE(0x2000, "memory_config", ROMREGION_ERASE00)
 	// board part number "2243910-0003" (board type "MEM", vendor "TIAU"
 	ROMX_LOAD("2243924-2_27s291_8mb.bin", 0x003, 0x800, CRC(6f699641) SHA1(f65ba4a2672bc5c90040da26237f1d14baac3370), ROM_SKIP(3))
 ROM_END
+
 
 const tiny_rom_entry *explorer_mem8mb_device::device_rom_region() const
 {
@@ -254,10 +269,12 @@ explorer_mem2mb_device::explorer_mem2mb_device(const machine_config &mconfig, co
 {
 }
 
+
 ROM_START(explorer_mem2mb)
 	ROM_REGION32_BE(0x2000, "memory_config", ROMREGION_ERASE00)
 	ROMX_LOAD("2243910-1_27s291_2mb.bin", 0x003, 0x800, NO_DUMP, ROM_SKIP(3))
 ROM_END
+
 
 const tiny_rom_entry *explorer_mem2mb_device::device_rom_region() const
 {
