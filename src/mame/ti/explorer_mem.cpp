@@ -70,6 +70,12 @@ void explorer_mem_device_base::device_start()
 		m_ram_view_local_bus[1].install_readwrite_handler(base, base + m_ram_size - 1, read8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_test_r)), write8sm_delegate(*this, FUNC(explorer_mem_device_base::ram_test_w)));
 	}
 
+	m_config_register = 0;
+	m_base_register = 0;
+	m_failure_location = 0;
+	m_test_register = 0;
+	m_nubus_status = 0;
+
 	save_item(NAME(m_config_register));
 	save_item(NAME(m_base_register));
 	save_item(NAME(m_failure_location));

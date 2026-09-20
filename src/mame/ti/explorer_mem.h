@@ -51,18 +51,13 @@ private:
 	std::unique_ptr<u8[]> m_parity;
 	memory_view m_ram_view;
 	memory_view m_ram_view_local_bus;
-	// The red self-test fault LED at the lower front edge of the board
-	// (Figures 3-1 and 4-1), driven from bit 2 of the configuration register.
 	output_finder<> m_fault_led;
 
-	u8 m_config_register = 0;
-	u8 m_base_register = 0;
-	u8 m_failure_location = 0;
-	u8 m_test_register = 0;
-	// NuBus Termination Status and Error Latch Register (>FSFFC014), paragraph
-	// 4.5.4 / Figure 4-14. Only bit 15, the parity error latch, is real here -
-	// see the map entry in nubus_map() for why the other fields read 0.
-	u16 m_nubus_status = 0;
+	u8 m_config_register;
+	u8 m_base_register;
+	u8 m_failure_location;
+	u8 m_test_register;
+	u16 m_nubus_status;
 };
 
 
