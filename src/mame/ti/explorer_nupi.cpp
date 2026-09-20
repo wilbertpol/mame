@@ -8,6 +8,11 @@ Board references found:
 - 2238040
 - 2243146
 
+The manual only documents the NuBus-facing side, some locations in the
+shared RAM.
+
+There is no schematic available, the implementation is purely based on
+investigation of the mc68000 firmware.
 
 The NUPI interfaced with storage units through SCSI. There were three
 types of enclosures housing the actual disk/tape drives:
