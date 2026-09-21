@@ -726,7 +726,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 				m_mpu->set_input_line(M68K_IRQ_3, CLEAR_LINE);
 				m_mpu->set_input_line(M68K_IRQ_1, CLEAR_LINE);
 				m_dma_in_flight = false;
-				m_unknown_300001 = (m_unknown_300001 & 0xf0) | 0x0c;
+				m_unknown_300001 = 0x0c;
 			}));
 	map(0x280000, 0x280000).lr8(NAME([this]() {
 		return m_unknown_280000;
@@ -759,7 +759,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}), NAME([this](u8 data) {
 		LOGMASKED(LOG_MISC, "%s: WR 3801e0 = %02x\n", machine().describe_context(), data);
 		m_mpu->set_input_line(M68K_IRQ_4, CLEAR_LINE);
-		m_unknown_300001 = (m_unknown_300001 & 0xf0) | (data ? 0x0c : 0x00);
+		m_unknown_300001 = data ? 0x0c : 0x00;
 	}));
 	// Unknown
 	map(0x3801e4, 0x3801e4).lrw8(NAME([this]() {
@@ -785,7 +785,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 	map(0x380218, 0x380218).lw8(NAME([this](u8 data) {
 		LOGMASKED(LOG_MISC, "%s: WR 380218 = %02x\n", machine().describe_context(), data);
-		m_unknown_300001 = (m_unknown_300001 & 0xf0) | 0x0c;
+		m_unknown_300001 = 0x0c;
 	}));
 	// Ack IRQ5?
 	map(0x3801ea, 0x3801ea).lrw8(NAME([this]() {
@@ -810,7 +810,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
 	}));
 	map(0x450000, 0x450007).lr8(NAME([this]() {
-		m_unknown_300001 &= 0xf0;
+		m_unknown_300001 = 0x00;
 		u16 const data = m_fifo[m_fifo_out_pos];
 		u8 const result = (m_unknown_450000_byte_phase & 1) ? u8(data) : u8(data >> 8);
 		m_unknown_450000_byte_phase = (m_unknown_450000_byte_phase + 1) & 3;
