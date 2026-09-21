@@ -380,13 +380,12 @@ void explorer_nupi_device::onboard_dma_run()
 		u32 const addr = u32(m_dma_address_lo_raw) << 2;
 		if (to_fifo)
 		{
-			u16 const first = onboard_read16(addr + 2);
-			u16 const second = onboard_read16(addr);
-			// 16-bit: only the halfword at +0 is real, and it fills both halves of the
-			// FIFO group (nothing else is driving the other half).
-			m_fifo[m_fifo_in_pos] = is_16bit ? second : first;
+			// Fills are always 16-bit: only the halfword at +0 is real, and it fills
+			// both halves of the FIFO group (nothing else is driving the other half).
+			u16 const word = onboard_read16(addr);
+			m_fifo[m_fifo_in_pos] = word;
 			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
-			m_fifo[m_fifo_in_pos] = second;
+			m_fifo[m_fifo_in_pos] = word;
 			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
 			m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
 		}
@@ -398,7 +397,6 @@ void explorer_nupi_device::onboard_dma_run()
 			{
 				// The host port takes the group's other half.
 				onboard_write16(addr, first);
-				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 1) & 0x0fff;
 			}
 			else
 			{
@@ -406,7 +404,6 @@ void explorer_nupi_device::onboard_dma_run()
 				m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
 				onboard_write16(addr + 2, first);
 				onboard_write16(addr, second);
-				m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
 			}
 		}
 
