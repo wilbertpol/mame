@@ -219,9 +219,8 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_unknown_518000_live));
 	save_item(NAME(m_unknown_dma_801c00));
 	save_item(NAME(m_unknown_dma_801c02));
-	save_item(NAME(m_dma_test_fifo));
-	save_item(NAME(m_dma_test_fifo_write_pos));
-	save_item(NAME(m_dma_test_fifo_read_pos));
+	save_item(NAME(m_fifo_801c00_pos));
+	save_item(NAME(m_fifo_801c00_count));
 	save_item(NAME(m_unknown_dma_803c00));
 	save_item(NAME(m_dma_address_lo_fresh));
 	save_item(NAME(m_dma_address_lo_negate_next));
@@ -276,10 +275,8 @@ void explorer_nupi_device::device_reset()
 	m_unknown_518000_live = 0;
 	m_unknown_dma_801c00 = 0;
 	m_unknown_dma_801c02 = 0;
-	for (u16 &entry : m_dma_test_fifo)
-		entry = 0;
-	m_dma_test_fifo_write_pos = 0;
-	m_dma_test_fifo_read_pos = 0;
+	m_fifo_801c00_pos = 0;
+	m_fifo_801c00_count = 0;
 	m_unknown_dma_803c00 = 0;
 	m_dma_address_lo_fresh = true;
 	m_dma_address_lo_negate_next = false;
@@ -527,6 +524,17 @@ u8 explorer_nupi_device::rom_r(offs_t offset)
 //  MPU-side (internal) hardware
 //**************************************************************************
 
+// $801c00/$801c02 are a second read port on the FIFO, fed by the $440000 word write.
+// The last word of a batch raises DMAINT.
+u16 explorer_nupi_device::pop_801c00_word()
+{
+	u16 const data = m_fifo[m_fifo_801c00_pos];
+	m_fifo_801c00_pos = (m_fifo_801c00_pos + 1) & 0x7ff;
+	if (!--m_fifo_801c00_count)
+		m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
+	return data;
+}
+
 void explorer_nupi_device::mpu_map(address_map &map)
 {
 	map.unmap_value_high();
@@ -606,7 +614,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			else
 				m_dma_mode = m_dma_address_loaded ? DMA_ONBOARD : DMA_FIFO_DISCARD;
 
-			m_dma_fire_irq = real_transfer || (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos);
+			m_dma_fire_irq = real_transfer || (m_fifo_801c00_count == 0);
 
 			if (dma_draining())
 			{
@@ -795,7 +803,12 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	map(0x440000, 0x440001).lrw16(NAME([this]() {
 		return m_unknown_450000_holding;
 	}), NAME([this](u16 data) {
-		m_dma_test_fifo[m_dma_test_fifo_write_pos++ & 0x0f] = data;
+		// The $801c00/$801c02 port reads this batch back out of the FIFO, so it needs
+		// its own cursor: the firmware rewinds m_fifo_in_pos through $80180 before
+		// reading, which leaves the words behind the input cursor.
+		if (!m_fifo_801c00_count)
+			m_fifo_801c00_pos = m_fifo_in_pos;
+		m_fifo_801c00_count++;
 		m_fifo[m_fifo_in_pos] = data;
 		m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
 	}));
@@ -861,21 +874,13 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	map(0xc00000, 0xc0000f).rw(m_mpu, FUNC(m68000_device::berr_r), FUNC(m68000_device::berr_w));
 
 	map(0x801c00, 0x801c01).lr16(NAME([this]() {
-		if (m_dma_test_fifo_read_pos != m_dma_test_fifo_write_pos) {
-			u16 const data = m_dma_test_fifo[m_dma_test_fifo_read_pos++ & 0x0f];
-			if (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos)
-				m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
-			return data;
-		}
+		if (m_fifo_801c00_count)
+			return pop_801c00_word();
 		return m_unknown_dma_801c00;
 	}));
 	map(0x801c02, 0x801c03).lr16(NAME([this]() {
-		if (m_dma_test_fifo_read_pos != m_dma_test_fifo_write_pos) {
-			u16 const data = m_dma_test_fifo[m_dma_test_fifo_read_pos++ & 0x0f];
-			if (m_dma_test_fifo_read_pos == m_dma_test_fifo_write_pos)
-				m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
-			return data;
-		}
+		if (m_fifo_801c00_count)
+			return pop_801c00_word();
 		return m_unknown_dma_801c02;
 	}));
 

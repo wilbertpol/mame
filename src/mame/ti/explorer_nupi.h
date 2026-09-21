@@ -59,6 +59,7 @@ private:
 	void scsi_irq_w(int state);
 	void scsi_dreq_w(int state);
 	void push_fifo_word_to_nubus(u16 word);
+	u16 pop_801c00_word();
 	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
 	void dma_drain_kick();
 	void dma_transfer_complete();
@@ -123,9 +124,8 @@ private:
 	bool m_dma_in_flight = false;
 	u16 m_unknown_dma_801c00 = 0;
 	u16 m_unknown_dma_801c02 = 0;
-	u16 m_dma_test_fifo[16] = {};
-	u8 m_dma_test_fifo_write_pos = 0;
-	u8 m_dma_test_fifo_read_pos = 0;
+	u16 m_fifo_801c00_pos = 0;
+	u8 m_fifo_801c00_count = 0;
 	u16 m_unknown_dma_803c00 = 0;
 	u16 m_fifo[2048] = {};
 	u16 m_unknown_450000_holding = 0;
