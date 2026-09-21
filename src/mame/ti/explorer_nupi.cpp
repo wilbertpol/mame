@@ -226,7 +226,6 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_address_lo_raw));
 	save_item(NAME(m_dma_address_hi_raw));
 	save_item(NAME(m_dma_address_loaded));
-	save_item(NAME(m_onboard_dma_credits));
 	save_item(NAME(m_dma_direction));
 	save_item(NAME(m_fifo_out_pos));
 	save_item(NAME(m_dma_irq5_armed));
@@ -281,7 +280,6 @@ void explorer_nupi_device::device_reset()
 	m_dma_address_lo_raw = 0;
 	m_dma_address_hi_raw = 0;
 	m_dma_address_loaded = false;
-	m_onboard_dma_credits = 0;
 	m_dma_direction = 0;
 	m_fifo_out_pos = 0;
 	m_dma_irq5_armed = false;
@@ -356,7 +354,7 @@ void explorer_nupi_device::onboard_write16(u32 addr, u16 data)
 }
 
 
-void explorer_nupi_device::onboard_dma_run()
+void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 {
 	if (m_dma_mode != DMA_ONBOARD)
 		return;
@@ -368,11 +366,13 @@ void explorer_nupi_device::onboard_dma_run()
 
 	while (m_dma_count)
 	{
+		// Outbound 16-bit hands the group's other half to the host port, so the
+		// transfer only steps once $450000 has taken one.
 		if (!to_fifo && is_16bit)
 		{
-			if (!m_onboard_dma_credits)
+			if (!host_group_read)
 				return;
-			m_onboard_dma_credits--;
+			host_group_read = false;
 		}
 
 		u32 const addr = u32(m_dma_address_lo_raw) << 2;
@@ -624,7 +624,6 @@ void explorer_nupi_device::mpu_map(address_map &map)
 
 			if (m_dma_mode == DMA_ONBOARD)
 			{
-				m_onboard_dma_credits = 0;
 				LOGMASKED(LOG_DMA, "%s: on-board dma armed addr=%05x %s %u-bit count=%u\n", machine().describe_context(),
 						u32(m_dma_address_lo_raw) << 2, m_dma_direction ? "mem->fifo" : "fifo->mem",
 						BIT(m_dma_address_hi_raw, 15) ? 16 : 32, m_dma_count);
@@ -816,8 +815,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		if (m_unknown_450000_byte_phase == 0)
 		{
 			m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
-			m_onboard_dma_credits++;
-			onboard_dma_run();
+			onboard_dma_run(true);
 		}
 		return result;
 	}));

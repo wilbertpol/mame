@@ -64,7 +64,7 @@ private:
 	void dma_drain_kick();
 	void dma_transfer_complete();
 	bool dma_draining() const { return m_dma_mode == DMA_FIFO_TO_NUBUS || m_dma_mode == DMA_FIFO_DISCARD; }
-	void onboard_dma_run();
+	void onboard_dma_run(bool host_group_read = false);
 	u16 onboard_read16(u32 addr);
 	void onboard_write16(u32 addr, u16 data);
 	u16 page_register_r();
@@ -113,7 +113,6 @@ private:
 	u16 m_dma_address_lo_raw = 0;
 	u16 m_dma_address_hi_raw = 0;
 	bool m_dma_address_loaded = false;
-	u32 m_onboard_dma_credits = 0;
 	u8 m_dma_direction = 0;
 	bool m_dma_irq5_armed = false;
 	u8 m_unknown_800c04_toggle = 0;
