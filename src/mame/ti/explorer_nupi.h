@@ -94,7 +94,6 @@ private:
 	u8 m_flag_register;
 	u32 m_dma_address;
 	u32 m_dma_count;
-	u16 m_page_register_802c00_shadow;
 	u8 m_scsi_fifo_pending_byte;
 	bool m_scsi_fifo_have_pending_byte;
 	u16 m_scsi_fifo_pending_word;

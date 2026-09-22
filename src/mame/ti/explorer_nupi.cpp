@@ -145,15 +145,6 @@ void nupi_scsi_devices(device_slot_interface &device)
 	device.option_add("mt3201", MT3201);
 }
 
-// Used by the ROM 0x298 self-test dispatcher's DMA-path loopback check (see the
-// 0x801c0/0x801d0/0x801b0 write handlers in mpu_map()/page_register_w()): confirmed via
-// direct debugger register capture that the firmware's own expected value equals
-// rol(written_word, 2) & 0xfffc, exactly, for every iteration of that self-test.
-u16 rol2(u16 data)
-{
-	return ((data << 2) | (data >> 14)) & 0xfffc;
-}
-
 constexpr u16 UNKNOWN_800C04_SEQUENCE[] = { 0xeb34, 0xeb38 };
 
 // Flag register (>Fs'D40002), doc section 5.3.4 and figure 5-3. Every bit is
@@ -210,7 +201,6 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_address));
 	save_item(NAME(m_dma_count));
 	save_item(NAME(m_page_register));
-	save_item(NAME(m_page_register_802c00_shadow));
 	save_item(NAME(m_unknown_100001));
 	save_item(NAME(m_unknown_100005));
 	save_item(NAME(m_unknown_280000));
@@ -264,7 +254,6 @@ void explorer_nupi_device::device_reset()
 
 	m_dma_address = 0;
 	m_dma_count = 0;
-	m_page_register_802c00_shadow = 0;
 	m_unknown_100001 = 0;
 	m_unknown_100005 = 0;
 	m_unknown_280000 = 0;
@@ -912,7 +901,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		return data;
 	}));
 	map(0x802c00, 0x802c01).lrw16(NAME([this]() {
-		return m_page_register_802c00_shadow;
+		return u16(m_page_register << 2);
 	}), NAME([this](u16 data) {
 		m_dma_count = (m_dma_count & 0x0000ffff) | (u32(data) << 16);
 		LOGMASKED(LOG_DMA, "%s: dma_count hi = %04x -> %08x\n", machine().describe_context(), data, m_dma_count);
@@ -945,8 +934,6 @@ void explorer_nupi_device::page_register_w(u16 data)
 {
 	m_page_register = data;
 	LOGMASKED(LOG_MISC, "%s: page_register = %04x\n", machine().describe_context(), data);
-
-	m_page_register_802c00_shadow = rol2(data);
 }
 
 
