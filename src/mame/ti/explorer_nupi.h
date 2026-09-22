@@ -114,7 +114,7 @@ private:
 	u16 m_dma_address_hi_raw;
 	bool m_dma_address_loaded;
 	u8 m_dma_direction;
-	bool m_dma_irq5_armed;
+	bool m_dma_irq5_enabled;
 	u8 m_unknown_800c04_toggle;
 	u16 m_unknown_508000;
 	u16 m_unknown_508000_live;

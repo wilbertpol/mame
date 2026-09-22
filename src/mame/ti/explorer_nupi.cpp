@@ -229,7 +229,7 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_address_loaded));
 	save_item(NAME(m_dma_direction));
 	save_item(NAME(m_fifo_out_pos));
-	save_item(NAME(m_dma_irq5_armed));
+	save_item(NAME(m_dma_irq5_enabled));
 	save_item(NAME(m_unknown_800c04_toggle));
 	save_item(NAME(m_unknown_280001));
 	save_item(NAME(m_unknown_280001_bits12_toggle));
@@ -283,7 +283,7 @@ void explorer_nupi_device::device_reset()
 	m_dma_address_loaded = false;
 	m_dma_direction = 0;
 	m_fifo_out_pos = 0;
-	m_dma_irq5_armed = false;
+	m_dma_irq5_enabled = false;
 	m_unknown_800c04_toggle = 0;
 	m_unknown_280001 = 0x01;
 	m_unknown_280001_bits12_toggle = false;
@@ -412,10 +412,10 @@ void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 		m_dma_count--;
 	}
 
-	// Completion also raises IRQ5 when $3801ea armed it.
-	if (m_dma_irq5_armed)
+	// Completion also raises IRQ5 when $3801ea enabled it.
+	if (m_dma_irq5_enabled)
 	{
-		m_dma_irq5_armed = false;
+		m_dma_irq5_enabled = false;
 		m_mpu->set_input_line(M68K_IRQ_5, ASSERT_LINE);
 	}
 	dma_transfer_complete();
@@ -634,12 +634,12 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			}
 			else
 			{
-				m_dma_irq5_armed = false;
+				m_dma_irq5_enabled = false;
 			}
 		}
 		else
 		{
-			m_dma_irq5_armed = false;
+			m_dma_irq5_enabled = false;
 		}
 		m_dma_address_loaded = false;
 	}));
@@ -799,7 +799,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}), NAME([this](u8 data) {
 		LOGMASKED(LOG_MISC, "%s: WR 3801ea = %02x\n", machine().describe_context(), data);
 		m_mpu->set_input_line(M68K_IRQ_5, CLEAR_LINE);
-		m_dma_irq5_armed = data != 0;
+		m_dma_irq5_enabled = data;
 	}));
 
 	map(0x440000, 0x440001).lrw16(NAME([this]() {
