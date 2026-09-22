@@ -145,8 +145,6 @@ void nupi_scsi_devices(device_slot_interface &device)
 	device.option_add("mt3201", MT3201);
 }
 
-constexpr u16 UNKNOWN_800C04_SEQUENCE[] = { 0xeb34, 0xeb38 };
-
 // Flag register (>Fs'D40002), doc section 5.3.4 and figure 5-3. Every bit is
 // documented "active (low)", so a set bit is the bad case in each of the three,
 // and all three come up set - see device_reset(). Bits 3-7 are reserved and
@@ -208,15 +206,13 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_unknown_dma_801c00));
 	save_item(NAME(m_unknown_dma_801c02));
 	save_item(NAME(m_unknown_dma_803c00));
-	save_item(NAME(m_dma_address_lo_fresh));
-	save_item(NAME(m_dma_address_lo_negate_next));
+	save_item(NAME(m_dma_go_level));
 	save_item(NAME(m_dma_address_lo_raw));
 	save_item(NAME(m_dma_address_hi_raw));
 	save_item(NAME(m_dma_address_loaded));
 	save_item(NAME(m_dma_direction));
 	save_item(NAME(m_fifo_out_pos));
 	save_item(NAME(m_dma_irq5_enabled));
-	save_item(NAME(m_unknown_800c04_toggle));
 	save_item(NAME(m_unknown_280001));
 	save_item(NAME(m_unknown_280001_bits12_toggle));
 	save_item(NAME(m_unknown_300000));
@@ -256,15 +252,13 @@ void explorer_nupi_device::device_reset()
 	m_unknown_dma_801c00 = 0;
 	m_unknown_dma_801c02 = 0;
 	m_unknown_dma_803c00 = 0;
-	m_dma_address_lo_fresh = true;
-	m_dma_address_lo_negate_next = false;
+	m_dma_go_level = false;
 	m_dma_address_lo_raw = 0;
 	m_dma_address_hi_raw = 0;
 	m_dma_address_loaded = false;
 	m_dma_direction = 0;
 	m_fifo_out_pos = 0;
 	m_dma_irq5_enabled = false;
-	m_unknown_800c04_toggle = 0;
 	m_unknown_280001 = 0x01;
 	m_unknown_280001_bits12_toggle = false;
 	m_unknown_300000 = 0;
@@ -300,6 +294,13 @@ TIMER_CALLBACK_MEMBER(explorer_nupi_device::timer_tick)
 TIMER_CALLBACK_MEMBER(explorer_nupi_device::interval_timer_expired)
 {
 	m_mpu->set_input_line(M68K_IRQ_3, ASSERT_LINE);
+}
+
+// The two halves of the DMA address counter sit at different weights: $801c0
+// supplies NuBus bits 17-2 and $801d0 bits 31-18.
+void explorer_nupi_device::update_dma_address()
+{
+	m_dma_address = (u32(m_dma_address_hi_raw) << 18) + (u32(m_dma_address_lo_raw) << 2);
 }
 
 // The input address counter is 12 bits and the self-test compares it raw, but the
@@ -578,13 +579,15 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		LOGMASKED(LOG_MISC, "%s: WR 801a8 = %02x\n", machine().describe_context(), data);
 		m_dma_direction = data;
 	}));
-	// The real "go" strobe for a DMA transfer.
+	// The real "go" strobe for a DMA transfer. Only ever written 0x00 or 0xff
+	// (sf/st/smi/clr.w), and the level is held: it also steers the address counter.
 	map(0x0801aa, 0x0801aa).lrw8(NAME([this]() {
 		LOGMASKED(LOG_MISC, "%s: RD 801aa\n", machine().describe_context());
 		return 0;
 	}), NAME([this](u8 data) {
 		LOGMASKED(LOG_MISC, "%s: WR 801aa = %02x\n", machine().describe_context(), data);
-		if (data == 0xff && m_dma_count)
+		m_dma_go_level = data;
+		if (m_dma_go_level && m_dma_count)
 		{
 			m_dma_in_flight = true;
 			m_dma_out_byte_phase = 0;
@@ -661,15 +664,14 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 	map(0x0801c0, 0x0801c1).lw16(NAME([this](u16 data) {
 		m_dma_address_lo_raw = data;
-		m_dma_address = (u32(m_dma_address_hi_raw) << 18) + (u32(m_dma_address_lo_raw) << 2);
+		update_dma_address();
 		m_dma_address_loaded = true;
-		m_dma_address_lo_fresh = true;
 		m_dma_target_configured = true;
 		LOGMASKED(LOG_DMA, "%s: WR 801c0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address);
 	}));
 	map(0x0801d0, 0x0801d1).lw16(NAME([this](u16 data) {
 		m_dma_address_hi_raw = data;
-		m_dma_address = (u32(m_dma_address_hi_raw) << 18) + (u32(m_dma_address_lo_raw) << 2);
+		update_dma_address();
 		m_dma_address_loaded = true;
 		m_dma_target_configured = true;
 		LOGMASKED(LOG_DMA, "%s: WR 801d0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address);
@@ -755,12 +757,24 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}), NAME([this](u8 data) {
 		LOGMASKED(LOG_MISC, "%s: WR 3801e4 = %02x\n", machine().describe_context(), data);
 	}));
-	// Unknown
+	// Clocks the DMA address counter one 32-bit word, up or down depending on the level
+	// held on $801aa. The low half is a 16-bit counter carrying into the high half.
 	map(0x3801e6, 0x3801e6).lrw8(NAME([this]() {
 		LOGMASKED(LOG_MISC, "%s: RD 3801e6\n", machine().describe_context());
 		return 0;
 	}), NAME([this](u8 data) {
 		LOGMASKED(LOG_MISC, "%s: WR 3801e6 = %02x\n", machine().describe_context(), data);
+		if (m_dma_go_level)
+		{
+			if (!++m_dma_address_lo_raw)
+				m_dma_address_hi_raw++;
+		}
+		else
+		{
+			if (!m_dma_address_lo_raw--)
+				m_dma_address_hi_raw--;
+		}
+		update_dma_address();
 	}));
 	map(0x3801e8, 0x3801e8).lrw8(NAME([this]() {
 		LOGMASKED(LOG_MISC, "%s: RD 3801e8\n", machine().describe_context());
@@ -858,38 +872,23 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 
 	map(0x800c00, 0x800c01).lrw16(NAME([this]() {
-		LOGMASKED(LOG_DMA, "%s: dma_address hi read = %04x\n", machine().describe_context(), u16(m_dma_address >> 16));
-		return u16(m_dma_address >> 16);
+		LOGMASKED(LOG_DMA, "%s: dma_address hi read = %04x\n", machine().describe_context(), u16(m_dma_address_hi_raw << 2));
+		return u16(m_dma_address_hi_raw << 2);
 	}), NAME([this](u16 data) {
 		m_dma_address = (m_dma_address & 0x0000ffff) | (u32(data) << 16);
 		LOGMASKED(LOG_DMA, "%s: dma_address hi = %04x -> %08x\n", machine().describe_context(), data, m_dma_address);
 	}));
 	map(0x800c02, 0x800c03).lrw16(NAME([this]() {
-		u16 data;
-		if (m_dma_address_lo_fresh)
-		{
-			data = u16(m_dma_address);
-			m_dma_address_lo_fresh = false;
-			m_dma_address_lo_negate_next = false;
-		}
-		else
-		{
-			data = m_dma_address_lo_negate_next ? u16(~m_dma_address) : u16(m_dma_address);
-			m_dma_address_lo_negate_next = !m_dma_address_lo_negate_next;
-		}
-		LOGMASKED(LOG_DMA, "%s: dma_address lo read = %04x\n", machine().describe_context(), data);
-		return data;
+		LOGMASKED(LOG_DMA, "%s: dma_address lo read = %04x\n", machine().describe_context(), u16(m_dma_address_lo_raw << 2));
+		return u16(m_dma_address_lo_raw << 2);
 	}), NAME([this](u16 data) {
 		m_dma_address = (m_dma_address & 0xffff0000) | data;
-		m_dma_address_lo_fresh = true;
 		LOGMASKED(LOG_DMA, "%s: dma_address lo = %04x -> %08x\n", machine().describe_context(), data, m_dma_address);
 	}));
-	// Unknown
+	// Second read port on the address counter's high half.
 	map(0x800c04, 0x800c05).lr16(NAME([this]() {
-		u16 const data = UNKNOWN_800C04_SEQUENCE[m_unknown_800c04_toggle];
-		m_unknown_800c04_toggle ^= 1;
-		LOGMASKED(LOG_DMA, "%s: unknown 800c04 read = %04x\n", machine().describe_context(), data);
-		return data;
+		LOGMASKED(LOG_DMA, "%s: 800c04 read = %04x\n", machine().describe_context(), u16(m_dma_address_hi_raw << 2));
+		return u16(m_dma_address_hi_raw << 2);
 	}));
 	map(0x802c00, 0x802c01).lrw16(NAME([this]() {
 		return u16(m_page_register << 2);

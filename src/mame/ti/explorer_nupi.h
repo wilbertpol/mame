@@ -59,6 +59,7 @@ private:
 	u8 rom_r(offs_t offset);
 	void scsi_irq_w(int state);
 	void scsi_dreq_w(int state);
+	void update_dma_address();
 	void push_fifo_word_to_nubus(u16 word);
 	void fifo_push(u16 word);
 	u16 read_801c00_port(u16 half, u16 readback);
@@ -108,14 +109,12 @@ private:
 	u8 m_dma_out_byte_phase;
 	u8 m_dma_count_pending_byte;
 	bool m_dma_count_have_pending_byte;
-	bool m_dma_address_lo_fresh;
-	bool m_dma_address_lo_negate_next;
+	u8 m_dma_go_level;
 	u16 m_dma_address_lo_raw;
 	u16 m_dma_address_hi_raw;
 	bool m_dma_address_loaded;
 	u8 m_dma_direction;
 	bool m_dma_irq5_enabled;
-	u8 m_unknown_800c04_toggle;
 	u16 m_unknown_518000;
 	bool m_dma_in_flight;
 	u16 m_unknown_dma_801c00;
