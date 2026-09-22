@@ -116,9 +116,7 @@ private:
 	bool m_dma_irq5_enabled;
 	u8 m_unknown_800c04_toggle;
 	u16 m_unknown_508000;
-	u16 m_unknown_508000_live;
 	u16 m_unknown_518000;
-	u16 m_unknown_518000_live;
 	bool m_dma_in_flight;
 	u16 m_unknown_dma_801c00;
 	u16 m_unknown_dma_801c02;

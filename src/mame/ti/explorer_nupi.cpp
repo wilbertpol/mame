@@ -205,9 +205,7 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_unknown_100005));
 	save_item(NAME(m_unknown_280000));
 	save_item(NAME(m_unknown_508000));
-	save_item(NAME(m_unknown_508000_live));
 	save_item(NAME(m_unknown_518000));
-	save_item(NAME(m_unknown_518000_live));
 	save_item(NAME(m_unknown_dma_801c00));
 	save_item(NAME(m_unknown_dma_801c02));
 	save_item(NAME(m_fifo_801c00_count));
@@ -258,9 +256,7 @@ void explorer_nupi_device::device_reset()
 	m_unknown_100005 = 0;
 	m_unknown_280000 = 0;
 	m_unknown_508000 = 0;
-	m_unknown_508000_live = 0;
 	m_unknown_518000 = 0;
-	m_unknown_518000_live = 0;
 	m_unknown_dma_801c00 = 0;
 	m_unknown_dma_801c02 = 0;
 	m_fifo_801c00_count = 0;
@@ -377,7 +373,7 @@ void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
 			m_fifo[m_fifo_in_pos] = word;
 			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
-			m_unknown_508000 = m_unknown_508000_live = (m_unknown_508000_live + 2) & 0x0fff;
+			m_unknown_508000 = (m_unknown_508000 + 2) & 0x0fff;
 		}
 		else
 		{
@@ -541,7 +537,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		LOGMASKED(LOG_MISC, "%s: RD 80180\n", machine().describe_context());
 		return 0;
 	}), NAME([this](u16 data) {
-		m_unknown_508000 = m_unknown_508000_live = data & 0x0fff;
+		m_unknown_508000 = data & 0x0fff;
 		m_fifo_out_pos = data & 0x07ff;
 		if (m_dma_transfer_start_pending)
 			m_fifo_in_pos = data & 0x07ff;
@@ -550,7 +546,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		LOGMASKED(LOG_MISC, "%s: RD 80190\n", machine().describe_context());
 		return 0;
 	}), NAME([this](u16 data) {
-		m_unknown_518000 = m_unknown_518000_live = data & 0x0fff;
+		m_unknown_518000 = data & 0x0fff;
 	}));
 	map(0x0801a2, 0x0801a2).lrw8(NAME([this]() {
 		LOGMASKED(LOG_MISC, "%s: RD 801a2\n", machine().describe_context());
@@ -773,8 +769,6 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		LOGMASKED(LOG_MISC, "%s: RD 3801e8\n", machine().describe_context());
 		return 0;
 	}), NAME([this](u8 data) {
-		m_unknown_508000 = m_unknown_508000_live++;
-		m_unknown_518000 = m_unknown_518000_live++;
 		m_unknown_450000_byte_phase = 0;
 	}));
 	map(0x380218, 0x380218).lw8(NAME([this](u8 data) {
@@ -818,6 +812,11 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			m_unknown_450000_holding = (m_unknown_450000_holding & 0xff00) | data;
 			m_fifo[m_fifo_in_pos] = m_unknown_450000_holding;
 			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
+			// The word moving through the port is what clocks the address counters,
+			// not the $3801e8 strobe: ROM 0x698 loops strobe / read both / push one
+			// word, and reads back the preset on the first pass.
+			m_unknown_508000++;
+			m_unknown_518000++;
 		}
 		else
 		{
@@ -828,7 +827,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	map(0x508000, 0x508001).lrw16(NAME([this]() {
 		return m_unknown_508000;
 	}), NAME([this](u16 data) {
-		m_unknown_508000 = m_unknown_508000_live = data;
+		m_unknown_508000 = data;
 	}));
 	map(0x518000, 0x518001).lrw16(NAME([this]() {
 		u16 const result = m_dma_in_flight ? m_unknown_508000 : m_unknown_518000;
@@ -836,7 +835,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		return result;
 	}), NAME([this](u16 data) {
 		LOGMASKED(LOG_DMA, "%s: WR 518000 = %04x\n", machine().describe_context(), data);
-		m_unknown_518000 = m_unknown_518000_live = data;
+		m_unknown_518000 = data;
 	}));
 
 	map(0x568000, 0x56801f).m(m_scsi, FUNC(ncr5385_device::map)).umask16(0x00ff);
