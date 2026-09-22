@@ -209,6 +209,7 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_flag_register));
 	save_item(NAME(m_dma_address));
 	save_item(NAME(m_dma_count));
+	save_item(NAME(m_page_register));
 	save_item(NAME(m_page_register_802c00_shadow));
 	save_item(NAME(m_unknown_100001));
 	save_item(NAME(m_unknown_100005));
@@ -288,6 +289,8 @@ void explorer_nupi_device::device_reset()
 	m_unknown_280001_bits12_toggle = false;
 	m_unknown_300000 = 0;
 	m_unknown_300001 = 0x0c;
+	m_page_register = 0;
+	std::fill(std::begin(m_interval_timer_regs), std::end(m_interval_timer_regs), 0);
 	for (u16 &entry : m_fifo)
 		entry = 0;
 	m_unknown_450000_holding = 0;
