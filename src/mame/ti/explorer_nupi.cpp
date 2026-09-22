@@ -204,7 +204,6 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_unknown_100001));
 	save_item(NAME(m_unknown_100005));
 	save_item(NAME(m_unknown_280000));
-	save_item(NAME(m_unknown_508000));
 	save_item(NAME(m_unknown_518000));
 	save_item(NAME(m_unknown_dma_801c00));
 	save_item(NAME(m_unknown_dma_801c02));
@@ -253,7 +252,6 @@ void explorer_nupi_device::device_reset()
 	m_unknown_100001 = 0;
 	m_unknown_100005 = 0;
 	m_unknown_280000 = 0;
-	m_unknown_508000 = 0;
 	m_unknown_518000 = 0;
 	m_unknown_dma_801c00 = 0;
 	m_unknown_dma_801c02 = 0;
@@ -304,9 +302,17 @@ TIMER_CALLBACK_MEMBER(explorer_nupi_device::interval_timer_expired)
 	m_mpu->set_input_line(M68K_IRQ_3, ASSERT_LINE);
 }
 
+// The input address counter is 12 bits and the self-test compares it raw, but the
+// FIFO behind it is 2048 words.
+void explorer_nupi_device::fifo_push(u16 word)
+{
+	m_fifo[m_fifo_in_pos & 0x7ff] = word;
+	m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x0fff;
+}
+
 TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_drain_timer_expired)
 {
-	if (m_dma_mode == DMA_FIFO_TO_NUBUS && m_fifo_drain_pos == m_fifo_in_pos)
+	if (m_dma_mode == DMA_FIFO_TO_NUBUS && m_fifo_drain_pos == (m_fifo_in_pos & 0x7ff))
 		return;
 
 	u16 const word = m_fifo[m_fifo_drain_pos];
@@ -365,11 +371,8 @@ void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 			// Fills are always 16-bit: only the halfword at +0 is real, and it fills
 			// both halves of the FIFO group (nothing else is driving the other half).
 			u16 const word = onboard_read16(addr);
-			m_fifo[m_fifo_in_pos] = word;
-			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
-			m_fifo[m_fifo_in_pos] = word;
-			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
-			m_unknown_508000 = (m_unknown_508000 + 2) & 0x0fff;
+			fifo_push(word);
+			fifo_push(word);
 		}
 		else
 		{
@@ -532,10 +535,9 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		LOGMASKED(LOG_MISC, "%s: RD 80180\n", machine().describe_context());
 		return 0;
 	}), NAME([this](u16 data) {
-		m_unknown_508000 = data & 0x0fff;
-		m_fifo_out_pos = data & 0x07ff;
 		if (m_dma_transfer_start_pending)
-			m_fifo_in_pos = data & 0x07ff;
+			m_fifo_in_pos = data & 0x0fff;
+		m_fifo_out_pos = data & 0x07ff;
 	}));
 	map(0x080190, 0x080191).lrw16(NAME([this]() {
 		LOGMASKED(LOG_MISC, "%s: RD 80190\n", machine().describe_context());
@@ -783,8 +785,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	map(0x440000, 0x440001).lrw16(NAME([this]() {
 		return m_unknown_450000_holding;
 	}), NAME([this](u16 data) {
-		m_fifo[m_fifo_in_pos] = data;
-		m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
+		fifo_push(data);
 	}));
 	map(0x450000, 0x450007).lr8(NAME([this]() {
 		m_unknown_300001 = 0x00;
@@ -803,12 +804,10 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		if (offset)
 		{
 			m_unknown_450000_holding = (m_unknown_450000_holding & 0xff00) | data;
-			m_fifo[m_fifo_in_pos] = m_unknown_450000_holding;
-			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
 			// The word moving through the port is what clocks the address counters,
 			// not the $3801e8 strobe: ROM 0x698 loops strobe / read both / push one
 			// word, and reads back the preset on the first pass.
-			m_unknown_508000++;
+			fifo_push(m_unknown_450000_holding);
 			m_unknown_518000++;
 		}
 		else
@@ -818,13 +817,13 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 
 	map(0x508000, 0x508001).lrw16(NAME([this]() {
-		return m_unknown_508000;
+		return m_fifo_in_pos;
 	}), NAME([this](u16 data) {
-		m_unknown_508000 = data;
+		m_fifo_in_pos = data;
 	}));
 	map(0x518000, 0x518001).lrw16(NAME([this]() {
-		u16 const result = m_dma_in_flight ? m_unknown_508000 : m_unknown_518000;
-		LOGMASKED(LOG_DMA, "%s: RD 518000 -> %04x (in_flight=%d, 508000=%04x, 518000=%04x)\n", machine().describe_context(), result, m_dma_in_flight, m_unknown_508000, m_unknown_518000);
+		u16 const result = m_dma_in_flight ? m_fifo_in_pos : m_unknown_518000;
+		LOGMASKED(LOG_DMA, "%s: RD 518000 -> %04x (in_flight=%d, 508000=%04x, 518000=%04x)\n", machine().describe_context(), result, m_dma_in_flight, m_fifo_in_pos, m_unknown_518000);
 		return result;
 	}), NAME([this](u16 data) {
 		LOGMASKED(LOG_DMA, "%s: WR 518000 = %04x\n", machine().describe_context(), data);
@@ -1008,14 +1007,13 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 		{
 			if (m_dma_transfer_start_pending)
 			{
-				m_dma_transfer_start_pos = m_fifo_in_pos;
+				m_dma_transfer_start_pos = m_fifo_in_pos & 0x7ff;
 				m_dma_transfer_start_pending = false;
 			}
 
 			u16 const word = (u16(m_scsi_fifo_pending_byte) << 8) | data;
-			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_in_pos, word);
-			m_fifo[m_fifo_in_pos] = word;
-			m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
+			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_in_pos & 0x7ff, word);
+			fifo_push(word);
 			m_scsi_fifo_have_pending_byte = false;
 
 			dma_drain_kick();

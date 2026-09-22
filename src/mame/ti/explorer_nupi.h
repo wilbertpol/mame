@@ -60,6 +60,7 @@ private:
 	void scsi_irq_w(int state);
 	void scsi_dreq_w(int state);
 	void push_fifo_word_to_nubus(u16 word);
+	void fifo_push(u16 word);
 	u16 read_801c00_port(u16 half, u16 readback);
 	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
 	void dma_drain_kick();
@@ -115,7 +116,6 @@ private:
 	u8 m_dma_direction;
 	bool m_dma_irq5_enabled;
 	u8 m_unknown_800c04_toggle;
-	u16 m_unknown_508000;
 	u16 m_unknown_518000;
 	bool m_dma_in_flight;
 	u16 m_unknown_dma_801c00;
