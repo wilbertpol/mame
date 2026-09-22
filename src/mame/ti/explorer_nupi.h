@@ -45,7 +45,8 @@ private:
 		DMA_FIFO_TO_NUBUS,
 		DMA_FIFO_DISCARD,  // no target programmed - the transfer runs but lands nowhere
 		DMA_NUBUS_TO_SCSI,
-		DMA_ONBOARD        // FIFO <-> the board's own RAM/ROM
+		DMA_ONBOARD,       // FIFO <-> the board's own RAM/ROM
+		DMA_FIFO_TO_MPU    // outbound with no target: the MPU steps it through $801c00/$450000
 	};
 
 	void mpu_map(address_map &map) ATTR_COLD;
@@ -104,7 +105,6 @@ private:
 	bool m_dma_transfer_start_pending;
 	bool m_dma_target_configured;
 	u8 m_dma_out_byte_phase;
-	bool m_dma_fire_irq;
 	u8 m_dma_count_pending_byte;
 	bool m_dma_count_have_pending_byte;
 	bool m_dma_address_lo_fresh;
@@ -120,7 +120,6 @@ private:
 	bool m_dma_in_flight;
 	u16 m_unknown_dma_801c00;
 	u16 m_unknown_dma_801c02;
-	u8 m_fifo_801c00_count;
 	u16 m_unknown_dma_803c00;
 	u16 m_fifo[2048];
 	u16 m_unknown_450000_holding;

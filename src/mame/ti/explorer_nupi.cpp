@@ -208,7 +208,6 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_unknown_518000));
 	save_item(NAME(m_unknown_dma_801c00));
 	save_item(NAME(m_unknown_dma_801c02));
-	save_item(NAME(m_fifo_801c00_count));
 	save_item(NAME(m_unknown_dma_803c00));
 	save_item(NAME(m_dma_address_lo_fresh));
 	save_item(NAME(m_dma_address_lo_negate_next));
@@ -237,7 +236,6 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_target_configured));
 	save_item(NAME(m_dma_in_flight));
 	save_item(NAME(m_dma_out_byte_phase));
-	save_item(NAME(m_dma_fire_irq));
 	save_item(NAME(m_dma_transfer_start_pos));
 	save_item(NAME(m_dma_transfer_start_pending));
 	save_item(NAME(m_dma_count_pending_byte));
@@ -259,7 +257,6 @@ void explorer_nupi_device::device_reset()
 	m_unknown_518000 = 0;
 	m_unknown_dma_801c00 = 0;
 	m_unknown_dma_801c02 = 0;
-	m_fifo_801c00_count = 0;
 	m_unknown_dma_803c00 = 0;
 	m_dma_address_lo_fresh = true;
 	m_dma_address_lo_negate_next = false;
@@ -289,7 +286,6 @@ void explorer_nupi_device::device_reset()
 	m_dma_target_configured = false;
 	m_dma_in_flight = false;
 	m_dma_out_byte_phase = 0;
-	m_dma_fire_irq = true;
 	m_dma_transfer_start_pos = 0;
 	m_dma_transfer_start_pending = true;
 	m_dma_count_pending_byte = 0;
@@ -409,8 +405,7 @@ void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 
 void explorer_nupi_device::dma_transfer_complete()
 {
-	if (m_dma_fire_irq)
-		m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
+	m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
 
 	m_dma_mode = DMA_IDLE;
 
@@ -507,19 +502,19 @@ u8 explorer_nupi_device::rom_r(offs_t offset)
 //  MPU-side (internal) hardware
 //**************************************************************************
 
-// $801c00/$801c02 are the two halves of a 32-bit read window on the FIFO, fed by the
-// $440000 word write: $801c02 reads m_fifo[m_fifo_out_pos] and $801c00 the word after
-// it. The $450000 port does the advancing, two words per longword read. Until a batch
-// has been written the addresses read back as plain registers. The last word of a
-// batch raises DMAINT.
+// $801c00/$801c02 hold the longword an outbound transfer is presenting, $801c02 the
+// half at m_fifo_out_pos and $801c00 the one after it. With no NuBus target the MPU
+// steps the transfer itself, reading the pair and then advancing the FIFO through
+// $450000; the count runs down one per longword and raises DMAINT at zero. Outside
+// such a transfer both addresses read back as plain registers.
 u16 explorer_nupi_device::read_801c00_port(u16 half, u16 readback)
 {
-	if (!m_fifo_801c00_count)
+	if (m_dma_mode != DMA_FIFO_TO_MPU)
 		return readback;
 
 	u16 const data = m_fifo[(m_fifo_out_pos + half) & 0x7ff];
-	if (!--m_fifo_801c00_count)
-		m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
+	if (half && !--m_dma_count)
+		dma_transfer_complete();
 	return data;
 }
 
@@ -599,10 +594,10 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			// single transfer for them to drive.
 			if (real_transfer)
 				m_dma_mode = (m_dma_direction != 0) ? DMA_NUBUS_TO_SCSI : DMA_FIFO_TO_NUBUS;
+			else if (m_dma_address_loaded)
+				m_dma_mode = DMA_ONBOARD;
 			else
-				m_dma_mode = m_dma_address_loaded ? DMA_ONBOARD : DMA_FIFO_DISCARD;
-
-			m_dma_fire_irq = real_transfer || (m_fifo_801c00_count == 0);
+				m_dma_mode = (m_dma_direction != 0) ? DMA_FIFO_DISCARD : DMA_FIFO_TO_MPU;
 
 			if (dma_draining())
 			{
@@ -788,8 +783,6 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	map(0x440000, 0x440001).lrw16(NAME([this]() {
 		return m_unknown_450000_holding;
 	}), NAME([this](u16 data) {
-		// Counts the words the $801c00/$801c02 window still has to hand back.
-		m_fifo_801c00_count++;
 		m_fifo[m_fifo_in_pos] = data;
 		m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x7ff;
 	}));
@@ -1040,8 +1033,7 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 
 			if (!m_dma_count)
 			{
-				if (m_dma_fire_irq)
-					m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
+				m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
 
 				m_dma_mode = DMA_IDLE;
 				m_unknown_100001 = 0;
