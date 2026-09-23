@@ -121,9 +121,9 @@ private:
 	u16 m_unknown_dma_801c02;
 	u16 m_unknown_dma_803c00;
 	u16 m_fifo[2048];
-	u16 m_unknown_450000_holding;
+	u16 m_fifo_input;
 	u16 m_fifo_in_pos;
-	u8 m_unknown_450000_byte_phase;
+	u8 m_fifo_out_byte_phase;
 	u16 m_fifo_out_pos;
 	u16 m_page_register;
 	u8 m_unknown_100001;

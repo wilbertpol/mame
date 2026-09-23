@@ -219,9 +219,9 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_unknown_300001));
 	save_item(NAME(m_interval_timer_regs));
 	save_item(NAME(m_fifo));
-	save_item(NAME(m_unknown_450000_holding));
+	save_item(NAME(m_fifo_input));
 	save_item(NAME(m_fifo_in_pos));
-	save_item(NAME(m_unknown_450000_byte_phase));
+	save_item(NAME(m_fifo_out_byte_phase));
 	save_item(NAME(m_scsi_fifo_pending_byte));
 	save_item(NAME(m_scsi_fifo_have_pending_byte));
 	save_item(NAME(m_scsi_fifo_pending_word));
@@ -267,7 +267,7 @@ void explorer_nupi_device::device_reset()
 	std::fill(std::begin(m_interval_timer_regs), std::end(m_interval_timer_regs), 0);
 	for (u16 &entry : m_fifo)
 		entry = 0;
-	m_unknown_450000_holding = 0;
+	m_fifo_input = 0;
 	m_fifo_in_pos = 0;
 	m_scsi_fifo_pending_byte = 0;
 	m_scsi_fifo_have_pending_byte = false;
@@ -282,7 +282,7 @@ void explorer_nupi_device::device_reset()
 	m_dma_transfer_start_pending = true;
 	m_dma_count_pending_byte = 0;
 	m_dma_count_have_pending_byte = false;
-	m_unknown_450000_byte_phase = 0;
+	m_fifo_out_byte_phase = 0;
 }
 
 TIMER_CALLBACK_MEMBER(explorer_nupi_device::timer_tick)
@@ -415,7 +415,7 @@ void explorer_nupi_device::dma_transfer_complete()
 
 	m_unknown_100001 = 0;
 
-	m_unknown_450000_holding = m_unknown_dma_803c00;
+	m_fifo_input = m_unknown_dma_803c00;
 
 	m_dma_transfer_start_pending = true;
 }
@@ -780,7 +780,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		LOGMASKED(LOG_MISC, "%s: RD 3801e8\n", machine().describe_context());
 		return 0;
 	}), NAME([this](u8 data) {
-		m_unknown_450000_byte_phase = 0;
+		m_fifo_out_byte_phase = 0;
 	}));
 	map(0x380218, 0x380218).lw8(NAME([this](u8 data) {
 		LOGMASKED(LOG_MISC, "%s: WR 380218 = %02x\n", machine().describe_context(), data);
@@ -797,16 +797,16 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 
 	map(0x440000, 0x440001).lrw16(NAME([this]() {
-		return m_unknown_450000_holding;
+		return m_fifo_input;
 	}), NAME([this](u16 data) {
 		fifo_push(data);
 	}));
 	map(0x450000, 0x450007).lr8(NAME([this]() {
 		m_unknown_300001 = 0x00;
 		u16 const data = m_fifo[m_fifo_out_pos];
-		u8 const result = (m_unknown_450000_byte_phase & 1) ? u8(data) : u8(data >> 8);
-		m_unknown_450000_byte_phase = (m_unknown_450000_byte_phase + 1) & 3;
-		if (m_unknown_450000_byte_phase == 0)
+		u8 const result = (m_fifo_out_byte_phase & 1) ? u8(data) : u8(data >> 8);
+		m_fifo_out_byte_phase = (m_fifo_out_byte_phase + 1) & 3;
+		if (m_fifo_out_byte_phase == 0)
 		{
 			m_fifo_out_pos = (m_fifo_out_pos + 1) & 0x7ff;
 			onboard_dma_run(true);
@@ -817,16 +817,16 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		// The odd lane is the low byte, and writing it pushes the assembled word.
 		if (offset)
 		{
-			m_unknown_450000_holding = (m_unknown_450000_holding & 0xff00) | data;
+			m_fifo_input = (m_fifo_input & 0xff00) | data;
 			// The word moving through the port is what clocks the address counters,
 			// not the $3801e8 strobe: ROM 0x698 loops strobe / read both / push one
 			// word, and reads back the preset on the first pass.
-			fifo_push(m_unknown_450000_holding);
+			fifo_push(m_fifo_input);
 			m_unknown_518000++;
 		}
 		else
 		{
-			m_unknown_450000_holding = (m_unknown_450000_holding & 0x00ff) | (u16(data) << 8);
+			m_fifo_input = (m_fifo_input & 0x00ff) | (u16(data) << 8);
 		}
 	}));
 
