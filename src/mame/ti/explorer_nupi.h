@@ -110,8 +110,8 @@ private:
 	u8 m_dma_count_pending_byte;
 	bool m_dma_count_have_pending_byte;
 	u8 m_dma_go_level;
-	u16 m_dma_address_lo_raw;
-	u16 m_dma_address_hi_raw;
+	u16 m_dma_address_lo;
+	u16 m_dma_address_hi;
 	bool m_dma_address_loaded;
 	u8 m_dma_direction;
 	bool m_dma_irq5_enabled;

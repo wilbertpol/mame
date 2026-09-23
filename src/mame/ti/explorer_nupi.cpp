@@ -207,8 +207,8 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_unknown_dma_801c02));
 	save_item(NAME(m_unknown_dma_803c00));
 	save_item(NAME(m_dma_go_level));
-	save_item(NAME(m_dma_address_lo_raw));
-	save_item(NAME(m_dma_address_hi_raw));
+	save_item(NAME(m_dma_address_lo));
+	save_item(NAME(m_dma_address_hi));
 	save_item(NAME(m_dma_address_loaded));
 	save_item(NAME(m_dma_direction));
 	save_item(NAME(m_fifo_out_pos));
@@ -253,8 +253,8 @@ void explorer_nupi_device::device_reset()
 	m_unknown_dma_801c02 = 0;
 	m_unknown_dma_803c00 = 0;
 	m_dma_go_level = false;
-	m_dma_address_lo_raw = 0;
-	m_dma_address_hi_raw = 0;
+	m_dma_address_lo = 0;
+	m_dma_address_hi = 0;
 	m_dma_address_loaded = false;
 	m_dma_direction = 0;
 	m_fifo_out_pos = 0;
@@ -300,7 +300,7 @@ TIMER_CALLBACK_MEMBER(explorer_nupi_device::interval_timer_expired)
 // supplies NuBus bits 17-2 and $801d0 bits 31-18.
 void explorer_nupi_device::update_dma_address()
 {
-	m_dma_address = (u32(m_dma_address_hi_raw) << 18) + (u32(m_dma_address_lo_raw) << 2);
+	m_dma_address = (u32(m_dma_address_hi) << 18) + (u32(m_dma_address_lo) << 2);
 }
 
 // The input address counter is 12 bits and the self-test compares it raw, but the
@@ -353,7 +353,7 @@ void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 	// Direction ($801a8) and width ($801d0 bit 15) are read live; the transfer walks the
 	// address ($801c0, bits 17:2) and the count down as it goes.
 	bool const to_fifo = m_dma_direction != 0;
-	bool const is_16bit = BIT(m_dma_address_hi_raw, 15);
+	bool const is_16bit = BIT(m_dma_address_hi, 15);
 
 	while (m_dma_count)
 	{
@@ -366,7 +366,7 @@ void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 			host_group_read = false;
 		}
 
-		u32 const addr = u32(m_dma_address_lo_raw) << 2;
+		u32 const addr = u32(m_dma_address_lo) << 2;
 		if (to_fifo)
 		{
 			// Fills are always 16-bit: only the halfword at +0 is real, and it fills
@@ -393,7 +393,7 @@ void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 			}
 		}
 
-		m_dma_address_lo_raw++;
+		m_dma_address_lo++;
 		m_dma_count--;
 	}
 
@@ -613,8 +613,8 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			if (m_dma_mode == DMA_ONBOARD)
 			{
 				LOGMASKED(LOG_DMA, "%s: on-board dma armed addr=%05x %s %u-bit count=%u\n", machine().describe_context(),
-						u32(m_dma_address_lo_raw) << 2, m_dma_direction ? "mem->fifo" : "fifo->mem",
-						BIT(m_dma_address_hi_raw, 15) ? 16 : 32, m_dma_count);
+						u32(m_dma_address_lo) << 2, m_dma_direction ? "mem->fifo" : "fifo->mem",
+						BIT(m_dma_address_hi, 15) ? 16 : 32, m_dma_count);
 				onboard_dma_run();
 			}
 			else
@@ -663,14 +663,14 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		page_register_w(data);
 	}));
 	map(0x0801c0, 0x0801c1).lw16(NAME([this](u16 data) {
-		m_dma_address_lo_raw = data;
+		m_dma_address_lo = data;
 		update_dma_address();
 		m_dma_address_loaded = true;
 		m_dma_target_configured = true;
 		LOGMASKED(LOG_DMA, "%s: WR 801c0 = %04x -> m_dma_address=%08x\n", machine().describe_context(), data, m_dma_address);
 	}));
 	map(0x0801d0, 0x0801d1).lw16(NAME([this](u16 data) {
-		m_dma_address_hi_raw = data;
+		m_dma_address_hi = data;
 		update_dma_address();
 		m_dma_address_loaded = true;
 		m_dma_target_configured = true;
@@ -722,7 +722,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 	map(0x280001, 0x280001).r(FUNC(explorer_nupi_device::unknown_280001_r));
 	map(0x280002, 0x280002).lr8(NAME([this]() {
-		return u8(m_dma_address_lo_raw) & 0x8f;
+		return u8(m_dma_address_lo) & 0x8f;
 	}));
 
 	map(0x300000, 0x300000).lr8(NAME([this]() {
@@ -766,13 +766,13 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		LOGMASKED(LOG_MISC, "%s: WR 3801e6 = %02x\n", machine().describe_context(), data);
 		if (m_dma_go_level)
 		{
-			if (!++m_dma_address_lo_raw)
-				m_dma_address_hi_raw++;
+			if (!++m_dma_address_lo)
+				m_dma_address_hi++;
 		}
 		else
 		{
-			if (!m_dma_address_lo_raw--)
-				m_dma_address_hi_raw--;
+			if (!m_dma_address_lo--)
+				m_dma_address_hi--;
 		}
 		update_dma_address();
 	}));
@@ -872,23 +872,23 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 
 	map(0x800c00, 0x800c01).lrw16(NAME([this]() {
-		LOGMASKED(LOG_DMA, "%s: dma_address hi read = %04x\n", machine().describe_context(), u16(m_dma_address_hi_raw << 2));
-		return u16(m_dma_address_hi_raw << 2);
+		LOGMASKED(LOG_DMA, "%s: dma_address hi read = %04x\n", machine().describe_context(), u16(m_dma_address_hi << 2));
+		return u16(m_dma_address_hi << 2);
 	}), NAME([this](u16 data) {
 		m_dma_address = (m_dma_address & 0x0000ffff) | (u32(data) << 16);
 		LOGMASKED(LOG_DMA, "%s: dma_address hi = %04x -> %08x\n", machine().describe_context(), data, m_dma_address);
 	}));
 	map(0x800c02, 0x800c03).lrw16(NAME([this]() {
-		LOGMASKED(LOG_DMA, "%s: dma_address lo read = %04x\n", machine().describe_context(), u16(m_dma_address_lo_raw << 2));
-		return u16(m_dma_address_lo_raw << 2);
+		LOGMASKED(LOG_DMA, "%s: dma_address lo read = %04x\n", machine().describe_context(), u16(m_dma_address_lo << 2));
+		return u16(m_dma_address_lo << 2);
 	}), NAME([this](u16 data) {
 		m_dma_address = (m_dma_address & 0xffff0000) | data;
 		LOGMASKED(LOG_DMA, "%s: dma_address lo = %04x -> %08x\n", machine().describe_context(), data, m_dma_address);
 	}));
 	// Second read port on the address counter's high half.
 	map(0x800c04, 0x800c05).lr16(NAME([this]() {
-		LOGMASKED(LOG_DMA, "%s: 800c04 read = %04x\n", machine().describe_context(), u16(m_dma_address_hi_raw << 2));
-		return u16(m_dma_address_hi_raw << 2);
+		LOGMASKED(LOG_DMA, "%s: 800c04 read = %04x\n", machine().describe_context(), u16(m_dma_address_hi << 2));
+		return u16(m_dma_address_hi << 2);
 	}));
 	map(0x802c00, 0x802c01).lrw16(NAME([this]() {
 		return u16(m_page_register << 2);
