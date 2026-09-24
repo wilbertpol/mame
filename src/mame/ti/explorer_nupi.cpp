@@ -698,18 +698,18 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			m_dma_count_have_pending_byte = false;
 		}
 	}));
-	// Interval timer. Self test 6 writes $1e and then 0, and requires the interrupt
-	// no sooner than about 12us and no later than about 69us after the second write.
-	// The period the interrupt handler asks for by writing 0 and then $10 is not
-	// known, so the timer only ever runs for the self test.
+	// Interval timer. Bit 4 starts it on a 0 -> 1 transition and the low bits select
+	// the period. Only two values are ever written: $1e and $10. Using 256 cycles
+	// works for $1e during the self test and 32768 for $10 as the watchdog timer
+	// during operation. Nothing is known about any other value.
 	map(0x100005, 0x100005).lrw8(NAME([this]() {
 		LOGMASKED(LOG_MISC, "%s: RD 100005 = %02x\n", machine().describe_context(), m_unknown_100005);
 		return m_unknown_100005;
 	}), NAME([this](u8 data) {
 		u8 const previous = m_unknown_100005;
 		m_unknown_100005 = data;
-		if (data == 0 && previous != 0)
-			m_interval_timer->adjust(attotime::from_usec(30)); // wild guess
+		if (!BIT(previous, 4) && BIT(data, 4))
+			m_interval_timer->adjust(attotime::from_ticks(data == 0x1e ? 256 : 32768, 40_MHz_XTAL / 4));
 	}));
 	// Interrupt acknowledge for the MPU's level 1 and level 3 inputs; the other
 	// three levels have their own. Only $30 and $70 are ever written, with bit 6
