@@ -229,7 +229,6 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_mode));
 	save_item(NAME(m_fifo_drain_pos));
 	save_item(NAME(m_dma_target_configured));
-	save_item(NAME(m_dma_in_flight));
 	save_item(NAME(m_dma_out_byte_phase));
 	save_item(NAME(m_dma_transfer_start_pos));
 	save_item(NAME(m_dma_transfer_start_pending));
@@ -276,7 +275,6 @@ void explorer_nupi_device::device_reset()
 	m_dma_mode = DMA_IDLE;
 	m_fifo_drain_pos = 0;
 	m_dma_target_configured = false;
-	m_dma_in_flight = false;
 	m_dma_out_byte_phase = 0;
 	m_dma_transfer_start_pos = 0;
 	m_dma_transfer_start_pending = true;
@@ -589,7 +587,6 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		m_dma_go_level = data;
 		if (m_dma_go_level && m_dma_count)
 		{
-			m_dma_in_flight = true;
 			m_dma_out_byte_phase = 0;
 
 			bool const real_transfer = m_dma_target_configured;
@@ -725,7 +722,6 @@ void explorer_nupi_device::mpu_map(address_map &map)
 				else
 				{
 					m_mpu->set_input_line(M68K_IRQ_1, CLEAR_LINE);
-					m_dma_in_flight = false;
 					m_unknown_300001 = 0x0c;
 				}
 			}));
@@ -848,8 +844,8 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		m_fifo_in_pos = data;
 	}));
 	map(0x518000, 0x518001).lrw16(NAME([this]() {
-		u16 const result = m_dma_in_flight ? m_fifo_in_pos : m_unknown_518000;
-		LOGMASKED(LOG_DMA, "%s: RD 518000 -> %04x (in_flight=%d, 508000=%04x, 518000=%04x)\n", machine().describe_context(), result, m_dma_in_flight, m_fifo_in_pos, m_unknown_518000);
+		u16 const result = (m_dma_mode != DMA_IDLE) ? m_fifo_in_pos : m_unknown_518000;
+		LOGMASKED(LOG_DMA, "%s: RD 518000 -> %04x (mode=%d, 508000=%04x, 518000=%04x)\n", machine().describe_context(), result, m_dma_mode, m_fifo_in_pos, m_unknown_518000);
 		return result;
 	}), NAME([this](u16 data) {
 		LOGMASKED(LOG_DMA, "%s: WR 518000 = %04x\n", machine().describe_context(), data);
@@ -1041,12 +1037,7 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 			m_dma_count--;
 
 			if (!m_dma_count)
-			{
-				m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
-
-				m_dma_mode = DMA_IDLE;
-				m_unknown_100001 = 0;
-			}
+				dma_transfer_complete();
 		}
 	}
 }

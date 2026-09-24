@@ -116,7 +116,6 @@ private:
 	u8 m_dma_direction;
 	bool m_dma_irq5_enabled;
 	u16 m_unknown_518000;
-	bool m_dma_in_flight;
 	u16 m_unknown_dma_801c00;
 	u16 m_unknown_dma_801c02;
 	u16 m_unknown_dma_803c00;
