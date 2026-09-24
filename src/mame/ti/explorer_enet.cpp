@@ -15,7 +15,7 @@ TODO:
   arrives and nothing transmitted goes anywhere; only the board's own loopback
   paths work.
 
-  **********************************************************************/
+**********************************************************************/
 
 #include "emu.h"
 #include "explorer_enet.h"
