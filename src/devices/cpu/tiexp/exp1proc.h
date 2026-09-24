@@ -2,7 +2,7 @@
 // copyright-holders:Wilbert Pol
 /**********************************************************************
 
-    TI Explorer I processor (TI's own name for it is the Raven)
+    TI Explorer I processor
 
 **********************************************************************/
 
@@ -23,33 +23,17 @@ public:
 	u32 config_register_r();
 	void config_register_w(offs_t offset, u32 data, u32 mem_mask);
 
-	// The CPU board's lamps. Both the six-lamp state code and the fault LED are
-	// driven from registers that live in here (the MCR and the NuBus
-	// configuration register), so the processor signals them out and the board
-	// owns the lamps - see update_leds(). The state code is active high by the
-	// time it gets here; the MCR's own bits are low true.
 	auto out_state_leds_cb() { return m_state_leds.bind(); }
 	auto out_fault_led_cb() { return m_fault_led.bind(); }
 
 	static constexpr int AS_LOCAL_BUS = AS_OPCODES + 1;
 
-	// Table 4-19's condition 01011, "Bus error on last transfer attempt". One
-	// flag for both hardware paths on purpose: a local-bus board asserts BERR-
-	// (the memory board does that for a parity failure, via NUERR-), while a
-	// card in a slot below 3 is not on the local bus at all and can only report
-	// an error as a NuBus TM0-/TM1- termination. The microcode has a single
-	// condition for the two, so this is the whole of what it can see.
 	void assert_bus_error() { m_bus_error = true; }
 
 protected:
 	virtual void device_start() override ATTR_COLD;
 	virtual void device_reset() override ATTR_COLD;
 
-	// A cycle here is one period of the 28 MHz master clock, not a
-	// microinstruction - see MICROINSTRUCTION_CLOCKS in exp1proc.cpp. So the
-	// default one-cycle-per-clock conversion is what is wanted, and the extremes
-	// are a plain microinstruction and one that both takes a long clock and
-	// stalls for a full memory cycle.
 	virtual u32 execute_min_cycles() const noexcept override { return 4; }
 	virtual u32 execute_max_cycles() const noexcept override { return 13; }
 	virtual void execute_run() override;
@@ -136,18 +120,13 @@ private:
 
 	u32 m_dispatch[0x1000]{}; // 4096 x 17 bits
 	u16 m_dispatch_constant = 0; // 10 bits
-	// GC volatility of the page most recently translated (level-2 control bits
-	// 12:11), used by the GC-volatility dispatch in execute_dispatch().
 	u8 m_cached_gc_volatility = 0;
-	// Level-1 map output latch - see the MEMORY-MAP-LEVEL-1 M source and
-	// update_cached_lvl1_from_md().
 	u32 m_cached_lvl1 = 0;
 	bool m_page_fault = false;
 	u32 m_read_data = 0;
 	u8 m_memory_busy_counter = 0;
 	bool m_read_pending = false;
 
-	// Macroinstruction-chaining POPJ prefetch, deferred - see handle_popj14().
 	u32 m_pj14_fetch_vma = 0;
 	u32 m_pj14_fetch_addr = 0;
 	bool m_pj14_fetch_pending = false;
@@ -163,11 +142,6 @@ private:
 	};
 
 	void program_map(address_map &map) ATTR_COLD;
-	// Neither the NuBus nor the local bus carries an "unmapped" signal - nothing
-	// on the backplane tells the processor that no card answered a cycle. The
-	// processor works that out for itself, by timing the cycle out, so these are
-	// its own behavior and belong in its own space configuration rather than in
-	// a map whatever board it sits on has to remember to supply.
 	void data_map(address_map &map) ATTR_COLD;
 	void local_bus_map(address_map &map) ATTR_COLD;
 

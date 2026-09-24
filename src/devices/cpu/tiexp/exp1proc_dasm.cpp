@@ -4,9 +4,6 @@
 
     TI Explorer I processor disassembler.
 
-TODO:
-- Review DISPATCH disassembly
-
 ******************************************************************************/
 
 #include "emu.h"
@@ -198,6 +195,7 @@ static const desc_info alu_operation[32+9] =
 	{ "M-A-1", A_USED | M_USED },
 	{ "M+M", M_USED },
 
+	// Special cases
 	{ "MULTIPLY-STEP", A_USED | M_USED },
 	{ "DIVIDE-STEP", A_USED | M_USED },
 	{ "DIVIDE-FIST-STEP", A_USED | M_USED },
@@ -223,38 +221,38 @@ static const char *const o_bus_control[8] =
 
 static const desc_info condition[64] =
 {
-	{ "BIT-SET", M_USED | B_USED },                             // 00: LSB of shifter output R(00) (normally used only for M sources)
-	{ "LESS", A_USED | M_USED },                                // 01: M source less than A source (ALU negative)
-	{ "LESS-OR-EQUAL", A_USED | M_USED },                       // 02: M source less than or equal to A source
-	{ "NOT-EQUAL", A_USED | M_USED },                           // 03: Not (M source equals A source)
-	{ "PAGE-FAULT", 0 },                                        // 04
-	{ "PAGE-FAULT-OR-INTERRUPT_PENDING", 0 },                   // 05
-	{ "PAGE-FAULT-OR-INTERRUPT_PENDING-OR-SEQUENCE-BREAK", 0 }, // 06
-	{ "ALWAYS", 0 },                                            // 07
-	{ "TAG-NOT-EQUAL", A_USED | M_USED },                       // 08: Not (A-TYPE equals M-TYPE)
-	{ "NOT-MEMORY-BUSY", 0 },                                   // 09
-	{ "Q0", 0 },                                                // 0a: Q(0)
-	{ "NUBUS-ERROR", 0 },                                       // 0b
-	{ "NOT-FIXNUM-OVERFLOW", 0 },                               // 0c
-	{ "NEGATIVE", 0 },                                          // 0d
-	{ "NO-INTERRUPT-PENDING", 0 },                              // 0e
-	{ "RESERVED-15", 0 },                                       // 0f
-	{ "RESERVED-16", 0 },                                       // 10
-	{ "RESERVED-17", 0 },                                       // 11
-	{ "RESERVED-18", 0 },                                       // 12
-	{ "RESERVED-19", 0 },                                       // 13
-	{ "RESERVED-20", 0 },                                       // 14
-	{ "RESERVED-21", 0 },                                       // 15
-	{ "RESERVED-22", 0 },                                       // 16
-	{ "RESERVED-23", 0 },                                       // 17
-	{ "RESERVED-24", 0 },                                       // 18
-	{ "RESERVED-25", 0 },                                       // 19
-	{ "RESERVED-26", 0 },                                       // 1a
-	{ "RESERVED-27", 0 },                                       // 1b
-	{ "RESERVED-28", 0 },                                       // 1c
-	{ "RESERVED-29", 0 },                                       // 1d
-	{ "RESERVED-30", 0 },                                       // 1e
-	{ "IN-CLASS", M_USED },                                     // 1f
+	{ "BIT-SET", M_USED | B_USED },
+	{ "LESS", A_USED | M_USED },
+	{ "LESS-OR-EQUAL", A_USED | M_USED },
+	{ "NOT-EQUAL", A_USED | M_USED },
+	{ "PAGE-FAULT", 0 },
+	{ "PAGE-FAULT-OR-INTERRUPT_PENDING", 0 },
+	{ "PAGE-FAULT-OR-INTERRUPT_PENDING-OR-SEQUENCE-BREAK", 0 },
+	{ "ALWAYS", 0 },
+	{ "TAG-NOT-EQUAL", A_USED | M_USED },
+	{ "NOT-MEMORY-BUSY", 0 },
+	{ "Q0", 0 },
+	{ "NUBUS-ERROR", 0 },
+	{ "NOT-FIXNUM-OVERFLOW", 0 },
+	{ "NEGATIVE", 0 },
+	{ "NO-INTERRUPT-PENDING", 0 },
+	{ "RESERVED-15", 0 },
+	{ "RESERVED-16", 0 },
+	{ "RESERVED-17", 0 },
+	{ "RESERVED-18", 0 },
+	{ "RESERVED-19", 0 },
+	{ "RESERVED-20", 0 },
+	{ "RESERVED-21", 0 },
+	{ "RESERVED-22", 0 },
+	{ "RESERVED-23", 0 },
+	{ "RESERVED-24", 0 },
+	{ "RESERVED-25", 0 },
+	{ "RESERVED-26", 0 },
+	{ "RESERVED-27", 0 },
+	{ "RESERVED-28", 0 },
+	{ "RESERVED-29", 0 },
+	{ "RESERVED-30", 0 },
+	{ "IN-CLASS", M_USED },
 
 	{ "BIT-CLEAR", M_USED | B_USED },
 	{ "GREATER-OR-EQUAL", A_USED | M_USED },
