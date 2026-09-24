@@ -715,15 +715,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 100007\n", machine().describe_context()); return 0; }),
 			NAME([this](u8 data) {
 				LOGMASKED(LOG_MISC, "%s: WR 100007 = %02x\n", machine().describe_context(), data);
-				if (BIT(data, 6))
-				{
-					m_mpu->set_input_line(M68K_IRQ_3, CLEAR_LINE);
-				}
-				else
-				{
-					m_mpu->set_input_line(M68K_IRQ_1, CLEAR_LINE);
-					m_unknown_300001 = 0x0c;
-				}
+				m_mpu->set_input_line(BIT(data, 6) ? M68K_IRQ_3 : M68K_IRQ_1, CLEAR_LINE);
 			}));
 	map(0x280000, 0x280000).lr8(NAME([this]() {
 		return m_unknown_280000;
