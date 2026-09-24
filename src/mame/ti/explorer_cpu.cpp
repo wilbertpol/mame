@@ -13,36 +13,8 @@ The nine lamps along the front edge are the six amber state lamps plus the red
 fault LED, both driven out of the exp1proc (see exp1proc_cpu_device::update_leds()),
 and two amber lamps that are not modelled - see the TODO.
 
-The eight amber lamps are not just individual indicators: Figure A-1 of the
-Introduction to the Explorer System (book A-3) has a service engineer read them
-"as an 8-bit binary number with the top indicator as the most-significant bit
-and the lowest as the least-significant bit", and Table A-2 (A-4) lists what the
-resulting codes mean - >89 "The processor failed its internal self-test", >88
-"The processor received a NuBus error", >8B "No boot device", and so on. The
-large red LED is "not included in calculations".
-
-That table is also a check on the polarity used here, and it passes twice over.
-Lamps 1-6 are MCR(05:00) low true, so a lamp reads as a 1 in the code when its
-MCR bit is 0; the self-test leaves all six bits set, which displays >00, no
-error - if the sense were the other way a healthy machine would sit there
-showing >3F, which is not a code in Table A-2 at all. And the value the
-microcode parks in those bits while the test runs is >36, whose complement is 9
-- the low digit of >89, "processor failed its internal self-test", pre-loaded to
-be read off the lamps if the test never finishes, and cleared when it passes.
-
 TODO:
-- Lamps 7 and 8, which Field Maintenance Figure 1-13 names "memory hangup" and
-  "clock halt" and which Figure A-1 reads as bits 6 and 7 of the fault code.
-  They are not MCR bits - Table 4-17 assigns MCR(05:00) and nothing above them
-  to lamps - so each needs the hardware condition itself. "Memory hangup" is a
-  memory cycle that never completes, which here is the bus-cycle timeout the
-  processor's own catch-all handlers implement; it takes effect instantly rather
-  than hanging, so the lamp would only ever be a zero-width pulse. "Clock halt"
-  has no counterpart at all: this processor cannot stop its clock, and the
-  microcode's own halt loop at $0051 is an ordinary loop, not a stopped clock.
-  Table 1-1 step 3, "Processor LEDs all go off except for the 7th yellow LED,
-  which flashes dimly", describes lamp 7 doing exactly the dim flicker a
-  per-cycle signal produces.
+- Lamps 7 and 8, "memory hangup" and "clock halt".
 
   Until they exist the lamps cannot show a complete Table A-2 code, because
   every code in it has bit 7 - the clock-halt lamp - set. What is here now is
@@ -71,9 +43,7 @@ explorer_cpu_device::explorer_cpu_device(const machine_config &mconfig, const ch
 
 // The NuBus and the local bus are this board's processor's own address spaces,
 // and the bus-error line is this board's too, so hand all three to the
-// backplane here. This has to happen before any card installs itself into those
-// spaces, and it does: MAME calls device_resolve_objects() for every device -
-// after the address spaces have been created - before it starts the first one.
+// backplane here.
 void explorer_cpu_device::device_resolve_objects()
 {
 	nubus().set_bus_master_card(*this,

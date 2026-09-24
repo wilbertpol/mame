@@ -6,13 +6,6 @@
 
     Board part number 2243895-0001, board type "CPU", vendor "TIAU".
 
-    It is a NuBus card like every other board in the machine. What
-	makes it unusual is that the NuBus and the local bus *are* this
-	board's own address spaces: the exp1proc's AS_DATA is the NuBus and
-	AS_LOCAL_BUS is the local bus. So this board hands them to the
-	backplane (ti_nubus_device) rather than the other way round - see
-	device_resolve_objects().
-
 **********************************************************************/
 
 #ifndef MAME_TI_EXPLORER_CPU_H
@@ -44,11 +37,6 @@ private:
 	required_device<exp1proc_cpu_device> m_cpu;
 	required_memory_region m_microcode_proms;
 	required_memory_region m_control_store;
-	// The lamps along the front edge of the board, numbered as Field
-	// Maintenance Figure 1-13 numbers them. Lamps 1-6 are the yellow
-	// "internal states" code the microcode writes into MCR(05:00); 7 and 8 are
-	// yellow too but are hardware conditions, see the TODO in the source. The
-	// red fault LED is the one below the column.
 	output_finder<6> m_state_led;
 	output_finder<> m_fault_led;
 
