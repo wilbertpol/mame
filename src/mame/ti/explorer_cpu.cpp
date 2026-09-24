@@ -141,7 +141,7 @@ ROM_START(explorer_cpu)
 	ROMX_LOAD("2236486-03_microcode.bin", 0x0006, 0x0800, CRC(8a953a12) SHA1(f10ce4f53a65da5d133489d4f43b1c7f4ec5726d), ROM_SKIP(7))
 
 	ROM_REGION32_LE(0x400, "cpu_config", ROMREGION_ERASE00)
-	ROMX_LOAD("cpu_config.bin", 0x000, 0x100, CRC(4f4b10c1) SHA1(7e33f843af8c3152475847c3cabadb835097f189), ROM_SKIP(3))
+	ROMX_LOAD("cpu_config.bin", 0x000, 0x100, BAD_DUMP CRC(4f4b10c1) SHA1(7e33f843af8c3152475847c3cabadb835097f189), ROM_SKIP(3)) // Needs verification/redump
 ROM_END
 
 

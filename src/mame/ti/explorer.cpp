@@ -15,6 +15,7 @@ Slot 5 is reserved for the system interface controller board.
 Slots 3 and 4 are reserved for memory boards.
 
 TODO:
+- Tape support
 - The Ethernet board talks to no network - see explorer_enet.cpp.
 - Mass Storage Controller, interfacing SMD or SCSI (no schematics or dumps).
 - Odyssey Coprocessor (no schematics or dumps).
