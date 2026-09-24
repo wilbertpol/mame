@@ -41,22 +41,10 @@ private:
 	void lcc_irq_w(int state);
 	void update_leds();
 
-	// The LAN coprocessor. Named after the part rather than after the manual's
-	// "LCC", which is a role and not a chip - see paragraph 5.1, whose System
-	// Configuration Pointer, Command List and eight command formats are an
-	// 82586's, and the board's own "82586 int lpbk" self-test subtest.
 	required_device<i82586_device> m_i82586;
 
-	// Static buffer RAM shared with the LAN coprocessor, paragraph 5.2.2.8, and
-	// the only memory the coprocessor can reach at all. Paragraph 4.2.1 counts
-	// the chips - "four byte-wide 8-kilobyte static CMOS RAM devices", a 32-bit
-	// data bus and a 15-bit address bus - so 32 kilobytes, and the flag
-	// register's memory-size bit says so. The 8-kilobyte variant the same bit
-	// can report is recorded there as "not available".
 	required_shared_ptr<u16> m_buffer_ram;
 
-	// The red self-test fault LED, configuration register bit 2. The board's
-	// four green LEDs are not here - see the TODO at the top of the source.
 	output_finder<> m_fault_led;
 
 	u16 m_config_register = 0;
