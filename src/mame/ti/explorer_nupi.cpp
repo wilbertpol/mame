@@ -698,7 +698,10 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			m_dma_count_have_pending_byte = false;
 		}
 	}));
-	// This just pleases the self test. No other uses found, unknown what is behind it.
+	// Interval timer. Self test 6 writes $1e and then 0, and requires the interrupt
+	// no sooner than about 12us and no later than about 69us after the second write.
+	// The period the interrupt handler asks for by writing 0 and then $10 is not
+	// known, so the timer only ever runs for the self test.
 	map(0x100005, 0x100005).lrw8(NAME([this]() {
 		LOGMASKED(LOG_MISC, "%s: RD 100005 = %02x\n", machine().describe_context(), m_unknown_100005);
 		return m_unknown_100005;
@@ -708,14 +711,23 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		if (data == 0 && previous != 0)
 			m_interval_timer->adjust(attotime::from_usec(30)); // wild guess
 	}));
+	// Interrupt acknowledge for the MPU's level 1 and level 3 inputs; the other
+	// three levels have their own. Only $30 and $70 are ever written, with bit 6
+	// selecting the level, so the meaning of bits 5 and 4 is unknown.
 	map(0x100007, 0x100007).lrw8(
 			NAME([this]() { LOGMASKED(LOG_MISC, "%s: RD 100007\n", machine().describe_context()); return 0; }),
 			NAME([this](u8 data) {
 				LOGMASKED(LOG_MISC, "%s: WR 100007 = %02x\n", machine().describe_context(), data);
-				m_mpu->set_input_line(M68K_IRQ_3, CLEAR_LINE);
-				m_mpu->set_input_line(M68K_IRQ_1, CLEAR_LINE);
-				m_dma_in_flight = false;
-				m_unknown_300001 = 0x0c;
+				if (BIT(data, 6))
+				{
+					m_mpu->set_input_line(M68K_IRQ_3, CLEAR_LINE);
+				}
+				else
+				{
+					m_mpu->set_input_line(M68K_IRQ_1, CLEAR_LINE);
+					m_dma_in_flight = false;
+					m_unknown_300001 = 0x0c;
+				}
 			}));
 	map(0x280000, 0x280000).lr8(NAME([this]() {
 		return m_unknown_280000;

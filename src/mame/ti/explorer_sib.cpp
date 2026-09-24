@@ -334,7 +334,7 @@ void explorer_sib_device::local_bus_map(address_map &map)
 // end of the next line.
 //
 // The register is computed from the bit map on read rather than accumulated by
-// the renderer.
+// the renderer, since it is only checked once by a self-test.
 u32 explorer_sib_device::video_test_register()
 {
 	// The line just scanned, in bit-map coordinates.
