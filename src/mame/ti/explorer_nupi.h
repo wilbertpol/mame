@@ -65,6 +65,7 @@ private:
 	u16 read_801c00_port(u16 half, u16 readback);
 	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
 	void dma_drain_kick();
+	void dma_longword_done();
 	void dma_transfer_complete();
 	bool dma_draining() const { return m_dma_mode == DMA_FIFO_TO_NUBUS || m_dma_mode == DMA_FIFO_DISCARD; }
 	void onboard_dma_run(bool host_group_read = false);
@@ -107,6 +108,7 @@ private:
 	bool m_dma_transfer_start_pending;
 	bool m_dma_target_configured;
 	u8 m_dma_out_byte_phase;
+	u32 m_dma_out_longword;
 	u8 m_dma_count_pending_byte;
 	bool m_dma_count_have_pending_byte;
 	u8 m_dma_go_level;

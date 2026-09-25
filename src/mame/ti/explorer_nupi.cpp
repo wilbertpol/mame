@@ -230,6 +230,7 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_fifo_drain_pos));
 	save_item(NAME(m_dma_target_configured));
 	save_item(NAME(m_dma_out_byte_phase));
+	save_item(NAME(m_dma_out_longword));
 	save_item(NAME(m_dma_transfer_start_pos));
 	save_item(NAME(m_dma_transfer_start_pending));
 	save_item(NAME(m_dma_count_pending_byte));
@@ -276,6 +277,7 @@ void explorer_nupi_device::device_reset()
 	m_fifo_drain_pos = 0;
 	m_dma_target_configured = false;
 	m_dma_out_byte_phase = 0;
+	m_dma_out_longword = 0;
 	m_dma_transfer_start_pos = 0;
 	m_dma_transfer_start_pending = true;
 	m_dma_count_pending_byte = 0;
@@ -405,6 +407,15 @@ void explorer_nupi_device::onboard_dma_run(bool host_group_read)
 }
 
 
+// The count is in 32-bit NuBus words, so every side of the transfer runs it down
+// one per longword moved and the transfer ends when it hits zero.
+void explorer_nupi_device::dma_longword_done()
+{
+	if (!--m_dma_count)
+		dma_transfer_complete();
+}
+
+
 void explorer_nupi_device::dma_transfer_complete()
 {
 	m_mpu->set_input_line(M68K_IRQ_1, ASSERT_LINE);
@@ -515,8 +526,8 @@ u16 explorer_nupi_device::read_801c00_port(u16 half, u16 readback)
 		return readback;
 
 	u16 const data = m_fifo[(m_fifo_out_pos + half) & 0x7ff];
-	if (half && !--m_dma_count)
-		dma_transfer_complete();
+	if (half)
+		dma_longword_done();
 	return data;
 }
 
@@ -977,10 +988,7 @@ void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
 	m_dma_address += 4;
 	m_scsi_fifo_have_pending_word = false;
 
-	m_dma_count--;
-
-	if (!m_dma_count)
-		dma_transfer_complete();
+	dma_longword_done();
 }
 
 void explorer_nupi_device::scsi_dreq_w(int state)
@@ -1020,16 +1028,18 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 	}
 	else
 	{
-		m_scsi->dma_w(nubus().space().read_byte(m_dma_address));
-		m_dma_address++;
+		// NuBus is 32 bits wide: a longword is fetched and unpacked into four SCSI
+		// bytes, low byte first - the inverse of the inbound packing above.
+		if (!m_dma_out_byte_phase)
+			m_dma_out_longword = nubus().space().read_dword(m_dma_address);
 
-		if (m_dma_mode == DMA_NUBUS_TO_SCSI && ++m_dma_out_byte_phase == 4)
+		m_scsi->dma_w(u8(m_dma_out_longword >> (8 * m_dma_out_byte_phase)));
+
+		if (++m_dma_out_byte_phase == 4)
 		{
 			m_dma_out_byte_phase = 0;
-			m_dma_count--;
-
-			if (!m_dma_count)
-				dma_transfer_complete();
+			m_dma_address += 4;
+			dma_longword_done();
 		}
 	}
 }
