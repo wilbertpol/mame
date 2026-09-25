@@ -231,7 +231,6 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_target_configured));
 	save_item(NAME(m_dma_out_byte_phase));
 	save_item(NAME(m_dma_out_longword));
-	save_item(NAME(m_dma_transfer_start_pos));
 	save_item(NAME(m_dma_transfer_start_pending));
 	save_item(NAME(m_dma_count_pending_byte));
 	save_item(NAME(m_dma_count_have_pending_byte));
@@ -278,7 +277,6 @@ void explorer_nupi_device::device_reset()
 	m_dma_target_configured = false;
 	m_dma_out_byte_phase = 0;
 	m_dma_out_longword = 0;
-	m_dma_transfer_start_pos = 0;
 	m_dma_transfer_start_pending = true;
 	m_dma_count_pending_byte = 0;
 	m_dma_count_have_pending_byte = false;
@@ -613,10 +611,7 @@ void explorer_nupi_device::mpu_map(address_map &map)
 				m_dma_mode = (m_dma_direction != 0) ? DMA_FIFO_DISCARD : DMA_FIFO_TO_MPU;
 
 			if (dma_draining())
-			{
-				m_fifo_drain_pos = m_dma_transfer_start_pos;
 				dma_drain_kick();
-			}
 
 			if (m_dma_mode == DMA_ONBOARD)
 			{
@@ -1012,9 +1007,11 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 		}
 		else
 		{
+			// The first word of a transfer is where its drain has to start; nothing can
+			// be draining yet, a completion is what set the flag.
 			if (m_dma_transfer_start_pending)
 			{
-				m_dma_transfer_start_pos = m_fifo_in_pos & 0x7ff;
+				m_fifo_drain_pos = m_fifo_in_pos & 0x7ff;
 				m_dma_transfer_start_pending = false;
 			}
 
