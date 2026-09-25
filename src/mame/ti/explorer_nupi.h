@@ -104,7 +104,7 @@ private:
 	bool m_scsi_fifo_have_pending_word;
 	u8 m_dma_mode;
 	u32 m_fifo_drain_pos;
-	bool m_dma_transfer_start_pending;
+	bool m_fifo_input_idle;
 	bool m_dma_target_configured;
 	u8 m_dma_out_byte_phase;
 	u32 m_dma_out_longword;

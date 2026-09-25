@@ -231,7 +231,7 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_dma_target_configured));
 	save_item(NAME(m_dma_out_byte_phase));
 	save_item(NAME(m_dma_out_longword));
-	save_item(NAME(m_dma_transfer_start_pending));
+	save_item(NAME(m_fifo_input_idle));
 	save_item(NAME(m_dma_count_pending_byte));
 	save_item(NAME(m_dma_count_have_pending_byte));
 }
@@ -277,7 +277,7 @@ void explorer_nupi_device::device_reset()
 	m_dma_target_configured = false;
 	m_dma_out_byte_phase = 0;
 	m_dma_out_longword = 0;
-	m_dma_transfer_start_pending = true;
+	m_fifo_input_idle = true;
 	m_dma_count_pending_byte = 0;
 	m_dma_count_have_pending_byte = false;
 	m_fifo_out_byte_phase = 0;
@@ -424,7 +424,7 @@ void explorer_nupi_device::dma_transfer_complete()
 
 	m_fifo_input = m_unknown_dma_803c00;
 
-	m_dma_transfer_start_pending = true;
+	m_fifo_input_idle = true;
 }
 
 
@@ -543,8 +543,13 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		LOGMASKED(LOG_MISC, "%s: RD 80180\n", machine().describe_context());
 		return 0;
 	}), NAME([this](u16 data) {
-		if (m_dma_transfer_start_pending)
+		// Only while the FIFO input is idle: a write preloads the input counter and the
+		// drain cursor the next transfer starts from.
+		if (m_fifo_input_idle)
+		{
 			m_fifo_in_pos = data & 0x0fff;
+			m_fifo_drain_pos = data & 0x07ff;
+		}
 		m_fifo_out_pos = data & 0x07ff;
 	}));
 	map(0x080190, 0x080191).lrw16(NAME([this]() {
@@ -1007,13 +1012,8 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 		}
 		else
 		{
-			// The first word of a transfer is where its drain has to start; nothing can
-			// be draining yet, a completion is what set the flag.
-			if (m_dma_transfer_start_pending)
-			{
-				m_fifo_drain_pos = m_fifo_in_pos & 0x7ff;
-				m_dma_transfer_start_pending = false;
-			}
+			// The input counter is now mid-fill and must not be reloaded.
+			m_fifo_input_idle = false;
 
 			u16 const word = (u16(m_scsi_fifo_pending_byte) << 8) | data;
 			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_in_pos & 0x7ff, word);
