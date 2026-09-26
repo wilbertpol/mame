@@ -98,10 +98,10 @@ private:
 	u8 m_flag_register;
 	u32 m_dma_address;
 	u32 m_dma_count;
-	u8 m_scsi_fifo_pending_byte;
-	bool m_scsi_fifo_have_pending_byte;
-	u16 m_scsi_fifo_pending_word;
-	bool m_scsi_fifo_have_pending_word;
+	u16 m_dma_in_word;
+	u8 m_dma_in_byte_phase;
+	u32 m_drain_longword;
+	u8 m_drain_word_phase;
 	u8 m_dma_mode;
 	u32 m_fifo_drain_pos;
 	bool m_fifo_input_idle;

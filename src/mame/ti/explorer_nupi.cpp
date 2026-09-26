@@ -222,10 +222,10 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_fifo_input));
 	save_item(NAME(m_fifo_in_pos));
 	save_item(NAME(m_fifo_out_byte_phase));
-	save_item(NAME(m_scsi_fifo_pending_byte));
-	save_item(NAME(m_scsi_fifo_have_pending_byte));
-	save_item(NAME(m_scsi_fifo_pending_word));
-	save_item(NAME(m_scsi_fifo_have_pending_word));
+	save_item(NAME(m_dma_in_word));
+	save_item(NAME(m_dma_in_byte_phase));
+	save_item(NAME(m_drain_longword));
+	save_item(NAME(m_drain_word_phase));
 	save_item(NAME(m_dma_mode));
 	save_item(NAME(m_fifo_drain_pos));
 	save_item(NAME(m_dma_target_configured));
@@ -268,10 +268,10 @@ void explorer_nupi_device::device_reset()
 		entry = 0;
 	m_fifo_input = 0;
 	m_fifo_in_pos = 0;
-	m_scsi_fifo_pending_byte = 0;
-	m_scsi_fifo_have_pending_byte = false;
-	m_scsi_fifo_pending_word = 0;
-	m_scsi_fifo_have_pending_word = false;
+	m_dma_in_word = 0;
+	m_dma_in_byte_phase = 0;
+	m_drain_longword = 0;
+	m_drain_word_phase = 0;
 	m_dma_mode = DMA_IDLE;
 	m_fifo_drain_pos = 0;
 	m_dma_target_configured = false;
@@ -967,14 +967,13 @@ void explorer_nupi_device::scsi_irq_w(int state)
 
 void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
 {
-	if (!m_scsi_fifo_have_pending_word)
-	{
-		m_scsi_fifo_pending_word = word;
-		m_scsi_fifo_have_pending_word = true;
+	// Two FIFO words make one NuBus longword, first word in the high half.
+	m_drain_longword = (m_drain_longword << 16) | word;
+	if (++m_drain_word_phase != 2)
 		return;
-	}
+	m_drain_word_phase = 0;
 
-	u32 const longword = swapendian_int32((u32(m_scsi_fifo_pending_word) << 16) | word);
+	u32 const longword = swapendian_int32(m_drain_longword);
 	u32 const real_addr = m_dma_address;
 	if (m_dma_mode == DMA_FIFO_TO_NUBUS)
 	{
@@ -986,7 +985,6 @@ void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
 		LOGMASKED(LOG_DMA, "%s: dma (no target configured, not writing to nubus) dma_addr=%08x = %08x\n", machine().describe_context(), m_dma_address, longword);
 	}
 	m_dma_address += 4;
-	m_scsi_fifo_have_pending_word = false;
 
 	dma_longword_done();
 }
@@ -1003,22 +1001,22 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 
 	if (in)
 	{
+		// Two SCSI bytes make one 16-bit FIFO word, first byte in the high half.
 		u8 const data = m_scsi->dma_r();
-		if (!m_scsi_fifo_have_pending_byte)
+		m_dma_in_word = (m_dma_in_word << 8) | data;
+		if (++m_dma_in_byte_phase != 2)
 		{
 			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x (pending, no word yet)\n", machine().describe_context(), data);
-			m_scsi_fifo_pending_byte = data;
-			m_scsi_fifo_have_pending_byte = true;
 		}
 		else
 		{
+			m_dma_in_byte_phase = 0;
+
 			// The input counter is now mid-fill and must not be reloaded.
 			m_fifo_input_idle = false;
 
-			u16 const word = (u16(m_scsi_fifo_pending_byte) << 8) | data;
-			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_in_pos & 0x7ff, word);
-			fifo_push(word);
-			m_scsi_fifo_have_pending_byte = false;
+			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_in_pos & 0x7ff, m_dma_in_word);
+			fifo_push(m_dma_in_word);
 
 			dma_drain_kick();
 		}
