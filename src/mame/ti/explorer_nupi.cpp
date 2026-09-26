@@ -1077,6 +1077,16 @@ ROM_START(nupi)
 	ROMX_LOAD("2238057-5_nupi.bin", 0x0001, 0x2000, CRC(bb14cf27) SHA1(3b140274764ebc1ad1efbc4ed184a3d70eb84b0c), ROM_SKIP(1))
 
 	ROM_REGION(0x4000, "firmware_nubus", ROMREGION_ERASE00)
+
+	// Missing PALs (model and size unknown):
+	// - DMA arbitration PAL
+	// - address code PAL
+	// - DTACK PAL
+	// - SCSI PAL
+	// - master arbitration PAL
+	// - NuBus master controller PAL
+	// - NuBus slave PAL
+	// - 
 ROM_END
 
 const tiny_rom_entry *explorer_nupi_device::device_rom_region() const
