@@ -60,15 +60,23 @@ private:
 	void scsi_irq_w(int state);
 	void scsi_dreq_w(int state);
 	void update_dma_address();
-	void fill_fifo_from_nubus();
-	void push_fifo_word_to_nubus(u16 word);
 	void fifo_push(u16 word);
+	bool fifo_empty() const { return (m_fifo_scsi_pos & 0x7ff) == m_fifo_dma_pos; }
+	// How far the FIFO's input side is ahead of its output side, on a write.
+	u16 fifo_queued() const { return (m_fifo_dma_pos - m_fifo_scsi_pos) & 0x7ff; }
 	u16 read_801c00_port(u16 half, u16 readback);
-	TIMER_CALLBACK_MEMBER(dma_drain_timer_expired);
-	void dma_drain_kick();
+	// The DMA logic, the FIFO's NuBus side
+	TIMER_CALLBACK_MEMBER(dma_logic_tick);
+	void dma_logic_kick();
+	void fill_fifo_from_nubus();
+	void empty_fifo_to_nubus();
 	void dma_longword_done();
 	void dma_transfer_complete();
 	bool dma_draining() const { return m_dma_mode == DMA_FIFO_TO_NUBUS || m_dma_mode == DMA_FIFO_DISCARD; }
+	bool dma_logic_active() const { return dma_draining() || m_dma_mode == DMA_NUBUS_TO_SCSI; }
+	// The SCSI logic, the FIFO's SCSI side
+	void scsi_byte_to_fifo();
+	bool fifo_byte_to_scsi();
 	void onboard_dma_run(bool host_group_read = false);
 	u16 onboard_read16(u32 addr);
 	void onboard_write16(u32 addr, u16 data);
@@ -89,7 +97,7 @@ private:
 	output_finder<> m_scsi_led;
 	emu_timer *m_timer;
 	emu_timer *m_interval_timer;
-	emu_timer *m_dma_drain_timer;
+	emu_timer *m_dma_timer;
 
 	u8 m_unknown_280001;
 	bool m_unknown_280001_bits12_toggle;
@@ -108,6 +116,7 @@ private:
 	bool m_fifo_input_idle;
 	bool m_dma_target_configured;
 	u8 m_dma_out_byte_phase;
+	bool m_scsi_request_pending;
 	u8 m_dma_count_pending_byte;
 	bool m_dma_count_have_pending_byte;
 	u8 m_dma_go_level;
