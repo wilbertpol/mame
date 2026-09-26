@@ -170,7 +170,7 @@ explorer_nupi_device::explorer_nupi_device(const machine_config &mconfig, const 
 	m_scsi_led(*this, "scsi_led"),
 	m_timer(nullptr),
 	m_interval_timer(nullptr),
-	m_dma_timer(nullptr),
+	m_dma_drain_timer(nullptr),
 	m_flag_register(FLAG_POWER_UP),
 	m_dma_address(0),
 	m_dma_count(0)
@@ -186,7 +186,7 @@ void explorer_nupi_device::device_start()
 	m_timer->adjust(attotime::from_hz(60), 0, attotime::from_hz(60));
 
 	m_interval_timer = timer_alloc(FUNC(explorer_nupi_device::interval_timer_expired), this);
-	m_dma_timer = timer_alloc(FUNC(explorer_nupi_device::dma_logic_tick), this);
+	m_dma_drain_timer = timer_alloc(FUNC(explorer_nupi_device::dma_drain_timer_expired), this);
 
 	{
 		u8 const *const src = m_firmware->base();
@@ -230,7 +230,6 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_fifo_dma_pos));
 	save_item(NAME(m_dma_target_configured));
 	save_item(NAME(m_dma_out_byte_phase));
-	save_item(NAME(m_scsi_request_pending));
 	save_item(NAME(m_fifo_input_idle));
 	save_item(NAME(m_dma_count_pending_byte));
 	save_item(NAME(m_dma_count_have_pending_byte));
@@ -276,7 +275,6 @@ void explorer_nupi_device::device_reset()
 	m_fifo_dma_pos = 0;
 	m_dma_target_configured = false;
 	m_dma_out_byte_phase = 0;
-	m_scsi_request_pending = false;
 	m_fifo_input_idle = true;
 	m_dma_count_pending_byte = 0;
 	m_dma_count_have_pending_byte = false;
@@ -311,78 +309,22 @@ void explorer_nupi_device::fifo_push(u16 word)
 	m_fifo_scsi_pos = (m_fifo_scsi_pos + 1) & 0x0fff;
 }
 
-// Doc 4.2/4.5.4: the DMA logic owns the FIFO's NuBus side. It empties the FIFO into
-// NuBus longwords on a read and fills it from them on a write, one longword per tick,
-// and stops when its own counter catches the SCSI logic's.
-TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_logic_tick)
+TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_drain_timer_expired)
 {
-	if (m_dma_mode == DMA_NUBUS_TO_SCSI)
-	{
-		// One longword ahead of the SCSI logic is enough; the real board fills until
-		// the counters meet, but the firmware expects DMAINT near the end of the
-		// transfer, not at the start.
-		if (fifo_queued() >= 2)
-			return;
-		fill_fifo_from_nubus();
-	}
-	else
-	{
-		if (m_dma_mode == DMA_FIFO_TO_NUBUS && fifo_empty())
-			return;
-		empty_fifo_to_nubus();
-	}
-
-	dma_logic_kick();
-}
-
-void explorer_nupi_device::dma_logic_kick()
-{
-	if (dma_logic_active() && !m_dma_timer->enabled())
-		m_dma_timer->adjust(m_dma_mode == DMA_FIFO_DISCARD ? attotime::from_usec(4) : attotime::from_usec(1));
-}
-
-// One NuBus longword becomes two FIFO words, the two low bytes in the first one.
-void explorer_nupi_device::fill_fifo_from_nubus()
-{
-	u32 const longword = nubus().space().read_dword(m_dma_address);
-	LOGMASKED(LOG_DMA, "%s: nubus[%08x] = %08x -> fifo[%u]\n", machine().describe_context(), m_dma_address, longword, m_fifo_dma_pos);
-
-	u32 const packed = swapendian_int32(longword);
-	m_fifo[m_fifo_dma_pos] = u16(packed >> 16);
-	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
-	m_fifo[m_fifo_dma_pos] = u16(packed);
-	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
-
-	m_dma_address += 4;
-	dma_longword_done();
-
-	// A request the SCSI logic could not answer yet can be answered now.
-	if (m_scsi_request_pending && fifo_byte_to_scsi())
-		m_scsi_request_pending = false;
-}
-
-// And two FIFO words make one longword again, the first word in its low half.
-void explorer_nupi_device::empty_fifo_to_nubus()
-{
-	m_drain_longword = (m_drain_longword << 16) | m_fifo[m_fifo_dma_pos];
-	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
-	if (++m_drain_word_phase != 2)
+	if (m_dma_mode == DMA_FIFO_TO_NUBUS && m_fifo_dma_pos == (m_fifo_scsi_pos & 0x7ff))
 		return;
-	m_drain_word_phase = 0;
 
-	u32 const longword = swapendian_int32(m_drain_longword);
-	if (m_dma_mode == DMA_FIFO_TO_NUBUS)
-	{
-		LOGMASKED(LOG_DMA, "%s: dma -> nubus[%08x] = %08x\n", machine().describe_context(), m_dma_address, longword);
-		nubus().space().write_dword(m_dma_address, longword);
-	}
-	else
-	{
-		LOGMASKED(LOG_DMA, "%s: dma (no target configured, not writing to nubus) dma_addr=%08x = %08x\n", machine().describe_context(), m_dma_address, longword);
-	}
-	m_dma_address += 4;
+	u16 const word = m_fifo[m_fifo_dma_pos];
+	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
+	push_fifo_word_to_nubus(word);
 
-	dma_longword_done();
+	dma_drain_kick();
+}
+
+void explorer_nupi_device::dma_drain_kick()
+{
+	if (dma_draining() && !m_dma_drain_timer->enabled())
+		m_dma_drain_timer->adjust(m_dma_mode == DMA_FIFO_TO_NUBUS ? attotime::from_usec(1) : attotime::from_usec(4));
 }
 
 
@@ -673,7 +615,8 @@ void explorer_nupi_device::mpu_map(address_map &map)
 			else
 				m_dma_mode = (m_dma_direction != 0) ? DMA_FIFO_DISCARD : DMA_FIFO_TO_MPU;
 
-			dma_logic_kick();
+			if (dma_draining())
+				dma_drain_kick();
 
 			if (m_dma_mode == DMA_ONBOARD)
 			{
@@ -1022,9 +965,47 @@ void explorer_nupi_device::scsi_irq_w(int state)
 }
 
 
-// Doc 4.5.3.3: the SCSI logic owns the FIFO's SCSI side, assembling arriving bytes
-// into FIFO words on a read and taking words back apart into bytes on a write. It
-// never touches the NuBus - the DMA logic on the far side of the FIFO does that.
+// One NuBus longword becomes two FIFO words, the two low bytes in the first one -
+// the inverse of the packing in push_fifo_word_to_nubus(). On a write it is the DMA
+// counter that addresses the FIFO input side.
+void explorer_nupi_device::fill_fifo_from_nubus()
+{
+	u32 const longword = nubus().space().read_dword(m_dma_address);
+	LOGMASKED(LOG_DMA, "%s: nubus[%08x] = %08x -> fifo[%u]\n", machine().describe_context(), m_dma_address, longword, m_fifo_dma_pos);
+
+	u32 const packed = swapendian_int32(longword);
+	m_fifo[m_fifo_dma_pos] = u16(packed >> 16);
+	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
+	m_fifo[m_fifo_dma_pos] = u16(packed);
+	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
+
+	m_dma_address += 4;
+}
+
+void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
+{
+	// Two FIFO words make one NuBus longword, first word in the high half.
+	m_drain_longword = (m_drain_longword << 16) | word;
+	if (++m_drain_word_phase != 2)
+		return;
+	m_drain_word_phase = 0;
+
+	u32 const longword = swapendian_int32(m_drain_longword);
+	u32 const real_addr = m_dma_address;
+	if (m_dma_mode == DMA_FIFO_TO_NUBUS)
+	{
+		LOGMASKED(LOG_DMA, "%s: dma -> nubus[%08x] = %08x\n", machine().describe_context(), real_addr, longword);
+		nubus().space().write_dword(real_addr, longword);
+	}
+	else
+	{
+		LOGMASKED(LOG_DMA, "%s: dma (no target configured, not writing to nubus) dma_addr=%08x = %08x\n", machine().describe_context(), m_dma_address, longword);
+	}
+	m_dma_address += 4;
+
+	dma_longword_done();
+}
+
 void explorer_nupi_device::scsi_dreq_w(int state)
 {
 	if (!state)
@@ -1032,49 +1013,50 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 
 	LOGMASKED(LOG_DMA, "%s: scsi_dreq_w state=%d m_dma_count=%08x\n", machine().describe_context(), state, m_dma_count);
 
-	if (m_scsibus->ctrl_r() & nscsi_device_interface::S_INP)
-		scsi_byte_to_fifo();
-	else if (!fifo_byte_to_scsi())
-		// The controller holds its request until the byte is taken, so an empty FIFO
-		// just means waiting for the DMA logic to put something in it.
-		m_scsi_request_pending = true;
-}
+	u32 const ctrl = m_scsibus->ctrl_r();
+	bool const in = (ctrl & nscsi_device_interface::S_INP);
 
-void explorer_nupi_device::scsi_byte_to_fifo()
-{
-	// Two SCSI bytes make one 16-bit FIFO word, first byte in the high half.
-	u8 const data = m_scsi->dma_r();
-	m_dma_in_word = (m_dma_in_word << 8) | data;
-	if (++m_dma_in_byte_phase != 2)
+	if (in)
 	{
-		LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x (pending, no word yet)\n", machine().describe_context(), data);
-		return;
+		// Two SCSI bytes make one 16-bit FIFO word, first byte in the high half.
+		u8 const data = m_scsi->dma_r();
+		m_dma_in_word = (m_dma_in_word << 8) | data;
+		if (++m_dma_in_byte_phase != 2)
+		{
+			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x (pending, no word yet)\n", machine().describe_context(), data);
+		}
+		else
+		{
+			m_dma_in_byte_phase = 0;
+
+			// The input counter is now mid-fill and must not be reloaded.
+			m_fifo_input_idle = false;
+
+			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_scsi_pos & 0x7ff, m_dma_in_word);
+			fifo_push(m_dma_in_word);
+
+			dma_drain_kick();
+		}
 	}
-	m_dma_in_byte_phase = 0;
+	else
+	{
+		// 4.3.4: a write is the read path reversed, so it goes through the FIFO too -
+		// the DMA counter filling it one longword ahead of the SCSI counter emptying it.
+		if (!m_dma_out_byte_phase)
+			fill_fifo_from_nubus();
 
-	// The input counter is now mid-fill and must not be reloaded.
-	m_fifo_input_idle = false;
+		u16 const word = m_fifo[m_fifo_scsi_pos & 0x7ff];
+		bool const low = m_dma_out_byte_phase & 1;
+		m_scsi->dma_w(low ? u8(word) : u8(word >> 8));
+		if (low)
+			m_fifo_scsi_pos = (m_fifo_scsi_pos + 1) & 0x0fff;
 
-	LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_scsi_pos & 0x7ff, m_dma_in_word);
-	fifo_push(m_dma_in_word);
-
-	dma_logic_kick();
-}
-
-// False when the FIFO holds nothing to send, which leaves the request outstanding.
-bool explorer_nupi_device::fifo_byte_to_scsi()
-{
-	if (fifo_empty())
-		return false;
-
-	u16 const word = m_fifo[m_fifo_scsi_pos & 0x7ff];
-	m_scsi->dma_w(m_dma_out_byte_phase ? u8(word) : u8(word >> 8));
-	if (m_dma_out_byte_phase)
-		m_fifo_scsi_pos = (m_fifo_scsi_pos + 1) & 0x0fff;
-	m_dma_out_byte_phase ^= 1;
-
-	dma_logic_kick();
-	return true;
+		if (++m_dma_out_byte_phase == 4)
+		{
+			m_dma_out_byte_phase = 0;
+			dma_longword_done();
+		}
+	}
 }
 
 
