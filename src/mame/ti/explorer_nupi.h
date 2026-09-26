@@ -60,6 +60,7 @@ private:
 	void scsi_irq_w(int state);
 	void scsi_dreq_w(int state);
 	void update_dma_address();
+	void fill_fifo_from_nubus();
 	void push_fifo_word_to_nubus(u16 word);
 	void fifo_push(u16 word);
 	u16 read_801c00_port(u16 half, u16 readback);
@@ -103,11 +104,10 @@ private:
 	u32 m_drain_longword;
 	u8 m_drain_word_phase;
 	u8 m_dma_mode;
-	u32 m_fifo_drain_pos;
+	u32 m_fifo_dma_pos;
 	bool m_fifo_input_idle;
 	bool m_dma_target_configured;
 	u8 m_dma_out_byte_phase;
-	u32 m_dma_out_longword;
 	u8 m_dma_count_pending_byte;
 	bool m_dma_count_have_pending_byte;
 	u8 m_dma_go_level;
@@ -122,7 +122,7 @@ private:
 	u16 m_unknown_dma_803c00;
 	u16 m_fifo[2048];
 	u16 m_fifo_input;
-	u16 m_fifo_in_pos;
+	u16 m_fifo_scsi_pos;
 	u8 m_fifo_out_byte_phase;
 	u16 m_fifo_out_pos;
 	u16 m_page_register;

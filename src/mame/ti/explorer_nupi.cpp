@@ -220,17 +220,16 @@ void explorer_nupi_device::device_start()
 	save_item(NAME(m_interval_timer_regs));
 	save_item(NAME(m_fifo));
 	save_item(NAME(m_fifo_input));
-	save_item(NAME(m_fifo_in_pos));
+	save_item(NAME(m_fifo_scsi_pos));
 	save_item(NAME(m_fifo_out_byte_phase));
 	save_item(NAME(m_dma_in_word));
 	save_item(NAME(m_dma_in_byte_phase));
 	save_item(NAME(m_drain_longword));
 	save_item(NAME(m_drain_word_phase));
 	save_item(NAME(m_dma_mode));
-	save_item(NAME(m_fifo_drain_pos));
+	save_item(NAME(m_fifo_dma_pos));
 	save_item(NAME(m_dma_target_configured));
 	save_item(NAME(m_dma_out_byte_phase));
-	save_item(NAME(m_dma_out_longword));
 	save_item(NAME(m_fifo_input_idle));
 	save_item(NAME(m_dma_count_pending_byte));
 	save_item(NAME(m_dma_count_have_pending_byte));
@@ -267,16 +266,15 @@ void explorer_nupi_device::device_reset()
 	for (u16 &entry : m_fifo)
 		entry = 0;
 	m_fifo_input = 0;
-	m_fifo_in_pos = 0;
+	m_fifo_scsi_pos = 0;
 	m_dma_in_word = 0;
 	m_dma_in_byte_phase = 0;
 	m_drain_longword = 0;
 	m_drain_word_phase = 0;
 	m_dma_mode = DMA_IDLE;
-	m_fifo_drain_pos = 0;
+	m_fifo_dma_pos = 0;
 	m_dma_target_configured = false;
 	m_dma_out_byte_phase = 0;
-	m_dma_out_longword = 0;
 	m_fifo_input_idle = true;
 	m_dma_count_pending_byte = 0;
 	m_dma_count_have_pending_byte = false;
@@ -301,21 +299,23 @@ void explorer_nupi_device::update_dma_address()
 	m_dma_address = (u32(m_dma_address_hi) << 18) + (u32(m_dma_address_lo) << 2);
 }
 
-// The input address counter is 12 bits and the self-test compares it raw, but the
-// FIFO behind it is 2048 words.
+// Doc 4.5.4: the FIFO has two address counters, one per bus, and the transfer
+// direction decides which of them addresses the input side. Both power up from the
+// same base ($80180). The SCSI counter is 12 bits and the self-test compares it
+// raw, but the FIFO behind it is 2048 words.
 void explorer_nupi_device::fifo_push(u16 word)
 {
-	m_fifo[m_fifo_in_pos & 0x7ff] = word;
-	m_fifo_in_pos = (m_fifo_in_pos + 1) & 0x0fff;
+	m_fifo[m_fifo_scsi_pos & 0x7ff] = word;
+	m_fifo_scsi_pos = (m_fifo_scsi_pos + 1) & 0x0fff;
 }
 
 TIMER_CALLBACK_MEMBER(explorer_nupi_device::dma_drain_timer_expired)
 {
-	if (m_dma_mode == DMA_FIFO_TO_NUBUS && m_fifo_drain_pos == (m_fifo_in_pos & 0x7ff))
+	if (m_dma_mode == DMA_FIFO_TO_NUBUS && m_fifo_dma_pos == (m_fifo_scsi_pos & 0x7ff))
 		return;
 
-	u16 const word = m_fifo[m_fifo_drain_pos];
-	m_fifo_drain_pos = (m_fifo_drain_pos + 1) & 0x7ff;
+	u16 const word = m_fifo[m_fifo_dma_pos];
+	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
 	push_fifo_word_to_nubus(word);
 
 	dma_drain_kick();
@@ -547,8 +547,8 @@ void explorer_nupi_device::mpu_map(address_map &map)
 		// drain cursor the next transfer starts from.
 		if (m_fifo_input_idle)
 		{
-			m_fifo_in_pos = data & 0x0fff;
-			m_fifo_drain_pos = data & 0x07ff;
+			m_fifo_scsi_pos = data & 0x0fff;
+			m_fifo_dma_pos = data & 0x07ff;
 		}
 		m_fifo_out_pos = data & 0x07ff;
 	}));
@@ -842,13 +842,13 @@ void explorer_nupi_device::mpu_map(address_map &map)
 	}));
 
 	map(0x508000, 0x508001).lrw16(NAME([this]() {
-		return m_fifo_in_pos;
+		return m_fifo_scsi_pos;
 	}), NAME([this](u16 data) {
-		m_fifo_in_pos = data;
+		m_fifo_scsi_pos = data;
 	}));
 	map(0x518000, 0x518001).lrw16(NAME([this]() {
-		u16 const result = (m_dma_mode != DMA_IDLE) ? m_fifo_in_pos : m_unknown_518000;
-		LOGMASKED(LOG_DMA, "%s: RD 518000 -> %04x (mode=%d, 508000=%04x, 518000=%04x)\n", machine().describe_context(), result, m_dma_mode, m_fifo_in_pos, m_unknown_518000);
+		u16 const result = (m_dma_mode != DMA_IDLE) ? m_fifo_scsi_pos : m_unknown_518000;
+		LOGMASKED(LOG_DMA, "%s: RD 518000 -> %04x (mode=%d, 508000=%04x, 518000=%04x)\n", machine().describe_context(), result, m_dma_mode, m_fifo_scsi_pos, m_unknown_518000);
 		return result;
 	}), NAME([this](u16 data) {
 		LOGMASKED(LOG_DMA, "%s: WR 518000 = %04x\n", machine().describe_context(), data);
@@ -965,6 +965,23 @@ void explorer_nupi_device::scsi_irq_w(int state)
 }
 
 
+// One NuBus longword becomes two FIFO words, the two low bytes in the first one -
+// the inverse of the packing in push_fifo_word_to_nubus(). On a write it is the DMA
+// counter that addresses the FIFO input side.
+void explorer_nupi_device::fill_fifo_from_nubus()
+{
+	u32 const longword = nubus().space().read_dword(m_dma_address);
+	LOGMASKED(LOG_DMA, "%s: nubus[%08x] = %08x -> fifo[%u]\n", machine().describe_context(), m_dma_address, longword, m_fifo_dma_pos);
+
+	u32 const packed = swapendian_int32(longword);
+	m_fifo[m_fifo_dma_pos] = u16(packed >> 16);
+	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
+	m_fifo[m_fifo_dma_pos] = u16(packed);
+	m_fifo_dma_pos = (m_fifo_dma_pos + 1) & 0x7ff;
+
+	m_dma_address += 4;
+}
+
 void explorer_nupi_device::push_fifo_word_to_nubus(u16 word)
 {
 	// Two FIFO words make one NuBus longword, first word in the high half.
@@ -1015,7 +1032,7 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 			// The input counter is now mid-fill and must not be reloaded.
 			m_fifo_input_idle = false;
 
-			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_in_pos & 0x7ff, m_dma_in_word);
+			LOGMASKED(LOG_DMA, "%s: scsi_dreq_w IN byte=%02x -> fifo[%u] = %04x\n", machine().describe_context(), data, m_fifo_scsi_pos & 0x7ff, m_dma_in_word);
 			fifo_push(m_dma_in_word);
 
 			dma_drain_kick();
@@ -1023,17 +1040,20 @@ void explorer_nupi_device::scsi_dreq_w(int state)
 	}
 	else
 	{
-		// NuBus is 32 bits wide: a longword is fetched and unpacked into four SCSI
-		// bytes, low byte first - the inverse of the inbound packing above.
+		// 4.3.4: a write is the read path reversed, so it goes through the FIFO too -
+		// the DMA counter filling it one longword ahead of the SCSI counter emptying it.
 		if (!m_dma_out_byte_phase)
-			m_dma_out_longword = nubus().space().read_dword(m_dma_address);
+			fill_fifo_from_nubus();
 
-		m_scsi->dma_w(u8(m_dma_out_longword >> (8 * m_dma_out_byte_phase)));
+		u16 const word = m_fifo[m_fifo_scsi_pos & 0x7ff];
+		bool const low = m_dma_out_byte_phase & 1;
+		m_scsi->dma_w(low ? u8(word) : u8(word >> 8));
+		if (low)
+			m_fifo_scsi_pos = (m_fifo_scsi_pos + 1) & 0x0fff;
 
 		if (++m_dma_out_byte_phase == 4)
 		{
 			m_dma_out_byte_phase = 0;
-			m_dma_address += 4;
 			dma_longword_done();
 		}
 	}
