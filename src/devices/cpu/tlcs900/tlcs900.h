@@ -206,13 +206,13 @@ protected:
 	virtual int tlcs900_shift_cycles(uint8_t n) const { return 2 * n; }
 
 	int condition_true(uint8_t cond);
-	uint8_t *get_reg8_current(uint8_t reg);
-	uint16_t *get_reg16_current(uint8_t reg);
-	uint32_t *get_reg32_current(uint8_t reg);
-	PAIR *get_reg(uint8_t reg);
-	uint8_t *get_reg8(uint8_t reg);
-	uint16_t *get_reg16(uint8_t reg);
-	uint32_t *get_reg32(uint8_t reg);
+	uint8_t &get_reg8_current(uint8_t reg);
+	uint16_t &get_reg16_current(uint8_t reg);
+	uint32_t &get_reg32_current(uint8_t reg);
+	PAIR &get_reg(uint8_t reg);
+	uint8_t &get_reg8(uint8_t reg);
+	uint16_t &get_reg16(uint8_t reg);
+	uint32_t &get_reg32(uint8_t reg);
 	void parity8(uint8_t a);
 	void parity16(uint16_t a);
 	void parity32(uint32_t a);
