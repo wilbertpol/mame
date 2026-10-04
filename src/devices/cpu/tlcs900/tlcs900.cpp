@@ -121,6 +121,8 @@ void tlcs900_device::device_start()
 	memset(m_dmac, 0x00, sizeof(m_dmac));
 	memset(m_dmam, 0x00, sizeof(m_dmam));
 	m_intnest = 0;
+	m_reg1 = regsel_dummy;
+	m_reg2 = regsel_dummy;
 
 	save_item(NAME(m_xwa));
 	save_item(NAME(m_xbc));

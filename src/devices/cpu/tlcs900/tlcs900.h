@@ -43,6 +43,23 @@ enum
 };
 
 
+/* Storage locations that are not registers.  m_reg1 and m_reg2 hold one of
+   these values, or the selector byte of a register in the encoding that
+   get_reg8/get_reg16/get_reg32 accept; values below 0x100 always select a
+   register. */
+enum e_regsel : uint16_t
+{
+	regsel_sr = 0x100,  /* status register - F is its low byte */
+	regsel_f2,          /* alternate flag register F' */
+	regsel_intnest,     /* interrupt nesting count */
+	regsel_dmam0, regsel_dmam1, regsel_dmam2, regsel_dmam3,
+	regsel_dmac0, regsel_dmac1, regsel_dmac2, regsel_dmac3,
+	regsel_dmas0, regsel_dmas1, regsel_dmas2, regsel_dmas3,
+	regsel_dmad0, regsel_dmad1, regsel_dmad2, regsel_dmad3,
+	regsel_dummy         /* illegal/unknown register references */
+};
+
+
 class tlcs900_device : public cpu_device
 {
 public:
@@ -132,33 +149,14 @@ protected:
 	PAIR    m_imm1, m_imm2;
 	int m_cycles;
 
-	/* Identifies the storage location of an instruction operand - a register
-	   in one of the banks, an index or stack register, SR or F', or a DMA
-	   control register.  Binds to any 8/16/32-bit storage; op handlers read
-	   and write through r8()/r16()/r32() instead of handling raw pointers. */
-	class register_location
-	{
-	public:
-		constexpr register_location() : m_byte(nullptr), m_word(nullptr), m_long(nullptr) { }
-
-		/* Binds one width view of the slot; the other views keep their previous
-		   binding, matching the way MUL/DIV operations combine an 8-bit source
-		   with a 16-bit destination on the same register. */
-		register_location &operator=(uint8_t &value) { m_byte = &value; return *this; }
-		register_location &operator=(uint16_t &value) { m_word = &value; return *this; }
-		register_location &operator=(uint32_t &value) { m_long = &value; return *this; }
-
-		uint8_t  &r8()  { return *m_byte; }
-		uint16_t &r16() { return *m_word; }
-		uint32_t &r32() { return *m_long; }
-
-	private:
-		uint8_t  *m_byte;
-		uint16_t *m_word;
-		uint32_t *m_long;
-	};
-	register_location m_reg1;
-	register_location m_reg2;
+	/* Storage locations of the two instruction operands.  Each holds either
+	   the selector byte for a register, in the encoding that get_reg8,
+	   get_reg16 and get_reg32 accept - the views that reg8, reg16 and reg32
+	   derive from it all address the same register - or one of the e_regsel
+	   values for the locations that are not registers (SR, F', the DMA
+	   control registers, INTNEST and the dummy location). */
+	uint16_t m_reg1;
+	uint16_t m_reg2;
 
 	int m_halted;
 	int m_icount;
@@ -238,6 +236,12 @@ protected:
 	uint8_t &get_reg8(uint8_t reg);
 	uint16_t &get_reg16(uint8_t reg);
 	uint32_t &get_reg32(uint8_t reg);
+	uint8_t get_reg8_current_sel(uint8_t reg);
+	uint8_t get_reg16_current_sel(uint8_t reg);
+	uint8_t get_reg32_current_sel(uint8_t reg);
+	uint8_t &reg8(uint16_t sel);
+	uint16_t &reg16(uint16_t sel);
+	uint32_t &reg32(uint16_t sel);
 	void parity8(uint8_t a);
 	void parity16(uint16_t a);
 	void parity32(uint32_t a);
