@@ -131,9 +131,34 @@ protected:
 	PAIR    m_ea1, m_ea2;
 	PAIR    m_imm1, m_imm2;
 	int m_cycles;
-	uint8_t   *m_p1_reg8, *m_p2_reg8;
-	uint16_t  *m_p1_reg16, *m_p2_reg16;
-	uint32_t  *m_p1_reg32, *m_p2_reg32;
+
+	/* Identifies the storage location of an instruction operand - a register
+	   in one of the banks, an index or stack register, SR or F', or a DMA
+	   control register.  Binds to any 8/16/32-bit storage; op handlers read
+	   and write through r8()/r16()/r32() instead of handling raw pointers. */
+	class register_location
+	{
+	public:
+		constexpr register_location() : m_byte(nullptr), m_word(nullptr), m_long(nullptr) { }
+
+		/* Binds one width view of the slot; the other views keep their previous
+		   binding, matching the way MUL/DIV operations combine an 8-bit source
+		   with a 16-bit destination on the same register. */
+		register_location &operator=(uint8_t &value) { m_byte = &value; return *this; }
+		register_location &operator=(uint16_t &value) { m_word = &value; return *this; }
+		register_location &operator=(uint32_t &value) { m_long = &value; return *this; }
+
+		uint8_t  &r8()  { return *m_byte; }
+		uint16_t &r16() { return *m_word; }
+		uint32_t &r32() { return *m_long; }
+
+	private:
+		uint8_t  *m_byte;
+		uint16_t *m_word;
+		uint32_t *m_long;
+	};
+	register_location m_reg1;
+	register_location m_reg2;
 
 	int m_halted;
 	int m_icount;

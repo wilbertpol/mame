@@ -1253,25 +1253,25 @@ void tlcs900_device::op_ADCBMI()
 
 void tlcs900_device::op_ADCBMR()
 {
-	WRMEM(m_ea1.d, adc8(RDMEM(m_ea1.d), *m_p2_reg8));
+	WRMEM(m_ea1.d, adc8(RDMEM(m_ea1.d), m_reg2.r8()));
 }
 
 
 void tlcs900_device::op_ADCBRI()
 {
-	*m_p1_reg8 = adc8(*m_p1_reg8, m_imm2.b.l);
+	m_reg1.r8() = adc8(m_reg1.r8(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_ADCBRM()
 {
-	*m_p1_reg8 = adc8(*m_p1_reg8, RDMEM(m_ea2.d));
+	m_reg1.r8() = adc8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ADCBRR()
 {
-	*m_p1_reg8 = adc8(*m_p1_reg8, *m_p2_reg8);
+	m_reg1.r8() = adc8(m_reg1.r8(), m_reg2.r8());
 }
 
 
@@ -1283,49 +1283,49 @@ void tlcs900_device::op_ADCWMI()
 
 void tlcs900_device::op_ADCWMR()
 {
-	WRMEMW(m_ea1.d, adc16(RDMEMW(m_ea1.d), *m_p2_reg16));
+	WRMEMW(m_ea1.d, adc16(RDMEMW(m_ea1.d), m_reg2.r16()));
 }
 
 
 void tlcs900_device::op_ADCWRI()
 {
-	*m_p1_reg16 = adc16(*m_p1_reg16, m_imm2.w.l);
+	m_reg1.r16() = adc16(m_reg1.r16(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_ADCWRM()
 {
-	*m_p1_reg16 = adc16(*m_p1_reg16, RDMEMW(m_ea2.d));
+	m_reg1.r16() = adc16(m_reg1.r16(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ADCWRR()
 {
-	*m_p1_reg16 = adc16(*m_p1_reg16, *m_p2_reg16);
+	m_reg1.r16() = adc16(m_reg1.r16(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_ADCLMR()
 {
-	WRMEML(m_ea1.d, adc32(RDMEML(m_ea1.d), *m_p2_reg32));
+	WRMEML(m_ea1.d, adc32(RDMEML(m_ea1.d), m_reg2.r32()));
 }
 
 
 void tlcs900_device::op_ADCLRI()
 {
-	*m_p1_reg32 = adc32(*m_p1_reg32, m_imm2.d);
+	m_reg1.r32() = adc32(m_reg1.r32(), m_imm2.d);
 }
 
 
 void tlcs900_device::op_ADCLRM()
 {
-	*m_p1_reg32 = adc32(*m_p1_reg32, RDMEML(m_ea2.d));
+	m_reg1.r32() = adc32(m_reg1.r32(), RDMEML(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ADCLRR()
 {
-	*m_p1_reg32 = adc32(*m_p1_reg32, *m_p2_reg32);
+	m_reg1.r32() = adc32(m_reg1.r32(), m_reg2.r32());
 }
 
 
@@ -1337,25 +1337,25 @@ void tlcs900_device::op_ADDBMI()
 
 void tlcs900_device::op_ADDBMR()
 {
-	WRMEM(m_ea1.d, add8(RDMEM(m_ea1.d), *m_p2_reg8));
+	WRMEM(m_ea1.d, add8(RDMEM(m_ea1.d), m_reg2.r8()));
 }
 
 
 void tlcs900_device::op_ADDBRI()
 {
-	*m_p1_reg8 = add8(*m_p1_reg8, m_imm2.b.l);
+	m_reg1.r8() = add8(m_reg1.r8(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_ADDBRM()
 {
-	*m_p1_reg8 = add8(*m_p1_reg8, RDMEM(m_ea2.d));
+	m_reg1.r8() = add8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ADDBRR()
 {
-	*m_p1_reg8 = add8(*m_p1_reg8, *m_p2_reg8);
+	m_reg1.r8() = add8(m_reg1.r8(), m_reg2.r8());
 }
 
 
@@ -1367,49 +1367,49 @@ void tlcs900_device::op_ADDWMI()
 
 void tlcs900_device::op_ADDWMR()
 {
-	WRMEMW(m_ea1.d, add16(RDMEMW(m_ea1.d), *m_p2_reg16));
+	WRMEMW(m_ea1.d, add16(RDMEMW(m_ea1.d), m_reg2.r16()));
 }
 
 
 void tlcs900_device::op_ADDWRI()
 {
-	*m_p1_reg16 = add16(*m_p1_reg16, m_imm2.w.l);
+	m_reg1.r16() = add16(m_reg1.r16(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_ADDWRM()
 {
-	*m_p1_reg16 = add16(*m_p1_reg16, RDMEMW(m_ea2.d));
+	m_reg1.r16() = add16(m_reg1.r16(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ADDWRR()
 {
-	*m_p1_reg16 = add16(*m_p1_reg16, *m_p2_reg16);
+	m_reg1.r16() = add16(m_reg1.r16(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_ADDLMR()
 {
-	WRMEML(m_ea1.d, add32(RDMEML(m_ea1.d), *m_p2_reg32));
+	WRMEML(m_ea1.d, add32(RDMEML(m_ea1.d), m_reg2.r32()));
 }
 
 
 void tlcs900_device::op_ADDLRI()
 {
-	*m_p1_reg32 = add32(*m_p1_reg32, m_imm2.d);
+	m_reg1.r32() = add32(m_reg1.r32(), m_imm2.d);
 }
 
 
 void tlcs900_device::op_ADDLRM()
 {
-	*m_p1_reg32 = add32(*m_p1_reg32, RDMEML(m_ea2.d));
+	m_reg1.r32() = add32(m_reg1.r32(), RDMEML(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ADDLRR()
 {
-	*m_p1_reg32 = add32(*m_p1_reg32, *m_p2_reg32);
+	m_reg1.r32() = add32(m_reg1.r32(), m_reg2.r32());
 }
 
 
@@ -1421,25 +1421,25 @@ void tlcs900_device::op_ANDBMI()
 
 void tlcs900_device::op_ANDBMR()
 {
-	WRMEM(m_ea1.d, and8(RDMEM(m_ea1.d), *m_p2_reg8));
+	WRMEM(m_ea1.d, and8(RDMEM(m_ea1.d), m_reg2.r8()));
 }
 
 
 void tlcs900_device::op_ANDBRI()
 {
-	*m_p1_reg8 = and8(*m_p1_reg8, m_imm2.b.l);
+	m_reg1.r8() = and8(m_reg1.r8(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_ANDBRM()
 {
-	*m_p1_reg8 = and8(*m_p1_reg8, RDMEM(m_ea2.d));
+	m_reg1.r8() = and8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ANDBRR()
 {
-	*m_p1_reg8 = and8(*m_p1_reg8, *m_p2_reg8);
+	m_reg1.r8() = and8(m_reg1.r8(), m_reg2.r8());
 }
 
 
@@ -1451,49 +1451,49 @@ void tlcs900_device::op_ANDWMI()
 
 void tlcs900_device::op_ANDWMR()
 {
-	WRMEMW(m_ea1.d, and16(RDMEMW(m_ea1.d), *m_p2_reg16));
+	WRMEMW(m_ea1.d, and16(RDMEMW(m_ea1.d), m_reg2.r16()));
 }
 
 
 void tlcs900_device::op_ANDWRI()
 {
-	*m_p1_reg16 = and16(*m_p1_reg16, m_imm2.w.l);
+	m_reg1.r16() = and16(m_reg1.r16(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_ANDWRM()
 {
-	*m_p1_reg16 = and16(*m_p1_reg16, RDMEMW(m_ea2.d));
+	m_reg1.r16() = and16(m_reg1.r16(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ANDWRR()
 {
-	*m_p1_reg16 = and16(*m_p1_reg16, *m_p2_reg16);
+	m_reg1.r16() = and16(m_reg1.r16(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_ANDLMR()
 {
-	WRMEML(m_ea1.d, and32(RDMEML(m_ea1.d), *m_p2_reg32));
+	WRMEML(m_ea1.d, and32(RDMEML(m_ea1.d), m_reg2.r32()));
 }
 
 
 void tlcs900_device::op_ANDLRI()
 {
-	*m_p1_reg32 = and32(*m_p1_reg32, m_imm2.d);
+	m_reg1.r32() = and32(m_reg1.r32(), m_imm2.d);
 }
 
 
 void tlcs900_device::op_ANDLRM()
 {
-	*m_p1_reg32 = and32(*m_p1_reg32, RDMEML(m_ea2.d));
+	m_reg1.r32() = and32(m_reg1.r32(), RDMEML(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ANDLRR()
 {
-	*m_p1_reg32 = and32(*m_p1_reg32, *m_p2_reg32);
+	m_reg1.r32() = and32(m_reg1.r32(), m_reg2.r32());
 }
 
 
@@ -1505,31 +1505,31 @@ void tlcs900_device::op_ANDCFBIM()
 
 void tlcs900_device::op_ANDCFBIR()
 {
-	andcf8(m_imm1.b.l, *m_p2_reg8);
+	andcf8(m_imm1.b.l, m_reg2.r8());
 }
 
 
 void tlcs900_device::op_ANDCFBRM()
 {
-	andcf8(*m_p1_reg8, RDMEM(m_ea2.d));
+	andcf8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ANDCFBRR()
 {
-	andcf8(*m_p1_reg8, *m_p2_reg8);
+	andcf8(m_reg1.r8(), m_reg2.r8());
 }
 
 
 void tlcs900_device::op_ANDCFWIR()
 {
-	andcf16(m_imm1.b.l, *m_p2_reg16);
+	andcf16(m_imm1.b.l, m_reg2.r16());
 }
 
 
 void tlcs900_device::op_ANDCFWRR()
 {
-	andcf16(*m_p1_reg8, *m_p2_reg16);
+	andcf16(m_reg1.r8(), m_reg2.r16());
 }
 
 
@@ -1546,7 +1546,7 @@ void tlcs900_device::op_BITBIM()
 void tlcs900_device::op_BITBIR()
 {
 	m_sr.b.l &= ~(FLAG_ZF | FLAG_NF);
-	if (*m_p2_reg8 & (1 << (m_imm1.b.l & 0x0F)))
+	if (m_reg2.r8() & (1 << (m_imm1.b.l & 0x0F)))
 		m_sr.b.l |= FLAG_HF;
 	else
 		m_sr.b.l |= FLAG_HF | FLAG_ZF;
@@ -1556,7 +1556,7 @@ void tlcs900_device::op_BITBIR()
 void tlcs900_device::op_BITWIR()
 {
 	m_sr.b.l &= ~(FLAG_ZF | FLAG_NF);
-	if (*m_p2_reg16 & (1 << (m_imm1.b.l & 0x0F)))
+	if (m_reg2.r16() & (1 << (m_imm1.b.l & 0x0F)))
 		m_sr.b.l |= FLAG_HF;
 	else
 		m_sr.b.l |= FLAG_HF | FLAG_ZF;
@@ -1565,16 +1565,16 @@ void tlcs900_device::op_BITWIR()
 
 void tlcs900_device::op_BS1BRR()
 {
-	uint16_t  r = *m_p2_reg16;
+	uint16_t  r = m_reg2.r16();
 
 	if (r)
 	{
 		m_sr.b.l &= ~FLAG_VF;
-		*m_p1_reg8 = 15;
+		m_reg1.r8() = 15;
 		while (r < 0x8000)
 		{
 			r <<= 1;
-			*m_p1_reg8 -= 1;
+			m_reg1.r8() -= 1;
 		}
 	}
 	else
@@ -1584,16 +1584,16 @@ void tlcs900_device::op_BS1BRR()
 
 void tlcs900_device::op_BS1FRR()
 {
-	uint16_t  r = *m_p2_reg16;
+	uint16_t  r = m_reg2.r16();
 
 	if (r)
 	{
 		m_sr.b.l &= ~FLAG_VF;
-		*m_p1_reg8 = 0;
+		m_reg1.r8() = 0;
 		while (!(r & 0x0001))
 		{
 			r >>= 1;
-			*m_p1_reg8 += 1;
+			m_reg1.r8() += 1;
 		}
 	}
 	else
@@ -1647,13 +1647,13 @@ void tlcs900_device::op_CHGBIM()
 
 void tlcs900_device::op_CHGBIR()
 {
-	*m_p2_reg8 ^= (1 << (m_imm1.b.l & 0x07));
+	m_reg2.r8() ^= (1 << (m_imm1.b.l & 0x07));
 }
 
 
 void tlcs900_device::op_CHGWIR()
 {
-	*m_p2_reg16 ^= (1 << (m_imm1.b.l & 0x0F));
+	m_reg2.r16() ^= (1 << (m_imm1.b.l & 0x0F));
 }
 
 
@@ -1665,25 +1665,25 @@ void tlcs900_device::op_CPBMI()
 
 void tlcs900_device::op_CPBMR()
 {
-	sub8(RDMEM(m_ea1.d), *m_p2_reg8);
+	sub8(RDMEM(m_ea1.d), m_reg2.r8());
 }
 
 
 void tlcs900_device::op_CPBRI()
 {
-	sub8(*m_p1_reg8, m_imm2.b.l);
+	sub8(m_reg1.r8(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_CPBRM()
 {
-	sub8(*m_p1_reg8, RDMEM(m_ea2.d));
+	sub8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_CPBRR()
 {
-	sub8(*m_p1_reg8, *m_p2_reg8);
+	sub8(m_reg1.r8(), m_reg2.r8());
 }
 
 
@@ -1695,58 +1695,58 @@ void tlcs900_device::op_CPWMI()
 
 void tlcs900_device::op_CPWMR()
 {
-	sub16(RDMEMW(m_ea1.d), *m_p2_reg16);
+	sub16(RDMEMW(m_ea1.d), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_CPWRI()
 {
-	sub16(*m_p1_reg16, m_imm2.w.l);
+	sub16(m_reg1.r16(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_CPWRM()
 {
-	sub16(*m_p1_reg16, RDMEMW(m_ea2.d));
+	sub16(m_reg1.r16(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_CPWRR()
 {
-	sub16(*m_p1_reg16, *m_p2_reg16);
+	sub16(m_reg1.r16(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_CPLMR()
 {
-	sub32(RDMEML(m_ea1.d), *m_p2_reg32);
+	sub32(RDMEML(m_ea1.d), m_reg2.r32());
 }
 
 
 void tlcs900_device::op_CPLRI()
 {
-	sub32(*m_p1_reg32, m_imm2.d);
+	sub32(m_reg1.r32(), m_imm2.d);
 }
 
 
 void tlcs900_device::op_CPLRM()
 {
-	sub32(*m_p1_reg32, RDMEML(m_ea2.d));
+	sub32(m_reg1.r32(), RDMEML(m_ea2.d));
 }
 
 
 void tlcs900_device::op_CPLRR()
 {
-	sub32(*m_p1_reg32, *m_p2_reg32);
+	sub32(m_reg1.r32(), m_reg2.r32());
 }
 
 
 void tlcs900_device::op_CPD()
 {
-	uint8_t   result = get_reg8_current(1) - RDMEM(*m_p2_reg32);
+	uint8_t   result = get_reg8_current(1) - RDMEM(m_reg2.r32());
 	uint16_t  &bc = get_reg16_current(1);
 
-	*m_p2_reg32 -= 1;
+	m_reg2.r32() -= 1;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF);
 	m_sr.b.l |= (result & FLAG_SF) | (result ? FLAG_NF : FLAG_NF | FLAG_ZF) |
@@ -1769,10 +1769,10 @@ void tlcs900_device::op_CPDR()
 
 void tlcs900_device::op_CPDW()
 {
-	uint16_t  result = get_reg16_current(0) - RDMEMW(*m_p2_reg32);
+	uint16_t  result = get_reg16_current(0) - RDMEMW(m_reg2.r32());
 	uint16_t  &bc = get_reg16_current(1);
 
-	*m_p2_reg32 -= 2;
+	m_reg2.r32() -= 2;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF);
 	m_sr.b.l |= ((result >> 8) & FLAG_SF) | (result ? FLAG_NF : FLAG_NF | FLAG_ZF) |
@@ -1795,10 +1795,10 @@ void tlcs900_device::op_CPDRW()
 
 void tlcs900_device::op_CPI()
 {
-	uint8_t   result = get_reg8_current(1) - RDMEM(*m_p2_reg32);
+	uint8_t   result = get_reg8_current(1) - RDMEM(m_reg2.r32());
 	uint16_t  &bc = get_reg16_current(1);
 
-	*m_p2_reg32 += 1;
+	m_reg2.r32() += 1;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF);
 	m_sr.b.l |= (result & FLAG_SF) | (result ? FLAG_NF : FLAG_NF | FLAG_ZF) |
@@ -1821,10 +1821,10 @@ void tlcs900_device::op_CPIR()
 
 void tlcs900_device::op_CPIW()
 {
-	uint16_t  result = get_reg16_current(0) - RDMEMW(*m_p2_reg32);
+	uint16_t  result = get_reg16_current(0) - RDMEMW(m_reg2.r32());
 	uint16_t  &bc = get_reg16_current(1);
 
-	*m_p2_reg32 += 2;
+	m_reg2.r32() += 2;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF);
 	m_sr.b.l |= ((result >> 8) & FLAG_SF) | (result ? FLAG_NF : FLAG_NF | FLAG_ZF) |
@@ -1847,25 +1847,25 @@ void tlcs900_device::op_CPIRW()
 
 void tlcs900_device::op_CPLBR()
 {
-	*m_p1_reg8 = ~*m_p1_reg8;
+	m_reg1.r8() = ~m_reg1.r8();
 	m_sr.b.l |= FLAG_HF | FLAG_NF;
 }
 
 
 void tlcs900_device::op_CPLWR()
 {
-	*m_p1_reg16 = ~*m_p1_reg16;
+	m_reg1.r16() = ~m_reg1.r16();
 	m_sr.b.l |= FLAG_HF | FLAG_NF;
 }
 
 
 void tlcs900_device::op_DAABR()
 {
-	uint8_t   oldval = *m_p1_reg8;
+	uint8_t   oldval = m_reg1.r8();
 	uint8_t   fixval = 0;
 	uint8_t   carry = 0;
-	uint8_t   high = *m_p1_reg8 & 0xF0;
-	uint8_t   low = *m_p1_reg8 & 0x0F;
+	uint8_t   high = m_reg1.r8() & 0xF0;
+	uint8_t   low = m_reg1.r8() & 0x0F;
 
 	if (m_sr.b.l & FLAG_CF)
 	{
@@ -1886,7 +1886,7 @@ void tlcs900_device::op_DAABR()
 	{
 		if (m_sr.b.l & FLAG_HF)
 		{
-			if (*m_p1_reg8 < 0x9A)
+			if (m_reg1.r8() < 0x9A)
 				fixval = 0x06;
 			else
 				fixval = 0x66;
@@ -1905,19 +1905,19 @@ void tlcs900_device::op_DAABR()
 	if (m_sr.b.l & FLAG_NF)
 	{
 		/* after SUB, SBC, or NEG operation */
-		*m_p1_reg8 -= fixval;
-		m_sr.b.l |= ((*m_p1_reg8 > oldval || carry) ? FLAG_CF : 0);
+		m_reg1.r8() -= fixval;
+		m_sr.b.l |= ((m_reg1.r8() > oldval || carry) ? FLAG_CF : 0);
 	}
 	else
 	{
 		/* after ADD or ADC operation */
-		*m_p1_reg8 += fixval;
-		m_sr.b.l |= ((*m_p1_reg8 < oldval || carry) ? FLAG_CF : 0);
+		m_reg1.r8() += fixval;
+		m_sr.b.l |= ((m_reg1.r8() < oldval || carry) ? FLAG_CF : 0);
 	}
-	m_sr.b.l |= (*m_p1_reg8 & FLAG_SF) | (*m_p1_reg8 ? 0 : FLAG_ZF) |
-		(((oldval ^ fixval) ^ *m_p1_reg8) & FLAG_HF);
+	m_sr.b.l |= (m_reg1.r8() & FLAG_SF) | (m_reg1.r8() ? 0 : FLAG_ZF) |
+		(((oldval ^ fixval) ^ m_reg1.r8()) & FLAG_HF);
 
-	parity8(*m_p1_reg8);
+	parity8(m_reg1.r8());
 }
 
 
@@ -1940,7 +1940,7 @@ void tlcs900_device::op_DECBIR()
 {
 	uint8_t   cy = m_sr.b.l & FLAG_CF;
 
-	*m_p2_reg8 = sub8(*m_p2_reg8, m_imm1.b.l ? m_imm1.b.l : 8);
+	m_reg2.r8() = sub8(m_reg2.r8(), m_imm1.b.l ? m_imm1.b.l : 8);
 	m_sr.b.l = (m_sr.b.l & ~FLAG_CF) | cy;
 }
 
@@ -1956,13 +1956,13 @@ void tlcs900_device::op_DECWIM()
 
 void tlcs900_device::op_DECWIR()
 {
-	*m_p2_reg16 -= m_imm1.b.l ? m_imm1.b.l : 8;
+	m_reg2.r16() -= m_imm1.b.l ? m_imm1.b.l : 8;
 }
 
 
 void tlcs900_device::op_DECLIR()
 {
-	*m_p2_reg32 -= m_imm1.b.l ? m_imm1.b.l : 8;
+	m_reg2.r32() -= m_imm1.b.l ? m_imm1.b.l : 8;
 }
 
 
@@ -1976,80 +1976,80 @@ void tlcs900_device::op_DECF()
 
 void tlcs900_device::op_DIVBRI()
 {
-	*m_p1_reg16 = div8(*m_p1_reg16, m_imm2.b.l);
+	m_reg1.r16() = div8(m_reg1.r16(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_DIVBRM()
 {
-	*m_p1_reg16 = div8(*m_p1_reg16, RDMEM(m_ea2.d));
+	m_reg1.r16() = div8(m_reg1.r16(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_DIVBRR()
 {
-	*m_p1_reg16 = div8(*m_p1_reg16, *m_p2_reg8);
+	m_reg1.r16() = div8(m_reg1.r16(), m_reg2.r8());
 }
 
 
 void tlcs900_device::op_DIVWRI()
 {
-	*m_p1_reg32 = div16(*m_p1_reg32, m_imm2.w.l);
+	m_reg1.r32() = div16(m_reg1.r32(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_DIVWRM()
 {
-	*m_p1_reg32 = div16(*m_p1_reg32, RDMEMW(m_ea2.d));
+	m_reg1.r32() = div16(m_reg1.r32(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_DIVWRR()
 {
-	*m_p1_reg32 = div16(*m_p1_reg32, *m_p2_reg16);
+	m_reg1.r32() = div16(m_reg1.r32(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_DIVSBRI()
 {
-	*m_p1_reg16 = divs8(*m_p1_reg16, m_imm2.b.l);
+	m_reg1.r16() = divs8(m_reg1.r16(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_DIVSBRM()
 {
-	*m_p1_reg16 = divs8(*m_p1_reg16, RDMEM(m_ea2.d));
+	m_reg1.r16() = divs8(m_reg1.r16(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_DIVSBRR()
 {
-	*m_p1_reg16 = divs8(*m_p1_reg16, *m_p2_reg8);
+	m_reg1.r16() = divs8(m_reg1.r16(), m_reg2.r8());
 }
 
 
 void tlcs900_device::op_DIVSWRI()
 {
-	*m_p1_reg32 = divs16(*m_p1_reg32, m_imm2.w.l);
+	m_reg1.r32() = divs16(m_reg1.r32(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_DIVSWRM()
 {
-	*m_p1_reg32 = divs16(*m_p1_reg32, RDMEMW(m_ea2.d));
+	m_reg1.r32() = divs16(m_reg1.r32(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_DIVSWRR()
 {
-	*m_p1_reg32 = divs16(*m_p1_reg32, *m_p2_reg16);
+	m_reg1.r32() = divs16(m_reg1.r32(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_DJNZB()
 {
-	*m_p1_reg8 -= 1;
-	if (*m_p1_reg8)
+	m_reg1.r8() -= 1;
+	if (m_reg1.r8())
 	{
 		m_pc.d = m_ea2.d;
 		m_cycles += tlcs900_djnz_true_cycles();
@@ -2060,8 +2060,8 @@ void tlcs900_device::op_DJNZB()
 
 void tlcs900_device::op_DJNZW()
 {
-	*m_p1_reg16 -= 1;
-	if (*m_p1_reg16)
+	m_reg1.r16() -= 1;
+	if (m_reg1.r16())
 	{
 		m_pc.d = m_ea2.d;
 		m_cycles += tlcs900_djnz_true_cycles();
@@ -2082,17 +2082,17 @@ void tlcs900_device::op_EXBMR()
 {
 	uint8_t   i = RDMEM(m_ea1.d);
 
-	WRMEM(m_ea1.d, *m_p2_reg8);
-	*m_p2_reg8 = i;
+	WRMEM(m_ea1.d, m_reg2.r8());
+	m_reg2.r8() = i;
 }
 
 
 void tlcs900_device::op_EXBRR()
 {
-	uint8_t   i = *m_p2_reg8;
+	uint8_t   i = m_reg2.r8();
 
-	*m_p2_reg8 = *m_p1_reg8;
-	*m_p1_reg8 = i;
+	m_reg2.r8() = m_reg1.r8();
+	m_reg1.r8() = i;
 }
 
 
@@ -2100,47 +2100,47 @@ void tlcs900_device::op_EXWMR()
 {
 	uint16_t  i = RDMEMW(m_ea1.d);
 
-	WRMEMW(m_ea1.d, *m_p2_reg16);
-	*m_p2_reg16 = i;
+	WRMEMW(m_ea1.d, m_reg2.r16());
+	m_reg2.r16() = i;
 }
 
 
 void tlcs900_device::op_EXWRR()
 {
-	uint16_t  i = *m_p2_reg16;
+	uint16_t  i = m_reg2.r16();
 
-	*m_p2_reg16 = *m_p1_reg16;
-	*m_p1_reg16 = i;
+	m_reg2.r16() = m_reg1.r16();
+	m_reg1.r16() = i;
 }
 
 
 void tlcs900_device::op_EXTSWR()
 {
-	if (*m_p1_reg16 & 0x0080)
-		*m_p1_reg16 |= 0xFF00;
+	if (m_reg1.r16() & 0x0080)
+		m_reg1.r16() |= 0xFF00;
 	else
-		*m_p1_reg16 &= 0x00FF;
+		m_reg1.r16() &= 0x00FF;
 }
 
 
 void tlcs900_device::op_EXTSLR()
 {
-	if (*m_p1_reg32 & 0x00008000)
-		*m_p1_reg32 |= 0xFFFF0000;
+	if (m_reg1.r32() & 0x00008000)
+		m_reg1.r32() |= 0xFFFF0000;
 	else
-		*m_p1_reg32 &= 0x0000FFFF;
+		m_reg1.r32() &= 0x0000FFFF;
 }
 
 
 void tlcs900_device::op_EXTZWR()
 {
-	*m_p1_reg16 &= 0x00FF;
+	m_reg1.r16() &= 0x00FF;
 }
 
 
 void tlcs900_device::op_EXTZLR()
 {
-	*m_p1_reg32 &= 0x0000FFFF;
+	m_reg1.r32() &= 0x0000FFFF;
 }
 
 
@@ -2163,7 +2163,7 @@ void tlcs900_device::op_INCBIR()
 {
 	uint8_t   cy = m_sr.b.l & FLAG_CF;
 
-	*m_p2_reg8 = add8(*m_p2_reg8, m_imm1.b.l ? m_imm1.b.l : 8);
+	m_reg2.r8() = add8(m_reg2.r8(), m_imm1.b.l ? m_imm1.b.l : 8);
 	m_sr.b.l = (m_sr.b.l & ~FLAG_CF) | cy;
 }
 
@@ -2179,13 +2179,13 @@ void tlcs900_device::op_INCWIM()
 
 void tlcs900_device::op_INCWIR()
 {
-	*m_p2_reg16 += m_imm1.b.l ? m_imm1.b.l : 8;
+	m_reg2.r16() += m_imm1.b.l ? m_imm1.b.l : 8;
 }
 
 
 void tlcs900_device::op_INCLIR()
 {
-	*m_p2_reg32 += m_imm1.b.l ? m_imm1.b.l : 8;
+	m_reg2.r32() += m_imm1.b.l ? m_imm1.b.l : 8;
 }
 
 
@@ -2251,25 +2251,25 @@ void tlcs900_device::op_LDBMM()
 
 void tlcs900_device::op_LDBMR()
 {
-	WRMEM(m_ea1.d, *m_p2_reg8);
+	WRMEM(m_ea1.d, m_reg2.r8());
 }
 
 
 void tlcs900_device::op_LDBRI()
 {
-	*m_p1_reg8 = m_imm2.b.l;
+	m_reg1.r8() = m_imm2.b.l;
 }
 
 
 void tlcs900_device::op_LDBRM()
 {
-	*m_p1_reg8 = RDMEM(m_ea2.d);
+	m_reg1.r8() = RDMEM(m_ea2.d);
 }
 
 
 void tlcs900_device::op_LDBRR()
 {
-	*m_p1_reg8 = *m_p2_reg8;
+	m_reg1.r8() = m_reg2.r8();
 }
 
 
@@ -2287,79 +2287,79 @@ void tlcs900_device::op_LDWMM()
 
 void tlcs900_device::op_LDWMR()
 {
-	WRMEMW(m_ea1.d, *m_p2_reg16);
+	WRMEMW(m_ea1.d, m_reg2.r16());
 }
 
 
 void tlcs900_device::op_LDWRI()
 {
-	*m_p1_reg16 = m_imm2.w.l;
+	m_reg1.r16() = m_imm2.w.l;
 }
 
 
 void tlcs900_device::op_LDWRM()
 {
-	*m_p1_reg16 = RDMEMW(m_ea2.d);
+	m_reg1.r16() = RDMEMW(m_ea2.d);
 }
 
 
 void tlcs900_device::op_LDWRR()
 {
-	*m_p1_reg16 = *m_p2_reg16;
+	m_reg1.r16() = m_reg2.r16();
 }
 
 
 void tlcs900_device::op_LDLRI()
 {
-	*m_p1_reg32 = m_imm2.d;
+	m_reg1.r32() = m_imm2.d;
 }
 
 
 void tlcs900_device::op_LDLRM()
 {
-	*m_p1_reg32 = RDMEML(m_ea2.d);
+	m_reg1.r32() = RDMEML(m_ea2.d);
 }
 
 
 void tlcs900_device::op_LDLRR()
 {
-	*m_p1_reg32 = *m_p2_reg32;
+	m_reg1.r32() = m_reg2.r32();
 }
 
 
 void tlcs900_device::op_LDLMR()
 {
-	WRMEML(m_ea1.d, *m_p2_reg32);
+	WRMEML(m_ea1.d, m_reg2.r32());
 }
 
 
 void tlcs900_device::op_LDAW()
 {
-	*m_p1_reg16 = m_ea2.w.l;
+	m_reg1.r16() = m_ea2.w.l;
 }
 
 
 void tlcs900_device::op_LDAL()
 {
-	*m_p1_reg32 = m_ea2.d;
+	m_reg1.r32() = m_ea2.d;
 }
 
 
 void tlcs900_device::op_LDCBRR()
 {
-	*m_p1_reg8 = *m_p2_reg8;
+	m_reg1.r8() = m_reg2.r8();
 }
 
 
 void tlcs900_device::op_LDCWRR()
 {
-	*m_p1_reg16 = *m_p2_reg16;
+	m_reg1.r16() = m_reg2.r16();
 }
 
 
 void tlcs900_device::op_LDCLRR()
 {
-	*m_p1_reg32 = *m_p2_reg32;
+	m_reg1.r32() = m_reg2.r32();
 }
 
 
@@ -2371,31 +2371,31 @@ void tlcs900_device::op_LDCFBIM()
 
 void tlcs900_device::op_LDCFBIR()
 {
-	ldcf8(m_imm1.b.l, *m_p2_reg8);
+	ldcf8(m_imm1.b.l, m_reg2.r8());
 }
 
 
 void tlcs900_device::op_LDCFBRM()
 {
-	ldcf8(*m_p1_reg8, RDMEM(m_ea2.d));
+	ldcf8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_LDCFBRR()
 {
-	ldcf8(*m_p1_reg8, *m_p2_reg8);
+	ldcf8(m_reg1.r8(), m_reg2.r8());
 }
 
 
 void tlcs900_device::op_LDCFWIR()
 {
-	ldcf16(m_imm1.b.l, *m_p2_reg16);
+	ldcf16(m_imm1.b.l, m_reg2.r16());
 }
 
 
 void tlcs900_device::op_LDCFWRR()
 {
-	ldcf16(*m_p1_reg8, *m_p2_reg16);
+	ldcf16(m_reg1.r8(), m_reg2.r16());
 }
 
 
@@ -2403,9 +2403,9 @@ void tlcs900_device::op_LDD()
 {
 	uint16_t  &bc = get_reg16_current(1);
 
-	WRMEM(*m_p1_reg32, RDMEM(*m_p2_reg32));
-	*m_p1_reg32 -= 1;
-	*m_p2_reg32 -= 1;
+	WRMEM(m_reg1.r32(), RDMEM(m_reg2.r32()));
+	m_reg1.r32() -= 1;
+	m_reg2.r32() -= 1;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_HF | FLAG_VF | FLAG_NF);
 	if (bc)
@@ -2419,9 +2419,9 @@ void tlcs900_device::op_LDDR()
 {
 	uint16_t  &bc = get_reg16_current(1);
 
-	WRMEM(*m_p1_reg32, RDMEM(*m_p2_reg32));
-	*m_p1_reg32 -= 1;
-	*m_p2_reg32 -= 1;
+	WRMEM(m_reg1.r32(), RDMEM(m_reg2.r32()));
+	m_reg1.r32() -= 1;
+	m_reg2.r32() -= 1;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_HF | FLAG_VF | FLAG_NF);
 	if (bc)
@@ -2438,9 +2438,9 @@ void tlcs900_device::op_LDDRW()
 {
 	uint16_t  &bc = get_reg16_current(1);
 
-	WRMEMW(*m_p1_reg32, RDMEMW(*m_p2_reg32));
-	*m_p1_reg32 -= 2;
-	*m_p2_reg32 -= 2;
+	WRMEMW(m_reg1.r32(), RDMEMW(m_reg2.r32()));
+	m_reg1.r32() -= 2;
+	m_reg2.r32() -= 2;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_HF | FLAG_VF | FLAG_NF);
 	if (bc)
@@ -2457,9 +2457,9 @@ void tlcs900_device::op_LDDW()
 {
 	uint16_t  &bc = get_reg16_current(1);
 
-	WRMEMW(*m_p1_reg32, RDMEMW(*m_p2_reg32));
-	*m_p1_reg32 -= 2;
-	*m_p2_reg32 -= 2;
+	WRMEMW(m_reg1.r32(), RDMEMW(m_reg2.r32()));
+	m_reg1.r32() -= 2;
+	m_reg2.r32() -= 2;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_HF | FLAG_VF | FLAG_NF);
 	if (bc)
@@ -2480,9 +2480,9 @@ void tlcs900_device::op_LDI()
 {
 	uint16_t  &bc = get_reg16_current(1);
 
-	WRMEM(*m_p1_reg32, RDMEM(*m_p2_reg32));
-	*m_p1_reg32 += 1;
-	*m_p2_reg32 += 1;
+	WRMEM(m_reg1.r32(), RDMEM(m_reg2.r32()));
+	m_reg1.r32() += 1;
+	m_reg2.r32() += 1;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_HF | FLAG_VF | FLAG_NF);
 	if (bc)
@@ -2496,9 +2496,9 @@ void tlcs900_device::op_LDIR()
 {
 	uint16_t  &bc = get_reg16_current(1);
 
-	WRMEM(*m_p1_reg32, RDMEM(*m_p2_reg32));
-	*m_p1_reg32 += 1;
-	*m_p2_reg32 += 1;
+	WRMEM(m_reg1.r32(), RDMEM(m_reg2.r32()));
+	m_reg1.r32() += 1;
+	m_reg2.r32() += 1;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_HF | FLAG_VF | FLAG_NF);
 	if (bc)
@@ -2515,9 +2515,9 @@ void tlcs900_device::op_LDIRW()
 {
 	uint16_t  &bc = get_reg16_current(1);
 
-	WRMEMW(*m_p1_reg32, RDMEMW(*m_p2_reg32));
-	*m_p1_reg32 += 2;
-	*m_p2_reg32 += 2;
+	WRMEMW(m_reg1.r32(), RDMEMW(m_reg2.r32()));
+	m_reg1.r32() += 2;
+	m_reg2.r32() += 2;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_HF | FLAG_VF | FLAG_NF);
 	if (bc)
@@ -2534,9 +2534,9 @@ void tlcs900_device::op_LDIW()
 {
 	uint16_t  &bc = get_reg16_current(1);
 
-	WRMEMW(*m_p1_reg32, RDMEMW(*m_p2_reg32));
-	*m_p1_reg32 += 2;
-	*m_p2_reg32 += 2;
+	WRMEMW(m_reg1.r32(), RDMEMW(m_reg2.r32()));
+	m_reg1.r32() += 2;
+	m_reg2.r32() += 2;
 	bc -= 1;
 	m_sr.b.l &= ~(FLAG_HF | FLAG_VF | FLAG_NF);
 	if (bc)
@@ -2562,8 +2562,8 @@ void tlcs900_device::op_LDX()
 void tlcs900_device::op_LINK()
 {
 	m_xssp.d -= 4;
-	WRMEML(m_xssp.d, *m_p1_reg32);
-	*m_p1_reg32 = m_xssp.d;
+	WRMEML(m_xssp.d, m_reg1.r32());
+	m_reg1.r32() = m_xssp.d;
 	m_xssp.d += m_imm2.sw.l;
 }
 
@@ -2576,61 +2576,61 @@ void tlcs900_device::op_MAX()
 
 void tlcs900_device::op_MDEC1()
 {
-	if ((*m_p2_reg16 & m_imm1.w.l) == m_imm1.w.l)
-		*m_p2_reg16 += m_imm1.w.l;
+	if ((m_reg2.r16() & m_imm1.w.l) == m_imm1.w.l)
+		m_reg2.r16() += m_imm1.w.l;
 	else
-		*m_p2_reg16 -= 1;
+		m_reg2.r16() -= 1;
 }
 
 
 void tlcs900_device::op_MDEC2()
 {
-	if ((*m_p2_reg16 & m_imm1.w.l) == m_imm1.w.l)
-		*m_p2_reg16 += m_imm1.w.l;
+	if ((m_reg2.r16() & m_imm1.w.l) == m_imm1.w.l)
+		m_reg2.r16() += m_imm1.w.l;
 	else
-		*m_p2_reg16 -= 2;
+		m_reg2.r16() -= 2;
 }
 
 
 void tlcs900_device::op_MDEC4()
 {
-	if ((*m_p2_reg16 & m_imm1.w.l) == m_imm1.w.l)
-		*m_p2_reg16 += m_imm1.w.l;
+	if ((m_reg2.r16() & m_imm1.w.l) == m_imm1.w.l)
+		m_reg2.r16() += m_imm1.w.l;
 	else
-		*m_p2_reg16 -= 4;
+		m_reg2.r16() -= 4;
 }
 
 
 void tlcs900_device::op_MINC1()
 {
-	if ((*m_p2_reg16 & m_imm1.w.l) == m_imm1.w.l)
-		*m_p2_reg16 -= m_imm1.w.l;
+	if ((m_reg2.r16() & m_imm1.w.l) == m_imm1.w.l)
+		m_reg2.r16() -= m_imm1.w.l;
 	else
-		*m_p2_reg16 += 1;
+		m_reg2.r16() += 1;
 }
 
 
 void tlcs900_device::op_MINC2()
 {
-	if ((*m_p2_reg16 & m_imm1.w.l) == m_imm1.w.l)
-		*m_p2_reg16 -= m_imm1.w.l;
+	if ((m_reg2.r16() & m_imm1.w.l) == m_imm1.w.l)
+		m_reg2.r16() -= m_imm1.w.l;
 	else
-		*m_p2_reg16 += 2;
+		m_reg2.r16() += 2;
 }
 
 
 void tlcs900_device::op_MINC4()
 {
-	if ((*m_p2_reg16 & m_imm1.w.l) == m_imm1.w.l)
-		*m_p2_reg16 -= m_imm1.w.l;
+	if ((m_reg2.r16() & m_imm1.w.l) == m_imm1.w.l)
+		m_reg2.r16() -= m_imm1.w.l;
 	else
-		*m_p2_reg16 += 4;
+		m_reg2.r16() += 4;
 }
 
 
 void tlcs900_device::op_MIRRW()
 {
-	uint16_t  r = *m_p1_reg16;
+	uint16_t  r = m_reg1.r16();
 	uint16_t  s = (r & 0x01);
 	int i;
 
@@ -2642,43 +2642,43 @@ void tlcs900_device::op_MIRRW()
 		s |= (r & 0x01);
 	}
 
-	*m_p1_reg16 = s;
+	m_reg1.r16() = s;
 }
 
 
 void tlcs900_device::op_MULBRI()
 {
-	*m_p1_reg16 = (*m_p1_reg16 & 0xFF) * m_imm2.b.l;
+	m_reg1.r16() = (m_reg1.r16() & 0xFF) * m_imm2.b.l;
 }
 
 
 void tlcs900_device::op_MULBRM()
 {
-	*m_p1_reg16 = (*m_p1_reg16 & 0xFF) * RDMEM(m_ea2.d);
+	m_reg1.r16() = (m_reg1.r16() & 0xFF) * RDMEM(m_ea2.d);
 }
 
 
 void tlcs900_device::op_MULBRR()
 {
-	*m_p1_reg16 = (*m_p1_reg16 & 0xFF) * *m_p2_reg8;
+	m_reg1.r16() = (m_reg1.r16() & 0xFF) * m_reg2.r8();
 }
 
 
 void tlcs900_device::op_MULWRI()
 {
-	*m_p1_reg32 = (*m_p1_reg32 & 0xFFFF) * m_imm2.w.l;
+	m_reg1.r32() = (m_reg1.r32() & 0xFFFF) * m_imm2.w.l;
 }
 
 
 void tlcs900_device::op_MULWRM()
 {
-	*m_p1_reg32 = (*m_p1_reg32 & 0xFFFF) * RDMEMW(m_ea2.d);
+	m_reg1.r32() = (m_reg1.r32() & 0xFFFF) * RDMEMW(m_ea2.d);
 }
 
 
 void tlcs900_device::op_MULWRR()
 {
-	*m_p1_reg32 = (*m_p1_reg32 & 0xFFFF) * *m_p2_reg16;
+	m_reg1.r32() = (m_reg1.r32() & 0xFFFF) * m_reg2.r16();
 }
 
 
@@ -2687,59 +2687,59 @@ void tlcs900_device::op_MULAR()
 	uint32_t  &xde = get_reg32_current(2);
 	uint32_t  &xhl = get_reg32_current(3);
 
-	*m_p1_reg32 = *m_p1_reg32 + (((int16_t)RDMEMW(xde)) * ((int16_t)RDMEMW(xhl)));
+	m_reg1.r32() = m_reg1.r32() + (((int16_t)RDMEMW(xde)) * ((int16_t)RDMEMW(xhl)));
 	xhl -= 2;
 
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_VF);
-	m_sr.b.l |= ((*m_p1_reg32 >> 24) & FLAG_SF) | (*m_p1_reg32 ? 0 : FLAG_ZF);
+	m_sr.b.l |= ((m_reg1.r32() >> 24) & FLAG_SF) | (m_reg1.r32() ? 0 : FLAG_ZF);
 }
 
 
 void tlcs900_device::op_MULSBRI()
 {
-	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xFF) * m_imm2.sb.l;
+	m_reg1.r16() = (int8_t)(m_reg1.r16() & 0xFF) * m_imm2.sb.l;
 }
 
 
 void tlcs900_device::op_MULSBRM()
 {
-	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xFF) * (int8_t)RDMEM(m_ea2.d);
+	m_reg1.r16() = (int8_t)(m_reg1.r16() & 0xFF) * (int8_t)RDMEM(m_ea2.d);
 }
 
 
 void tlcs900_device::op_MULSBRR()
 {
-	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xFF) * (int8_t)*m_p2_reg8;
+	m_reg1.r16() = (int8_t)(m_reg1.r16() & 0xFF) * (int8_t)m_reg2.r8();
 }
 
 
 void tlcs900_device::op_MULSWRI()
 {
-	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xFFFF) * m_imm2.sw.l;
+	m_reg1.r32() = (int16_t)(m_reg1.r32() & 0xFFFF) * m_imm2.sw.l;
 }
 
 
 void tlcs900_device::op_MULSWRM()
 {
-	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xFFFF) * (int16_t)RDMEMW(m_ea2.d);
+	m_reg1.r32() = (int16_t)(m_reg1.r32() & 0xFFFF) * (int16_t)RDMEMW(m_ea2.d);
 }
 
 
 void tlcs900_device::op_MULSWRR()
 {
-	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xFFFF) * (int16_t)*m_p2_reg16;
+	m_reg1.r32() = (int16_t)(m_reg1.r32() & 0xFFFF) * (int16_t)m_reg2.r16();
 }
 
 
 void tlcs900_device::op_NEGBR()
 {
-	*m_p1_reg8 = sub8(0, *m_p1_reg8);
+	m_reg1.r8() = sub8(0, m_reg1.r8());
 }
 
 
 void tlcs900_device::op_NEGWR()
 {
-	*m_p1_reg16 = sub16(0, *m_p1_reg16);
+	m_reg1.r16() = sub16(0, m_reg1.r16());
 }
 
 
@@ -2763,25 +2763,25 @@ void tlcs900_device::op_ORBMI()
 
 void tlcs900_device::op_ORBMR()
 {
-	WRMEM(m_ea1.d, or8(RDMEM(m_ea1.d), *m_p2_reg8));
+	WRMEM(m_ea1.d, or8(RDMEM(m_ea1.d), m_reg2.r8()));
 }
 
 
 void tlcs900_device::op_ORBRI()
 {
-	*m_p1_reg8 = or8(*m_p1_reg8, m_imm2.b.l);
+	m_reg1.r8() = or8(m_reg1.r8(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_ORBRM()
 {
-	*m_p1_reg8 = or8(*m_p1_reg8, RDMEM(m_ea2.d));
+	m_reg1.r8() = or8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ORBRR()
 {
-	*m_p1_reg8 = or8(*m_p1_reg8, *m_p2_reg8);
+	m_reg1.r8() = or8(m_reg1.r8(), m_reg2.r8());
 }
 
 
@@ -2793,49 +2793,49 @@ void tlcs900_device::op_ORWMI()
 
 void tlcs900_device::op_ORWMR()
 {
-	WRMEMW(m_ea1.d, or16(RDMEMW(m_ea1.d), *m_p2_reg16));
+	WRMEMW(m_ea1.d, or16(RDMEMW(m_ea1.d), m_reg2.r16()));
 }
 
 
 void tlcs900_device::op_ORWRI()
 {
-	*m_p1_reg16 = or16(*m_p1_reg16, m_imm2.w.l);
+	m_reg1.r16() = or16(m_reg1.r16(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_ORWRM()
 {
-	*m_p1_reg16 = or16(*m_p1_reg16, RDMEMW(m_ea2.d));
+	m_reg1.r16() = or16(m_reg1.r16(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ORWRR()
 {
-	*m_p1_reg16 = or16(*m_p1_reg16, *m_p2_reg16);
+	m_reg1.r16() = or16(m_reg1.r16(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_ORLMR()
 {
-	WRMEML(m_ea1.d, or32(RDMEML(m_ea1.d), *m_p2_reg32));
+	WRMEML(m_ea1.d, or32(RDMEML(m_ea1.d), m_reg2.r32()));
 }
 
 
 void tlcs900_device::op_ORLRI()
 {
-	*m_p1_reg32 = or32(*m_p1_reg32, m_imm2.d);
+	m_reg1.r32() = or32(m_reg1.r32(), m_imm2.d);
 }
 
 
 void tlcs900_device::op_ORLRM()
 {
-	*m_p1_reg32 = or32(*m_p1_reg32, RDMEML(m_ea2.d));
+	m_reg1.r32() = or32(m_reg1.r32(), RDMEML(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ORLRR()
 {
-	*m_p1_reg32 = or32(*m_p1_reg32, *m_p2_reg32);
+	m_reg1.r32() = or32(m_reg1.r32(), m_reg2.r32());
 }
 
 
@@ -2847,45 +2847,45 @@ void tlcs900_device::op_ORCFBIM()
 
 void tlcs900_device::op_ORCFBIR()
 {
-	orcf8(m_imm1.b.l, *m_p2_reg8);
+	orcf8(m_imm1.b.l, m_reg2.r8());
 }
 
 
 void tlcs900_device::op_ORCFBRM()
 {
-	orcf8(*m_p1_reg8, RDMEM(m_ea2.d));
+	orcf8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_ORCFBRR()
 {
-	orcf8(*m_p1_reg8, *m_p2_reg8);
+	orcf8(m_reg1.r8(), m_reg2.r8());
 }
 
 
 void tlcs900_device::op_ORCFWIR()
 {
-	orcf16(m_imm1.b.l, *m_p2_reg16);
+	orcf16(m_imm1.b.l, m_reg2.r16());
 }
 
 
 void tlcs900_device::op_ORCFWRR()
 {
-	orcf16(*m_p1_reg8, *m_p2_reg16);
+	orcf16(m_reg1.r8(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_PAAWR()
 {
-	if (*m_p1_reg16 & 1)
-		*m_p1_reg16 += 1;
+	if (m_reg1.r16() & 1)
+		m_reg1.r16() += 1;
 }
 
 
 void tlcs900_device::op_PAALR()
 {
-	if (*m_p1_reg32 & 1)
-		*m_p1_reg32 += 1;
+	if (m_reg1.r32() & 1)
+		m_reg1.r32() += 1;
 }
 
 
@@ -2898,7 +2898,7 @@ void tlcs900_device::op_POPBM()
 
 void tlcs900_device::op_POPBR()
 {
-	*m_p1_reg8 = RDMEM(m_xssp.d);
+	m_reg1.r8() = RDMEM(m_xssp.d);
 	m_xssp.d += 1;
 }
 
@@ -2912,7 +2912,7 @@ void tlcs900_device::op_POPWM()
 
 void tlcs900_device::op_POPWR()
 {
-	*m_p1_reg16 = RDMEMW(m_xssp.d);
+	m_reg1.r16() = RDMEMW(m_xssp.d);
 	m_xssp.d += 2;
 }
 
@@ -2927,7 +2927,7 @@ void tlcs900_device::op_POPWSR()
 
 void tlcs900_device::op_POPLR()
 {
-	*m_p1_reg32 = RDMEML(m_xssp.d);
+	m_reg1.r32() = RDMEML(m_xssp.d);
 	m_xssp.d += 4;
 }
 
@@ -2949,7 +2949,7 @@ void tlcs900_device::op_PUSHBM()
 void tlcs900_device::op_PUSHBR()
 {
 	m_xssp.d -= 1;
-	WRMEM(m_xssp.d, *m_p1_reg8);
+	WRMEM(m_xssp.d, m_reg1.r8());
 }
 
 
@@ -2970,14 +2970,14 @@ void tlcs900_device::op_PUSHWM()
 void tlcs900_device::op_PUSHWR()
 {
 	m_xssp.d -= 2;
-	WRMEMW(m_xssp.d, *m_p1_reg16);
+	WRMEMW(m_xssp.d, m_reg1.r16());
 }
 
 
 void tlcs900_device::op_PUSHLR()
 {
 	m_xssp.d -= 4;
-	WRMEML(m_xssp.d, *m_p1_reg32);
+	WRMEML(m_xssp.d, m_reg1.r32());
 }
 
 
@@ -2995,13 +2995,13 @@ void tlcs900_device::op_RESBIM()
 
 void tlcs900_device::op_RESBIR()
 {
-	*m_p2_reg8 = *m_p2_reg8 & ~(1 << (m_imm1.d & 0x07));
+	m_reg2.r8() = m_reg2.r8() & ~(1 << (m_imm1.d & 0x07));
 }
 
 
 void tlcs900_device::op_RESWIR()
 {
-	*m_p2_reg16 = *m_p2_reg16 & ~(1 << (m_imm1.d & 0x0F));
+	m_reg2.r16() = m_reg2.r16() & ~(1 << (m_imm1.d & 0x0F));
 }
 
 
@@ -3065,37 +3065,37 @@ void tlcs900_device::op_RLWM()
 
 void tlcs900_device::op_RLBIR()
 {
-	*m_p2_reg8 = rl8(*m_p2_reg8, m_imm1.b.l);
+	m_reg2.r8() = rl8(m_reg2.r8(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RLBRR()
 {
-	*m_p2_reg8 = rl8(*m_p2_reg8, *m_p1_reg8);
+	m_reg2.r8() = rl8(m_reg2.r8(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RLWIR()
 {
-	*m_p2_reg16 = rl16(*m_p2_reg16, m_imm1.b.l);
+	m_reg2.r16() = rl16(m_reg2.r16(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RLWRR()
 {
-	*m_p2_reg16 = rl16(*m_p2_reg16, *m_p1_reg8);
+	m_reg2.r16() = rl16(m_reg2.r16(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RLLIR()
 {
-	*m_p2_reg32 = rl32(*m_p2_reg32, m_imm1.b.l);
+	m_reg2.r32() = rl32(m_reg2.r32(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RLLRR()
 {
-	*m_p2_reg32 = rl32(*m_p2_reg32, *m_p1_reg8);
+	m_reg2.r32() = rl32(m_reg2.r32(), m_reg1.r8());
 }
 
 
@@ -3113,50 +3113,50 @@ void tlcs900_device::op_RLCWM()
 
 void tlcs900_device::op_RLCBIR()
 {
-	*m_p2_reg8 = rlc8(*m_p2_reg8, m_imm1.b.l);
+	m_reg2.r8() = rlc8(m_reg2.r8(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RLCBRR()
 {
-	*m_p2_reg8 = rlc8(*m_p2_reg8, *m_p1_reg8);
+	m_reg2.r8() = rlc8(m_reg2.r8(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RLCWIR()
 {
-	*m_p2_reg16 = rlc16(*m_p2_reg16, m_imm1.b.l);
+	m_reg2.r16() = rlc16(m_reg2.r16(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RLCWRR()
 {
-	*m_p2_reg16 = rlc16(*m_p2_reg16, *m_p1_reg8);
+	m_reg2.r16() = rlc16(m_reg2.r16(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RLCLIR()
 {
-	*m_p2_reg32 = rlc32(*m_p2_reg32, m_imm1.b.l);
+	m_reg2.r32() = rlc32(m_reg2.r32(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RLCLRR()
 {
-	*m_p2_reg32 = rlc32(*m_p2_reg32, *m_p1_reg8);
+	m_reg2.r32() = rlc32(m_reg2.r32(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RLDRM()
 {
-	uint8_t   a = *m_p1_reg8 & 0x0F;
+	uint8_t   a = m_reg1.r8() & 0x0F;
 	uint8_t   b = RDMEM(m_ea2.d);
 
-	*m_p1_reg8 = (*m_p1_reg8 & 0xF0) | ((b & 0xF0) >> 4);
+	m_reg1.r8() = (m_reg1.r8() & 0xF0) | ((b & 0xF0) >> 4);
 	WRMEM(m_ea2.d, ((b & 0x0F) << 4) | a);
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
-	m_sr.b.l |= (*m_p1_reg8 & FLAG_SF) | (*m_p1_reg8 ? 0 : FLAG_ZF);
-	parity8(*m_p1_reg8);
+	m_sr.b.l |= (m_reg1.r8() & FLAG_SF) | (m_reg1.r8() ? 0 : FLAG_ZF);
+	parity8(m_reg1.r8());
 }
 
 
@@ -3174,37 +3174,37 @@ void tlcs900_device::op_RRWM()
 
 void tlcs900_device::op_RRBIR()
 {
-	*m_p2_reg8 = rr8(*m_p2_reg8, m_imm1.b.l);
+	m_reg2.r8() = rr8(m_reg2.r8(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RRBRR()
 {
-	*m_p2_reg8 = rr8(*m_p2_reg8, *m_p1_reg8);
+	m_reg2.r8() = rr8(m_reg2.r8(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RRWIR()
 {
-	*m_p2_reg16 = rr16(*m_p2_reg16, m_imm1.b.l);
+	m_reg2.r16() = rr16(m_reg2.r16(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RRWRR()
 {
-	*m_p2_reg16 = rr16(*m_p2_reg16, *m_p1_reg8);
+	m_reg2.r16() = rr16(m_reg2.r16(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RRLIR()
 {
-	*m_p2_reg32 = rr32(*m_p2_reg32, m_imm1.b.l);
+	m_reg2.r32() = rr32(m_reg2.r32(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RRLRR()
 {
-	*m_p2_reg32 = rr32(*m_p2_reg32, *m_p1_reg8);
+	m_reg2.r32() = rr32(m_reg2.r32(), m_reg1.r8());
 }
 
 
@@ -3222,50 +3222,50 @@ void tlcs900_device::op_RRCWM()
 
 void tlcs900_device::op_RRCBIR()
 {
-	*m_p2_reg8 = rrc8(*m_p2_reg8, m_imm1.b.l);
+	m_reg2.r8() = rrc8(m_reg2.r8(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RRCBRR()
 {
-	*m_p2_reg8 = rrc8(*m_p2_reg8, *m_p1_reg8);
+	m_reg2.r8() = rrc8(m_reg2.r8(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RRCWIR()
 {
-	*m_p2_reg16 = rrc16(*m_p2_reg16, m_imm1.b.l);
+	m_reg2.r16() = rrc16(m_reg2.r16(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RRCWRR()
 {
-	*m_p2_reg16 = rrc16(*m_p2_reg16, *m_p1_reg8);
+	m_reg2.r16() = rrc16(m_reg2.r16(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RRCLIR()
 {
-	*m_p2_reg32 = rrc32(*m_p2_reg32, m_imm1.b.l);
+	m_reg2.r32() = rrc32(m_reg2.r32(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_RRCLRR()
 {
-	*m_p2_reg32 = rrc32(*m_p2_reg32, *m_p1_reg8);
+	m_reg2.r32() = rrc32(m_reg2.r32(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_RRDRM()
 {
-	uint8_t   a = *m_p1_reg8 & 0x0F;
+	uint8_t   a = m_reg1.r8() & 0x0F;
 	uint8_t   b = RDMEM(m_ea2.d);
 
-	*m_p1_reg8 = (*m_p1_reg8 & 0xF0) | (b & 0x0F);
+	m_reg1.r8() = (m_reg1.r8() & 0xF0) | (b & 0x0F);
 	WRMEM(m_ea2.d, ((b & 0xF0) >> 4) | (a << 4));
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
-	m_sr.b.l |= (*m_p1_reg8 & FLAG_SF) | (*m_p1_reg8 ? 0 : FLAG_ZF);
-	parity8(*m_p1_reg8);
+	m_sr.b.l |= (m_reg1.r8() & FLAG_SF) | (m_reg1.r8() ? 0 : FLAG_ZF);
+	parity8(m_reg1.r8());
 }
 
 
@@ -3277,25 +3277,25 @@ void tlcs900_device::op_SBCBMI()
 
 void tlcs900_device::op_SBCBMR()
 {
-	WRMEM(m_ea1.d, sbc8(RDMEM(m_ea1.d), *m_p2_reg8));
+	WRMEM(m_ea1.d, sbc8(RDMEM(m_ea1.d), m_reg2.r8()));
 }
 
 
 void tlcs900_device::op_SBCBRI()
 {
-	*m_p1_reg8 = sbc8(*m_p1_reg8, m_imm2.b.l);
+	m_reg1.r8() = sbc8(m_reg1.r8(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_SBCBRM()
 {
-	*m_p1_reg8 = sbc8(*m_p1_reg8, RDMEM(m_ea2.d));
+	m_reg1.r8() = sbc8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_SBCBRR()
 {
-	*m_p1_reg8 = sbc8(*m_p1_reg8, *m_p2_reg8);
+	m_reg1.r8() = sbc8(m_reg1.r8(), m_reg2.r8());
 }
 
 
@@ -3307,61 +3307,61 @@ void tlcs900_device::op_SBCWMI()
 
 void tlcs900_device::op_SBCWMR()
 {
-	WRMEMW(m_ea1.d, sbc16(RDMEMW(m_ea1.d), *m_p2_reg16));
+	WRMEMW(m_ea1.d, sbc16(RDMEMW(m_ea1.d), m_reg2.r16()));
 }
 
 
 void tlcs900_device::op_SBCWRI()
 {
-	*m_p1_reg16 = sbc16(*m_p1_reg16, m_imm2.w.l);
+	m_reg1.r16() = sbc16(m_reg1.r16(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_SBCWRM()
 {
-	*m_p1_reg16 = sbc16(*m_p1_reg16, RDMEMW(m_ea2.d));
+	m_reg1.r16() = sbc16(m_reg1.r16(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_SBCWRR()
 {
-	*m_p1_reg16 = sbc16(*m_p1_reg16, *m_p2_reg16);
+	m_reg1.r16() = sbc16(m_reg1.r16(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_SBCLMR()
 {
-	WRMEML(m_ea1.d, sbc32(RDMEML(m_ea1.d), *m_p2_reg32));
+	WRMEML(m_ea1.d, sbc32(RDMEML(m_ea1.d), m_reg2.r32()));
 }
 
 
 void tlcs900_device::op_SBCLRI()
 {
-	*m_p1_reg32 = sbc32(*m_p1_reg32, m_imm2.d);
+	m_reg1.r32() = sbc32(m_reg1.r32(), m_imm2.d);
 }
 
 
 void tlcs900_device::op_SBCLRM()
 {
-	*m_p1_reg32 = sbc32(*m_p1_reg32, RDMEML(m_ea2.d));
+	m_reg1.r32() = sbc32(m_reg1.r32(), RDMEML(m_ea2.d));
 }
 
 
 void tlcs900_device::op_SBCLRR()
 {
-	*m_p1_reg32 = sbc32(*m_p1_reg32, *m_p2_reg32);
+	m_reg1.r32() = sbc32(m_reg1.r32(), m_reg2.r32());
 }
 
 
 void tlcs900_device::op_SCCBR()
 {
-	*m_p2_reg8 = condition_true(m_op) ? 1 : 0;
+	m_reg2.r8() = condition_true(m_op) ? 1 : 0;
 }
 
 
 void tlcs900_device::op_SCCWR()
 {
-	*m_p2_reg16 = condition_true(m_op) ? 1 : 0;
+	m_reg2.r16() = condition_true(m_op) ? 1 : 0;
 }
 
 
@@ -3380,13 +3380,13 @@ void tlcs900_device::op_SETBIM()
 
 void tlcs900_device::op_SETBIR()
 {
-	*m_p2_reg8 = *m_p2_reg8 | (1 << (m_imm1.d & 0x07));
+	m_reg2.r8() = m_reg2.r8() | (1 << (m_imm1.d & 0x07));
 }
 
 
 void tlcs900_device::op_SETWIR()
 {
-	*m_p2_reg16 = *m_p2_reg16 | (1 << (m_imm1.d & 0x0F));
+	m_reg2.r16() = m_reg2.r16() | (1 << (m_imm1.d & 0x0F));
 }
 
 
@@ -3404,37 +3404,37 @@ void tlcs900_device::op_SLAWM()
 
 void tlcs900_device::op_SLABIR()
 {
-	*m_p2_reg8 = sla8(*m_p2_reg8, m_imm1.b.l);
+	m_reg2.r8() = sla8(m_reg2.r8(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SLABRR()
 {
-	*m_p2_reg8 = sla8(*m_p2_reg8, *m_p1_reg8);
+	m_reg2.r8() = sla8(m_reg2.r8(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_SLAWIR()
 {
-	*m_p2_reg16 = sla16(*m_p2_reg16, m_imm1.b.l);
+	m_reg2.r16() = sla16(m_reg2.r16(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SLAWRR()
 {
-	*m_p2_reg16 = sla16(*m_p2_reg16, *m_p1_reg8);
+	m_reg2.r16() = sla16(m_reg2.r16(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_SLALIR()
 {
-	*m_p2_reg32 = sla32(*m_p2_reg32, m_imm1.b.l);
+	m_reg2.r32() = sla32(m_reg2.r32(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SLALRR()
 {
-	*m_p2_reg32 = sla32(*m_p2_reg32, *m_p1_reg8);
+	m_reg2.r32() = sla32(m_reg2.r32(), m_reg1.r8());
 }
 
 
@@ -3452,37 +3452,37 @@ void tlcs900_device::op_SLLWM()
 
 void tlcs900_device::op_SLLBIR()
 {
-	*m_p2_reg8 = sla8(*m_p2_reg8, m_imm1.b.l);
+	m_reg2.r8() = sla8(m_reg2.r8(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SLLBRR()
 {
-	*m_p2_reg8 = sla8(*m_p2_reg8, *m_p1_reg8);
+	m_reg2.r8() = sla8(m_reg2.r8(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_SLLWIR()
 {
-	*m_p2_reg16 = sla16(*m_p2_reg16, m_imm1.b.l);
+	m_reg2.r16() = sla16(m_reg2.r16(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SLLWRR()
 {
-	*m_p2_reg16 = sla16(*m_p2_reg16, *m_p1_reg8);
+	m_reg2.r16() = sla16(m_reg2.r16(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_SLLLIR()
 {
-	*m_p2_reg32 = sla32(*m_p2_reg32, m_imm1.b.l);
+	m_reg2.r32() = sla32(m_reg2.r32(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SLLLRR()
 {
-	*m_p2_reg32 = sla32(*m_p2_reg32, *m_p1_reg8);
+	m_reg2.r32() = sla32(m_reg2.r32(), m_reg1.r8());
 }
 
 
@@ -3500,37 +3500,37 @@ void tlcs900_device::op_SRAWM()
 
 void tlcs900_device::op_SRABIR()
 {
-	*m_p2_reg8 = sra8(*m_p2_reg8, m_imm1.b.l);
+	m_reg2.r8() = sra8(m_reg2.r8(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SRABRR()
 {
-	*m_p2_reg8 = sra8(*m_p2_reg8, *m_p1_reg8);
+	m_reg2.r8() = sra8(m_reg2.r8(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_SRAWIR()
 {
-	*m_p2_reg16 = sra16(*m_p2_reg16, m_imm1.b.l);
+	m_reg2.r16() = sra16(m_reg2.r16(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SRAWRR()
 {
-	*m_p2_reg16 = sra16(*m_p2_reg16, *m_p1_reg8);
+	m_reg2.r16() = sra16(m_reg2.r16(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_SRALIR()
 {
-	*m_p2_reg32 = sra32(*m_p2_reg32, m_imm1.b.l);
+	m_reg2.r32() = sra32(m_reg2.r32(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SRALRR()
 {
-	*m_p2_reg32 = sra32(*m_p2_reg32, *m_p1_reg8);
+	m_reg2.r32() = sra32(m_reg2.r32(), m_reg1.r8());
 }
 
 
@@ -3548,37 +3548,37 @@ void tlcs900_device::op_SRLWM()
 
 void tlcs900_device::op_SRLBIR()
 {
-	*m_p2_reg8 = srl8(*m_p2_reg8, m_imm1.b.l);
+	m_reg2.r8() = srl8(m_reg2.r8(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SRLBRR()
 {
-	*m_p2_reg8 = srl8(*m_p2_reg8, *m_p1_reg8);
+	m_reg2.r8() = srl8(m_reg2.r8(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_SRLWIR()
 {
-	*m_p2_reg16 = srl16(*m_p2_reg16, m_imm1.b.l);
+	m_reg2.r16() = srl16(m_reg2.r16(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SRLWRR()
 {
-	*m_p2_reg16 = srl16(*m_p2_reg16, *m_p1_reg8);
+	m_reg2.r16() = srl16(m_reg2.r16(), m_reg1.r8());
 }
 
 
 void tlcs900_device::op_SRLLIR()
 {
-	*m_p2_reg32 = srl32(*m_p2_reg32, m_imm1.b.l);
+	m_reg2.r32() = srl32(m_reg2.r32(), m_imm1.b.l);
 }
 
 
 void tlcs900_device::op_SRLLRR()
 {
-	*m_p2_reg32 = srl32(*m_p2_reg32, *m_p1_reg8);
+	m_reg2.r32() = srl32(m_reg2.r32(), m_reg1.r8());
 }
 
 
@@ -3594,45 +3594,45 @@ void tlcs900_device::op_STCFBIM()
 void tlcs900_device::op_STCFBIR()
 {
 	if (m_sr.b.l & FLAG_CF)
-		*m_p2_reg8 |= (1 << (m_imm1.b.l & 0x07));
+		m_reg2.r8() |= (1 << (m_imm1.b.l & 0x07));
 	else
-		*m_p2_reg8 &= ~(1 << (m_imm1.b.l & 0x07));
+		m_reg2.r8() &= ~(1 << (m_imm1.b.l & 0x07));
 }
 
 
 void tlcs900_device::op_STCFBRM()
 {
 	if (m_sr.b.l & FLAG_CF)
-		WRMEM(m_ea2.d, RDMEM(m_ea2.d) | (1 << (*m_p1_reg8 & 0x07)));
+		WRMEM(m_ea2.d, RDMEM(m_ea2.d) | (1 << (m_reg1.r8() & 0x07)));
 	else
-		WRMEM(m_ea2.d, RDMEM(m_ea2.d) & ~(1 << (*m_p1_reg8 & 0x07)));
+		WRMEM(m_ea2.d, RDMEM(m_ea2.d) & ~(1 << (m_reg1.r8() & 0x07)));
 }
 
 
 void tlcs900_device::op_STCFBRR()
 {
 	if (m_sr.b.l & FLAG_CF)
-		*m_p2_reg8 |= (1 << (*m_p1_reg8 & 0x07));
+		m_reg2.r8() |= (1 << (m_reg1.r8() & 0x07));
 	else
-		*m_p2_reg8 &= ~(1 << (*m_p1_reg8 & 0x07));
+		m_reg2.r8() &= ~(1 << (m_reg1.r8() & 0x07));
 }
 
 
 void tlcs900_device::op_STCFWIR()
 {
 	if (m_sr.b.l & FLAG_CF)
-		*m_p2_reg16 |= (1 << (m_imm1.b.l & 0x0F));
+		m_reg2.r16() |= (1 << (m_imm1.b.l & 0x0F));
 	else
-		*m_p2_reg16 &= ~(1 << (m_imm1.b.l & 0x0F));
+		m_reg2.r16() &= ~(1 << (m_imm1.b.l & 0x0F));
 }
 
 
 void tlcs900_device::op_STCFWRR()
 {
 	if (m_sr.b.l & FLAG_CF)
-		*m_p2_reg16 |= (1 << (*m_p1_reg8 & 0x0F));
+		m_reg2.r16() |= (1 << (m_reg1.r8() & 0x0F));
 	else
-		*m_p2_reg16 &= ~(1 << (*m_p1_reg8 & 0x0F));
+		m_reg2.r16() &= ~(1 << (m_reg1.r8() & 0x0F));
 }
 
 
@@ -3644,25 +3644,25 @@ void tlcs900_device::op_SUBBMI()
 
 void tlcs900_device::op_SUBBMR()
 {
-	WRMEM(m_ea1.d, sub8(RDMEM(m_ea1.d), *m_p2_reg8));
+	WRMEM(m_ea1.d, sub8(RDMEM(m_ea1.d), m_reg2.r8()));
 }
 
 
 void tlcs900_device::op_SUBBRI()
 {
-	*m_p1_reg8 = sub8(*m_p1_reg8, m_imm2.b.l);
+	m_reg1.r8() = sub8(m_reg1.r8(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_SUBBRM()
 {
-	*m_p1_reg8 = sub8(*m_p1_reg8, RDMEM(m_ea2.d));
+	m_reg1.r8() = sub8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_SUBBRR()
 {
-	*m_p1_reg8 = sub8(*m_p1_reg8, *m_p2_reg8);
+	m_reg1.r8() = sub8(m_reg1.r8(), m_reg2.r8());
 }
 
 
@@ -3674,49 +3674,49 @@ void tlcs900_device::op_SUBWMI()
 
 void tlcs900_device::op_SUBWMR()
 {
-	WRMEMW(m_ea1.d, sub16(RDMEMW(m_ea1.d), *m_p2_reg16));
+	WRMEMW(m_ea1.d, sub16(RDMEMW(m_ea1.d), m_reg2.r16()));
 }
 
 
 void tlcs900_device::op_SUBWRI()
 {
-	*m_p1_reg16 = sub16(*m_p1_reg16, m_imm2.w.l);
+	m_reg1.r16() = sub16(m_reg1.r16(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_SUBWRM()
 {
-	*m_p1_reg16 = sub16(*m_p1_reg16, RDMEMW(m_ea2.d));
+	m_reg1.r16() = sub16(m_reg1.r16(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_SUBWRR()
 {
-	*m_p1_reg16 = sub16(*m_p1_reg16, *m_p2_reg16);
+	m_reg1.r16() = sub16(m_reg1.r16(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_SUBLMR()
 {
-	WRMEML(m_ea1.d, sub32(RDMEML(m_ea1.d), *m_p2_reg32));
+	WRMEML(m_ea1.d, sub32(RDMEML(m_ea1.d), m_reg2.r32()));
 }
 
 
 void tlcs900_device::op_SUBLRI()
 {
-	*m_p1_reg32 = sub32(*m_p1_reg32, m_imm2.d);
+	m_reg1.r32() = sub32(m_reg1.r32(), m_imm2.d);
 }
 
 
 void tlcs900_device::op_SUBLRM()
 {
-	*m_p1_reg32 = sub32(*m_p1_reg32, RDMEML(m_ea2.d));
+	m_reg1.r32() = sub32(m_reg1.r32(), RDMEML(m_ea2.d));
 }
 
 
 void tlcs900_device::op_SUBLRR()
 {
-	*m_p1_reg32 = sub32(*m_p1_reg32, *m_p2_reg32);
+	m_reg1.r32() = sub32(m_reg1.r32(), m_reg2.r32());
 }
 
 
@@ -3758,8 +3758,8 @@ void tlcs900_device::op_TSETBIR()
 	uint8_t   b = 1 << (m_imm1.b.l & 0x07);
 
 	m_sr.b.l &= ~(FLAG_ZF | FLAG_NF);
-	m_sr.b.l |= ((*m_p2_reg8 & b) ? 0 : FLAG_ZF) | FLAG_HF;
-	*m_p2_reg8 |= b;
+	m_sr.b.l |= ((m_reg2.r8() & b) ? 0 : FLAG_ZF) | FLAG_HF;
+	m_reg2.r8() |= b;
 }
 
 
@@ -3768,15 +3768,15 @@ void tlcs900_device::op_TSETWIR()
 	uint16_t  b = 1 << (m_imm1.b.l & 0x0F);
 
 	m_sr.b.l &= ~(FLAG_ZF | FLAG_NF);
-	m_sr.b.l |= ((*m_p2_reg16 & b) ? 0 : FLAG_ZF) | FLAG_HF;
-	*m_p2_reg16 |= b;
+	m_sr.b.l |= ((m_reg2.r16() & b) ? 0 : FLAG_ZF) | FLAG_HF;
+	m_reg2.r16() |= b;
 }
 
 
 void tlcs900_device::op_UNLK()
 {
-	m_xssp.d = *m_p1_reg32;
-	*m_p1_reg32 = RDMEML(m_xssp.d);
+	m_xssp.d = m_reg1.r32();
+	m_reg1.r32() = RDMEML(m_xssp.d);
 	m_xssp.d += 4;
 }
 
@@ -3789,25 +3789,25 @@ void tlcs900_device::op_XORBMI()
 
 void tlcs900_device::op_XORBMR()
 {
-	WRMEM(m_ea1.d, xor8(RDMEM(m_ea1.d), *m_p2_reg8));
+	WRMEM(m_ea1.d, xor8(RDMEM(m_ea1.d), m_reg2.r8()));
 }
 
 
 void tlcs900_device::op_XORBRI()
 {
-	*m_p1_reg8 = xor8(*m_p1_reg8, m_imm2.b.l);
+	m_reg1.r8() = xor8(m_reg1.r8(), m_imm2.b.l);
 }
 
 
 void tlcs900_device::op_XORBRM()
 {
-	*m_p1_reg8 = xor8(*m_p1_reg8, RDMEM(m_ea2.d));
+	m_reg1.r8() = xor8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_XORBRR()
 {
-	*m_p1_reg8 = xor8(*m_p1_reg8, *m_p2_reg8);
+	m_reg1.r8() = xor8(m_reg1.r8(), m_reg2.r8());
 }
 
 
@@ -3819,49 +3819,49 @@ void tlcs900_device::op_XORWMI()
 
 void tlcs900_device::op_XORWMR()
 {
-	WRMEMW(m_ea1.d, xor16(RDMEMW(m_ea1.d), *m_p2_reg16));
+	WRMEMW(m_ea1.d, xor16(RDMEMW(m_ea1.d), m_reg2.r16()));
 }
 
 
 void tlcs900_device::op_XORWRI()
 {
-	*m_p1_reg16 = xor16(*m_p1_reg16, m_imm2.w.l);
+	m_reg1.r16() = xor16(m_reg1.r16(), m_imm2.w.l);
 }
 
 
 void tlcs900_device::op_XORWRM()
 {
-	*m_p1_reg16 = xor16(*m_p1_reg16, RDMEMW(m_ea2.d));
+	m_reg1.r16() = xor16(m_reg1.r16(), RDMEMW(m_ea2.d));
 }
 
 
 void tlcs900_device::op_XORWRR()
 {
-	*m_p1_reg16 = xor16(*m_p1_reg16, *m_p2_reg16);
+	m_reg1.r16() = xor16(m_reg1.r16(), m_reg2.r16());
 }
 
 
 void tlcs900_device::op_XORLMR()
 {
-	WRMEML(m_ea1.d, xor32(RDMEML(m_ea1.d), *m_p2_reg32));
+	WRMEML(m_ea1.d, xor32(RDMEML(m_ea1.d), m_reg2.r32()));
 }
 
 
 void tlcs900_device::op_XORLRI()
 {
-	*m_p1_reg32 = xor32(*m_p1_reg32, m_imm2.d);
+	m_reg1.r32() = xor32(m_reg1.r32(), m_imm2.d);
 }
 
 
 void tlcs900_device::op_XORLRM()
 {
-	*m_p1_reg32 = xor32(*m_p1_reg32, RDMEML(m_ea2.d));
+	m_reg1.r32() = xor32(m_reg1.r32(), RDMEML(m_ea2.d));
 }
 
 
 void tlcs900_device::op_XORLRR()
 {
-	*m_p1_reg32 = xor32(*m_p1_reg32, *m_p2_reg32);
+	m_reg1.r32() = xor32(m_reg1.r32(), m_reg2.r32());
 }
 
 
@@ -3873,31 +3873,31 @@ void tlcs900_device::op_XORCFBIM()
 
 void tlcs900_device::op_XORCFBIR()
 {
-	xorcf8(m_imm1.b.l, *m_p2_reg8);
+	xorcf8(m_imm1.b.l, m_reg2.r8());
 }
 
 
 void tlcs900_device::op_XORCFBRM()
 {
-	xorcf8(*m_p1_reg8, RDMEM(m_ea2.d));
+	xorcf8(m_reg1.r8(), RDMEM(m_ea2.d));
 }
 
 
 void tlcs900_device::op_XORCFBRR()
 {
-	xorcf8(*m_p1_reg8, *m_p2_reg8);
+	xorcf8(m_reg1.r8(), m_reg2.r8());
 }
 
 
 void tlcs900_device::op_XORCFWIR()
 {
-	xorcf16(m_imm1.b.l, *m_p2_reg16);
+	xorcf16(m_imm1.b.l, m_reg2.r16());
 }
 
 
 void tlcs900_device::op_XORCFWRR()
 {
-	xorcf16(*m_p1_reg8, *m_p2_reg16);
+	xorcf16(m_reg1.r8(), m_reg2.r16());
 }
 
 
@@ -3913,56 +3913,56 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 	switch (inst->operand1)
 	{
 	case p_A:
-		m_p1_reg8 = &m_xwa[m_regbank].b.l;
+		m_reg1 = m_xwa[m_regbank].b.l;
 		break;
 	case p_F:
-		m_p1_reg8 = &m_sr.b.l;
+		m_reg1 = m_sr.b.l;
 		break;
 	case p_SR:
-		m_p1_reg16 = &m_sr.w.l;
+		m_reg1 = m_sr.w.l;
 		break;
 	case p_C8:
-		m_p1_reg8 = &get_reg8_current(m_op);
+		m_reg1 = get_reg8_current(m_op);
 		break;
 	case p_C16:
-		m_p1_reg16 = &get_reg16_current(m_op);
+		m_reg1 = get_reg16_current(m_op);
 		break;
 	case p_MC16: /* For MUL and DIV operations */
-		m_p1_reg16 = &get_reg16_current((m_op >> 1) & 0x03);
+		m_reg1 = get_reg16_current((m_op >> 1) & 0x03);
 		break;
 	case p_C32:
-		m_p1_reg32 = &get_reg32_current(m_op);
+		m_reg1 = get_reg32_current(m_op);
 		break;
 	case p_CR8:
 		m_imm1.d = RDOP();
 		switch (m_imm1.d)
 		{
 		case 0x22:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg8 = &m_dmam[0].b.l;
+			m_reg1 = m_dmam[0].b.l;
 			break;
 		case 0x26:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg8 = &m_dmam[1].b.l;
+			m_reg1 = m_dmam[1].b.l;
 			break;
 		case 0x2A:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg8 = &m_dmam[2].b.l;
+			m_reg1 = m_dmam[2].b.l;
 			break;
 		case 0x2E:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg8 = &m_dmam[3].b.l;
+			m_reg1 = m_dmam[3].b.l;
 			break;
 		case 0x42:  // TMP94C241
-			m_p1_reg8 = &m_dmam[0].b.l;
+			m_reg1 = m_dmam[0].b.l;
 			break;
 		case 0x46:  // TMP94C241
-			m_p1_reg8 = &m_dmam[1].b.l;
+			m_reg1 = m_dmam[1].b.l;
 			break;
 		case 0x4A:  // TMP94C241
-			m_p1_reg8 = &m_dmam[2].b.l;
+			m_reg1 = m_dmam[2].b.l;
 			break;
 		case 0x4E:  // TMP94C241
-			m_p1_reg8 = &m_dmam[3].b.l;
+			m_reg1 = m_dmam[3].b.l;
 			break;
 		default:
-			m_p1_reg8 = &m_dummy.b.l;
+			m_reg1 = m_dummy.b.l;
 			break;
 		}
 		break;
@@ -3971,35 +3971,35 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		switch (m_imm1.d)
 		{
 		case 0x20:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg16 = &m_dmac[0].w.l;
+			m_reg1 = m_dmac[0].w.l;
 			break;
 		case 0x24:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg16 = &m_dmac[1].w.l;
+			m_reg1 = m_dmac[1].w.l;
 			break;
 		case 0x28:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg16 = &m_dmac[2].w.l;
+			m_reg1 = m_dmac[2].w.l;
 			break;
 		case 0x2C:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg16 = &m_dmac[3].w.l;
+			m_reg1 = m_dmac[3].w.l;
 			break;
 		case 0x40:  // TMP94C241
-			m_p1_reg16 = &m_dmac[0].w.l;
+			m_reg1 = m_dmac[0].w.l;
 			break;
 		case 0x44:  // TMP94C241
-			m_p1_reg16 = &m_dmac[1].w.l;
+			m_reg1 = m_dmac[1].w.l;
 			break;
 		case 0x48:  // TMP94C241
-			m_p1_reg16 = &m_dmac[2].w.l;
+			m_reg1 = m_dmac[2].w.l;
 			break;
 		case 0x4C:  // TMP94C241
-			m_p1_reg16 = &m_dmac[3].w.l;
+			m_reg1 = m_dmac[3].w.l;
 			break;
 		case 0x3C:  // TMP96C141/TMP95C061/TMP95C063 -- INTNEST
 		case 0x7C:  // TMP94C241 -- INTNEST
-			m_p1_reg16 = &m_intnest;
+			m_reg1 = m_intnest;
 			break;
 		default:
-			m_p1_reg16 = &m_dummy.w.l;
+			m_reg1 = m_dummy.w.l;
 			break;
 		}
 		break;
@@ -4008,43 +4008,43 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		switch (m_imm1.d)
 		{
 		case 0x00:  // all variants
-			m_p1_reg32 = &m_dmas[0].d;
+			m_reg1 = m_dmas[0].d;
 			break;
 		case 0x04:  // all variants
-			m_p1_reg32 = &m_dmas[1].d;
+			m_reg1 = m_dmas[1].d;
 			break;
 		case 0x08:  // all variants
-			m_p1_reg32 = &m_dmas[2].d;
+			m_reg1 = m_dmas[2].d;
 			break;
 		case 0x0C:  // all variants
-			m_p1_reg32 = &m_dmas[3].d;
+			m_reg1 = m_dmas[3].d;
 			break;
 		case 0x10:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg32 = &m_dmad[0].d;
+			m_reg1 = m_dmad[0].d;
 			break;
 		case 0x14:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg32 = &m_dmad[1].d;
+			m_reg1 = m_dmad[1].d;
 			break;
 		case 0x18:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg32 = &m_dmad[2].d;
+			m_reg1 = m_dmad[2].d;
 			break;
 		case 0x1C:  // TMP96C141/TMP95C061/TMP95C063
-			m_p1_reg32 = &m_dmad[3].d;
+			m_reg1 = m_dmad[3].d;
 			break;
 		case 0x20:  // TMP94C241
-			m_p1_reg32 = &m_dmad[0].d;
+			m_reg1 = m_dmad[0].d;
 			break;
 		case 0x24:  // TMP94C241
-			m_p1_reg32 = &m_dmad[1].d;
+			m_reg1 = m_dmad[1].d;
 			break;
 		case 0x28:  // TMP94C241
-			m_p1_reg32 = &m_dmad[2].d;
+			m_reg1 = m_dmad[2].d;
 			break;
 		case 0x2C:  // TMP94C241
-			m_p1_reg32 = &m_dmad[3].d;
+			m_reg1 = m_dmad[3].d;
 			break;
 		default:
-			m_p1_reg32 = &m_dummy.d;
+			m_reg1 = m_dummy.d;
 			break;
 		}
 		break;
@@ -4089,62 +4089,60 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		m_ea1.b.h = RDOP();
 		break;
 	case p_R:
-		m_p1_reg8 = m_p2_reg8;
-		m_p1_reg16 = m_p2_reg16;
-		m_p1_reg32 = m_p2_reg32;
+		m_reg1 = m_reg2;
 		break;
 	}
 
 	switch (inst->operand2)
 	{
 	case p_A:
-		m_p2_reg8 = &m_xwa[m_regbank].b.l;
+		m_reg2 = m_xwa[m_regbank].b.l;
 		break;
 	case p_F:        /* F' */
-		m_p2_reg8 = &m_f2.b.l;
+		m_reg2 = m_f2.b.l;
 		break;
 	case p_SR:
-		m_p2_reg16 = &m_sr.w.l;
+		m_reg2 = m_sr.w.l;
 		break;
 	case p_C8:
-		m_p2_reg8 = &get_reg8_current(m_op);
+		m_reg2 = get_reg8_current(m_op);
 		break;
 	case p_C16:
-		m_p2_reg16 = &get_reg16_current(m_op);
+		m_reg2 = get_reg16_current(m_op);
 		break;
 	case p_C32:
-		m_p2_reg32 = &get_reg32_current(m_op);
+		m_reg2 = get_reg32_current(m_op);
 		break;
 	case p_CR8:
 		m_imm1.d = RDOP();
 		switch (m_imm1.d)
 		{
 		case 0x22:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg8 = &m_dmam[0].b.l;
+			m_reg2 = m_dmam[0].b.l;
 			break;
 		case 0x26:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg8 = &m_dmam[1].b.l;
+			m_reg2 = m_dmam[1].b.l;
 			break;
 		case 0x2A:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg8 = &m_dmam[2].b.l;
+			m_reg2 = m_dmam[2].b.l;
 			break;
 		case 0x2E:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg8 = &m_dmam[3].b.l;
+			m_reg2 = m_dmam[3].b.l;
 			break;
 		case 0x42:  // TMP94C241
-			m_p2_reg8 = &m_dmam[0].b.l;
+			m_reg2 = m_dmam[0].b.l;
 			break;
 		case 0x46:  // TMP94C241
-			m_p2_reg8 = &m_dmam[1].b.l;
+			m_reg2 = m_dmam[1].b.l;
 			break;
 		case 0x4A:  // TMP94C241
-			m_p2_reg8 = &m_dmam[2].b.l;
+			m_reg2 = m_dmam[2].b.l;
 			break;
 		case 0x4E:  // TMP94C241
-			m_p2_reg8 = &m_dmam[3].b.l;
+			m_reg2 = m_dmam[3].b.l;
 			break;
 		default:
-			m_p2_reg8 = &m_dummy.b.l;
+			m_reg2 = m_dummy.b.l;
 			break;
 		}
 		break;
@@ -4153,35 +4151,35 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		switch (m_imm1.d)
 		{
 		case 0x20:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg16 = &m_dmac[0].w.l;
+			m_reg2 = m_dmac[0].w.l;
 			break;
 		case 0x24:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg16 = &m_dmac[1].w.l;
+			m_reg2 = m_dmac[1].w.l;
 			break;
 		case 0x28:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg16 = &m_dmac[2].w.l;
+			m_reg2 = m_dmac[2].w.l;
 			break;
 		case 0x2C:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg16 = &m_dmac[3].w.l;
+			m_reg2 = m_dmac[3].w.l;
 			break;
 		case 0x40:  // TMP94C241
-			m_p2_reg16 = &m_dmac[0].w.l;
+			m_reg2 = m_dmac[0].w.l;
 			break;
 		case 0x44:  // TMP94C241
-			m_p2_reg16 = &m_dmac[1].w.l;
+			m_reg2 = m_dmac[1].w.l;
 			break;
 		case 0x48:  // TMP94C241
-			m_p2_reg16 = &m_dmac[2].w.l;
+			m_reg2 = m_dmac[2].w.l;
 			break;
 		case 0x4C:  // TMP94C241
-			m_p2_reg16 = &m_dmac[3].w.l;
+			m_reg2 = m_dmac[3].w.l;
 			break;
 		case 0x3C:  // TMP96C141/TMP95C061/TMP95C063 -- INTNEST
 		case 0x7C:  // TMP94C241 -- INTNEST
-			m_p2_reg16 = &m_intnest;
+			m_reg2 = m_intnest;
 			break;
 		default:
-			m_p2_reg16 = &m_dummy.w.l;
+			m_reg2 = m_dummy.w.l;
 			break;
 		}
 		break;
@@ -4190,43 +4188,43 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		switch (m_imm1.d)
 		{
 		case 0x00:  // all variants
-			m_p2_reg32 = &m_dmas[0].d;
+			m_reg2 = m_dmas[0].d;
 			break;
 		case 0x04:  // all variants
-			m_p2_reg32 = &m_dmas[1].d;
+			m_reg2 = m_dmas[1].d;
 			break;
 		case 0x08:  // all variants
-			m_p2_reg32 = &m_dmas[2].d;
+			m_reg2 = m_dmas[2].d;
 			break;
 		case 0x0C:  // all variants
-			m_p2_reg32 = &m_dmas[3].d;
+			m_reg2 = m_dmas[3].d;
 			break;
 		case 0x10:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg32 = &m_dmad[0].d;
+			m_reg2 = m_dmad[0].d;
 			break;
 		case 0x14:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg32 = &m_dmad[1].d;
+			m_reg2 = m_dmad[1].d;
 			break;
 		case 0x18:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg32 = &m_dmad[2].d;
+			m_reg2 = m_dmad[2].d;
 			break;
 		case 0x1C:  // TMP96C141/TMP95C061/TMP95C063
-			m_p2_reg32 = &m_dmad[3].d;
+			m_reg2 = m_dmad[3].d;
 			break;
 		case 0x20:  // TMP94C241
-			m_p2_reg32 = &m_dmad[0].d;
+			m_reg2 = m_dmad[0].d;
 			break;
 		case 0x24:  // TMP94C241
-			m_p2_reg32 = &m_dmad[1].d;
+			m_reg2 = m_dmad[1].d;
 			break;
 		case 0x28:  // TMP94C241
-			m_p2_reg32 = &m_dmad[2].d;
+			m_reg2 = m_dmad[2].d;
 			break;
 		case 0x2C:  // TMP94C241
-			m_p2_reg32 = &m_dmad[3].d;
+			m_reg2 = m_dmad[3].d;
 			break;
 		default:
-			m_p2_reg32 = &m_dummy.d;
+			m_reg2 = m_dummy.d;
 			break;
 		}
 		break;
@@ -5448,8 +5446,8 @@ void tlcs900_device::op_80()
 	const tlcs900inst *inst;
 
 	/* For CPI/CPIR/CPD/CPDR/LDI/LDD/LDIR/LDDR operations */
-	m_p1_reg32 = &get_reg32_current(m_op - 1);
-	m_p2_reg32 = &get_reg32_current(m_op);
+	m_reg1 = get_reg32_current(m_op - 1);
+	m_reg2 = get_reg32_current(m_op);
 
 	m_ea2.d = get_reg32_current(m_op);
 	m_op = RDOP();
@@ -5466,8 +5464,8 @@ void tlcs900_device::op_88()
 	const tlcs900inst *inst;
 
 	/* For CPI/CPIR/CPD/CPDR/LDI/LDD/LDIR/LDDR operations */
-	m_p1_reg32 = &get_reg32_current(m_op - 1);
-	m_p2_reg32 = &get_reg32_current(m_op);
+	m_reg1 = get_reg32_current(m_op - 1);
+	m_reg2 = get_reg32_current(m_op);
 
 	m_ea2.d = get_reg32_current(m_op);
 	m_op = RDOP();
@@ -5487,8 +5485,8 @@ void tlcs900_device::op_90()
 	const tlcs900inst *inst;
 
 	/* For CPI/CPIR/CPD/CPDR/LDI/LDD/LDIR/LDDR operations */
-	m_p1_reg32 = &get_reg32_current(m_op - 1);
-	m_p2_reg32 = &get_reg32_current(m_op);
+	m_reg1 = get_reg32_current(m_op - 1);
+	m_reg2 = get_reg32_current(m_op);
 
 	m_ea2.d = get_reg32_current(m_op);
 	m_op = RDOP();
@@ -5691,16 +5689,16 @@ void tlcs900_device::oC8()
 
 	if (m_op & 0x08)
 	{
-		m_p2_reg8 = &get_reg8_current(m_op);
+		m_reg2 = get_reg8_current(m_op);
 		/* For MUL and DIV operations */
-		m_p2_reg16 = &get_reg16_current((m_op >> 1) & 0x03);
+		m_reg2 = get_reg16_current((m_op >> 1) & 0x03);
 	}
 	else
 	{
 		m_op = RDOP();
-		m_p2_reg8 = &get_reg8(m_op);
+		m_reg2 = get_reg8(m_op);
 		/* For MUL and DIV operations */
-		m_p2_reg16 = &get_reg16(m_op);
+		m_reg2 = get_reg16(m_op);
 	}
 	m_op = RDOP();
 	inst = &m_mnemonic_c8[m_op];
@@ -5823,14 +5821,14 @@ void tlcs900_device::oD8()
 
 	if (m_op & 0x08)
 	{
-		m_p2_reg16 = &get_reg16_current(m_op);
-		m_p2_reg32 = &get_reg32_current(m_op);
+		m_reg2 = get_reg16_current(m_op);
+		m_reg2 = get_reg32_current(m_op);
 	}
 	else
 	{
 		m_op = RDOP();
-		m_p2_reg16 = &get_reg16(m_op);
-		m_p2_reg32 = &get_reg32(m_op);
+		m_reg2 = get_reg16(m_op);
+		m_reg2 = get_reg32(m_op);
 	}
 	m_op = RDOP();
 	inst = &m_mnemonic_d8[m_op];
@@ -5953,12 +5951,12 @@ void tlcs900_device::op_E8()
 
 	if (m_op & 0x08)
 	{
-		m_p2_reg32 = &get_reg32_current(m_op);
+		m_reg2 = get_reg32_current(m_op);
 	}
 	else
 	{
 		m_op = RDOP();
-		m_p2_reg32 = &get_reg32(m_op);
+		m_reg2 = get_reg32(m_op);
 	}
 	m_op = RDOP();
 	inst = &m_mnemonic_e8[m_op];
