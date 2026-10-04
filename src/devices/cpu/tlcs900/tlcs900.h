@@ -183,7 +183,7 @@ protected:
 	/* Bump INTNEST.  Called where a device pushes the SR/PC frame that op_RETI
 	   will later unwind.  NMI counts, because it pushes and unwinds the same way;
 	   SWI/TRAP do not, because they need not return through RETI. */
-	void tlcs900_intnest_accept() { if (m_intnest < 0xffff) m_intnest++; }
+	void tlcs900_intnest_accept() { if (m_intnest < 0xFFFF) m_intnest++; }
 
 	virtual void tlcs900_check_hdma() = 0;
 	virtual void tlcs900_check_irqs() = 0;

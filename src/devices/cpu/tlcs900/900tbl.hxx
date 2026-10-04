@@ -36,7 +36,7 @@ enum e_operand
 
 int tlcs900_device::condition_true(uint8_t cond)
 {
-	switch (cond & 0x0f)
+	switch (cond & 0x0F)
 	{
 	/* F */
 	case 0x00:
@@ -241,34 +241,34 @@ PAIR* tlcs900_device::get_reg(uint8_t reg)
 {
 	uint8_t   regbank;
 
-	switch (reg & 0xf0)
+	switch (reg & 0xF0)
 	{
 	case 0x00: case 0x10: case 0x20: case 0x30: /* explicit register bank */
-	case 0xd0:                                  /* "previous" register bank */
-	case 0xe0:                                  /* current register bank */
-		regbank = (reg & 0xf0) >> 4;
-		if (regbank == 0x0d)
+	case 0xD0:                                  /* "previous" register bank */
+	case 0xE0:                                  /* current register bank */
+		regbank = (reg & 0xF0) >> 4;
+		if (regbank == 0x0D)
 			regbank = (m_regbank - 1) & 0x03;
 
-		if (regbank == 0x0e)
+		if (regbank == 0x0E)
 			regbank = m_regbank;
 
-		switch (reg & 0x0c)
+		switch (reg & 0x0C)
 		{
 		case 0x00:  return &m_xwa[regbank];
 		case 0x04:  return &m_xbc[regbank];
 		case 0x08:  return &m_xde[regbank];
-		case 0x0c:  return &m_xhl[regbank];
+		case 0x0C:  return &m_xhl[regbank];
 		}
 		break;
-	case 0xf0:  /* index registers and sp */
-		switch (reg & 0x0c)
+	case 0xF0:  /* index registers and sp */
+		switch (reg & 0x0C)
 		{
 		case 0x00:  return &m_xix;
 		case 0x04:  return &m_xiy;
 		case 0x08:  return &m_xiz;
 		/* TODO: Use correct SP */
-		case 0x0c:  return &m_xssp;
+		case 0x0C:  return &m_xssp;
 		}
 		break;
 	}
@@ -646,7 +646,7 @@ void tlcs900_device::ldcf8(uint8_t a, uint8_t b)
 
 void tlcs900_device::ldcf16(uint8_t a, uint16_t b)
 {
-	if (b & (1 << (a & 0x0f)))
+	if (b & (1 << (a & 0x0F)))
 		m_sr.b.l |= FLAG_CF;
 	else
 		m_sr.b.l &= ~FLAG_CF;
@@ -664,7 +664,7 @@ void tlcs900_device::andcf8(uint8_t a, uint8_t b)
 
 void tlcs900_device::andcf16(uint8_t a, uint16_t b)
 {
-	if ((b & (1 << (a & 0x0f))) && (m_sr.b.l & FLAG_CF))
+	if ((b & (1 << (a & 0x0F))) && (m_sr.b.l & FLAG_CF))
 		m_sr.b.l |= FLAG_CF;
 	else
 		m_sr.b.l &= ~FLAG_CF;
@@ -680,7 +680,7 @@ void tlcs900_device::orcf8(uint8_t a, uint8_t b)
 
 void tlcs900_device::orcf16(uint8_t a, uint16_t b)
 {
-	if (b & (1 << (a & 0x0f)))
+	if (b & (1 << (a & 0x0F)))
 		m_sr.b.l |= FLAG_CF;
 }
 
@@ -694,14 +694,14 @@ void tlcs900_device::xorcf8(uint8_t a, uint8_t b)
 
 void tlcs900_device::xorcf16(uint8_t a, uint16_t b)
 {
-	if (b & (1 << (a & 0x0f)))
+	if (b & (1 << (a & 0x0F)))
 		m_sr.b.l ^= FLAG_CF;
 }
 
 
 uint8_t tlcs900_device::rl8(uint8_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -728,7 +728,7 @@ uint8_t tlcs900_device::rl8(uint8_t a, uint8_t s)
 
 uint16_t tlcs900_device::rl16(uint16_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -755,7 +755,7 @@ uint16_t tlcs900_device::rl16(uint16_t a, uint8_t s)
 
 uint32_t tlcs900_device::rl32(uint32_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -781,7 +781,7 @@ uint32_t tlcs900_device::rl32(uint32_t a, uint8_t s)
 
 uint8_t tlcs900_device::rlc8(uint8_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -799,7 +799,7 @@ uint8_t tlcs900_device::rlc8(uint8_t a, uint8_t s)
 
 uint16_t tlcs900_device::rlc16(uint16_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -817,7 +817,7 @@ uint16_t tlcs900_device::rlc16(uint16_t a, uint8_t s)
 
 uint32_t tlcs900_device::rlc32(uint32_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -835,7 +835,7 @@ uint32_t tlcs900_device::rlc32(uint32_t a, uint8_t s)
 
 uint8_t tlcs900_device::rr8(uint8_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -862,7 +862,7 @@ uint8_t tlcs900_device::rr8(uint8_t a, uint8_t s)
 
 uint16_t tlcs900_device::rr16(uint16_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -889,7 +889,7 @@ uint16_t tlcs900_device::rr16(uint16_t a, uint8_t s)
 
 uint32_t tlcs900_device::rr32(uint32_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -916,7 +916,7 @@ uint32_t tlcs900_device::rr32(uint32_t a, uint8_t s)
 
 uint8_t tlcs900_device::rrc8(uint8_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -934,7 +934,7 @@ uint8_t tlcs900_device::rrc8(uint8_t a, uint8_t s)
 
 uint16_t tlcs900_device::rrc16(uint16_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -952,7 +952,7 @@ uint16_t tlcs900_device::rrc16(uint16_t a, uint8_t s)
 
 uint32_t tlcs900_device::rrc32(uint32_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -970,7 +970,7 @@ uint32_t tlcs900_device::rrc32(uint32_t a, uint8_t s)
 
 uint8_t tlcs900_device::sla8(uint8_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -989,7 +989,7 @@ uint8_t tlcs900_device::sla8(uint8_t a, uint8_t s)
 
 uint16_t tlcs900_device::sla16(uint16_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -1008,7 +1008,7 @@ uint16_t tlcs900_device::sla16(uint16_t a, uint8_t s)
 
 uint32_t tlcs900_device::sla32(uint32_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -1027,7 +1027,7 @@ uint32_t tlcs900_device::sla32(uint32_t a, uint8_t s)
 
 uint8_t tlcs900_device::sra8(uint8_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -1046,7 +1046,7 @@ uint8_t tlcs900_device::sra8(uint8_t a, uint8_t s)
 
 uint16_t tlcs900_device::sra16(uint16_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -1065,7 +1065,7 @@ uint16_t tlcs900_device::sra16(uint16_t a, uint8_t s)
 
 uint32_t tlcs900_device::sra32(uint32_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -1084,7 +1084,7 @@ uint32_t tlcs900_device::sra32(uint32_t a, uint8_t s)
 
 uint8_t tlcs900_device::srl8(uint8_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -1103,7 +1103,7 @@ uint8_t tlcs900_device::srl8(uint8_t a, uint8_t s)
 
 uint16_t tlcs900_device::srl16(uint16_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -1122,7 +1122,7 @@ uint16_t tlcs900_device::srl16(uint16_t a, uint8_t s)
 
 uint32_t tlcs900_device::srl32(uint32_t a, uint8_t s)
 {
-	uint8_t count = (s & 0x0f) ? (s & 0x0f) : 16;
+	uint8_t count = (s & 0x0F) ? (s & 0x0F) : 16;
 
 	for (uint8_t n = count; n > 0; n--)
 	{
@@ -1146,7 +1146,7 @@ uint16_t tlcs900_device::div8(uint16_t a, uint8_t b)
 	if (!b)
 	{
 		m_sr.b.l |= FLAG_VF;
-		return (a << 8) | ((a >> 8) ^ 0xff);
+		return (a << 8) | ((a >> 8) ^ 0xFF);
 	}
 
 	if (a >= (0x0200 * b)) {
@@ -1154,7 +1154,7 @@ uint16_t tlcs900_device::div8(uint16_t a, uint8_t b)
 		uint16_t range = 0x100 - b;
 
 		result = ldiv(diff, range);
-		result.quot = 0x1ff - result.quot;
+		result.quot = 0x1FF - result.quot;
 		result.rem = result.rem + b;
 	}
 	else
@@ -1162,12 +1162,12 @@ uint16_t tlcs900_device::div8(uint16_t a, uint8_t b)
 		result = ldiv(a, b);
 	}
 
-	if (result.quot > 0xff)
+	if (result.quot > 0xFF)
 		m_sr.b.l |= FLAG_VF;
 	else
 		m_sr.b.l &= ~FLAG_VF;
 
-	return (result.quot & 0xff) | ((result.rem & 0xff) << 8);
+	return (result.quot & 0xFF) | ((result.rem & 0xFF) << 8);
 }
 
 
@@ -1178,7 +1178,7 @@ uint32_t tlcs900_device::div16(uint32_t a, uint16_t b)
 	if (!b)
 	{
 		m_sr.b.l |= FLAG_VF;
-		return (a << 16) | ((a >> 16) ^ 0xffff);
+		return (a << 16) | ((a >> 16) ^ 0xFFFF);
 	}
 
 //  if (a >= (0x02000000 * b)) {
@@ -1186,7 +1186,7 @@ uint32_t tlcs900_device::div16(uint32_t a, uint16_t b)
 //      uint32_t range = 0x1000000 - b;
 //
 //      result = ldiv(diff, range);
-//      result.quot = 0x1ffffff - result.quot;
+//      result.quot = 0x1FFFFFF - result.quot;
 //      result.rem = result.rem + b;
 //  }
 //  else
@@ -1194,12 +1194,12 @@ uint32_t tlcs900_device::div16(uint32_t a, uint16_t b)
 		result = ldiv(a, b);
 //  }
 
-	if (result.quot > 0xffff)
+	if (result.quot > 0xFFFF)
 		m_sr.b.l |= FLAG_VF;
 	else
 		m_sr.b.l &= ~FLAG_VF;
 
-	return (result.quot & 0xffff) | ((result.rem & 0xffff) << 16);
+	return (result.quot & 0xFFFF) | ((result.rem & 0xFFFF) << 16);
 }
 
 
@@ -1210,17 +1210,17 @@ uint16_t tlcs900_device::divs8(int16_t a, int8_t b)
 	if (!b)
 	{
 		m_sr.b.l |= FLAG_VF;
-		return (a << 8) | ((a >> 8) ^ 0xff);
+		return (a << 8) | ((a >> 8) ^ 0xFF);
 	}
 
 	result = ldiv(a, b);
 
-	if (result.quot > 0xff)
+	if (result.quot > 0xFF)
 		m_sr.b.l |= FLAG_VF;
 	else
 		m_sr.b.l &= ~FLAG_VF;
 
-	return (result.quot & 0xff) | ((result.rem & 0xff) << 8);
+	return (result.quot & 0xFF) | ((result.rem & 0xFF) << 8);
 }
 
 
@@ -1231,17 +1231,17 @@ uint32_t tlcs900_device::divs16(int32_t a, int16_t b)
 	if (!b)
 	{
 		m_sr.b.l |= FLAG_VF;
-		return (a << 16) | ((a >> 16) ^ 0xffff);
+		return (a << 16) | ((a >> 16) ^ 0xFFFF);
 	}
 
 	result = ldiv(a, b);
 
-	if (result.quot > 0xffff)
+	if (result.quot > 0xFFFF)
 		m_sr.b.l |= FLAG_VF;
 	else
 		m_sr.b.l &= ~FLAG_VF;
 
-	return (result.quot & 0xffff) | ((result.rem & 0xffff) << 16);
+	return (result.quot & 0xFFFF) | ((result.rem & 0xFFFF) << 16);
 }
 
 
@@ -1546,7 +1546,7 @@ void tlcs900_device::op_BITBIM()
 void tlcs900_device::op_BITBIR()
 {
 	m_sr.b.l &= ~(FLAG_ZF | FLAG_NF);
-	if (*m_p2_reg8 & (1 << (m_imm1.b.l & 0x0f)))
+	if (*m_p2_reg8 & (1 << (m_imm1.b.l & 0x0F)))
 		m_sr.b.l |= FLAG_HF;
 	else
 		m_sr.b.l |= FLAG_HF | FLAG_ZF;
@@ -1556,7 +1556,7 @@ void tlcs900_device::op_BITBIR()
 void tlcs900_device::op_BITWIR()
 {
 	m_sr.b.l &= ~(FLAG_ZF | FLAG_NF);
-	if (*m_p2_reg16 & (1 << (m_imm1.b.l & 0x0f)))
+	if (*m_p2_reg16 & (1 << (m_imm1.b.l & 0x0F)))
 		m_sr.b.l |= FLAG_HF;
 	else
 		m_sr.b.l |= FLAG_HF | FLAG_ZF;
@@ -1653,7 +1653,7 @@ void tlcs900_device::op_CHGBIR()
 
 void tlcs900_device::op_CHGWIR()
 {
-	*m_p2_reg16 ^= (1 << (m_imm1.b.l & 0x0f));
+	*m_p2_reg16 ^= (1 << (m_imm1.b.l & 0x0F));
 }
 
 
@@ -1864,8 +1864,8 @@ void tlcs900_device::op_DAABR()
 	uint8_t   oldval = *m_p1_reg8;
 	uint8_t   fixval = 0;
 	uint8_t   carry = 0;
-	uint8_t   high = *m_p1_reg8 & 0xf0;
-	uint8_t   low = *m_p1_reg8 & 0x0f;
+	uint8_t   high = *m_p1_reg8 & 0xF0;
+	uint8_t   low = *m_p1_reg8 & 0x0F;
 
 	if (m_sr.b.l & FLAG_CF)
 	{
@@ -1875,7 +1875,7 @@ void tlcs900_device::op_DAABR()
 		}
 		else
 		{
-			if (low < 0x0a)
+			if (low < 0x0A)
 				fixval = 0x60;
 			else
 				fixval = 0x66;
@@ -1886,7 +1886,7 @@ void tlcs900_device::op_DAABR()
 	{
 		if (m_sr.b.l & FLAG_HF)
 		{
-			if (*m_p1_reg8 < 0x9a)
+			if (*m_p1_reg8 < 0x9A)
 				fixval = 0x06;
 			else
 				fixval = 0x66;
@@ -1897,7 +1897,7 @@ void tlcs900_device::op_DAABR()
 				fixval = 0x06;
 			else if (high > 0x80 && low > 0x09)
 				fixval = 0x66;
-			else if (high > 0x90 && low < 0x0a)
+			else if (high > 0x90 && low < 0x0A)
 				fixval = 0x60;
 		}
 	}
@@ -1969,7 +1969,7 @@ void tlcs900_device::op_DECLIR()
 void tlcs900_device::op_DECF()
 {
 	/* 0x03 for MAX mode, 0x07 for MIN mode */
-	m_sr.b.h = (m_sr.b.h & 0xf8) | ((m_sr.b.h - 1) & 0x07);
+	m_sr.b.h = (m_sr.b.h & 0xF8) | ((m_sr.b.h - 1) & 0x07);
 	m_regbank = m_sr.b.h & 0x03;
 }
 
@@ -2072,7 +2072,7 @@ void tlcs900_device::op_DJNZW()
 
 void tlcs900_device::op_EI()
 {
-	m_sr.b.h = (m_sr.b.h & 0x8f) | ((m_imm1.b.l & 0x07) << 4);
+	m_sr.b.h = (m_sr.b.h & 0x8F) | ((m_imm1.b.l & 0x07) << 4);
 	m_check_irqs = 1;
 	m_irq_inhibit = true;  /* defer interrupt acceptance by 1 instruction */
 }
@@ -2117,30 +2117,30 @@ void tlcs900_device::op_EXWRR()
 void tlcs900_device::op_EXTSWR()
 {
 	if (*m_p1_reg16 & 0x0080)
-		*m_p1_reg16 |= 0xff00;
+		*m_p1_reg16 |= 0xFF00;
 	else
-		*m_p1_reg16 &= 0x00ff;
+		*m_p1_reg16 &= 0x00FF;
 }
 
 
 void tlcs900_device::op_EXTSLR()
 {
 	if (*m_p1_reg32 & 0x00008000)
-		*m_p1_reg32 |= 0xffff0000;
+		*m_p1_reg32 |= 0xFFFF0000;
 	else
-		*m_p1_reg32 &= 0x0000ffff;
+		*m_p1_reg32 &= 0x0000FFFF;
 }
 
 
 void tlcs900_device::op_EXTZWR()
 {
-	*m_p1_reg16 &= 0x00ff;
+	*m_p1_reg16 &= 0x00FF;
 }
 
 
 void tlcs900_device::op_EXTZLR()
 {
-	*m_p1_reg32 &= 0x0000ffff;
+	*m_p1_reg32 &= 0x0000FFFF;
 }
 
 
@@ -2192,7 +2192,7 @@ void tlcs900_device::op_INCLIR()
 void tlcs900_device::op_INCF()
 {
 	/* 0x03 for MAX mode, 0x07 for MIN mode */
-	m_sr.b.h = (m_sr.b.h & 0xf8) | ((m_sr.b.h + 1) & 0x07);
+	m_sr.b.h = (m_sr.b.h & 0xF8) | ((m_sr.b.h + 1) & 0x07);
 	m_regbank = m_sr.b.h & 0x03;
 }
 
@@ -2471,7 +2471,7 @@ void tlcs900_device::op_LDDW()
 
 void tlcs900_device::op_LDF()
 {
-	m_sr.b.h = (m_sr.b.h & 0xf8) | (m_imm1.b.l & 0x07);
+	m_sr.b.h = (m_sr.b.h & 0xF8) | (m_imm1.b.l & 0x07);
 	m_regbank = m_imm1.b.l & 0x03;
 }
 
@@ -2648,37 +2648,37 @@ void tlcs900_device::op_MIRRW()
 
 void tlcs900_device::op_MULBRI()
 {
-	*m_p1_reg16 = (*m_p1_reg16 & 0xff) * m_imm2.b.l;
+	*m_p1_reg16 = (*m_p1_reg16 & 0xFF) * m_imm2.b.l;
 }
 
 
 void tlcs900_device::op_MULBRM()
 {
-	*m_p1_reg16 = (*m_p1_reg16 & 0xff) * RDMEM(m_ea2.d);
+	*m_p1_reg16 = (*m_p1_reg16 & 0xFF) * RDMEM(m_ea2.d);
 }
 
 
 void tlcs900_device::op_MULBRR()
 {
-	*m_p1_reg16 = (*m_p1_reg16 & 0xff) * *m_p2_reg8;
+	*m_p1_reg16 = (*m_p1_reg16 & 0xFF) * *m_p2_reg8;
 }
 
 
 void tlcs900_device::op_MULWRI()
 {
-	*m_p1_reg32 = (*m_p1_reg32 & 0xffff) * m_imm2.w.l;
+	*m_p1_reg32 = (*m_p1_reg32 & 0xFFFF) * m_imm2.w.l;
 }
 
 
 void tlcs900_device::op_MULWRM()
 {
-	*m_p1_reg32 = (*m_p1_reg32 & 0xffff) * RDMEMW(m_ea2.d);
+	*m_p1_reg32 = (*m_p1_reg32 & 0xFFFF) * RDMEMW(m_ea2.d);
 }
 
 
 void tlcs900_device::op_MULWRR()
 {
-	*m_p1_reg32 = (*m_p1_reg32 & 0xffff) * *m_p2_reg16;
+	*m_p1_reg32 = (*m_p1_reg32 & 0xFFFF) * *m_p2_reg16;
 }
 
 
@@ -2697,37 +2697,37 @@ void tlcs900_device::op_MULAR()
 
 void tlcs900_device::op_MULSBRI()
 {
-	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xff) * m_imm2.sb.l;
+	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xFF) * m_imm2.sb.l;
 }
 
 
 void tlcs900_device::op_MULSBRM()
 {
-	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xff) * (int8_t)RDMEM(m_ea2.d);
+	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xFF) * (int8_t)RDMEM(m_ea2.d);
 }
 
 
 void tlcs900_device::op_MULSBRR()
 {
-	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xff) * (int8_t)*m_p2_reg8;
+	*m_p1_reg16 = (int8_t)(*m_p1_reg16 & 0xFF) * (int8_t)*m_p2_reg8;
 }
 
 
 void tlcs900_device::op_MULSWRI()
 {
-	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xffff) * m_imm2.sw.l;
+	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xFFFF) * m_imm2.sw.l;
 }
 
 
 void tlcs900_device::op_MULSWRM()
 {
-	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xffff) * (int16_t)RDMEMW(m_ea2.d);
+	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xFFFF) * (int16_t)RDMEMW(m_ea2.d);
 }
 
 
 void tlcs900_device::op_MULSWRR()
 {
-	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xffff) * (int16_t)*m_p2_reg16;
+	*m_p1_reg32 = (int16_t)(*m_p1_reg32 & 0xFFFF) * (int16_t)*m_p2_reg16;
 }
 
 
@@ -3001,7 +3001,7 @@ void tlcs900_device::op_RESBIR()
 
 void tlcs900_device::op_RESWIR()
 {
-	*m_p2_reg16 = *m_p2_reg16 & ~(1 << (m_imm1.d & 0x0f));
+	*m_p2_reg16 = *m_p2_reg16 & ~(1 << (m_imm1.d & 0x0F));
 }
 
 
@@ -3149,11 +3149,11 @@ void tlcs900_device::op_RLCLRR()
 
 void tlcs900_device::op_RLDRM()
 {
-	uint8_t   a = *m_p1_reg8 & 0x0f;
+	uint8_t   a = *m_p1_reg8 & 0x0F;
 	uint8_t   b = RDMEM(m_ea2.d);
 
-	*m_p1_reg8 = (*m_p1_reg8 & 0xf0) | ((b & 0xf0) >> 4);
-	WRMEM(m_ea2.d, ((b & 0x0f) << 4) | a);
+	*m_p1_reg8 = (*m_p1_reg8 & 0xF0) | ((b & 0xF0) >> 4);
+	WRMEM(m_ea2.d, ((b & 0x0F) << 4) | a);
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
 	m_sr.b.l |= (*m_p1_reg8 & FLAG_SF) | (*m_p1_reg8 ? 0 : FLAG_ZF);
 	parity8(*m_p1_reg8);
@@ -3258,11 +3258,11 @@ void tlcs900_device::op_RRCLRR()
 
 void tlcs900_device::op_RRDRM()
 {
-	uint8_t   a = *m_p1_reg8 & 0x0f;
+	uint8_t   a = *m_p1_reg8 & 0x0F;
 	uint8_t   b = RDMEM(m_ea2.d);
 
-	*m_p1_reg8 = (*m_p1_reg8 & 0xf0) | (b & 0x0f);
-	WRMEM(m_ea2.d, ((b & 0xf0) >> 4) | (a << 4));
+	*m_p1_reg8 = (*m_p1_reg8 & 0xF0) | (b & 0x0F);
+	WRMEM(m_ea2.d, ((b & 0xF0) >> 4) | (a << 4));
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
 	m_sr.b.l |= (*m_p1_reg8 & FLAG_SF) | (*m_p1_reg8 ? 0 : FLAG_ZF);
 	parity8(*m_p1_reg8);
@@ -3386,7 +3386,7 @@ void tlcs900_device::op_SETBIR()
 
 void tlcs900_device::op_SETWIR()
 {
-	*m_p2_reg16 = *m_p2_reg16 | (1 << (m_imm1.d & 0x0f));
+	*m_p2_reg16 = *m_p2_reg16 | (1 << (m_imm1.d & 0x0F));
 }
 
 
@@ -3621,18 +3621,18 @@ void tlcs900_device::op_STCFBRR()
 void tlcs900_device::op_STCFWIR()
 {
 	if (m_sr.b.l & FLAG_CF)
-		*m_p2_reg16 |= (1 << (m_imm1.b.l & 0x0f));
+		*m_p2_reg16 |= (1 << (m_imm1.b.l & 0x0F));
 	else
-		*m_p2_reg16 &= ~(1 << (m_imm1.b.l & 0x0f));
+		*m_p2_reg16 &= ~(1 << (m_imm1.b.l & 0x0F));
 }
 
 
 void tlcs900_device::op_STCFWRR()
 {
 	if (m_sr.b.l & FLAG_CF)
-		*m_p2_reg16 |= (1 << (*m_p1_reg8 & 0x0f));
+		*m_p2_reg16 |= (1 << (*m_p1_reg8 & 0x0F));
 	else
-		*m_p2_reg16 &= ~(1 << (*m_p1_reg8 & 0x0f));
+		*m_p2_reg16 &= ~(1 << (*m_p1_reg8 & 0x0F));
 }
 
 
@@ -3726,7 +3726,7 @@ void tlcs900_device::op_SWI()
 	WRMEML(m_xssp.d, m_pc.d);
 	m_xssp.d -= 2;
 	WRMEMW(m_xssp.d, m_sr.w.l);
-	m_pc.d = RDMEML(0x00ffff00 + 4 * m_imm1.b.l);
+	m_pc.d = RDMEML(0x00FFFF00 + 4 * m_imm1.b.l);
 	m_prefetch_clear = true;
 }
 
@@ -3765,7 +3765,7 @@ void tlcs900_device::op_TSETBIR()
 
 void tlcs900_device::op_TSETWIR()
 {
-	uint16_t  b = 1 << (m_imm1.b.l & 0x0f);
+	uint16_t  b = 1 << (m_imm1.b.l & 0x0F);
 
 	m_sr.b.l &= ~(FLAG_ZF | FLAG_NF);
 	m_sr.b.l |= ((*m_p2_reg16 & b) ? 0 : FLAG_ZF) | FLAG_HF;
@@ -3943,10 +3943,10 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x26:  // TMP96C141/TMP95C061/TMP95C063
 			m_p1_reg8 = &m_dmam[1].b.l;
 			break;
-		case 0x2a:  // TMP96C141/TMP95C061/TMP95C063
+		case 0x2A:  // TMP96C141/TMP95C061/TMP95C063
 			m_p1_reg8 = &m_dmam[2].b.l;
 			break;
-		case 0x2e:  // TMP96C141/TMP95C061/TMP95C063
+		case 0x2E:  // TMP96C141/TMP95C061/TMP95C063
 			m_p1_reg8 = &m_dmam[3].b.l;
 			break;
 		case 0x42:  // TMP94C241
@@ -3955,10 +3955,10 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x46:  // TMP94C241
 			m_p1_reg8 = &m_dmam[1].b.l;
 			break;
-		case 0x4a:  // TMP94C241
+		case 0x4A:  // TMP94C241
 			m_p1_reg8 = &m_dmam[2].b.l;
 			break;
-		case 0x4e:  // TMP94C241
+		case 0x4E:  // TMP94C241
 			m_p1_reg8 = &m_dmam[3].b.l;
 			break;
 		default:
@@ -3979,7 +3979,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x28:  // TMP96C141/TMP95C061/TMP95C063
 			m_p1_reg16 = &m_dmac[2].w.l;
 			break;
-		case 0x2c:  // TMP96C141/TMP95C061/TMP95C063
+		case 0x2C:  // TMP96C141/TMP95C061/TMP95C063
 			m_p1_reg16 = &m_dmac[3].w.l;
 			break;
 		case 0x40:  // TMP94C241
@@ -3991,11 +3991,11 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x48:  // TMP94C241
 			m_p1_reg16 = &m_dmac[2].w.l;
 			break;
-		case 0x4c:  // TMP94C241
+		case 0x4C:  // TMP94C241
 			m_p1_reg16 = &m_dmac[3].w.l;
 			break;
-		case 0x3c:  // TMP96C141/TMP95C061/TMP95C063 -- INTNEST
-		case 0x7c:  // TMP94C241 -- INTNEST
+		case 0x3C:  // TMP96C141/TMP95C061/TMP95C063 -- INTNEST
+		case 0x7C:  // TMP94C241 -- INTNEST
 			m_p1_reg16 = &m_intnest;
 			break;
 		default:
@@ -4016,7 +4016,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x08:  // all variants
 			m_p1_reg32 = &m_dmas[2].d;
 			break;
-		case 0x0c:  // all variants
+		case 0x0C:  // all variants
 			m_p1_reg32 = &m_dmas[3].d;
 			break;
 		case 0x10:  // TMP96C141/TMP95C061/TMP95C063
@@ -4028,7 +4028,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x18:  // TMP96C141/TMP95C061/TMP95C063
 			m_p1_reg32 = &m_dmad[2].d;
 			break;
-		case 0x1c:  // TMP96C141/TMP95C061/TMP95C063
+		case 0x1C:  // TMP96C141/TMP95C061/TMP95C063
 			m_p1_reg32 = &m_dmad[3].d;
 			break;
 		case 0x20:  // TMP94C241
@@ -4040,7 +4040,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x28:  // TMP94C241
 			m_p1_reg32 = &m_dmad[2].d;
 			break;
-		case 0x2c:  // TMP94C241
+		case 0x2C:  // TMP94C241
 			m_p1_reg32 = &m_dmad[3].d;
 			break;
 		default:
@@ -4125,10 +4125,10 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x26:  // TMP96C141/TMP95C061/TMP95C063
 			m_p2_reg8 = &m_dmam[1].b.l;
 			break;
-		case 0x2a:  // TMP96C141/TMP95C061/TMP95C063
+		case 0x2A:  // TMP96C141/TMP95C061/TMP95C063
 			m_p2_reg8 = &m_dmam[2].b.l;
 			break;
-		case 0x2e:  // TMP96C141/TMP95C061/TMP95C063
+		case 0x2E:  // TMP96C141/TMP95C061/TMP95C063
 			m_p2_reg8 = &m_dmam[3].b.l;
 			break;
 		case 0x42:  // TMP94C241
@@ -4137,10 +4137,10 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x46:  // TMP94C241
 			m_p2_reg8 = &m_dmam[1].b.l;
 			break;
-		case 0x4a:  // TMP94C241
+		case 0x4A:  // TMP94C241
 			m_p2_reg8 = &m_dmam[2].b.l;
 			break;
-		case 0x4e:  // TMP94C241
+		case 0x4E:  // TMP94C241
 			m_p2_reg8 = &m_dmam[3].b.l;
 			break;
 		default:
@@ -4161,7 +4161,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x28:  // TMP96C141/TMP95C061/TMP95C063
 			m_p2_reg16 = &m_dmac[2].w.l;
 			break;
-		case 0x2c:  // TMP96C141/TMP95C061/TMP95C063
+		case 0x2C:  // TMP96C141/TMP95C061/TMP95C063
 			m_p2_reg16 = &m_dmac[3].w.l;
 			break;
 		case 0x40:  // TMP94C241
@@ -4173,11 +4173,11 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x48:  // TMP94C241
 			m_p2_reg16 = &m_dmac[2].w.l;
 			break;
-		case 0x4c:  // TMP94C241
+		case 0x4C:  // TMP94C241
 			m_p2_reg16 = &m_dmac[3].w.l;
 			break;
-		case 0x3c:  // TMP96C141/TMP95C061/TMP95C063 -- INTNEST
-		case 0x7c:  // TMP94C241 -- INTNEST
+		case 0x3C:  // TMP96C141/TMP95C061/TMP95C063 -- INTNEST
+		case 0x7C:  // TMP94C241 -- INTNEST
 			m_p2_reg16 = &m_intnest;
 			break;
 		default:
@@ -4198,7 +4198,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x08:  // all variants
 			m_p2_reg32 = &m_dmas[2].d;
 			break;
-		case 0x0c:  // all variants
+		case 0x0C:  // all variants
 			m_p2_reg32 = &m_dmas[3].d;
 			break;
 		case 0x10:  // TMP96C141/TMP95C061/TMP95C063
@@ -4210,7 +4210,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x18:  // TMP96C141/TMP95C061/TMP95C063
 			m_p2_reg32 = &m_dmad[2].d;
 			break;
-		case 0x1c:  // TMP96C141/TMP95C061/TMP95C063
+		case 0x1C:  // TMP96C141/TMP95C061/TMP95C063
 			m_p2_reg32 = &m_dmad[3].d;
 			break;
 		case 0x20:  // TMP94C241
@@ -4222,7 +4222,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		case 0x28:  // TMP94C241
 			m_p2_reg32 = &m_dmad[2].d;
 			break;
-		case 0x2c:  // TMP94C241
+		case 0x2C:  // TMP94C241
 			m_p2_reg32 = &m_dmad[3].d;
 			break;
 		default:
