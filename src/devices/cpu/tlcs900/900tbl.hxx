@@ -309,34 +309,28 @@ PAIR& tlcs900_device::get_reg(uint8_t reg)
 
 uint8_t& tlcs900_device::get_reg8(uint8_t reg)
 {
-	PAIR &r = get_reg(reg);
-
 	switch (reg & REGSEL_PART_MASK)
 	{
-	case 0x00:      return r.b.l;
-	case 0x01:      return r.b.h;
-	case 0x02:      return r.b.h2;
-	case 0x03:      return r.b.h3;
+	case 0x00: return get_reg(reg).b.l;
+	case 0x01: return get_reg(reg).b.h;
+	case 0x02: return get_reg(reg).b.h2;
+	case 0x03: return get_reg(reg).b.h3;
 	}
 
-	return r.b.l;
+	/* keep compiler happy */
+	return get_reg(reg).b.l;
 }
 
 
 uint16_t& tlcs900_device::get_reg16(uint8_t reg)
 {
-	PAIR &r = get_reg(reg);
-
-	/* bit 1 of the part field selects the upper word */
-	return BIT(reg, 1) ? r.w.h : r.w.l;
+	return BIT(reg, 1) ? get_reg(reg).w.h : get_reg(reg).w.l;
 }
 
 
 uint32_t& tlcs900_device::get_reg32(uint8_t reg)
 {
-	PAIR &r = get_reg(reg);
-
-	return r.d;
+	return get_reg(reg).d;
 }
 
 
