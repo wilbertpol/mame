@@ -228,7 +228,7 @@ protected:
 	virtual int tlcs900_djnz_true_cycles() const { return 4; }
 	virtual int tlcs900_shift_cycles(uint8_t n) const { return 2 * n; }
 
-	int condition_true(uint8_t cond);
+	bool condition_true(uint8_t cond);
 	uint8_t &get_reg8_current(uint8_t reg);
 	uint16_t &get_reg16_current(uint8_t reg);
 	uint32_t &get_reg32_current(uint8_t reg);

@@ -62,13 +62,13 @@ enum : uint8_t
 } // anonymous namespace
 
 
-int tlcs900_device::condition_true(uint8_t cond)
+bool tlcs900_device::condition_true(uint8_t cond)
 {
 	switch (cond & 0x0F)
 	{
 	/* F */
 	case 0x00:
-		return 0;
+		return false;
 
 	/* LT */
 	case 0x01:
@@ -79,31 +79,31 @@ int tlcs900_device::condition_true(uint8_t cond)
 	case 0x02:
 		return (((m_sr.b.l & (FLAG_SF | FLAG_VF)) == FLAG_SF) ||
 			((m_sr.b.l & (FLAG_SF | FLAG_VF)) == FLAG_VF) ||
-			(m_sr.b.l & FLAG_ZF));
+			(m_sr.b.l & FLAG_ZF) != 0);
 
 	/* ULE */
 	case 0x03:
-		return (m_sr.b.l & (FLAG_ZF | FLAG_CF));
+		return (m_sr.b.l & (FLAG_ZF | FLAG_CF)) != 0;
 
 	/* OV */
 	case 0x04:
-		return (m_sr.b.l & FLAG_VF);
+		return (m_sr.b.l & FLAG_VF) != 0;
 
 	/* MI */
 	case 0x05:
-		return (m_sr.b.l & FLAG_SF);
+		return (m_sr.b.l & FLAG_SF) != 0;
 
 	/* Z */
 	case 0x06:
-		return (m_sr.b.l & FLAG_ZF);
+		return (m_sr.b.l & FLAG_ZF) != 0;
 
 	/* C */
 	case 0x07:
-		return (m_sr.b.l & FLAG_CF);
+		return (m_sr.b.l & FLAG_CF) != 0;
 
 	/* T */
 	case 0x08:
-		return 1;
+		return true;
 
 	/* GE */
 	case 0x09:
@@ -136,7 +136,7 @@ int tlcs900_device::condition_true(uint8_t cond)
 	case 0x0F:
 		return !(m_sr.b.l & FLAG_CF);
 	}
-	return 0;
+	return false;
 }
 
 
