@@ -34,6 +34,34 @@ enum e_operand
 };
 
 
+namespace {
+
+/* Register selector byte layout - the same encoding get_reg(),
+   get_reg8(), get_reg16() and get_reg32() decode.  Bits 4-7 select the
+   register bank or register group, bits 2-3 the register pair within
+   it, and bits 0-1 the byte or word within the pair. */
+enum : uint8_t
+{
+	REGSEL_BANK_MASK     = 0xF0,
+	REGSEL_PAIR_MASK     = 0x0C,
+	REGSEL_PART_MASK     = 0x03,
+	REGSEL_PAIR_SHIFT    = 2,
+
+	REGSEL_BANK0         = 0x00,  /* explicit register bank 0 */
+	REGSEL_BANK1         = 0x10,  /* explicit register bank 1 */
+	REGSEL_BANK2         = 0x20,  /* explicit register bank 2 */
+	REGSEL_BANK3         = 0x30,  /* explicit register bank 3 */
+	REGSEL_BANK_PREVIOUS = 0xD0,  /* current bank minus one, wrapping from bank 0 to bank 3 */
+	REGSEL_BANK_CURRENT  = 0xE0,  /* current register bank */
+	REGSEL_GROUP_INDEX   = 0xF0,  /* index registers and stack pointers */
+
+	REGSEL_PART_LOW      = 0x00,  /* low byte or word of the register pair */
+	REGSEL_PART_HIGH     = 0x01   /* high byte of the register pair */
+};
+
+} // anonymous namespace
+
+
 int tlcs900_device::condition_true(uint8_t cond)
 {
 	switch (cond & 0x0F)
@@ -241,19 +269,19 @@ PAIR& tlcs900_device::get_reg(uint8_t reg)
 {
 	uint8_t   regbank;
 
-	switch (reg & 0xF0)
+	switch (reg & REGSEL_BANK_MASK)
 	{
-	case 0x00: case 0x10: case 0x20: case 0x30: /* explicit register bank */
-	case 0xD0:                                  /* "previous" register bank */
-	case 0xE0:                                  /* current register bank */
-		regbank = (reg & 0xF0) >> 4;
-		if (regbank == 0x0D)
+	case REGSEL_BANK0: case REGSEL_BANK1: case REGSEL_BANK2: case REGSEL_BANK3: /* explicit register bank */
+	case REGSEL_BANK_PREVIOUS:                                                /* current bank minus one */
+	case REGSEL_BANK_CURRENT:                                                 /* current register bank */
+		regbank = (reg & REGSEL_BANK_MASK) >> 4;
+		if (regbank == REGSEL_BANK_PREVIOUS >> 4)
 			regbank = (m_regbank - 1) & 0x03;
 
-		if (regbank == 0x0E)
+		if (regbank == REGSEL_BANK_CURRENT >> 4)
 			regbank = m_regbank;
 
-		switch (reg & 0x0C)
+		switch (reg & REGSEL_PAIR_MASK)
 		{
 		case 0x00:  return m_xwa[regbank];
 		case 0x04:  return m_xbc[regbank];
@@ -261,8 +289,8 @@ PAIR& tlcs900_device::get_reg(uint8_t reg)
 		case 0x0C:  return m_xhl[regbank];
 		}
 		break;
-	case 0xF0:  /* index registers and sp */
-		switch (reg & 0x0C)
+	case REGSEL_GROUP_INDEX:  /* index registers and sp */
+		switch (reg & REGSEL_PAIR_MASK)
 		{
 		case 0x00:  return m_xix;
 		case 0x04:  return m_xiy;
@@ -283,7 +311,7 @@ uint8_t& tlcs900_device::get_reg8(uint8_t reg)
 {
 	PAIR &r = get_reg(reg);
 
-	switch (reg & 0x03)
+	switch (reg & REGSEL_PART_MASK)
 	{
 	case 0x00:      return r.b.l;
 	case 0x01:      return r.b.h;
@@ -299,6 +327,7 @@ uint16_t& tlcs900_device::get_reg16(uint8_t reg)
 {
 	PAIR &r = get_reg(reg);
 
+	/* bit 1 of the part field selects the upper word */
 	return (reg & 0x02) ? r.w.h : r.w.l;
 }
 
@@ -311,25 +340,29 @@ uint32_t& tlcs900_device::get_reg32(uint8_t reg)
 }
 
 
-/* Selector bytes for the registers that get_reg8/get_reg16/get_reg32
-   current-bank helpers reference: 0xE0 selects XWA in the current register
-   bank, bits 2-3 select the register pair, bits 0-1 the byte or word within
-   the pair, and 0xF0 selects the IX/IY/IZ/SSP registers.  Storing the
-   selector instead of a pointer keeps the 8/16/32-bit views of a location
-   consistent - MUL and DIV for example combine the byte view of a register
-   with the word view of the same register pair. */
+/* Storing the selector instead of a pointer keeps the 8/16/32-bit views of
+   a location consistent - MUL and DIV for example combine the byte view of
+   a register with the word view of the same register pair. */
 
 uint8_t tlcs900_device::get_reg8_current_sel(uint8_t reg)
 {
-	/* W A B C D E H L */
-	return 0xE0 + (((reg & 7) >> 1) << 2) + ((reg & 1) ? 0 : 1);
+	/* W A B C D E H L: W is the high byte of its register pair and A the
+	   low byte, so odd indices select the low byte and even ones the high
+	   byte of XWA/XBC/XDE/XHL */
+	uint8_t const pair = ((reg & 7) >> 1) << REGSEL_PAIR_SHIFT;
+	uint8_t const part = (reg & 1) ? REGSEL_PART_LOW : REGSEL_PART_HIGH;
+
+	return REGSEL_BANK_CURRENT | pair | part;
 }
 
 
 uint8_t tlcs900_device::get_reg16_current_sel(uint8_t reg)
 {
-	/* WA BC DE HL IX IY IZ SP */
-	return (reg & 4) ? 0xF0 + ((reg & 3) << 2) : 0xE0 + ((reg & 3) << 2);
+	/* WA BC DE HL IX IY IZ SP: bit 2 of the register selects the
+	   index/stack-pointer group */
+	uint8_t const bank = (reg & 4) ? REGSEL_GROUP_INDEX : REGSEL_BANK_CURRENT;
+
+	return bank | ((reg & 3) << REGSEL_PAIR_SHIFT);
 }
 
 
