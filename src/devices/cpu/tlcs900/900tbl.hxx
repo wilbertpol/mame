@@ -470,7 +470,7 @@ uint8_t tlcs900_device::adc8(uint8_t a, uint8_t b)
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
 	m_sr.b.l |= (result & FLAG_SF) | (result ? 0 : FLAG_ZF) |
 		(((a ^ b) ^ result) & FLAG_HF) |
-		BIT((result ^ a) & (result ^ b), 7) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (result ^ b), 7) ? FLAG_VF : 0) |
 		(((result < a) || ((result == a) && cy)) ? FLAG_CF : 0);
 
 	return result;
@@ -485,7 +485,7 @@ uint16_t tlcs900_device::adc16(uint16_t a, uint16_t b)
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
 	m_sr.b.l |= ((result >> 8) & FLAG_SF) | (result ? 0 : FLAG_ZF) |
 		(((a ^ b) ^ result) & FLAG_HF) |
-		BIT((result ^ a) & (result ^ b), 15) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (result ^ b), 15) ? FLAG_VF : 0) |
 		(((result < a) || ((result == a) && cy)) ? FLAG_CF : 0);
 
 	return result;
@@ -499,7 +499,7 @@ uint32_t tlcs900_device::adc32(uint32_t a, uint32_t b)
 
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
 	m_sr.b.l |= ((result >> 24) & FLAG_SF) | (result ? 0 : FLAG_ZF) |
-		BIT((result ^ a) & (result ^ b), 31) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (result ^ b), 31) ? FLAG_VF : 0) |
 		(((result < a) || ((result == a) && cy)) ? FLAG_CF : 0);
 
 	return result;
@@ -513,7 +513,7 @@ uint8_t tlcs900_device::add8(uint8_t a, uint8_t b)
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
 	m_sr.b.l |= (result & FLAG_SF) | (result ? 0 : FLAG_ZF) |
 		(((a ^ b) ^ result) & FLAG_HF) |
-		BIT((result ^ a) & (result ^ b), 7) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (result ^ b), 7) ? FLAG_VF : 0) |
 		((result < a) ? FLAG_CF : 0);
 
 	return result;
@@ -527,7 +527,7 @@ uint16_t tlcs900_device::add16(uint16_t a, uint16_t b)
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
 	m_sr.b.l |= ((result >> 8) & FLAG_SF) | (result ? 0 : FLAG_ZF) |
 		(((a ^ b) ^ result) & FLAG_HF) |
-		BIT((result ^ a) & (result ^ b), 15) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (result ^ b), 15) ? FLAG_VF : 0) |
 		((result < a) ? FLAG_CF : 0);
 
 	return result;
@@ -540,7 +540,7 @@ uint32_t tlcs900_device::add32(uint32_t a, uint32_t b)
 
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
 	m_sr.b.l |= ((result >> 24) & FLAG_SF) | (result ? 0 : FLAG_ZF) |
-		BIT((result ^ a) & (result ^ b), 31) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (result ^ b), 31) ? FLAG_VF : 0) |
 		((result < a) ? FLAG_CF : 0);
 
 	return result;
@@ -555,7 +555,7 @@ uint8_t tlcs900_device::sbc8(uint8_t a, uint8_t b)
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_CF);
 	m_sr.b.l |= (result & FLAG_SF) | (result ? 0 : FLAG_ZF) |
 		(((a ^ b) ^ result) & FLAG_HF) |
-		BIT((result ^ a) & (a ^ b), 7) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (a ^ b), 7) ? FLAG_VF : 0) |
 		(((result > a) || (cy && b == 0xFF)) ? FLAG_CF : 0) | FLAG_NF;
 
 	return result;
@@ -570,7 +570,7 @@ uint16_t tlcs900_device::sbc16(uint16_t a, uint16_t b)
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_CF);
 	m_sr.b.l |= ((result >> 8) & FLAG_SF) | (result ? 0 : FLAG_ZF) |
 		(((a ^ b) ^ result) & FLAG_HF) |
-		BIT((result ^ a) & (a ^ b), 15) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (a ^ b), 15) ? FLAG_VF : 0) |
 		(((result > a) || (cy && b == 0xFFFF)) ? FLAG_CF : 0) | FLAG_NF;
 
 	return result;
@@ -584,7 +584,7 @@ uint32_t tlcs900_device::sbc32(uint32_t a, uint32_t b)
 
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_CF);
 	m_sr.b.l |= ((result >> 24) & FLAG_SF) | (result ? 0 : FLAG_ZF) |
-		BIT((result ^ a) & (a ^ b), 31) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (a ^ b), 31) ? FLAG_VF : 0) |
 		(((result > a) || (cy && b == 0xFFFFFFFF)) ? FLAG_CF : 0) | FLAG_NF;
 
 	return result;
@@ -598,7 +598,7 @@ uint8_t tlcs900_device::sub8(uint8_t a, uint8_t b)
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_CF);
 	m_sr.b.l |= (result & FLAG_SF) | (result ? 0 : FLAG_ZF) |
 		(((a ^ b) ^ result) & FLAG_HF) |
-		BIT((result ^ a) & (a ^ b), 7) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (a ^ b), 7) ? FLAG_VF : 0) |
 		((result > a) ? FLAG_CF : 0) | FLAG_NF;
 
 	return result;
@@ -612,7 +612,7 @@ uint16_t tlcs900_device::sub16(uint16_t a, uint16_t b)
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_CF);
 	m_sr.b.l |= ((result >> 8) & FLAG_SF) | (result ? 0 : FLAG_ZF) |
 		(((a ^ b) ^ result) & FLAG_HF) |
-		BIT((result ^ a) & (a ^ b), 15) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (a ^ b), 15) ? FLAG_VF : 0) |
 		((result > a) ? FLAG_CF : 0) | FLAG_NF;
 
 	return result;
@@ -625,7 +625,7 @@ uint32_t tlcs900_device::sub32(uint32_t a, uint32_t b)
 
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_CF);
 	m_sr.b.l |= ((result >> 24) & FLAG_SF) | (result ? 0 : FLAG_ZF) |
-		BIT((result ^ a) & (a ^ b), 31) ? FLAG_VF : 0 |
+		(BIT((result ^ a) & (a ^ b), 31) ? FLAG_VF : 0) |
 		((result > a) ? FLAG_CF : 0) | FLAG_NF;
 
 	return result;
