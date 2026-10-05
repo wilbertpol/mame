@@ -251,18 +251,18 @@ void tlcs900_device::state_string_export(const device_state_entry &entry, std::s
 	{
 		case STATE_GENFLAGS:
 			str = string_format("%c%d%c%d%c%c%c%c%c%c%c%c",
-					m_sr.w.l & 0x8000 ? 'S' : 'U',
+					BIT(m_sr.w.l, 15) ? 'S' : 'U',
 					(m_sr.w.l & 0x7000) >> 12,
-					m_sr.w.l & 0x0800 ? 'M' : 'N',
+					BIT(m_sr.w.l, 11) ? 'M' : 'N',
 					(m_sr.w.l & 0x0700) >> 8,
-					m_sr.w.l & 0x0080 ? 'S' : '.',
-					m_sr.w.l & 0x0040 ? 'Z' : '.',
-					m_sr.w.l & 0x0020 ? '1' : '.',
-					m_sr.w.l & 0x0010 ? 'H' : '.',
-					m_sr.w.l & 0x0008 ? '1' : '.',
-					m_sr.w.l & 0x0004 ? 'V' : '.',
-					m_sr.w.l & 0x0002 ? 'N' : '.',
-					m_sr.w.l & 0x0001 ? 'C' : '.');
+					BIT(m_sr.w.l, 7) ? 'S' : '.',
+					BIT(m_sr.w.l, 6) ? 'Z' : '.',
+					BIT(m_sr.w.l, 5) ? '1' : '.',
+					BIT(m_sr.w.l, 4) ? 'H' : '.',
+					BIT(m_sr.w.l, 3) ? '1' : '.',
+					BIT(m_sr.w.l, 2) ? 'V' : '.',
+					BIT(m_sr.w.l, 1) ? 'N' : '.',
+					BIT(m_sr.w.l, 0) ? 'C' : '.');
 			break;
 	}
 }

@@ -249,11 +249,11 @@ void tmp95c063_device::tlcs900_handle_timers()
 	uint32_t  old_pre = m_timer_pre;
 
 	/* Is the pre-scaler active */
-	if (m_t8run & 0x80)
+	if (BIT(m_t8run, 7))
 		m_timer_pre += m_cycles;
 
 	/* Timer 0 */
-	if (m_t8run & 0x01)
+	if (BIT(m_t8run, 0))
 	{
 		switch (m_t8_mode[0] & 0x03)
 		{
@@ -275,7 +275,7 @@ void tmp95c063_device::tlcs900_handle_timers()
 			m_timer_8[0] += 1;
 			if (m_timer_8[0] == m_t8_reg[0])
 			{
-				if ((m_t8run & 0x02) && (m_t8_mode[0] & 0x0C) == 0x00)
+				if (BIT(m_t8run, 1) && (m_t8_mode[0] & 0x0C) == 0x00)
 				{
 					m_timer_change[1] += 1;
 				}
@@ -291,7 +291,7 @@ void tmp95c063_device::tlcs900_handle_timers()
 	}
 
 	/* Timer 1 */
-	if (m_t8run & 0x02)
+	if (BIT(m_t8run, 1))
 	{
 		switch ((m_t8_mode[0] >> 2) & 0x03)
 		{
@@ -316,7 +316,7 @@ void tmp95c063_device::tlcs900_handle_timers()
 				m_timer_8[1] = 0;
 				m_int_reg[INTET01] |= 0x80;
 
-				if (m_t8_invert[0] & 0x02)
+				if (BIT(m_t8_invert[0], 1))
 				{
 					//tlcs900_change_tff(1, FF_INVERT);
 				}
@@ -331,7 +331,7 @@ void tmp95c063_device::tlcs900_handle_timers()
 	}
 
 	/* Timer 2 */
-	if (m_t8run & 0x04)
+	if (BIT(m_t8run, 2))
 	{
 		switch (m_t8_mode[1] & 0x03)
 		{
@@ -352,7 +352,7 @@ void tmp95c063_device::tlcs900_handle_timers()
 			m_timer_8[2] += 1;
 			if (m_timer_8[2] == m_t8_reg[2])
 			{
-				if ((m_t8run & 0x08) && (m_t8_mode[1] & 0x0C) == 0x00)
+				if (BIT(m_t8run, 3) && (m_t8_mode[1] & 0x0C) == 0x00)
 				{
 					m_timer_change[3] += 1;
 				}
@@ -368,7 +368,7 @@ void tmp95c063_device::tlcs900_handle_timers()
 	}
 
 	/* Timer 3 */
-	if (m_t8run & 0x08)
+	if (BIT(m_t8run, 3))
 	{
 		switch ((m_t8_mode[1] >> 2) & 0x03)
 		{
@@ -393,7 +393,7 @@ void tmp95c063_device::tlcs900_handle_timers()
 				m_timer_8[3] = 0;
 				m_int_reg[INTET23] |= 0x80;
 
-				if (m_t8_invert[1] & 0x20)
+				if (BIT(m_t8_invert[1], 5))
 				{
 					//tlcs900_change_tff(3, FF_INVERT);
 				}
@@ -502,7 +502,7 @@ void tmp95c063_device::tlcs900_handle_ad()
 		if (m_ad_cycles_left <= 0)
 		{
 			/* Store A/D converted value */
-			if ((m_ad_mode1 & 0x10) == 0)      // conversion channel fixed
+			if (!BIT(m_ad_mode1, 4))      // conversion channel fixed
 			{
 				m_ad_result[m_ad_mode2 & 0x03] = m_an_read[m_ad_mode2 & 0x07](0) & 0x3FF;
 			}
@@ -675,29 +675,29 @@ uint8_t tmp95c063_device::t8run_r()
 
 void tmp95c063_device::t8run_w(uint8_t data)
 {
-	if (!(data & 0x01))
+	if (!BIT(data, 0))
 	{
 		m_timer_8[0] = 0;
 		m_timer_change[0] = 0;
 	}
-	if (!(data & 0x02))
+	if (!BIT(data, 1))
 	{
 		m_timer_8[1] = 0;
 		m_timer_change[1] = 0;
 	}
-	if (!(data & 0x04))
+	if (!BIT(data, 2))
 	{
 		m_timer_8[2] = 0;
 		m_timer_change[2] = 0;
 	}
-	if (!(data & 0x08))
+	if (!BIT(data, 3))
 	{
 		m_timer_8[3] = 0;
 		m_timer_change[3] = 0;
 	}
-	if (!(data & 0x10))
+	if (!BIT(data, 4))
 		m_timer_8[4] = 0;
-	if (!(data & 0x20))
+	if (!BIT(data, 5))
 		m_timer_8[5] = 0;
 
 	m_t8run = data;
@@ -1134,7 +1134,7 @@ void tmp95c063_device::admod1_w(uint8_t data)
 	data = (m_ad_mode1 & 0xC0) | (data & 0x34);
 
 	// Check for A/D conversion start
-	if (data & 0x04)
+	if (BIT(data, 2))
 	{
 		data &= ~0x04;
 		data |= 0x40;
@@ -1177,9 +1177,9 @@ uint8_t tmp95c063_device::inte_r(offs_t offset)
 
 void tmp95c063_device::inte_w(offs_t offset, uint8_t data)
 {
-	if (data & 0x80)
+	if (BIT(data, 7))
 		data = (data & 0x7F) | (m_int_reg[offset] & 0x80);
-	if (data & 0x08)
+	if (BIT(data, 3))
 		data = (data & 0xF7) | (m_int_reg[offset] & 0x08);
 
 	m_int_reg[offset] = data;
@@ -1299,9 +1299,9 @@ void tmp95c063_device::execute_set_input(int input, int level)
 
 	case TLCS900_INT0:
 		/* Is INT0 functionality enabled? */
-		if (m_iimc & 0x04)
+		if (BIT(m_iimc, 2))
 		{
-			if (m_iimc & 0x02)
+			if (BIT(m_iimc, 1))
 			{
 				/* Rising edge detect */
 				if (m_level[TLCS900_INT0] == CLEAR_LINE && level == ASSERT_LINE)
@@ -1360,7 +1360,7 @@ void tmp95c063_device::execute_set_input(int input, int level)
 		break;
 
 	case TLCS900_INT4:
-		if (!(m_port_control[0xB] & 0x01))
+		if (!BIT(m_port_control[0xB], 0))
 		{
 			if (m_level[TLCS900_INT4] == CLEAR_LINE && level == ASSERT_LINE)
 			{
@@ -1371,7 +1371,7 @@ void tmp95c063_device::execute_set_input(int input, int level)
 		break;
 
 	case TLCS900_INT5:
-		if (!(m_port_control[0xB] & 0x02))
+		if (!BIT(m_port_control[0xB], 1))
 		{
 			if (m_level[TLCS900_INT5] == CLEAR_LINE && level == ASSERT_LINE)
 			{
@@ -1394,7 +1394,7 @@ void tmp95c063_device::execute_set_input(int input, int level)
 		break;
 
 	case TLCS900_TIO:   /* External timer input for timer 0 */
-		if ((m_t8run & 0x01) && (m_t8_mode[0] & 0x03) == 0x00)
+		if (BIT(m_t8run, 0) && (m_t8_mode[0] & 0x03) == 0x00)
 		{
 			if (m_level[TLCS900_TIO] == CLEAR_LINE && level == ASSERT_LINE)
 			{
