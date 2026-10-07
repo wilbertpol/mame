@@ -82,27 +82,27 @@ bool tlcs900_device::condition_true(uint8_t cond)
 	case 0x02:
 		return (((m_sr.b.l & (FLAG_SF | FLAG_VF)) == FLAG_SF) ||
 			((m_sr.b.l & (FLAG_SF | FLAG_VF)) == FLAG_VF) ||
-			(m_sr.b.l & FLAG_ZF) != 0);
+			(m_sr.b.l & FLAG_ZF));
 
 	/* ULE */
 	case 0x03:
-		return (m_sr.b.l & (FLAG_ZF | FLAG_CF)) != 0;
+		return m_sr.b.l & (FLAG_ZF | FLAG_CF);
 
 	/* OV */
 	case 0x04:
-		return (m_sr.b.l & FLAG_VF) != 0;
+		return m_sr.b.l & FLAG_VF;
 
 	/* MI */
 	case 0x05:
-		return (m_sr.b.l & FLAG_SF) != 0;
+		return m_sr.b.l & FLAG_SF;
 
 	/* Z */
 	case 0x06:
-		return (m_sr.b.l & FLAG_ZF) != 0;
+		return m_sr.b.l & FLAG_ZF;
 
 	/* C */
 	case 0x07:
-		return (m_sr.b.l & FLAG_CF) != 0;
+		return m_sr.b.l & FLAG_CF;
 
 	/* T */
 	case 0x08:
