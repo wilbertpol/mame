@@ -659,7 +659,7 @@ uint32_t tlcs900_device::xor32(uint32_t a, uint32_t b)
 
 void tlcs900_device::ldcf8(uint8_t a, uint8_t b)
 {
-	if (b & (1 << (a & 0x07)))
+	if (BIT(b, (a & 0x07)))
 		m_sr.b.l |= FLAG_CF;
 	else
 		m_sr.b.l &= ~FLAG_CF;
@@ -668,7 +668,7 @@ void tlcs900_device::ldcf8(uint8_t a, uint8_t b)
 
 void tlcs900_device::ldcf16(uint8_t a, uint16_t b)
 {
-	if (b & (1 << (a & 0x0F)))
+	if (BIT(b, (a & 0x0F)))
 		m_sr.b.l |= FLAG_CF;
 	else
 		m_sr.b.l &= ~FLAG_CF;
@@ -677,7 +677,7 @@ void tlcs900_device::ldcf16(uint8_t a, uint16_t b)
 
 void tlcs900_device::andcf8(uint8_t a, uint8_t b)
 {
-	if ((b & (1 << (a & 0x07))) && (m_sr.b.l & FLAG_CF))
+	if (BIT(b, (a & 0x07)) && (m_sr.b.l & FLAG_CF))
 		m_sr.b.l |= FLAG_CF;
 	else
 		m_sr.b.l &= ~FLAG_CF;
@@ -686,7 +686,7 @@ void tlcs900_device::andcf8(uint8_t a, uint8_t b)
 
 void tlcs900_device::andcf16(uint8_t a, uint16_t b)
 {
-	if ((b & (1 << (a & 0x0F))) && (m_sr.b.l & FLAG_CF))
+	if (BIT(b, (a & 0x0F)) && (m_sr.b.l & FLAG_CF))
 		m_sr.b.l |= FLAG_CF;
 	else
 		m_sr.b.l &= ~FLAG_CF;
@@ -695,28 +695,28 @@ void tlcs900_device::andcf16(uint8_t a, uint16_t b)
 
 void tlcs900_device::orcf8(uint8_t a, uint8_t b)
 {
-	if (b & (1 << (a & 0x07)))
+	if (BIT(b, (a & 0x07)))
 		m_sr.b.l |= FLAG_CF;
 }
 
 
 void tlcs900_device::orcf16(uint8_t a, uint16_t b)
 {
-	if (b & (1 << (a & 0x0F)))
+	if (BIT(b, (a & 0x0F)))
 		m_sr.b.l |= FLAG_CF;
 }
 
 
 void tlcs900_device::xorcf8(uint8_t a, uint8_t b)
 {
-	if (b & (1 << (a & 0x07)))
+	if (BIT(b, (a & 0x07)))
 		m_sr.b.l ^= FLAG_CF;
 }
 
 
 void tlcs900_device::xorcf16(uint8_t a, uint16_t b)
 {
-	if (b & (1 << (a & 0x0F)))
+	if (BIT(b, (a & 0x0F)))
 		m_sr.b.l ^= FLAG_CF;
 }
 
@@ -918,7 +918,7 @@ uint32_t tlcs900_device::rr32(uint32_t a, uint8_t s)
 		if (m_sr.b.l & FLAG_CF)
 		{
 			m_sr.b.l = (m_sr.b.l & ~FLAG_CF) | (a & FLAG_CF);
-			a = (a >> 1) | 0x80000000;
+			a = (a >> 1) | 0x8000'0000;
 		}
 		else
 		{
@@ -1570,13 +1570,13 @@ void tlcs900_device::op_BITWIR()
 
 void tlcs900_device::op_BS1BRR()
 {
-	uint16_t  r = reg16(m_reg2);
+	uint16_t r = reg16(m_reg2);
 
 	if (r)
 	{
 		m_sr.b.l &= ~FLAG_VF;
 		reg8(m_reg1) = 15;
-		while (r < 0x8000)
+		while (!BIT(r, 15))
 		{
 			r <<= 1;
 			reg8(m_reg1) -= 1;
@@ -1859,10 +1859,10 @@ void tlcs900_device::op_CPLWR()
 void tlcs900_device::op_DAABR()
 {
 	const uint8_t oldval = reg8(m_reg1);
+	const uint8_t high = reg8(m_reg1) & 0xF0;
+	const uint8_t low = reg8(m_reg1) & 0x0F;
 	uint8_t fixval = 0;
 	uint8_t carry = 0;
-	const uint8_t high = reg8(m_reg1) & 0xF0;
-	uint8_t low = reg8(m_reg1) & 0x0F;
 
 	if (m_sr.b.l & FLAG_CF)
 	{
@@ -2123,9 +2123,9 @@ void tlcs900_device::op_EXTSWR()
 void tlcs900_device::op_EXTSLR()
 {
 	if (BIT(reg32(m_reg1), 15))
-		reg32(m_reg1) |= 0xFFFF0000;
+		reg32(m_reg1) |= 0xFFFF'0000;
 	else
-		reg32(m_reg1) &= 0x0000FFFF;
+		reg32(m_reg1) &= 0x0000'FFFF;
 }
 
 
@@ -2137,7 +2137,7 @@ void tlcs900_device::op_EXTZWR()
 
 void tlcs900_device::op_EXTZLR()
 {
-	reg32(m_reg1) &= 0x0000FFFF;
+	reg32(m_reg1) &= 0x0000'FFFF;
 }
 
 
@@ -2529,12 +2529,10 @@ void tlcs900_device::op_LDIW()
 
 void tlcs900_device::op_LDX()
 {
-	uint8_t a, b;
-
 	RDOP();
-	a = RDOP();
+	const uint8_t a = RDOP();
 	RDOP();
-	b = RDOP();
+	const uint8_t b = RDOP();
 	RDOP();
 	WRMEM(a, b);
 }
@@ -2854,14 +2852,14 @@ void tlcs900_device::op_ORCFWRR()
 
 void tlcs900_device::op_PAAWR()
 {
-	if (reg16(m_reg1) & 1)
+	if (BIT(reg16(m_reg1), 0))
 		reg16(m_reg1) += 1;
 }
 
 
 void tlcs900_device::op_PAALR()
 {
-	if (reg32(m_reg1) & 1)
+	if (BIT(reg32(m_reg1), 0))
 		reg32(m_reg1) += 1;
 }
 
@@ -3714,14 +3712,14 @@ void tlcs900_device::op_SWI900()
 	WRMEML(m_xssp.d, m_pc.d);
 	m_xssp.d -= 2;
 	WRMEMW(m_xssp.d, m_sr.w.l);
-	m_pc.d = 0x00008000 + 0x10 * m_imm1.b.l;
+	m_pc.d = 0x0000'8000 + 0x10 * m_imm1.b.l;
 	m_prefetch_clear = true;
 }
 
 
 void tlcs900_device::op_TSETBIM()
 {
-	uint8_t b = 1 << (m_imm1.b.l & 0x07);
+	const uint8_t b = 1 << (m_imm1.b.l & 0x07);
 	const uint8_t a = RDMEM(m_ea2.d);
 
 	m_sr.b.l &= ~(FLAG_ZF | FLAG_NF);
