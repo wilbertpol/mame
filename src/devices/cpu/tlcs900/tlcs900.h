@@ -229,8 +229,6 @@ protected:
 	virtual int tlcs900_shift_cycles(uint8_t n) const { return 2 * n; }
 
 	bool condition_true(uint8_t cond);
-	uint8_t &get_reg8_current(uint8_t reg);
-	uint16_t &get_reg16_current(uint8_t reg);
 	uint32_t &get_reg32_current(uint8_t reg);
 	PAIR &get_reg(uint8_t reg);
 	uint8_t &get_reg8(uint8_t reg);
