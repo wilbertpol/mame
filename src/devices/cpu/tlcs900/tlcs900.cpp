@@ -18,42 +18,42 @@ TODO:
 tlcs900_device::tlcs900_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock) :
 	cpu_device(mconfig, type, tag, owner, clock),
 	m_am8_16(0),
-	m_mnemonic_80(s_mnemonic_80),
-	m_mnemonic_88(s_mnemonic_88),
-	m_mnemonic_90(s_mnemonic_90),
-	m_mnemonic_98(s_mnemonic_98),
-	m_mnemonic_a0(s_mnemonic_a0),
-	m_mnemonic_b0(s_mnemonic_b0),
-	m_mnemonic_b8(s_mnemonic_b8),
-	m_mnemonic_c0(s_mnemonic_c0),
-	m_mnemonic_c8(s_mnemonic_c8),
-	m_mnemonic_d0(s_mnemonic_d0),
-	m_mnemonic_d8(s_mnemonic_d8),
-	m_mnemonic_e0(s_mnemonic_e0),
-	m_mnemonic_e8(s_mnemonic_e8),
-	m_mnemonic_f0(s_mnemonic_f0),
-	m_mnemonic(s_mnemonic)
+	m_mnemonic_80(&s_mnemonic_80),
+	m_mnemonic_88(&s_mnemonic_88),
+	m_mnemonic_90(&s_mnemonic_90),
+	m_mnemonic_98(&s_mnemonic_98),
+	m_mnemonic_a0(&s_mnemonic_a0),
+	m_mnemonic_b0(&s_mnemonic_b0),
+	m_mnemonic_b8(&s_mnemonic_b8),
+	m_mnemonic_c0(&s_mnemonic_c0),
+	m_mnemonic_c8(&s_mnemonic_c8),
+	m_mnemonic_d0(&s_mnemonic_d0),
+	m_mnemonic_d8(&s_mnemonic_d8),
+	m_mnemonic_e0(&s_mnemonic_e0),
+	m_mnemonic_e8(&s_mnemonic_e8),
+	m_mnemonic_f0(&s_mnemonic_f0),
+	m_mnemonic(&s_mnemonic)
 {
 }
 
 tlcs900h_device::tlcs900h_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock) :
 	tlcs900_device(mconfig, type, tag, owner, clock)
 {
-	m_mnemonic_80 = s_mnemonic_80;
-	m_mnemonic_88 = s_mnemonic_88;
-	m_mnemonic_90 = s_mnemonic_90;
-	m_mnemonic_98 = s_mnemonic_98;
-	m_mnemonic_a0 = s_mnemonic_a0;
-	m_mnemonic_b0 = s_mnemonic_b0;
-	m_mnemonic_b8 = s_mnemonic_b8;
-	m_mnemonic_c0 = s_mnemonic_c0;
-	m_mnemonic_c8 = s_mnemonic_c8;
-	m_mnemonic_d0 = s_mnemonic_d0;
-	m_mnemonic_d8 = s_mnemonic_d8;
-	m_mnemonic_e0 = s_mnemonic_e0;
-	m_mnemonic_e8 = s_mnemonic_e8;
-	m_mnemonic_f0 = s_mnemonic_f0;
-	m_mnemonic = s_mnemonic;
+	m_mnemonic_80 = &s_mnemonic_80;
+	m_mnemonic_88 = &s_mnemonic_88;
+	m_mnemonic_90 = &s_mnemonic_90;
+	m_mnemonic_98 = &s_mnemonic_98;
+	m_mnemonic_a0 = &s_mnemonic_a0;
+	m_mnemonic_b0 = &s_mnemonic_b0;
+	m_mnemonic_b8 = &s_mnemonic_b8;
+	m_mnemonic_c0 = &s_mnemonic_c0;
+	m_mnemonic_c8 = &s_mnemonic_c8;
+	m_mnemonic_d0 = &s_mnemonic_d0;
+	m_mnemonic_d8 = &s_mnemonic_d8;
+	m_mnemonic_e0 = &s_mnemonic_e0;
+	m_mnemonic_e8 = &s_mnemonic_e8;
+	m_mnemonic_f0 = &s_mnemonic_f0;
+	m_mnemonic = &s_mnemonic;
 }
 
 device_memory_interface::space_config_vector tlcs900_device::memory_space_config() const
@@ -276,8 +276,6 @@ void tlcs900_device::execute_run()
 {
 	do
 	{
-		const tlcs900inst *inst;
-
 		m_cycles = 0;
 
 		if (m_check_irqs)
@@ -311,13 +309,7 @@ void tlcs900_device::execute_run()
 		{
 			debugger_instruction_hook(m_pc.d);
 
-			m_op = RDOP();
-			inst = &m_mnemonic[m_op];
-			prepare_operands(inst);
-
-			/* Execute the instruction */
-			(this->*inst->opfunc)();
-			m_cycles += inst->cycles;
+			execute_op(*m_mnemonic);
 		}
 
 		tlcs900_handle_ad();

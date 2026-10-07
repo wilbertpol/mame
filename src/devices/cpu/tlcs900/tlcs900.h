@@ -186,21 +186,21 @@ protected:
 	static const tlcs900inst s_mnemonic_e8[256];
 	static const tlcs900inst s_mnemonic_f0[256];
 	static const tlcs900inst s_mnemonic[256];
-	const tlcs900inst *m_mnemonic_80;
-	const tlcs900inst *m_mnemonic_88;
-	const tlcs900inst *m_mnemonic_90;
-	const tlcs900inst *m_mnemonic_98;
-	const tlcs900inst *m_mnemonic_a0;
-	const tlcs900inst *m_mnemonic_b0;
-	const tlcs900inst *m_mnemonic_b8;
-	const tlcs900inst *m_mnemonic_c0;
-	const tlcs900inst *m_mnemonic_c8;
-	const tlcs900inst *m_mnemonic_d0;
-	const tlcs900inst *m_mnemonic_d8;
-	const tlcs900inst *m_mnemonic_e0;
-	const tlcs900inst *m_mnemonic_e8;
-	const tlcs900inst *m_mnemonic_f0;
-	const tlcs900inst *m_mnemonic;
+	const tlcs900inst (*m_mnemonic_80)[256];
+	const tlcs900inst (*m_mnemonic_88)[256];
+	const tlcs900inst (*m_mnemonic_90)[256];
+	const tlcs900inst (*m_mnemonic_98)[256];
+	const tlcs900inst (*m_mnemonic_a0)[256];
+	const tlcs900inst (*m_mnemonic_b0)[256];
+	const tlcs900inst (*m_mnemonic_b8)[256];
+	const tlcs900inst (*m_mnemonic_c0)[256];
+	const tlcs900inst (*m_mnemonic_c8)[256];
+	const tlcs900inst (*m_mnemonic_d0)[256];
+	const tlcs900inst (*m_mnemonic_d8)[256];
+	const tlcs900inst (*m_mnemonic_e0)[256];
+	const tlcs900inst (*m_mnemonic_e8)[256];
+	const tlcs900inst (*m_mnemonic_f0)[256];
+	const tlcs900inst (*m_mnemonic)[256];
 
 	inline uint8_t RDOP();
 	/* Bump INTNEST.  Called where a device pushes the SR/PC frame that op_RETI
@@ -662,7 +662,8 @@ protected:
 	void op_XORCFWIR();
 	void op_XORCFWRR();
 	void op_ZCF();
-	void prepare_operands(const tlcs900inst *inst);
+	void prepare_operands(const tlcs900inst &inst);
+	void execute_op(const tlcs900inst (&mnemonic)[256]);
 	void op_80();
 	void op_88();
 	void op_90();

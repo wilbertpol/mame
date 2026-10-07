@@ -3885,9 +3885,9 @@ void tlcs900_device::op_ZCF()
 }
 
 
-void tlcs900_device::prepare_operands(const tlcs900inst *inst)
+void tlcs900_device::prepare_operands(const tlcs900inst &inst)
 {
-	switch (inst->operand1)
+	switch (inst.operand1)
 	{
 	case p_A:
 		m_reg1 = REGSEL_A;
@@ -4070,7 +4070,7 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		break;
 	}
 
-	switch (inst->operand2)
+	switch (inst.operand2)
 	{
 	case p_A:
 		m_reg2 = REGSEL_A;
@@ -4238,6 +4238,18 @@ void tlcs900_device::prepare_operands(const tlcs900inst *inst)
 		m_ea2.b.h = RDOP();
 		break;
 	}
+}
+
+
+void tlcs900_device::execute_op(const tlcs900inst (&mnemonic)[256])
+{
+	m_op = RDOP();
+	const tlcs900inst &inst = mnemonic[m_op];
+	prepare_operands(inst);
+
+	/* Execute the instruction */
+	(this->*inst.opfunc)();
+	m_cycles += inst.cycles;
 }
 
 
@@ -5420,26 +5432,18 @@ const tlcs900_device::tlcs900inst tlcs900_device::s_mnemonic_f0[256] =
 /* (XWA/XBC/XDE/XHL/XIX/XIY/XIZ/XSP) used as source in byte operations */
 void tlcs900_device::op_80()
 {
-	const tlcs900inst *inst;
-
 	/* For CPI/CPIR/CPD/CPDR/LDI/LDD/LDIR/LDDR operations */
 	m_reg1 = get_reg32_current_sel(m_op - 1);
 	m_reg2 = get_reg32_current_sel(m_op);
 
 	m_ea2.d = get_reg32_current(m_op);
-	m_op = RDOP();
-	inst = &m_mnemonic_80[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_80);
 }
 
 
 /* (XWA/XBC/XDE/XHL/XIX/XIY/XIZ/XSP + d8) used as source in byte operations */
 void tlcs900_device::op_88()
 {
-	const tlcs900inst *inst;
-
 	/* For CPI/CPIR/CPD/CPDR/LDI/LDD/LDIR/LDDR operations */
 	m_reg1 = get_reg32_current_sel(m_op - 1);
 	m_reg2 = get_reg32_current_sel(m_op);
@@ -5448,116 +5452,74 @@ void tlcs900_device::op_88()
 	m_op = RDOP();
 	m_ea2.d += (int8_t)m_op;
 	m_cycles += tlcs900_mem_index_cycles();
-	m_op = RDOP();
-	inst = &m_mnemonic_80[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_80);
 }
 
 
 /* (XWA/XBC/XDE/XHL/XIXI/XIY/XIZ/XSP) used as source in word operations */
 void tlcs900_device::op_90()
 {
-	const tlcs900inst *inst;
-
 	/* For CPI/CPIR/CPD/CPDR/LDI/LDD/LDIR/LDDR operations */
 	m_reg1 = get_reg32_current_sel(m_op - 1);
 	m_reg2 = get_reg32_current_sel(m_op);
 
 	m_ea2.d = get_reg32_current(m_op);
-	m_op = RDOP();
-	inst = &m_mnemonic_90[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_90);
 }
 
 
 /* (XWA/XBC/XDE/XHL/XIX/XIY/XIZ/XSP + d8) used as source in word operations */
 void tlcs900_device::op_98()
 {
-	const tlcs900inst *inst;
-
 	m_ea2.d = get_reg32_current(m_op);
 	m_op = RDOP();
 	m_ea2.d += (int8_t)m_op;
 	m_cycles += tlcs900_mem_index_cycles();
-	m_op = RDOP();
-	inst = &m_mnemonic_98[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_98);
 }
 
 
 /* (XWA/XBC/XDE/XHL/XIX/XIY/XIZ/XSP) used as source in long word operations */
 void tlcs900_device::op_A0()
 {
-	const tlcs900inst *inst;
-
 	m_ea2.d = get_reg32_current(m_op);
-	m_op = RDOP();
-	inst = &m_mnemonic_a0[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_a0);
 }
 
 
 /* (XWA/XBC/XDE/XHL/XIX/XIY/XIZ/XSP + d8) used as source in long word operations */
 void tlcs900_device::op_A8()
 {
-	const tlcs900inst *inst;
-
 	m_ea2.d = get_reg32_current(m_op);
 	m_op = RDOP();
 	m_ea2.d += (int8_t)m_op;
 	m_cycles += tlcs900_mem_index_cycles();
-	m_op = RDOP();
-	inst = &m_mnemonic_a0[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_a0);
 }
 
 
 /* (XWA/XBC/XDE/XHL/XIX/XIY/XIZ/XSP) used as destination in operations */
 void tlcs900_device::op_B0()
 {
-	const tlcs900inst *inst;
-
 	m_ea2.d = get_reg32_current(m_op);
-	m_op = RDOP();
-	inst = &m_mnemonic_b0[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_b0);
 }
 
 
 /* (XWA/XBC/XDE/XHL/XIX/XIY/XIZ/XSP + d8) used as destination in operations */
 void tlcs900_device::op_B8()
 {
-	const tlcs900inst *inst;
-
 	m_ea2.d = get_reg32_current(m_op);
 	m_op = RDOP();
 	m_ea2.d += (int8_t)m_op;
 	m_cycles += tlcs900_mem_index_cycles();
-	m_op = RDOP();
-	inst = &m_mnemonic_b8[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_b8);
 }
 
 
 /* memory used as source in byte operations */
 void tlcs900_device::op_C0()
 {
-	const tlcs900inst *inst;
-
 	switch (m_op & 0x07)
 	{
 	case 0x00:  /* (n) */
@@ -5652,18 +5614,12 @@ void tlcs900_device::op_C0()
 		break;
 	}
 	}
-	m_op = RDOP();
-	inst = &m_mnemonic_c0[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_c0);
 }
 
 
 void tlcs900_device::oC8()
 {
-	const tlcs900inst *inst;
-
 	if (BIT(m_op, 3))
 	{
 		m_reg2 = get_reg8_current_sel(m_op);
@@ -5675,19 +5631,13 @@ void tlcs900_device::oC8()
 		m_op = RDOP();
 		m_reg2 = m_op;
 	}
-	m_op = RDOP();
-	inst = &m_mnemonic_c8[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_c8);
 }
 
 
 /* memory used as source in word operations */
 void tlcs900_device::op_D0()
 {
-	const tlcs900inst *inst;
-
 	switch (m_op & 0x07)
 	{
 	case 0x00:  /* (n) */
@@ -5782,18 +5732,12 @@ void tlcs900_device::op_D0()
 		break;
 	}
 	}
-	m_op = RDOP();
-	inst = &m_mnemonic_d0[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_d0);
 }
 
 
 void tlcs900_device::oD8()
 {
-	const tlcs900inst *inst;
-
 	if (BIT(m_op, 3))
 	{
 		m_reg2 = get_reg16_current_sel(m_op);
@@ -5805,19 +5749,13 @@ void tlcs900_device::oD8()
 		m_op = RDOP();
 		m_reg2 = m_op;
 	}
-	m_op = RDOP();
-	inst = &m_mnemonic_d8[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_d8);
 }
 
 
 /* memory used as source in long word operations */
 void tlcs900_device::op_E0()
 {
-	const tlcs900inst *inst;
-
 	switch (m_op & 0x07)
 	{
 	case 0x00:  /* (n) */
@@ -5912,18 +5850,12 @@ void tlcs900_device::op_E0()
 		break;
 	}
 	}
-	m_op = RDOP();
-	inst = &m_mnemonic_e0[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_e0);
 }
 
 
 void tlcs900_device::op_E8()
 {
-	const tlcs900inst *inst;
-
 	if (BIT(m_op, 3))
 	{
 		m_reg2 = get_reg32_current_sel(m_op);
@@ -5933,19 +5865,13 @@ void tlcs900_device::op_E8()
 		m_op = RDOP();
 		m_reg2 = m_op;
 	}
-	m_op = RDOP();
-	inst = &m_mnemonic_e8[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_e8);
 }
 
 
 /* memory used as destination operations */
 void tlcs900_device::op_F0()
 {
-	const tlcs900inst *inst;
-
 	switch (m_op & 0x07)
 	{
 	case 0x00:  /* (n) */
@@ -6041,11 +5967,7 @@ void tlcs900_device::op_F0()
 	}
 	}
 
-	m_op = RDOP();
-	inst = &m_mnemonic_f0[m_op];
-	prepare_operands(inst);
-	(this->*inst->opfunc)();
-	m_cycles += inst->cycles;
+	execute_op(*m_mnemonic_f0);
 }
 
 
