@@ -14,6 +14,8 @@ TODO:
 #include "tlcs900.h"
 #include "dasm900.h"
 
+#include <algorithm>
+
 
 tlcs900_device::tlcs900_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock) :
 	cpu_device(mconfig, type, tag, owner, clock),
@@ -107,19 +109,19 @@ void tlcs900_device::device_start()
 	m_program = &space(AS_PROGRAM);
 
 	m_pc.d = 0;
-	memset(m_xwa, 0x00, sizeof(m_xwa));
-	memset(m_xbc, 0x00, sizeof(m_xbc));
-	memset(m_xde, 0x00, sizeof(m_xde));
-	memset(m_xhl, 0x00, sizeof(m_xhl));
+	std::fill(std::begin(m_xwa), std::end(m_xwa), PAIR{});
+	std::fill(std::begin(m_xbc), std::end(m_xbc), PAIR{});
+	std::fill(std::begin(m_xde), std::end(m_xde), PAIR{});
+	std::fill(std::begin(m_xhl), std::end(m_xhl), PAIR{});
 	m_xix.d = 0;
 	m_xiy.d = 0;
 	m_xiz.d = 0;
 	m_xnsp.d = 0;
 	m_xssp.d = 0;
-	memset(m_dmas, 0x00, sizeof(m_dmas));
-	memset(m_dmad, 0x00, sizeof(m_dmad));
-	memset(m_dmac, 0x00, sizeof(m_dmac));
-	memset(m_dmam, 0x00, sizeof(m_dmam));
+	std::fill(std::begin(m_dmas), std::end(m_dmas), PAIR{});
+	std::fill(std::begin(m_dmad), std::end(m_dmad), PAIR{});
+	std::fill(std::begin(m_dmac), std::end(m_dmac), PAIR{});
+	std::fill(std::begin(m_dmam), std::end(m_dmam), PAIR{});
 	m_intnest = 0;
 	m_reg1 = regsel_dummy;
 	m_reg2 = regsel_dummy;
