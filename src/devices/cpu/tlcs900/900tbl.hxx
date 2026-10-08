@@ -378,7 +378,7 @@ void tlcs900_device::parity32(uint32_t a)
 
 uint8_t tlcs900_device::adc8(uint8_t a, uint8_t b)
 {
-	uint8_t cy = m_sr.b.l & FLAG_CF;
+	const uint8_t cy = m_sr.b.l & FLAG_CF;
 	const uint8_t result = a + b + cy;
 
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
@@ -393,7 +393,7 @@ uint8_t tlcs900_device::adc8(uint8_t a, uint8_t b)
 
 uint16_t tlcs900_device::adc16(uint16_t a, uint16_t b)
 {
-	uint8_t cy = m_sr.b.l & FLAG_CF;
+	const uint8_t cy = m_sr.b.l & FLAG_CF;
 	const uint16_t result = a + b + cy;
 
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
@@ -408,7 +408,7 @@ uint16_t tlcs900_device::adc16(uint16_t a, uint16_t b)
 
 uint32_t tlcs900_device::adc32(uint32_t a, uint32_t b)
 {
-	uint8_t cy = m_sr.b.l & FLAG_CF;
+	const uint8_t cy = m_sr.b.l & FLAG_CF;
 	const uint32_t result = a + b + cy;
 
 	m_sr.b.l &= ~(FLAG_SF | FLAG_ZF | FLAG_HF | FLAG_VF | FLAG_NF | FLAG_CF);
