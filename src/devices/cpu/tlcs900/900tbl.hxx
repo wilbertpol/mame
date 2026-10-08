@@ -257,11 +257,9 @@ uint32_t& tlcs900_device::get_reg32(uint8_t reg)
 
 uint8_t tlcs900_device::get_reg8_current_sel(uint8_t reg)
 {
-	/* W A B C D E H L: W is the high byte of its register pair and A the
-	   low byte, so odd indices select the low byte and even ones the high
-	   byte of XWA/XBC/XDE/XHL */
-	const uint8_t pair = ((reg & 7) >> 1) << REGSEL_PAIR_SHIFT;
-	const uint8_t part = (reg & 1) ? REGSEL_PART_LOW : REGSEL_PART_HIGH;
+	/* W A B C D E H L */
+	const uint8_t pair = ((reg & 6) >> 1) << REGSEL_PAIR_SHIFT;
+	const uint8_t part = BIT(reg, 0) ? REGSEL_PART_LOW : REGSEL_PART_HIGH;
 
 	return REGSEL_BANK_CURRENT | pair | part;
 }
@@ -269,9 +267,8 @@ uint8_t tlcs900_device::get_reg8_current_sel(uint8_t reg)
 
 uint8_t tlcs900_device::get_reg16_current_sel(uint8_t reg)
 {
-	/* WA BC DE HL IX IY IZ SP: bit 2 of the register selects the
-	   index/stack-pointer group */
-	const uint8_t bank = (reg & 4) ? REGSEL_GROUP_INDEX : REGSEL_BANK_CURRENT;
+	/* WA BC DE HL IX IY IZ SP */
+	const uint8_t bank = BIT(reg, 2) ? REGSEL_GROUP_INDEX : REGSEL_BANK_CURRENT;
 
 	return bank | ((reg & 3) << REGSEL_PAIR_SHIFT);
 }
